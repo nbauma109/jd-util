@@ -25,4 +25,4 @@ jobs:
     - name: Release
       uses: qcastel/github-actions-maven-release@master
       with:
-        access-token: ${{ secrets.workflow }}}
+       ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
