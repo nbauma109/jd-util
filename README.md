@@ -3,4 +3,4 @@
 [![CodeQL](https://github.com/nbauma109/jd-util/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/nbauma109/jd-util/actions/workflows/codeql-analysis.yml)
 
 # jd-util
-Common utilities for the jd-core projets
+Common utilities for the jd-core projects
