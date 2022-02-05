@@ -10,6 +10,12 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
+	<scm>
+		<connection>scm:git:https://github.com/nbauma109/jd-util.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/nbauma109/jd-util.git</developerConnection>
+		<url>https://github.com/nbauma109/jd-util</url>
+		<tag>HEAD</tag>
+	</scm>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.bcel</groupId>
