@@ -14,6 +14,13 @@
 		<url>https://github.com/nbauma109/jd-util</url>
 		<tag>HEAD</tag>
 	</scm>
+	<distributionManagement>
+		<repository>
+			<id>pkg.github.com</id>
+			<name>GitHub nbauma109 Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/nbauma109/mvn-repo</url>
+		</repository>
+	</distributionManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.bcel</groupId>
