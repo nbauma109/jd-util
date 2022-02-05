@@ -29,6 +29,7 @@
 				<version>3.0.0-M5</version>
 				<configuration>
 					<tagNameFormat>@{project.version}</tagNameFormat>
+					<scmCommentPrefix>[ci skip]</scmCommentPrefix>
 				</configuration>
 			</plugin>
 		</plugins>
