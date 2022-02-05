@@ -22,5 +22,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Release with Maven
-      run: mvn -B release:clean release:prepare release:perform
+    - name: Release
+      uses: qcastel/github-actions-maven-release@master
+      with:
+        access-token: ${{ secrets.GITHUB_ACCESS_TOKEN }}}
