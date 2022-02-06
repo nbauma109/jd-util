@@ -29,9 +29,9 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: $HOME # location for the settings.xml file
     - name: 'Create settings.xml'
-      uses: whelk-io/maven-settings-xml-action@v20
-      with:
-        servers: '[{"id": "github", "username": "${{ secrets.GITHUB_USERNAME }}", "password": "${{ secrets.GITHUB_TOKEN }}"}]'
+      run: |
+        touch ~/.m2/settings.xml
+        echo '<settings><servers><server><id>github</id><username>${{ secrets.GITHUB_USERNAME }}</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>' > ~/.m2/settings.xml
     - name: Release
       uses: qcastel/github-actions-maven-release@master
       env:
