@@ -35,6 +35,7 @@ jobs:
     - name: Release
       uses: qcastel/github-actions-maven-release@master
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
