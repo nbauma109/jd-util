@@ -16,7 +16,7 @@
 	</scm>
 	<distributionManagement>
 		<repository>
-			<id>pkg.github.com</id>
+			<id>github</id>
 			<name>GitHub nbauma109 Apache Maven Packages</name>
 			<url>https://maven.pkg.github.com/nbauma109/mvn-repo</url>
 		</repository>
