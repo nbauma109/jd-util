@@ -30,8 +30,7 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
     - name: 'Create settings.xml'
       run: |
-        touch ~/.m2/settings.xml
-        echo '<settings><servers><server><id>github</id><username>${{ secrets.GITHUB_USERNAME }}</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>' > ~/.m2/settings.xml
+        cat '<settings><servers><server><id>github</id><username>${{ secrets.GITHUB_USERNAME }}</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>' > ${{ github.workspace }}/settings.xml
     - name: Release
       uses: qcastel/github-actions-maven-release@master
       env:
