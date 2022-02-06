@@ -7,6 +7,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
+		<project.scm.id>github</project.scm.id>
 	</properties>
 	<scm>
 		<connection>scm:git:https://github.com/nbauma109/jd-util.git</connection>
