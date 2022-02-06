@@ -10,7 +10,7 @@ on:
     branches: [ master ]
 
 permissions:
-  contents: write
+  contents: read
   packages: write
 
 jobs:
@@ -36,4 +36,5 @@ jobs:
       env:
         JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
       with:
+        maven-args: "-s ${{ github.workspace }}/settings.xml"
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
