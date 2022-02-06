@@ -30,4 +30,4 @@ jobs:
         JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-       ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        access-token: ${{ secrets.GITHUB_TOKEN }}
