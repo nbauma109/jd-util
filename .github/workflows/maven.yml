@@ -30,5 +30,5 @@ jobs:
         JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
         GITHUB_TOKEN: ${{ github.token }}
       with:
-       maven-args: "-s $GITHUB_WORKSPACE/settings.xml"
+       maven-args: "-s ${{ github.workspace }}/settings.xml"
        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
