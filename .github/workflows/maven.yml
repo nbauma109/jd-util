@@ -27,7 +27,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ~/ # location for the settings.xml file
+        settings-path: $HOME # location for the settings.xml file
     - name: 'Create settings.xml'
       uses: whelk-io/maven-settings-xml-action@v20
       with:
