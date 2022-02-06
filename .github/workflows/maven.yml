@@ -28,10 +28,13 @@ jobs:
         cache: maven
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
+    - name: 'Create settings.xml'
+      run: |
+        touch ~/.m2/settings.xml
+        echo '<settings><servers><server><id>github</id><username>${{ secrets.GITHUB_USERNAME }}</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>' > ~/.m2/settings.xml
     - name: Release
       uses: qcastel/github-actions-maven-release@master
       env:
         JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
