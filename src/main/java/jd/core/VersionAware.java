@@ -20,6 +20,6 @@ public interface VersionAware {
         JarURLConnection jarConnection = (JarURLConnection) url.openConnection();
         Manifest manifest = jarConnection.getManifest();
         Attributes attributes = manifest.getMainAttributes();
-        return attributes.getValue("jdCore.version");
+        return attributes.getValue("JDCore-Version");
     }
 }
