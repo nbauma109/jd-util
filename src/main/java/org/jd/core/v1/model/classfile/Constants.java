@@ -7,7 +7,7 @@
 
 package org.jd.core.v1.model.classfile;
 
-public class Constants {
+public final class Constants {
 
     private Constants() {
     }

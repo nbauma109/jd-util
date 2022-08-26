@@ -6,10 +6,13 @@
  */
 package org.jd.core.v1.model.javasyntax.type;
 
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import org.jd.core.v1.util.StringConstants;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class ObjectType implements Type {
     public static final ObjectType TYPE_BOOLEAN           = new ObjectType(StringConstants.JAVA_LANG_BOOLEAN, "java.lang.Boolean", "Boolean");
@@ -56,26 +59,44 @@ public class ObjectType implements Type {
     protected final BaseTypeArgument typeArguments;
     protected final int dimension;
     protected final String descriptor;
+    protected final Set<String> innerTypeNames;
+
+    public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames) {
+        this(internalName, qualifiedName, name, innerTypeNames, null, 0);
+    }
+
+    public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, int dimension) {
+        this(internalName, qualifiedName, name, innerTypeNames, null, dimension);
+    }
+
+    public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments) {
+        this(internalName, qualifiedName, name, innerTypeNames, typeArguments, 0);
+    }
 
     public ObjectType(String internalName, String qualifiedName, String name) {
-        this(internalName, qualifiedName, name, null, 0);
+        this(internalName, qualifiedName, name, Collections.emptySet(), null, 0);
     }
-
+    
     public ObjectType(String internalName, String qualifiedName, String name, int dimension) {
-        this(internalName, qualifiedName, name, null, dimension);
+        this(internalName, qualifiedName, name, Collections.emptySet(), null, dimension);
     }
-
+    
     public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments) {
-        this(internalName, qualifiedName, name, typeArguments, 0);
+        this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, 0);
     }
-
+    
     public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension) {
+        this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
+    }
+    
+    public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, int dimension) {
         this.internalName = internalName;
         this.qualifiedName = qualifiedName;
         this.name = name;
         this.typeArguments = typeArguments;
         this.dimension = dimension;
         this.descriptor = createDescriptor("L" + internalName + ';', dimension);
+        this.innerTypeNames = innerTypeNames;
 
         if (internalName == null || internalName.endsWith(";")) {
             throw new IllegalArgumentException("internal name is null or ends with ;");
@@ -92,19 +113,16 @@ public class ObjectType implements Type {
         this.dimension = dimension;
         this.descriptor = createDescriptor(primitiveDescriptor, dimension);
         this.typeArguments = null;
+        this.innerTypeNames = Collections.emptySet();
     }
 
     protected static String createDescriptor(String descriptor, int dimension) {
-        switch (dimension) {
-            case 0:
-                return descriptor;
-            case 1:
-                return "[" + descriptor;
-            case 2:
-                return "[[" + descriptor;
-            default:
-                return new String(new char[dimension]).replace('\0', '[') + descriptor;
-        }
+        return switch (dimension) {
+            case 0  -> descriptor;
+            case 1  -> "[" + descriptor;
+            case 2  -> "[[" + descriptor;
+            default -> new String(new char[dimension]).replace('\0', '[') + descriptor;
+        };
     }
 
     @Override
@@ -220,7 +238,7 @@ public class ObjectType implements Type {
     }
 
     @Override
-    public boolean isTypeArgumentAssignableFrom(Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
         if (typeArgument instanceof ObjectType || typeArgument instanceof InnerObjectType) {
             ObjectType ot = (ObjectType)typeArgument;
 
@@ -231,7 +249,10 @@ public class ObjectType implements Type {
             if (ot.getTypeArguments() == null) {
                 return typeArguments == null;
             }
-            return typeArguments != null && typeArguments.isTypeArgumentAssignableFrom(typeBounds, ot.getTypeArguments());
+            if (typeArguments == null) {
+                return ot.getTypeArguments() == null;
+            }
+            return typeArguments.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, ot.getTypeArguments());
         }
 
         if (typeArgument instanceof GenericType) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
@@ -261,6 +282,10 @@ public class ObjectType implements Type {
     @Override
     public boolean isObjectTypeArgument() {
         return true;
+    }
+    
+    public Set<String> getInnerTypeNames() {
+        return innerTypeNames;
     }
 
     @Override

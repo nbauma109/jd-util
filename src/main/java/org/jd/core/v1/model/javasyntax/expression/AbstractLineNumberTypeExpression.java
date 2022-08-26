@@ -10,15 +10,15 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public abstract class AbstractLineNumberTypeExpression extends AbstractLineNumberExpression {
-    protected Type type;
+    private Type type;
 
     protected AbstractLineNumberTypeExpression(Type type) {
-        this.type = type;
+        setType(type);
     }
 
     protected AbstractLineNumberTypeExpression(int lineNumber, Type type) {
         super(lineNumber);
-        this.type = type;
+        setType(type);
     }
 
     @Override

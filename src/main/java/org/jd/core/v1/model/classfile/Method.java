@@ -11,6 +11,8 @@ import org.jd.core.v1.model.classfile.attribute.Attribute;
 
 import java.util.Map;
 
+import static org.apache.bcel.Const.ACC_SYNTHETIC;
+
 public class Method {
     private final int accessFlags;
     private final String name;
@@ -53,6 +55,14 @@ public class Method {
         return constants;
     }
 
+    public String getKey() {
+        return name + descriptor;
+    }
+
+    public boolean isLambda() {
+        return (accessFlags & ACC_SYNTHETIC) != 0 && name.contains("lambda$");
+    }
+    
     @Override
     public String toString() {
         return String.join(".", className, name + descriptor);

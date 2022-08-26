@@ -32,7 +32,7 @@ public abstract class AbstractTypeArgumentVisitor implements TypeArgumentVisitor
 
     @Override
     public void visit(InnerObjectType type) {
-        type.getOuterType().accept(this);
+        safeAccept(type.getOuterType());
         safeAccept(type.getTypeArguments());
     }
 

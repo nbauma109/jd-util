@@ -69,7 +69,10 @@ public class BindTypesToTypesVisitor extends AbstractNopTypeVisitor {
 
     @Override
     public void visit(InnerObjectType type) {
-        type.getOuterType().accept(this);
+        ObjectType outerType = type.getOuterType();
+        if (outerType != null) {
+            outerType.accept(this);
+        }
 
         BaseTypeArgument typeArguments = type.getTypeArguments();
 

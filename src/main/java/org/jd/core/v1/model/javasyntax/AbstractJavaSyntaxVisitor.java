@@ -64,6 +64,7 @@ import org.jd.core.v1.model.javasyntax.expression.ObjectTypeReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.ParenthesesExpression;
 import org.jd.core.v1.model.javasyntax.expression.PostOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.PreOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.QualifiedSuperExpression;
 import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperConstructorInvocationExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperExpression;
@@ -121,6 +122,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisitor implements DeclarationVisitor, ExpressionVisitor, ReferenceVisitor, StatementVisitor, TypeVisitor, TypeParameterVisitor {
+
     public void visit(CompilationUnit compilationUnit) {
         compilationUnit.typeDeclarations().accept(this);
     }
@@ -484,6 +486,13 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
         type.accept(this);
     }
 
+    @Override
+    public void visit(QualifiedSuperExpression expression) {
+        BaseType type = expression.getType();
+        
+        type.accept(this);
+    }
+    
     @Override
     public void visit(TernaryOperatorExpression expression) {
         expression.getCondition().accept(this);

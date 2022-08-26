@@ -12,25 +12,27 @@ import org.jd.core.v1.model.javasyntax.type.Type;
 public class CastExpression extends AbstractLineNumberTypeExpression {
     private Expression expression;
     private boolean explicit;
+    private boolean byteCodeCheckCast;
 
     public CastExpression(Type type, Expression expression) {
-        super(type);
-        this.expression = expression;
-        this.explicit = true;
+        this(UNKNOWN_LINE_NUMBER, type, expression);
     }
 
     public CastExpression(int lineNumber, Type type, Expression expression) {
-        super(lineNumber, type);
-        this.expression = expression;
-        this.explicit = true;
+        this(lineNumber, type, expression, true);
     }
 
     public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit) {
+        this(lineNumber, type, expression, explicit, false);
+    }
+    
+    public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit, boolean byteCodeCheckCast) {
         super(lineNumber, type);
         this.expression = expression;
         this.explicit = explicit;
+        this.byteCodeCheckCast = byteCodeCheckCast;
     }
-
+    
     @Override
     public Expression getExpression() {
         return expression;
@@ -48,6 +50,14 @@ public class CastExpression extends AbstractLineNumberTypeExpression {
         this.explicit = explicit;
     }
 
+    public boolean isByteCodeCheckCast() {
+        return byteCodeCheckCast;
+    }
+
+    public void setByteCodeCheckCast(boolean byteCodeCheckCast) {
+        this.byteCodeCheckCast = byteCodeCheckCast;
+    }
+
     @Override
     public int getPriority() {
         return 3;
@@ -63,11 +73,11 @@ public class CastExpression extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "CastExpression{cast (" + type + ") " + expression + "}";
+        return "CastExpression{cast (" + getType() + ") " + expression + "}";
     }
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new CastExpression(lineNumber, type, expression, explicit);
+        return new CastExpression(lineNumber, getType(), expression, explicit, byteCodeCheckCast);
     }
 }

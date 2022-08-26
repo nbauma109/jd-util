@@ -7,20 +7,25 @@
 
 package org.jd.core.v1.model.javasyntax.type;
 
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
+
 import java.util.Map;
 import java.util.Objects;
 
 public record WildcardExtendsTypeArgument(Type type) implements TypeArgument {
 
     @Override
-    public boolean isTypeArgumentAssignableFrom(Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
         if (typeArgument.isWildcardExtendsTypeArgument()) {
-            return type.isTypeArgumentAssignableFrom(typeBounds, typeArgument.type());
+            return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument.type());
+        }
+        if (type instanceof ObjectType && typeArgument instanceof ObjectType) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
+            return typeMaker.isAssignable(typeBindings, typeBounds, (ObjectType)type, (ObjectType) typeArgument);
         }
         if (typeArgument instanceof Type) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
-            return type.isTypeArgumentAssignableFrom(typeBounds, typeArgument);
+            return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
         }
-
+        
         return false;
     }
 

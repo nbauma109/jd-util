@@ -14,6 +14,8 @@ import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
+import static org.apache.bcel.Const.ACC_ABSTRACT;
+import static org.apache.bcel.Const.ACC_PUBLIC;
 import static org.apache.bcel.Const.ACC_STATIC;
 
 public class MethodDeclaration implements MemberDeclaration {
@@ -62,6 +64,8 @@ public class MethodDeclaration implements MemberDeclaration {
     }
 
     public boolean isStatic() { return (flags & ACC_STATIC) != 0; }
+    public boolean isPublic() { return (flags & ACC_PUBLIC) != 0; }
+    public boolean isAbstract() { return (flags & ACC_ABSTRACT) != 0; }
 
     public String getName() {
         return name;

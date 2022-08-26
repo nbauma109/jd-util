@@ -9,7 +9,7 @@ package org.jd.core.v1.model.classfile.attribute;
 
 public class BootstrapMethod {
     protected int bootstrapMethodRef;
-    protected int bootstrapArguments[];
+    protected int[] bootstrapArguments;
 
     public BootstrapMethod(int bootstrapMethodRef, int[] bootstrapArguments) {
         this.bootstrapMethodRef = bootstrapMethodRef;

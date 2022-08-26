@@ -6,6 +6,8 @@
  */
 package org.jd.core.v1.model.javasyntax.type;
 
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
+
 import java.util.Map;
 
 public class GenericType implements Type {
@@ -79,7 +81,25 @@ public class GenericType implements Type {
     }
 
     @Override
-    public boolean isTypeArgumentAssignableFrom(Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+        if (typeBindings != null) {
+            TypeArgument boundType = typeBindings.get(name);
+            if (boundType != null) {
+                if (typeArgument instanceof WildcardExtendsTypeArgument) {
+                    WildcardExtendsTypeArgument wildcardExtendsTypeArgument = (WildcardExtendsTypeArgument) typeArgument;
+                    return wildcardExtendsTypeArgument.type().equals(boundType);
+                    
+                }
+                return boundType.equals(typeArgument);
+            }
+        }
+        if (typeArgument instanceof GenericType) {
+            GenericType genericType = (GenericType) typeArgument;
+            BaseType boundType = typeBounds.get(genericType.getName());
+            if (boundType != null) {
+                return equals(boundType);
+            }
+        }
         return equals(typeArgument);
     }
 

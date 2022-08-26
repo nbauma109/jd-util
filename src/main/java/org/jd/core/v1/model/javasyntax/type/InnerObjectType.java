@@ -6,27 +6,49 @@
  */
 package org.jd.core.v1.model.javasyntax.type;
 
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
+
 public class InnerObjectType extends ObjectType {
-    private final ObjectType outerType;
+    private ObjectType outerType;
+
+    public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, ObjectType outerType) {
+        super(internalName, qualifiedName, name, innerTypeNames);
+        this.outerType = outerType;
+        checkArguments(qualifiedName, name);
+    }
+
+    public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, ObjectType outerType) {
+        super(internalName, qualifiedName, name, innerTypeNames, typeArguments);
+        this.outerType = outerType;
+        checkArguments(qualifiedName, name);
+    }
+
+    public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, int dimension, ObjectType outerType) {
+        super(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension);
+        this.outerType = outerType;
+        checkArguments(qualifiedName, name);
+    }
 
     public InnerObjectType(String internalName, String qualifiedName, String name, ObjectType outerType) {
-        super(internalName, qualifiedName, name);
+        super(internalName, qualifiedName, name, Collections.emptySet());
         this.outerType = outerType;
         checkArguments(qualifiedName, name);
     }
-
+    
     public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, ObjectType outerType) {
-        super(internalName, qualifiedName, name, typeArguments);
+        super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments);
         this.outerType = outerType;
         checkArguments(qualifiedName, name);
     }
-
+    
     public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension, ObjectType outerType) {
-        super(internalName, qualifiedName, name, typeArguments, dimension);
+        super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
         this.outerType = outerType;
         checkArguments(qualifiedName, name);
     }
-
+    
     protected void checkArguments(String qualifiedName, String name) {
         if (name != null && Character.isDigit(name.charAt(0)) && qualifiedName != null) {
             throw new IllegalArgumentException();
@@ -38,17 +60,21 @@ public class InnerObjectType extends ObjectType {
         return outerType;
     }
 
+    public void setOuterType(ObjectType outerType) {
+        this.outerType = outerType;
+    }
+
     @Override
     public Type createType(int dimension) {
         if (dimension < 0) {
             throw new IllegalArgumentException("InnerObjectType.createType(dim) : create type with negative dimension");
         }
-        return new InnerObjectType(internalName, qualifiedName, name, typeArguments, dimension, outerType);
+        return new InnerObjectType(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension, outerType);
     }
 
     @Override
     public ObjectType createType(BaseTypeArgument typeArguments) {
-        return new InnerObjectType(internalName, qualifiedName, name, typeArguments, dimension, outerType);
+        return new InnerObjectType(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension, outerType);
     }
 
     @Override
@@ -60,13 +86,13 @@ public class InnerObjectType extends ObjectType {
             return false;
         }
         InnerObjectType that = (InnerObjectType) o;
-        return outerType.equals(that.outerType);
+        return Objects.equals(outerType, that.outerType);
     }
 
     @Override
     public int hashCode() {
         int result = 111_476_860 + super.hashCode();
-        return 31 * result + outerType.hashCode();
+        return 31 * result + Objects.hashCode(outerType);
     }
 
     @Override

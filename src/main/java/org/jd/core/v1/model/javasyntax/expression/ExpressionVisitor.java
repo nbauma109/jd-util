@@ -38,6 +38,7 @@ public interface ExpressionVisitor {
     void visit(ParenthesesExpression expression);
     void visit(PostOperatorExpression expression);
     void visit(PreOperatorExpression expression);
+    void visit(QualifiedSuperExpression expression);
     void visit(StringConstantExpression expression);
     void visit(SuperConstructorInvocationExpression expression);
     void visit(SuperExpression expression);

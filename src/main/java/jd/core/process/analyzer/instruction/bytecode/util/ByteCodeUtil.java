@@ -104,20 +104,13 @@ public final class ByteCodeUtil
     {
         final int opcode = code[index] & 255;
 
-        switch (opcode)
+        return switch (opcode)
         {
-        case Const.TABLESWITCH:
-            return nextTableSwitchOffset(code, index);
-
-        case Const.LOOKUPSWITCH:
-            return nextLookupSwitchOffset(code, index);
-
-        case Const.WIDE:
-            return nextWideOffset(code, index);
-
-        default:
-            return index + 1 + Const.getNoOfOperands(opcode);
-        }
+            case Const.TABLESWITCH  -> nextTableSwitchOffset(code, index);
+            case Const.LOOKUPSWITCH -> nextLookupSwitchOffset(code, index);
+            case Const.WIDE         -> nextWideOffset(code, index);
+            default                 -> index + 1 + Const.getNoOfOperands(opcode);
+        };
     }
 
     public static boolean jumpTo(byte[] code, int offset, int targetOffset) {

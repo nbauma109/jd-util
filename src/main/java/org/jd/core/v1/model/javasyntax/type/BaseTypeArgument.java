@@ -7,13 +7,16 @@
 
 package org.jd.core.v1.model.javasyntax.type;
 
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import org.jd.core.v1.util.DefaultList;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public interface BaseTypeArgument extends TypeArgumentVisitable {
     @SuppressWarnings("unused")
-    default boolean isTypeArgumentAssignableFrom(Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+    default boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
         return false;
     }
 
@@ -43,4 +46,17 @@ public interface BaseTypeArgument extends TypeArgumentVisitable {
     default boolean isWildcardTypeArgument() { return false; }
 
     default Type type() { return ObjectType.TYPE_UNDEFINED_OBJECT; }
+
+    default Set<String> findTypeParametersInType() {
+        Set<String> genericIdentifiers = new HashSet<>();
+        AbstractTypeArgumentVisitor typeArgumentVisitor = new AbstractTypeArgumentVisitor() {
+            @Override
+            public void visit(GenericType genericType) {
+                genericIdentifiers.add(genericType.getName());
+                super.visit(genericType);
+            }
+        };
+        accept(typeArgumentVisitor);
+        return genericIdentifiers;
+    }
 }

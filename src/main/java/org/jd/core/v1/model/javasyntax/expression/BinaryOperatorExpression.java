@@ -74,6 +74,6 @@ public class BinaryOperatorExpression extends AbstractLineNumberTypeExpression {
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new BinaryOperatorExpression(lineNumber, type, leftExpression, operator, rightExpression, priority);
+        return new BinaryOperatorExpression(lineNumber, getType(), leftExpression, operator, rightExpression, priority);
     }
 }

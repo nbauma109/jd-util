@@ -7,6 +7,8 @@
 
 package org.jd.core.v1.model.javasyntax.type;
 
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
+
 import java.util.Map;
 
 public final class WildcardTypeArgument implements TypeArgument {
@@ -15,7 +17,7 @@ public final class WildcardTypeArgument implements TypeArgument {
     private WildcardTypeArgument() {}
 
     @Override
-    public boolean isTypeArgumentAssignableFrom(Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
         return true;
     }
 

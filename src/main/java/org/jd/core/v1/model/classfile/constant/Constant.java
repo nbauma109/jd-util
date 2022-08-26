@@ -10,7 +10,7 @@ package org.jd.core.v1.model.classfile.constant;
 /**
  * @See https://docs.oracle.com/javase/specs/jvms/se16/html/jvms-4.html
  */
-public abstract class Constant {
+public class Constant {
     public static final byte CONSTANT_UNKNOWN            = 0;
     public static final byte CONSTANT_UTF8               = 1;
     public static final byte CONSTANT_INTEGER            = 3;

@@ -28,6 +28,7 @@ public interface BaseExpression extends Base<Expression> {
     default boolean isLocalVariableReferenceExpression() { return false; }
     default boolean isLongConstantExpression() { return false; }
     default boolean isMethodInvocationExpression() { return false; }
+    default boolean isNew() { return isNewArray() || isNewInitializedArray() || isNewExpression(); }
     default boolean isNewArray() { return false; }
     default boolean isNewExpression() { return false; }
     default boolean isNewInitializedArray() { return false; }

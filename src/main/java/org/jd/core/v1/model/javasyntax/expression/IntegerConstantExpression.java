@@ -62,11 +62,11 @@ public class IntegerConstantExpression extends AbstractLineNumberTypeExpression 
 
     @Override
     public String toString() {
-        return "IntegerConstantExpression{type=" + type + ", value=" + value + "}";
+        return "IntegerConstantExpression{type=" + getType() + ", value=" + value + "}";
     }
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new IntegerConstantExpression(lineNumber, type, value);
+        return new IntegerConstantExpression(lineNumber, getType(), value);
     }
 }

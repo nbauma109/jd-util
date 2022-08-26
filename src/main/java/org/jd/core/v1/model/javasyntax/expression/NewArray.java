@@ -17,6 +17,16 @@ public class NewArray extends AbstractLineNumberTypeExpression {
         this.dimensionExpressionList = dimensionExpressionList;
     }
 
+    public boolean isEmptyNewArray() {
+        if (dimensionExpressionList instanceof IntegerConstantExpression) {
+            IntegerConstantExpression integerConstantExpression = (IntegerConstantExpression) dimensionExpressionList;
+            if (integerConstantExpression.getIntegerValue() == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public BaseExpression getDimensionExpressionList() {
         return dimensionExpressionList;
@@ -41,11 +51,11 @@ public class NewArray extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "NewArray{" + type + "}";
+        return "NewArray{" + getType() + "}";
     }
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new NewArray(lineNumber, type, dimensionExpressionList);
+        return new NewArray(lineNumber, getType(), dimensionExpressionList);
     }
 }

@@ -62,6 +62,6 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new MethodReferenceExpression(lineNumber, type, expression, internalTypeName, name, descriptor);
+        return new MethodReferenceExpression(lineNumber, getType(), expression, internalTypeName, name, descriptor);
     }
 }

@@ -38,6 +38,7 @@ public abstract class AbstractNopExpressionVisitor implements ExpressionVisitor 
     @Override public void visit(ParenthesesExpression expression) {}
     @Override public void visit(PostOperatorExpression expression) {}
     @Override public void visit(PreOperatorExpression expression) {}
+    @Override public void visit(QualifiedSuperExpression expression) {}
     @Override public void visit(StringConstantExpression expression) {}
     @Override public void visit(SuperConstructorInvocationExpression expression) {}
     @Override public void visit(SuperExpression expression) {}

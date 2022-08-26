@@ -95,61 +95,40 @@ public final class PrimitiveTypeUtil {
     }
 
     public static PrimitiveType getPrimitiveTypeFromFlags(int flags) {
-        switch (flags) {
-            case FLAG_BOOLEAN:
-                return TYPE_BOOLEAN;
-            case FLAG_CHAR:
-                return TYPE_CHAR;
-            case FLAG_FLOAT:
-                return TYPE_FLOAT;
-            case FLAG_DOUBLE:
-                return TYPE_DOUBLE;
-            case FLAG_BYTE:
-                return TYPE_BYTE;
-            case FLAG_SHORT:
-                return TYPE_SHORT;
-            case FLAG_INT:
-                return TYPE_INT;
-            case FLAG_LONG:
-                return TYPE_LONG;
-            case FLAG_VOID:
-                return TYPE_VOID;
-            default:
-            switch (flags) {
-            case FLAG_CHAR|FLAG_INT:
-                return MAYBE_CHAR_TYPE;
-            case FLAG_CHAR|FLAG_SHORT|FLAG_INT:
-                return MAYBE_SHORT_TYPE;
-            case FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT:
-                return MAYBE_BYTE_TYPE;
-            case FLAG_BOOLEAN|FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT:
-                return MAYBE_BOOLEAN_TYPE;
-            case FLAG_BYTE|FLAG_SHORT|FLAG_INT:
-                return MAYBE_NEGATIVE_BYTE_TYPE;
-            case FLAG_SHORT|FLAG_INT:
-                return MAYBE_NEGATIVE_SHORT_TYPE;
-            case FLAG_BOOLEAN|FLAG_BYTE|FLAG_SHORT|FLAG_INT:
-                return MAYBE_NEGATIVE_BOOLEAN_TYPE;
-            default:
-                break;
-            }
-                break;
-        }
-
-        return null;
+        return switch (flags) {
+            case FLAG_BOOLEAN -> TYPE_BOOLEAN;
+            case FLAG_CHAR    -> TYPE_CHAR;
+            case FLAG_FLOAT   -> TYPE_FLOAT;
+            case FLAG_DOUBLE  -> TYPE_DOUBLE;
+            case FLAG_BYTE    -> TYPE_BYTE;
+            case FLAG_SHORT   -> TYPE_SHORT;
+            case FLAG_INT     -> TYPE_INT;
+            case FLAG_LONG    -> TYPE_LONG;
+            case FLAG_VOID    -> TYPE_VOID;
+            default           -> switch (flags) {
+            case FLAG_CHAR|FLAG_INT                                   -> MAYBE_CHAR_TYPE;
+            case FLAG_CHAR|FLAG_SHORT|FLAG_INT                        -> MAYBE_SHORT_TYPE;
+            case FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT              -> MAYBE_BYTE_TYPE;
+            case FLAG_BOOLEAN|FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT -> MAYBE_BOOLEAN_TYPE;
+            case FLAG_BYTE|FLAG_SHORT|FLAG_INT                        -> MAYBE_NEGATIVE_BYTE_TYPE;
+            case FLAG_SHORT|FLAG_INT                                  -> MAYBE_NEGATIVE_SHORT_TYPE;
+            case FLAG_BOOLEAN|FLAG_BYTE|FLAG_SHORT|FLAG_INT           -> MAYBE_NEGATIVE_BOOLEAN_TYPE;
+            default                                                   -> null;
+            };
+        };
     }
 
     public static Type getPrimitiveTypeFromTag(int tag) {
-        switch (tag) {
-            case T_BOOLEAN: return TYPE_BOOLEAN;
-            case T_CHAR   : return TYPE_CHAR;
-            case T_FLOAT  : return TYPE_FLOAT;
-            case T_DOUBLE : return TYPE_DOUBLE;
-            case T_BYTE   : return TYPE_BYTE;
-            case T_SHORT  : return TYPE_SHORT;
-            case T_INT    : return TYPE_INT;
-            case T_LONG   : return TYPE_LONG;
-            default: throw new IllegalStateException();
-        }
+        return switch (tag) {
+            case T_BOOLEAN -> TYPE_BOOLEAN;
+            case T_CHAR    -> TYPE_CHAR;
+            case T_FLOAT   -> TYPE_FLOAT;
+            case T_DOUBLE  -> TYPE_DOUBLE;
+            case T_BYTE    -> TYPE_BYTE;
+            case T_SHORT   -> TYPE_SHORT;
+            case T_INT     -> TYPE_INT;
+            case T_LONG    -> TYPE_LONG;
+            default        -> throw new IllegalStateException();
+        };
     }
 }

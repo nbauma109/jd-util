@@ -16,18 +16,27 @@ public class NewExpression extends AbstractLineNumberExpression {
     protected String descriptor;
     protected BaseExpression parameters;
     private final BodyDeclaration bodyDeclaration;
+    private boolean diamondPossible;
+    private Expression qualifier;
+    private final boolean varArgs;
 
-    public NewExpression(int lineNumber, ObjectType type, String descriptor) {
-        this(lineNumber, type, descriptor, null);
+    public NewExpression(int lineNumber, ObjectType type, String descriptor, boolean varArgs) {
+        this(lineNumber, type, descriptor, null, varArgs);
     }
 
-    public NewExpression(int lineNumber, ObjectType type, String descriptor, BodyDeclaration bodyDeclaration) {
+    public NewExpression(int lineNumber, ObjectType type, String descriptor, BodyDeclaration bodyDeclaration, boolean varArgs) {
         super(lineNumber);
         this.type = type;
         this.descriptor = descriptor;
         this.bodyDeclaration = bodyDeclaration;
+        this.diamondPossible = bodyDeclaration == null;
+        this.varArgs = varArgs;
     }
 
+    public boolean isVarArgs() {
+        return varArgs;
+    }
+    
     @Override
     public ObjectType getObjectType() {
         return type;
@@ -68,6 +77,22 @@ public class NewExpression extends AbstractLineNumberExpression {
     public BodyDeclaration getBodyDeclaration() {
         return bodyDeclaration;
     }
+    
+    public boolean isDiamondPossible() {
+        return diamondPossible;
+    }
+    
+    public void setDiamondPossible(boolean diamondPossible) {
+        this.diamondPossible = diamondPossible;
+    }
+
+    public Expression getQualifier() {
+        return qualifier;
+    }
+
+    public void setQualifier(Expression qualifier) {
+        this.qualifier = qualifier;
+    }
 
     @Override
     public boolean isNewExpression() { return true; }
@@ -84,6 +109,6 @@ public class NewExpression extends AbstractLineNumberExpression {
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new NewExpression(lineNumber, type, descriptor, bodyDeclaration);
+        return new NewExpression(lineNumber, type, descriptor, bodyDeclaration, varArgs);
     }
 }

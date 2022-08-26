@@ -10,6 +10,7 @@ package org.jd.core.v1.model.javasyntax.declaration;
 public class BodyDeclaration implements Declaration {
     private final String internalTypeName;
     protected BaseMemberDeclaration memberDeclarations;
+    private boolean anonymous;
 
     public BodyDeclaration(String internalTypeName, BaseMemberDeclaration memberDeclarations) {
         this.internalTypeName = internalTypeName;
@@ -22,6 +23,14 @@ public class BodyDeclaration implements Declaration {
 
     public BaseMemberDeclaration getMemberDeclarations() {
         return memberDeclarations;
+    }
+
+    public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    public void setAnonymous(boolean anonymous) {
+        this.anonymous = anonymous;
     }
 
     @Override

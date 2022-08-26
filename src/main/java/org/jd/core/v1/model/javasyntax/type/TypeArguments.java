@@ -6,6 +6,7 @@
  */
 package org.jd.core.v1.model.javasyntax.type;
 
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import org.jd.core.v1.util.DefaultList;
 
 import java.util.Collection;
@@ -32,7 +33,7 @@ public class TypeArguments extends DefaultList<TypeArgument> implements BaseType
     }
 
     @Override
-    public boolean isTypeArgumentAssignableFrom(Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
         if (typeArgument instanceof TypeArguments) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
             TypeArguments ata = (TypeArguments) typeArgument;
             if (size() != ata.size()) {
@@ -42,7 +43,7 @@ public class TypeArguments extends DefaultList<TypeArgument> implements BaseType
             Iterator<TypeArgument> iterator2 = ata.iterator();
     
             while (iterator1.hasNext()) {
-                if (!iterator1.next().isTypeArgumentAssignableFrom(typeBounds, iterator2.next())) {
+                if (!iterator1.next().isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, iterator2.next())) {
                     return false;
                 }
             }

@@ -12,12 +12,18 @@ import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 
 public class ConstructorInvocationExpression extends ConstructorReferenceExpression {
     private BaseExpression parameters;
+    private final boolean varArgs;
 
-    public ConstructorInvocationExpression(int lineNumber, ObjectType type, String descriptor, BaseExpression parameters) {
+    public ConstructorInvocationExpression(int lineNumber, ObjectType type, String descriptor, BaseExpression parameters, boolean varArgs) {
         super(lineNumber, PrimitiveType.TYPE_VOID, type, descriptor);
         this.parameters = parameters;
+        this.varArgs = varArgs;
     }
 
+    public boolean isVarArgs() {
+        return varArgs;
+    }
+    
     @Override
     public BaseExpression getParameters() {
         return parameters;
