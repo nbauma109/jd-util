@@ -20,16 +20,16 @@ public class NewExpression extends AbstractLineNumberExpression {
     private Expression qualifier;
     private final boolean varArgs;
 
-    public NewExpression(int lineNumber, ObjectType type, String descriptor, boolean varArgs) {
-        this(lineNumber, type, descriptor, null, varArgs);
+    public NewExpression(int lineNumber, ObjectType type, String descriptor, boolean varArgs, boolean diamondPossible) {
+        this(lineNumber, type, descriptor, null, varArgs, diamondPossible);
     }
 
-    public NewExpression(int lineNumber, ObjectType type, String descriptor, BodyDeclaration bodyDeclaration, boolean varArgs) {
+    public NewExpression(int lineNumber, ObjectType type, String descriptor, BodyDeclaration bodyDeclaration, boolean varArgs, boolean diamondPossible) {
         super(lineNumber);
         this.type = type;
         this.descriptor = descriptor;
         this.bodyDeclaration = bodyDeclaration;
-        this.diamondPossible = bodyDeclaration == null;
+        this.diamondPossible = diamondPossible;
         this.varArgs = varArgs;
     }
 
@@ -109,6 +109,6 @@ public class NewExpression extends AbstractLineNumberExpression {
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new NewExpression(lineNumber, type, descriptor, bodyDeclaration, varArgs);
+        return new NewExpression(lineNumber, type, descriptor, bodyDeclaration, varArgs, diamondPossible);
     }
 }

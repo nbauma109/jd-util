@@ -13,6 +13,7 @@ import org.jd.core.v1.model.javasyntax.type.Type;
 public class ForEachStatement implements Statement {
     protected final Type type;
     private final String name;
+    private boolean fina1;
     protected Expression expression;
     private final BaseStatement statements;
 
@@ -21,6 +22,14 @@ public class ForEachStatement implements Statement {
         this.name = name;
         this.expression = expression;
         this.statements = statements;
+    }
+
+    public boolean isFinal() {
+        return fina1;
+    }
+
+    public void setFinal(boolean fina1) {
+        this.fina1 = fina1;
     }
 
     public Type getType() {

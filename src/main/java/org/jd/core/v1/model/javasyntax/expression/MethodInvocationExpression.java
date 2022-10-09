@@ -11,36 +11,40 @@ import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.javasyntax.type.TypeArgument;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
 
 import java.util.Map;
 
 public class MethodInvocationExpression extends MethodReferenceExpression {
     private BaseTypeArgument nonWildcardTypeArguments;
-    private boolean showingNonWildcardTypeArguments;
     private BaseExpression parameters;
-    private final boolean varArgs;
+    private final MethodTypes methodTypes;
     private Map<String, BaseType> typeBounds;
     private Map<String, TypeArgument> typeBindings;
 
-    public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, boolean varArgs) {
+    public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, MethodTypes methodTypes) {
         super(type, expression, internalTypeName, name, descriptor);
-        this.varArgs = varArgs;
+        this.methodTypes = methodTypes;
     }
 
-    public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, boolean varArgs) {
+    public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
         super(type, expression, internalTypeName, name, descriptor);
         this.parameters = parameters;
-        this.varArgs = varArgs;
+        this.methodTypes = methodTypes;
     }
 
-    public MethodInvocationExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, boolean varArgs) {
+    public MethodInvocationExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
         super(lineNumber, type, expression, internalTypeName, name, descriptor);
         this.parameters = parameters;
-        this.varArgs = varArgs;
+        this.methodTypes = methodTypes;
     }
 
     public boolean isVarArgs() {
-        return varArgs;
+        return methodTypes != null && methodTypes.isVarArgs();
+    }
+
+    public BaseType getExceptionTypes() {
+        return methodTypes == null ? null : methodTypes.getExceptionTypes();
     }
     
     public BaseTypeArgument getNonWildcardTypeArguments() {
@@ -87,14 +91,6 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     @Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visit(this);
-    }
-
-    public boolean isShowingNonWildcardTypeArguments() {
-        return showingNonWildcardTypeArguments;
-    }
-
-    public void setShowingNonWildcardTypeArguments(boolean showingNonWildcardTypeArguments) {
-        this.showingNonWildcardTypeArguments = showingNonWildcardTypeArguments;
     }
 
     @Override

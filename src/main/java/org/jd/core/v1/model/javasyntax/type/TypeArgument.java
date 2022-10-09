@@ -7,4 +7,5 @@
 
 package org.jd.core.v1.model.javasyntax.type;
 
-public interface TypeArgument extends BaseTypeArgument {}
+public interface TypeArgument extends BaseTypeArgument {
+}

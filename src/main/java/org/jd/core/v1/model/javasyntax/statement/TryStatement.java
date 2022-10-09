@@ -98,12 +98,21 @@ public class TryStatement implements Statement {
         private DefaultList<ObjectType> otherTypes;
         private final String name;
         private final BaseStatement statements;
+        private boolean fina1;
 
         public CatchClause(int lineNumber, ObjectType type, String name, BaseStatement statements) {
             this.lineNumber = lineNumber;
             this.type = type;
             this.name = name;
             this.statements = statements;
+        }
+
+        public boolean isFinal() {
+            return fina1;
+        }
+
+        public void setFinal(boolean fina1) {
+            this.fina1 = fina1;
         }
 
         @Override

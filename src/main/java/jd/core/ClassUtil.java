@@ -16,13 +16,15 @@
  ******************************************************************************/
 package jd.core;
 
+import org.jd.core.v1.util.StringConstants;
+
 public final class ClassUtil {
 
     private ClassUtil() {
     }
 
     public static String getInternalName(String s) {
-        if (!s.endsWith(".class")) {
+        if (!s.endsWith(StringConstants.CLASS_FILE_SUFFIX)) {
             throw new IllegalArgumentException("Not a .class file: " + s);
         }
         return s.substring(0, s.length() - 6); // 6 = ".class".length()

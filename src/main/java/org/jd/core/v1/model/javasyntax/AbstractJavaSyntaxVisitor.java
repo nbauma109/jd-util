@@ -570,7 +570,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
 
     @Override
     public void visit(ExpressionStatement statement) {
-        statement.getExpression().accept(this);
+        safeAccept(statement.getExpression());
     }
 
     @Override
