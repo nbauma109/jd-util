@@ -72,4 +72,9 @@ public class AnnotationReference implements BaseAnnotationReference {
     public void accept(ReferenceVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
 }

@@ -7,10 +7,16 @@
 
 package org.jd.core.v1.model.classfile.attribute;
 
+import org.apache.bcel.classfile.AnnotationElementValue;
+import org.apache.bcel.classfile.ArrayElementValue;
+import org.apache.bcel.classfile.ClassElementValue;
+import org.apache.bcel.classfile.EnumElementValue;
+import org.apache.bcel.classfile.SimpleElementValue;
+
 public interface ElementValueVisitor {
-    void visit(ElementValuePrimitiveType elementValue);
-    void visit(ElementValueClassInfo elementValue);
-    void visit(ElementValueAnnotationValue elementValue);
-    void visit(ElementValueEnumConstValue elementValue);
-    void visit(ElementValueArrayValue elementValue);
+    void visit(SimpleElementValue elementValue);
+    void visit(ClassElementValue elementValue);
+    void visit(AnnotationElementValue elementValue);
+    void visit(EnumElementValue elementValue);
+    void visit(ArrayElementValue elementValue);
 }

@@ -7,83 +7,31 @@
 
 package org.jd.core.v1.model.classfile;
 
-
-import org.jd.core.v1.model.classfile.attribute.Attribute;
-
+import org.apache.bcel.classfile.AnnotationEntry;
+import org.apache.bcel.classfile.Attribute;
+import org.apache.bcel.classfile.ConstantPool;
+import org.apache.bcel.classfile.Field;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.Method;
+import org.apache.bcel.classfile.Utility;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Stream;
 
-import static org.apache.bcel.Const.ACC_ANNOTATION;
-import static org.apache.bcel.Const.ACC_ENUM;
-import static org.apache.bcel.Const.ACC_INTERFACE;
 import static org.apache.bcel.Const.ACC_MODULE;
-import static org.apache.bcel.Const.ACC_STATIC;
+import static org.apache.bcel.Const.CONSTANT_Class;
 
 public class ClassFile {
-    private final int majorVersion;
-    private final int minorVersion;
-    private int accessFlags;
-    private final String internalTypeName;
-    private final String superTypeName;
-    private final String[] interfaceTypeNames;
-    private final Field[] fields;
-    private final Method[] methods;
-    private final Map<String, Attribute> attributes;
 
+    private final JavaClass javaClass;
     private ClassFile outerClassFile;
     private List<ClassFile> innerClassFiles;
 
-    public ClassFile(int majorVersion, int minorVersion, int accessFlags, String internalTypeName, String superTypeName, String[] interfaceTypeNames, Field[] fields, Method[] methods, Map<String, Attribute> attributes) {
-        this.majorVersion = majorVersion;
-        this.minorVersion = minorVersion;
-        this.accessFlags = accessFlags;
-        this.internalTypeName = internalTypeName;
-        this.superTypeName = superTypeName;
-        this.interfaceTypeNames = interfaceTypeNames;
-        this.fields = fields;
-        this.methods = methods;
-        this.attributes = attributes;
+    public ClassFile(JavaClass javaClass) {
+        this.javaClass = javaClass;
     }
 
-    public int getMinorVersion() { return minorVersion; }
-    public int getMajorVersion() { return majorVersion; }
-
-    public int getAccessFlags() {
-        return accessFlags;
-    }
-    public void setAccessFlags(int accessFlags) {
-        this.accessFlags = accessFlags;
-    }
-
-    public boolean isEnum()       { return (accessFlags & ACC_ENUM) != 0; }
-    public boolean isAnnotation() { return (accessFlags & ACC_ANNOTATION) != 0; }
-    public boolean isInterface()  { return (accessFlags & ACC_INTERFACE) != 0; }
-    public boolean isModule()     { return (accessFlags & ACC_MODULE) != 0; }
-    public boolean isStatic()     { return (accessFlags & ACC_STATIC) != 0; }
-
-    public String getInternalTypeName() {
-        return internalTypeName;
-    }
-
-    public String getSuperTypeName() {
-        return superTypeName;
-    }
-
-    public String[] getInterfaceTypeNames() {
-        return interfaceTypeNames;
-    }
-
-    public Field[] getFields() {
-        return fields;
-    }
-
-    public Method[] getMethods() {
-        return methods;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Attribute> T getAttribute(String name) {
-        return attributes == null ? null : (T)attributes.get(name);
+    public boolean isModule() {
+        return (javaClass.getAccessFlags() & ACC_MODULE) != 0;
     }
 
     public ClassFile getOuterClassFile() {
@@ -102,8 +50,102 @@ public class ClassFile {
         this.innerClassFiles = innerClassFiles;
     }
 
+    public final boolean isAbstract() {
+        return javaClass.isAbstract();
+    }
+
+    public final boolean isEnum() {
+        return javaClass.isEnum();
+    }
+
+    public final boolean isInterface() {
+        return javaClass.isInterface();
+    }
+
+    public final boolean isPublic() {
+        return javaClass.isPublic();
+    }
+
+    public final boolean isStatic() {
+        return javaClass.isStatic();
+    }
+
+    public int getMajorVersion() {
+        return javaClass.getMajor();
+    }
+
+    public int getMinorVersion() {
+        return javaClass.getMinor();
+    }
+
+    public final boolean isClass() {
+        return javaClass.isClass();
+    }
+
+    public final int getAccessFlags() {
+        return javaClass.getAccessFlags();
+    }
+
+    public final void setAccessFlags(int accessFlags) {
+        javaClass.setAccessFlags(accessFlags);
+    }
+
+    public boolean isAnnotation() {
+        return javaClass.isAnnotation();
+    }
+
+    public Method[] getMethods() {
+        return javaClass.getMethods();
+    }
+
+    public Field[] getFields() {
+        return javaClass.getFields();
+    }
+
+    public String[] getInterfaceTypeNames() {
+        int[] interfaceIndices = javaClass.getInterfaceIndices();
+        String[] interfaceNames = new String[interfaceIndices.length];
+        for (int i = 0; i < interfaceNames.length; i++) {
+            interfaceNames[i] = getConstantPool().getConstantString(interfaceIndices[i], CONSTANT_Class);
+        }
+        return interfaceNames;
+    }
+
+    public String getSuperTypeName() {
+        return getConstantPool().getConstantString(getSuperclassNameIndex(), CONSTANT_Class);
+    }
+
+    public int getSuperclassNameIndex() {
+        return javaClass.getSuperclassNameIndex();
+    }
+
+    public String getInternalTypeName() {
+        return Utility.packageToPath(javaClass.getClassName());
+    }
+
+    public ConstantPool getConstantPool() {
+        return javaClass.getConstantPool();
+    }
+    
+    public Attribute[] getAttributes() {
+        return javaClass.getAttributes();
+    }
+
+    public AnnotationEntry[] getAnnotationEntries() {
+        return javaClass.getAnnotationEntries();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Attribute> T getAttribute(byte tag) {
+        return (T) Stream.of(javaClass.getAttributes()).filter(a -> a.getTag() == tag).findAny().orElse(null);
+    }
+
+    public boolean isAInnerClass() {
+        return outerClassFile != null;
+    }
+
     @Override
     public String toString() {
-        return "ClassFile{" + internalTypeName + "}";
+        return "ClassFile{" + javaClass.getFileName() + "}";
     }
 }

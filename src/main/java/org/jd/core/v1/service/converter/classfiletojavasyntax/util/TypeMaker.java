@@ -7,13 +7,14 @@
 package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
 import org.apache.bcel.Const;
+import org.apache.bcel.classfile.ExceptionTable;
+import org.apache.bcel.classfile.Field;
+import org.apache.bcel.classfile.FieldOrMethod;
+import org.apache.bcel.classfile.Method;
+import org.apache.bcel.classfile.Signature;
 import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.classfile.ClassFile;
-import org.jd.core.v1.model.classfile.Field;
-import org.jd.core.v1.model.classfile.Method;
-import org.jd.core.v1.model.classfile.attribute.AttributeExceptions;
-import org.jd.core.v1.model.classfile.attribute.AttributeSignature;
 import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 import org.jd.core.v1.model.javasyntax.expression.LambdaIdentifiersExpression;
@@ -47,6 +48,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.apache.bcel.Const.CONSTANT_Class;
 import static org.apache.bcel.Const.CONSTANT_Double;
@@ -175,7 +177,7 @@ public class TypeMaker {
 
         typeTypes.setThisType(makeFromInternalTypeName(internalTypeName));
 
-        AttributeSignature attributeSignature = classFile.getAttribute(StringConstants.SIGNATURE_ATTRIBUTE_NAME);
+        Signature attributeSignature = classFile.getAttribute(Const.ATTR_SIGNATURE);
 
         if (attributeSignature == null) {
             String superTypeName = classFile.getSuperTypeName();
@@ -200,7 +202,7 @@ public class TypeMaker {
             }
         } else {
             // Parse 'signature' attribute
-            SignatureReader signatureReader = new SignatureReader(attributeSignature.signature());
+            SignatureReader signatureReader = new SignatureReader(attributeSignature.getSignature());
 
             typeTypes.setTypeParameters(parseTypeParameters(signatureReader));
             typeTypes.setSuperType(parseClassTypeSignature(signatureReader, 0));
@@ -233,19 +235,19 @@ public class TypeMaker {
     }
 
     public MethodTypes parseMethodSignature(ClassFile classFile, Method method) {
-        String key = classFile.getInternalTypeName() + ':' + method.getName() + method.getDescriptor();
+        String key = classFile.getInternalTypeName() + ':' + method.getName() + method.getSignature();
         return parseMethodSignature(method, key);
     }
 
     private MethodTypes parseMethodSignature(Method method, String key) {
-        AttributeSignature attributeSignature = method.getAttribute(StringConstants.SIGNATURE_ATTRIBUTE_NAME);
+        Signature attributeSignature = getSignature(method);
         String[] exceptionTypeNames = getExceptionTypeNames(method);
         MethodTypes methodTypes;
 
         if (attributeSignature == null) {
-            methodTypes = parseMethodSignature(method.getDescriptor(), exceptionTypeNames);
+            methodTypes = parseMethodSignature(method.getSignature(), exceptionTypeNames);
         } else {
-            methodTypes = parseMethodSignature(method.getDescriptor(), attributeSignature.signature(), exceptionTypeNames);
+            methodTypes = parseMethodSignature(method.getSignature(), attributeSignature.getSignature(), exceptionTypeNames);
         }
 
         internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
@@ -255,10 +257,15 @@ public class TypeMaker {
 
     private static String[] getExceptionTypeNames(Method method) {
         if (method != null) {
-            AttributeExceptions attributeExceptions = method.getAttribute("Exceptions");
+            ExceptionTable attributeExceptions = method.getExceptionTable();
 
             if (attributeExceptions != null) {
-                return attributeExceptions.exceptionTypeNames();
+                int[] exceptionIndexTable = attributeExceptions.getExceptionIndexTable();
+                String[] exceptionNames = new String[exceptionIndexTable.length];
+                for (int i = 0; i < exceptionNames.length; i++) {
+                    exceptionNames[i] = attributeExceptions.getConstantPool().getConstantString(exceptionIndexTable[i], CONSTANT_Class);
+                }
+                return exceptionNames;
             }
         }
 
@@ -267,13 +274,17 @@ public class TypeMaker {
 
     public Type parseFieldSignature(ClassFile classFile, Field field) {
         String key = classFile.getInternalTypeName() + ':' + field.getName();
-        AttributeSignature attributeSignature = field.getAttribute(StringConstants.SIGNATURE_ATTRIBUTE_NAME);
-        String signature = attributeSignature == null ? field.getDescriptor() : attributeSignature.signature();
+        Signature attributeSignature = getSignature(field);
+        String signature = attributeSignature == null ? field.getSignature() : attributeSignature.getSignature();
         Type type = makeFromSignature(signature);
 
         putInternalTypeNameFieldNameToType(key, type);
 
         return type;
+    }
+
+    private static Signature getSignature(FieldOrMethod fm) {
+        return (Signature) Stream.of(fm.getAttributes()).filter(Signature.class::isInstance).findAny().orElse(null);
     }
 
     public Type makeFromSignature(String signature) {

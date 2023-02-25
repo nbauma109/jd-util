@@ -7,4 +7,6 @@
 
 package org.jd.core.v1.model.javasyntax.reference;
 
-public interface BaseAnnotationReference extends Reference {}
+public interface BaseAnnotationReference extends Reference {
+    boolean isEmpty();
+}
