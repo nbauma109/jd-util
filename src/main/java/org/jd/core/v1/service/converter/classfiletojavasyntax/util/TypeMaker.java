@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -236,18 +237,17 @@ public class TypeMaker {
 
     public MethodTypes parseMethodSignature(ClassFile classFile, Method method) {
         String key = classFile.getInternalTypeName() + ':' + method.getName() + method.getSignature();
-        return parseMethodSignature(method, key);
+        return parseMethodSignature(classFile.getInternalTypeName(), method, key);
     }
 
-    private MethodTypes parseMethodSignature(Method method, String key) {
+    private MethodTypes parseMethodSignature(String internalTypeName, Method method, String key) {
         Signature attributeSignature = getSignature(method);
         String[] exceptionTypeNames = getExceptionTypeNames(method);
         MethodTypes methodTypes;
-
         if (attributeSignature == null) {
-            methodTypes = parseMethodSignature(method.getSignature(), exceptionTypeNames);
+            methodTypes = parseMethodSignature(internalTypeName, method.getName(), method.getSignature(), exceptionTypeNames);
         } else {
-            methodTypes = parseMethodSignature(method.getSignature(), attributeSignature.getSignature(), exceptionTypeNames);
+            methodTypes = parseMethodSignature(internalTypeName, method.getName(), method.getSignature(), attributeSignature.getSignature(), exceptionTypeNames);
         }
 
         internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
@@ -301,13 +301,13 @@ public class TypeMaker {
         return count;
     }
 
-    private MethodTypes parseMethodSignature(String descriptor, String signature, String[] exceptionTypeNames) {
+    private MethodTypes parseMethodSignature(String internalTypeName, String methodName, String descriptor, String signature, String[] exceptionTypeNames) {
         if (signature == null) {
-            return parseMethodSignature(descriptor, exceptionTypeNames);
+            return parseMethodSignature(internalTypeName, methodName, descriptor, exceptionTypeNames);
         }
         // Signature does not contain synthetic parameters like outer type name, for example.
-        MethodTypes mtDescriptor = parseMethodSignature(descriptor, exceptionTypeNames);
-        MethodTypes mtSignature  = parseMethodSignature(signature, exceptionTypeNames);
+        MethodTypes mtDescriptor = parseMethodSignature(internalTypeName, methodName, descriptor, exceptionTypeNames);
+        MethodTypes mtSignature  = parseMethodSignature(internalTypeName, methodName, signature, exceptionTypeNames);
 
         if (mtDescriptor.getParameterTypes() != null) {
             if (mtSignature.getParameterTypes() == null) {
@@ -344,12 +344,12 @@ public class TypeMaker {
      *  ReturnType: TypeSignature | VoidDescriptor
      *  ThrowsSignature: '^' ClassTypeSignature | '^' TypeVariableSignature
      */
-    private MethodTypes parseMethodSignature(String signature, String[] exceptionTypeNames) {
-        String cacheKey = signature;
+    private MethodTypes parseMethodSignature(String internalTypeName, String methodName, String signature, String[] exceptionTypeNames) {
+        String cacheKey = internalTypeName + '.' + methodName + signature;
         boolean containsThrowsSignature = signature.indexOf('^') != -1;
 
         if (!containsThrowsSignature && exceptionTypeNames != null) {
-            StringBuilder sb = new StringBuilder(signature);
+            StringBuilder sb = new StringBuilder(cacheKey);
 
             for (String exceptionTypeName : exceptionTypeNames) {
                 sb.append("^L").append(exceptionTypeName).append(';');
@@ -847,6 +847,16 @@ public class TypeMaker {
         return descriptorOrInternalTypeName.charAt(0) == '[' ? makeFromDescriptor(descriptorOrInternalTypeName) : makeFromInternalTypeName(descriptorOrInternalTypeName);
     }
 
+    public Type makeFromSignatureOrInternalTypeName(String signatureOrInternalTypeName) {
+        if (signatureOrInternalTypeName == null) {
+            throw new IllegalArgumentException("ObjectTypeMaker.makeFromSignatureOrInternalTypeName(signatureOrInternalTypeName) : invalid signatureOrInternalTypeName");
+        }
+        if (signatureOrInternalTypeName.charAt(0) == '[' || signatureOrInternalTypeName.endsWith(";")) {
+            return makeFromSignature(signatureOrInternalTypeName);
+        }
+        return makeFromInternalTypeName(signatureOrInternalTypeName);
+    }
+
     public ObjectType makeFromDescriptor(String descriptor) {
         ObjectType ot = descriptorToObjectType.get(descriptor);
 
@@ -946,7 +956,9 @@ public class TypeMaker {
         if (left == TYPE_UNDEFINED_OBJECT || right == TYPE_UNDEFINED_OBJECT || left.equals(TYPE_OBJECT) || left.equals(right)) {
             return true;
         }
-        if (left.getDimension() <= 0 && right.getDimension() <= 0) {
+        int leftDim = left.getDimension();
+        int rightDim = right.getDimension();
+        if (leftDim <= 0 && rightDim <= 0) {
             String leftInternalTypeName = left.getInternalName();
             long leftHashCode = leftInternalTypeName.hashCode() * 31L;
             ObjectType ot = searchSuperParameterizedType(leftHashCode, leftInternalTypeName, right);
@@ -955,6 +967,13 @@ public class TypeMaker {
                 return left.getTypeArguments() == null || ot.getTypeArguments() == null
                         || left.getTypeArguments().isTypeArgumentAssignableFrom(this, typeBindings, typeBounds, ot.getTypeArguments())
                         || (leftUnbound instanceof ObjectType && isAssignable(typeBindings, typeBounds, (ObjectType) leftUnbound, right));
+            }
+        }
+        if (leftDim == rightDim && leftDim > 0 && rightDim > 0) {
+            Type leftType = left.createType(leftDim - 1);
+            Type rightType = right.createType(rightDim - 1);
+            if (leftType instanceof ObjectType && rightType instanceof ObjectType) {
+                return isAssignable(typeBindings, typeBounds, (ObjectType) leftType, (ObjectType) rightType);
             }
         }
         return false;
@@ -1301,8 +1320,8 @@ public class TypeMaker {
         makeMethodTypes(internalTypeName, methodName, descriptor).setReturnedType(type);
     }
 
-    public MethodTypes makeMethodTypes(String descriptor) {
-        return parseMethodSignature(descriptor, null);
+    public MethodTypes makeMethodTypes(String internalTypeName, String descriptor) {
+        return parseMethodSignature(internalTypeName, null, descriptor, null);
     }
 
     public MethodTypes makeMethodTypes(String internalTypeName, String methodName, String descriptor) {
@@ -1310,7 +1329,7 @@ public class TypeMaker {
 
         if (methodTypes == null) {
             String key = internalTypeName + ':' + methodName + descriptor;
-            methodTypes = parseMethodSignature(descriptor, null);
+            methodTypes = parseMethodSignature(internalTypeName, methodName, descriptor, null);
             internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
         }
 
@@ -1420,7 +1439,7 @@ public class TypeMaker {
                 } else if (classPathLoader.canLoad(internalTypeName)) {
                     ot = loadType(internalTypeName, classPathLoader.load(internalTypeName));
                 }
-                internalTypeNameToObjectType.put(internalTypeName, ot);
+                internalTypeNameToObjectType.put(internalTypeName, Optional.ofNullable(ot).orElse(TYPE_UNDEFINED_OBJECT));
             } catch (Exception e) {
                 assert ExceptionUtil.printStackTrace(e);
             }
@@ -1638,9 +1657,9 @@ public class TypeMaker {
                     descriptor = (String)constants[descriptorIndex];
                     key = internalTypeName + ':' + name + descriptor;
                     if (signature == null) {
-                        methodTypes = parseMethodSignature(descriptor, exceptionTypeNames);
+                        methodTypes = parseMethodSignature(internalTypeName, name, descriptor, exceptionTypeNames);
                     } else {
-                        methodTypes = parseMethodSignature(descriptor, signature, exceptionTypeNames);
+                        methodTypes = parseMethodSignature(internalTypeName, name, descriptor, signature, exceptionTypeNames);
                     }
                     methodTypes.setAccessFlags(accessFlags);
 
