@@ -364,4 +364,15 @@ public final class ByteCodeUtil
                 && (code[1] & 255) == Const.ANEWARRAY
                 && (code[4] & 255) == Const.ARETURN;
     }
+
+    public static int getLoadOpCode(int storeOpCode) {
+        return switch (storeOpCode) {
+            case Const.ASTORE -> Const.ALOAD;
+            case Const.ISTORE -> Const.ILOAD;
+            case ByteCodeConstants.STORE -> ByteCodeConstants.LOAD;
+            case Const.PUTFIELD -> Const.GETFIELD;
+            case Const.PUTSTATIC -> Const.GETSTATIC;
+            default -> -1;
+        };
+    }
 }
