@@ -392,6 +392,26 @@ public class TypeMakerTest extends TestCase {
         // Case: Signature with multiple class names separated by '.' with TypeArguments but missing closing '>'
         assertThrows(SignatureFormatException.class, () ->
                 typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Map.Entry<Ljava/lang/String;Ljava/lang/Integer;;")));
+
+        // Case: '+' as an extends wildcard followed by a reference type
+        SignatureReader reader = new SignatureReader("Ljava/util/List<+Ljava/lang/Number;>;");
+        assertTrue(typeMaker.isAClassTypeSignature(reader));
+
+        // Case: '-' as a super wildcard followed by a reference type
+        reader = new SignatureReader("Ljava/util/List<-Ljava/lang/Number;>;");
+        assertTrue(typeMaker.isAClassTypeSignature(reader));
+
+        // Case: '*' as an unbounded wildcard
+        reader = new SignatureReader("Ljava/util/List<*>;");
+        assertTrue(typeMaker.isAClassTypeSignature(reader));
+
+        // Case: Type argument starts with a valid reference type signature (ClassTypeSignature)
+        reader = new SignatureReader("Ljava/util/List<Ljava/lang/String;>;");
+        assertTrue(typeMaker.isAClassTypeSignature(reader));
+
+        // Case: Type argument starts with a valid reference type signature (ArrayTypeSignature)
+        reader = new SignatureReader("Ljava/util/List<[I>;");
+        assertTrue(typeMaker.isAClassTypeSignature(reader));
     }
 
     @Test
@@ -427,6 +447,10 @@ public class TypeMakerTest extends TestCase {
 
         // Case: Dimension greater than 0
         objectType = typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/lang/String;"), 2);
+        assertNotNull(objectType);
+
+        // Case: Dimension greater than 2
+        objectType = typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/lang/String;"), 3);
         assertNotNull(objectType);
 
         // Case: Signature ends unexpectedly after 'L'
@@ -482,7 +506,6 @@ public class TypeMakerTest extends TestCase {
 
         // Test when reader's first character is '[' and subsequent character is each of 'B', 'C', 'D', 'F', 'I', 'J', 'S', 'V', 'Z'
         assertTrue(typeMaker.isAReferenceTypeSignature(new SignatureReader("[B")));
-        // Repeat for each character
 
         // Test when reader's first character is 'L' and rest of signature is a valid class type signature
         assertTrue(typeMaker.isAReferenceTypeSignature(new SignatureReader("Ljava/lang/String;")));
@@ -593,5 +616,4 @@ public class TypeMakerTest extends TestCase {
         assertEquals("java.lang.Runnable", ((ObjectType) ((TypeParameterWithTypeBounds) result).getTypeBounds().getFirst()).getQualifiedName());
         assertEquals("java.lang.Serializable", ((ObjectType) ((TypeParameterWithTypeBounds) result).getTypeBounds().getLast()).getQualifiedName());
     }
-
 }
