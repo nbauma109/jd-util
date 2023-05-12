@@ -6,6 +6,7 @@
  */
 package org.jd.core.v1;
 
+import org.apache.bcel.classfile.Method;
 import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.classfile.ClassFile;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
