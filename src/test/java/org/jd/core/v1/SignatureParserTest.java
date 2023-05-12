@@ -482,8 +482,8 @@ public class SignatureParserTest extends TestCase {
             TypeMaker typeMaker = new TypeMaker(loader);
 
             ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/Enum$Planet");
-
-            MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[2]);
+            Method method = classFile.getMethods()[2]);
+            MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, method);
             
             // Check parameterTypes
             assertNotNull(methodTypes.getParameterTypes());
@@ -494,6 +494,20 @@ public class SignatureParserTest extends TestCase {
             String source = visitor.toString();
             
             assertEquals("java.lang.String, int, double, double", source);
+
+            methodTypes = typeMaker.makeMethodTypes(classFile.getInternalName(), method.getName(), method.getDescriptor());
+            
+            // Check parameterTypes
+            assertNotNull(methodTypes.getParameterTypes());
+            assertEquals(4, methodTypes.getParameterTypes().size());
+            
+            BaseType type = methodTypes.getParameterTypes();
+            type.accept(visitor);
+            String source = visitor.toString();
+            
+            assertEquals("java.lang.String, int, double, double", source);
+
+
         }
     }
 }
