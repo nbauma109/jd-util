@@ -553,7 +553,7 @@ public class TypeMakerTest extends TestCase {
         // Case where BaseType is 'V'
         reader = new SignatureReader("V");
         result = typeMaker.parseReferenceTypeSignature(reader);
-        assertTrue(result instanceof PrimitiveType);
+        assertTrue(result.isPrimitiveType());
         assertEquals("void", ((PrimitiveType) result).getName());
 
         // Case where c is not any of the expected BaseType or ClassType
@@ -570,7 +570,7 @@ public class TypeMakerTest extends TestCase {
     private void assertObjectType(String signature, String expectedQualifiedName, int expectedDimension) {
         SignatureReader reader = new SignatureReader(signature);
         Type result = typeMaker.parseReferenceTypeSignature(reader);
-        assertTrue(result instanceof ObjectType);
+        assertTrue(result.isObjectType());
         assertEquals(expectedQualifiedName, ((ObjectType) result).getQualifiedName());
         assertEquals(expectedDimension, result.getDimension());
     }
@@ -578,7 +578,7 @@ public class TypeMakerTest extends TestCase {
     private void assertPrimitiveType(String signature, String expectedName, int expectedDimension) {
         SignatureReader reader = new SignatureReader(signature);
         Type result = typeMaker.parseReferenceTypeSignature(reader);
-        assertTrue(result instanceof PrimitiveType);
+        assertTrue(result.isPrimitiveType());
         assertEquals(expectedName, ((PrimitiveType) result).getName());
         assertEquals(expectedDimension, result.getDimension());
     }
@@ -586,7 +586,7 @@ public class TypeMakerTest extends TestCase {
     private void assertGenericType(String signature, String expectedName, int expectedDimension) {
         SignatureReader reader = new SignatureReader(signature);
         Type result = typeMaker.parseReferenceTypeSignature(reader);
-        assertTrue(result instanceof GenericType);
+        assertTrue(result.isGenericType());
         assertEquals(expectedName, ((GenericType) result).getName());
         assertEquals(expectedDimension, result.getDimension());
     }
