@@ -15,10 +15,10 @@ import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.javasyntax.type.TypeArguments;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
 import org.jd.core.v1.service.deserializer.classfile.ClassFileDeserializer;
 import org.jd.core.v1.services.javasyntax.type.visitor.PrintTypeVisitor;
 import org.jd.core.v1.util.ZipLoader;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -52,7 +52,7 @@ public class SignatureParserTest extends TestCase {
             superType.accept(visitor);
             String source = visitor.toString();
 
-            Assert.assertEquals("java.util.ArrayList", source);
+            assertEquals("java.util.ArrayList", source);
 
             // Check interfaces
             assertNotNull(typeTypes.getInterfaces());
@@ -60,7 +60,7 @@ public class SignatureParserTest extends TestCase {
             typeTypes.getInterfaces().accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.io.Serializable, java.lang.Cloneable", source);
+            assertEquals("java.io.Serializable, java.lang.Cloneable", source);
 
             // Check field 'list1'
             //  public List<List<? extends Generic>> list1
@@ -69,21 +69,21 @@ public class SignatureParserTest extends TestCase {
             type.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("boolean", source);
+            assertEquals("boolean", source);
 
             type = typeMaker.parseFieldSignature(classFile, classFile.getFields()[1]);
             visitor.reset();
             type.accept(visitor);
             source = visitor.toString();
             
-            Assert.assertEquals("byte", source);
+            assertEquals("byte", source);
             
             type = typeMaker.parseFieldSignature(classFile, classFile.getFields()[2]);
             visitor.reset();
             type.accept(visitor);
             source = visitor.toString();
             
-            Assert.assertEquals("short", source);
+            assertEquals("short", source);
 
             // Check method 'add'
             //  public int add(int i1, int i2)
@@ -101,7 +101,7 @@ public class SignatureParserTest extends TestCase {
             type.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("int", source);
+            assertEquals("int", source);
 
             // Check return type
             assertNotNull(methodTypes.getReturnedType());
@@ -111,7 +111,7 @@ public class SignatureParserTest extends TestCase {
             returnedType.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("int", source);
+            assertEquals("int", source);
 
             // Check exceptions
             assertNull(methodTypes.getExceptionTypes());
@@ -132,7 +132,7 @@ public class SignatureParserTest extends TestCase {
             type.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.lang.String", source);
+            assertEquals("java.lang.String", source);
 
             // Check return type
             assertNotNull(methodTypes.getReturnedType());
@@ -142,7 +142,7 @@ public class SignatureParserTest extends TestCase {
             returnedType.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("void", source);
+            assertEquals("void", source);
 
             // Check exceptions
             assertNotNull(methodTypes.getExceptionTypes());
@@ -151,7 +151,7 @@ public class SignatureParserTest extends TestCase {
             methodTypes.getExceptionTypes().accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.net.UnknownHostException, java.lang.UnsatisfiedLinkError", source);
+            assertEquals("java.net.UnknownHostException, java.lang.UnsatisfiedLinkError", source);
         }
     }
 
@@ -193,7 +193,7 @@ public class SignatureParserTest extends TestCase {
                             "T8 extends java.util.Map<? extends java.lang.Number, ? super java.io.Serializable>, " +
                             "T9 extends T8";
 
-            Assert.assertEquals(expected, source);
+            assertEquals(expected, source);
 
             // Check super type
             BaseType superType = typeTypes.getSuperType();
@@ -202,7 +202,7 @@ public class SignatureParserTest extends TestCase {
             superType.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.util.ArrayList<T7>", source);
+            assertEquals("java.util.ArrayList<T7>", source);
 
             // Check interfaces
             assertNotNull(typeTypes.getInterfaces());
@@ -210,7 +210,7 @@ public class SignatureParserTest extends TestCase {
             typeTypes.getInterfaces().accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.io.Serializable, java.lang.Comparable<T1>", source);
+            assertEquals("java.io.Serializable, java.lang.Comparable<T1>", source);
 
             // Check field 'list1'
             //  public List<List<? extends Generic>> list1
@@ -219,7 +219,7 @@ public class SignatureParserTest extends TestCase {
             type.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.util.List<java.util.List<? extends org.jd.core.test.GenericClass>>", source);
+            assertEquals("java.util.List<java.util.List<? extends org.jd.core.test.GenericClass>>", source);
 
             // Check method 'copy2'
             //  public <T, S extends T> List<? extends Number> copy2(List<? super T> dest, List<S> src) throws InvalidParameterException, ClassCastException
@@ -231,7 +231,7 @@ public class SignatureParserTest extends TestCase {
             methodTypes.getTypeParameters().accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("T, S extends T", source);
+            assertEquals("T, S extends T", source);
 
             // Check parameterTypes
             assertNotNull(methodTypes.getParameterTypes());
@@ -242,7 +242,7 @@ public class SignatureParserTest extends TestCase {
             type.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.util.List<? super T>", source);
+            assertEquals("java.util.List<? super T>", source);
 
             // Check return type
             assertNotNull(methodTypes.getReturnedType());
@@ -252,7 +252,7 @@ public class SignatureParserTest extends TestCase {
             returnedType.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.util.List<? extends java.lang.Number>", source);
+            assertEquals("java.util.List<? extends java.lang.Number>", source);
 
             // Check exceptions
             assertNotNull(methodTypes.getExceptionTypes());
@@ -261,7 +261,7 @@ public class SignatureParserTest extends TestCase {
             methodTypes.getExceptionTypes().accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.security.InvalidParameterException, java.lang.ClassCastException", source);
+            assertEquals("java.security.InvalidParameterException, java.lang.ClassCastException", source);
 
             // Check method 'print'
             //  public <T1, T2 extends Exception> List<? extends Number> print(List<? super T1> list) throws InvalidParameterException, T2
@@ -273,7 +273,7 @@ public class SignatureParserTest extends TestCase {
             methodTypes.getTypeParameters().accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("T1, T2 extends java.lang.Exception", source);
+            assertEquals("T1, T2 extends java.lang.Exception", source);
 
             // Check parameterTypes
             assertNotNull(methodTypes.getParameterTypes());
@@ -284,7 +284,7 @@ public class SignatureParserTest extends TestCase {
             type.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.util.List<? super T1>", source);
+            assertEquals("java.util.List<? super T1>", source);
 
             // Check return type
             assertNotNull(methodTypes.getReturnedType());
@@ -294,7 +294,7 @@ public class SignatureParserTest extends TestCase {
             returnedType.accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("java.util.List<? extends java.lang.Number>", source);
+            assertEquals("java.util.List<? extends java.lang.Number>", source);
 
             // Check exceptions
             assertNotNull(methodTypes.getExceptionTypes());
@@ -303,7 +303,7 @@ public class SignatureParserTest extends TestCase {
             methodTypes.getExceptionTypes().accept(visitor);
             source = visitor.toString();
 
-            Assert.assertEquals("T2, java.security.InvalidParameterException", source);
+            assertEquals("T2, java.security.InvalidParameterException", source);
         }
     }
 
@@ -313,7 +313,7 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            Assert.assertEquals(PrimitiveType.TYPE_VOID, typeMaker.makeMethodTypes("org/jd/core/test/Array", "declarations", "()V").getReturnedType());
+            assertEquals(PrimitiveType.TYPE_VOID, typeMaker.makeMethodTypes("org/jd/core/test/Array", "declarations", "()V").getReturnedType());
         }
     }
 
@@ -323,7 +323,7 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            Assert.assertEquals(PrimitiveType.TYPE_BOOLEAN, typeMaker.makeMethodTypes("org/jd/core/test/annotation/Value", "z", "()Z").getReturnedType());
+            assertEquals(PrimitiveType.TYPE_BOOLEAN, typeMaker.makeMethodTypes("org/jd/core/test/annotation/Value", "z", "()Z").getReturnedType());
         }
     }
 
@@ -333,7 +333,7 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            Assert.assertEquals(ObjectType.TYPE_STRING, typeMaker.makeMethodTypes("org/jd/core/test/annotation/Name", "value", "()Ljava/lang/String;").getReturnedType());
+            assertEquals(ObjectType.TYPE_STRING, typeMaker.makeMethodTypes("org/jd/core/test/annotation/Name", "value", "()Ljava/lang/String;").getReturnedType());
         }
     }
 
@@ -344,39 +344,39 @@ public class SignatureParserTest extends TestCase {
 
         Type type = typeMaker.makeFromSignature("Lorg/apache/commons/collections4/multimap/AbstractMultiValuedMap<TK;TV;>.AsMap.AsMapEntrySetIterator;");
 
-        Assert.assertEquals("Lorg/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator;", type.getDescriptor());
-        Assert.assertEquals("Lorg/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator;", type.getDescriptor());
+        assertEquals("Lorg/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator;", type.getDescriptor());
+        assertEquals("Lorg/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator;", type.getDescriptor());
 
         ObjectType ot = (ObjectType)type;
 
-        Assert.assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator", ot.getInternalName());
-        Assert.assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap.AsMap.AsMapEntrySetIterator", ot.getQualifiedName());
-        Assert.assertEquals("AsMapEntrySetIterator", ot.getName());
-        Assert.assertNull(ot.getTypeArguments());
+        assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator", ot.getInternalName());
+        assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap.AsMap.AsMapEntrySetIterator", ot.getQualifiedName());
+        assertEquals("AsMapEntrySetIterator", ot.getName());
+        assertNull(ot.getTypeArguments());
 
         ot = ((InnerObjectType)ot).getOuterType();
 
-        Assert.assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap", ot.getInternalName());
-        Assert.assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap.AsMap", ot.getQualifiedName());
-        Assert.assertEquals("AsMap", ot.getName());
-        Assert.assertNull(ot.getTypeArguments());
+        assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap", ot.getInternalName());
+        assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap.AsMap", ot.getQualifiedName());
+        assertEquals("AsMap", ot.getName());
+        assertNull(ot.getTypeArguments());
 
         ot = ((InnerObjectType)ot).getOuterType();
 
-        Assert.assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap", ot.getInternalName());
-        Assert.assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap", ot.getQualifiedName());
-        Assert.assertEquals("AbstractMultiValuedMap", ot.getName());
-        Assert.assertNotNull(ot.getTypeArguments());
+        assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap", ot.getInternalName());
+        assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap", ot.getQualifiedName());
+        assertEquals("AbstractMultiValuedMap", ot.getName());
+        assertNotNull(ot.getTypeArguments());
 
         TypeArguments typeArguments = (TypeArguments)ot.getTypeArguments();
 
-        Assert.assertEquals(2, typeArguments.size());
-        Assert.assertEquals("GenericType{K}", typeArguments.getFirst().toString());
-        Assert.assertEquals("GenericType{V}", typeArguments.getLast().toString());
+        assertEquals(2, typeArguments.size());
+        assertEquals("GenericType{K}", typeArguments.getFirst().toString());
+        assertEquals("GenericType{V}", typeArguments.getLast().toString());
     }
 
     @Test
-    public void testSingleInterfaceAndSingleException() throws Exception {
+    public void testInputStream() throws Exception {
         PrintTypeVisitor visitor = new PrintTypeVisitor();
         ClassPathLoader loader = new ClassPathLoader();
         TypeMaker typeMaker = new TypeMaker(loader);
@@ -399,6 +399,44 @@ public class SignatureParserTest extends TestCase {
         typeTypes.getInterfaces().accept(visitor);
         String source = visitor.toString();
 
-        Assert.assertEquals("java.io.Closeable", source);
+        assertEquals("java.io.Closeable", source);
+
+        MethodTypes methodTypes = typeMaker.makeMethodTypes("java/io/InputStream", "read", "()I");
+
+        // Check exceptions
+        assertNotNull(methodTypes.getExceptionTypes());
+
+        visitor.reset();
+        methodTypes.getExceptionTypes().accept(visitor);
+        source = visitor.toString();
+
+        assertEquals("java.io.IOException", source);
+    }
+    
+    @Test
+    public void testAbstractMap() throws Exception {
+        PrintTypeVisitor visitor = new PrintTypeVisitor();
+        ClassPathLoader loader = new ClassPathLoader();
+        TypeMaker typeMaker = new TypeMaker(loader);
+        
+        ClassFile classFile = deserializer.loadClassFile(loader, "java/util/AbstractMap");
+        
+        // Check type
+        TypeMaker.TypeTypes typeTypes = typeMaker.parseClassFileSignature(classFile);
+        
+        // Check type parameterTypes
+        assertNotNull(typeTypes.getTypeParameters());
+        
+        // Check super type
+        assertEquals(ObjectType.TYPE_OBJECT, typeTypes.getSuperType());
+        visitor.reset();
+        
+        // Check interfaces
+        assertNotNull(typeTypes.getInterfaces());
+        visitor.reset();
+        typeTypes.getInterfaces().accept(visitor);
+        String source = visitor.toString();
+        
+        assertEquals("java.util.Map<K, V>", source);
     }
 }
