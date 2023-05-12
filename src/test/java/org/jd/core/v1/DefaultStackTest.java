@@ -69,6 +69,16 @@ public class DefaultStackTest {
     }
 
     @Test
+    public void testReplaceNonExistingElement() {
+        // push a non-matching element
+        stack.push(1);
+        // attempt to replace a non-existing element
+        stack.replace(2, 3);
+        // verify that the original element hasn't changed
+        assertEquals(1, stack.peek().intValue());
+    }
+
+    @Test
     public void testCopy() {
         DefaultStack<Integer> other = new DefaultStack<>();
         other.push(1);
@@ -101,6 +111,7 @@ public class DefaultStackTest {
 
     @Test
     public void testToString() {
+        assertEquals("Stack{head=0, elements=[]}", stack.toString());
         stack.push(1);
         stack.push(2);
         String expected = "Stack{head=2, elements=[1, 2]}";
