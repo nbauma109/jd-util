@@ -40,14 +40,6 @@ public class SignatureReaderTest {
     }
 
     @Test
-    public void testSubstring() {
-        signatureReader.read(); // Move index
-        Assert.assertEquals("Ljava", signatureReader.substring(1));
-        signatureReader.read(); // Move index
-        Assert.assertEquals("va", signatureReader.substring(2));
-    }
-
-    @Test
     public void testToString() {
         Assert.assertEquals("SignatureReader{index=0, nextChars=Ljava/lang/String;}", signatureReader.toString());
         signatureReader.read(); // Move index

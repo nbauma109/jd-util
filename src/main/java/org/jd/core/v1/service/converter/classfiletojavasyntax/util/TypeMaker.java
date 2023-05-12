@@ -484,7 +484,7 @@ public class TypeMaker {
      *  ClassBound: ':' FieldTypeSignature?
      *  InterfaceBound: ':' FieldTypeSignature
      */
-    private TypeParameter parseTypeParameter(SignatureReader reader) {
+    TypeParameter parseTypeParameter(SignatureReader reader) {
         int fistIndex = reader.index;
 
         // Search ':'
@@ -649,7 +649,7 @@ public class TypeMaker {
      *  BaseType: 'B' | 'C' | 'D' | 'F' | 'I' | 'J' | 'S' | 'Z'
      *  TypeVariableSignature: 'T' Identifier ';'
      */
-    private Type parseReferenceTypeSignature(SignatureReader reader) {
+    Type parseReferenceTypeSignature(SignatureReader reader) {
         if (reader.available()) {
             int dimension = 0;
             char c = reader.read();

@@ -9,8 +9,13 @@ package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
 import org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator;
 import org.jd.core.v1.loader.ClassPathLoader;
+import org.jd.core.v1.model.javasyntax.type.GenericType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
+import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
+import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.javasyntax.type.TypeArguments;
+import org.jd.core.v1.model.javasyntax.type.TypeParameter;
+import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
 import org.jd.core.v1.model.javasyntax.type.WildcardExtendsTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.SignatureReader;
@@ -439,7 +444,6 @@ public class TypeMakerTest extends TestCase {
                 typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/util/Map.Entry<Ljava/lang/String;Ljava/lang/Integer;;"), 0));
     }
 
-
     @Test
     public void testIsAReferenceTypeSignature() {
         // Test when reader is empty
@@ -457,6 +461,106 @@ public class TypeMakerTest extends TestCase {
 
         // Test when reader's first character is not 'L', 'T', or any of the primitive type characters
         assertFalse(typeMaker.isAReferenceTypeSignature(new SignatureReader("X")));
+    }
+
+    @Test
+    public void testParseReferenceTypeSignature() {
+        // ClassTypeSignature
+        assertObjectType("Ljava/lang/String;", "java.lang.String", 0);
+
+        // ArrayTypeSignature - for each primitive type
+        assertObjectType("[I", "int", 1);
+        assertObjectType("[J", "long", 1);
+        assertObjectType("[Z", "boolean", 1);
+        assertObjectType("[B", "byte", 1);
+        assertObjectType("[C", "char", 1);
+        assertObjectType("[D", "double", 1);
+        assertObjectType("[F", "float", 1);
+        assertObjectType("[S", "short", 1);
+
+        // PrimitiveTypeSignatures
+        assertPrimitiveType("I", "int", 0);
+        assertPrimitiveType("J", "long", 0);
+        assertPrimitiveType("Z", "boolean", 0);
+        assertPrimitiveType("B", "byte", 0);
+        assertPrimitiveType("C", "char", 0);
+        assertPrimitiveType("D", "double", 0);
+        assertPrimitiveType("F", "float", 0);
+        assertPrimitiveType("S", "short", 0);
+
+        // TypeVariableSignature
+        assertGenericType("TT;", "T", 0);
+
+        // Case where ';' is not found for a TypeVariableSignature
+        SignatureReader reader = new SignatureReader("TIdentifier");
+        Type result = typeMaker.parseReferenceTypeSignature(reader);
+        assertNull(result);
+
+        // Case where BaseType is 'V'
+        reader = new SignatureReader("V");
+        result = typeMaker.parseReferenceTypeSignature(reader);
+        assertTrue(result instanceof PrimitiveType);
+        assertEquals("void", ((PrimitiveType) result).getName());
+
+        // Case where c is not any of the expected BaseType or ClassType
+        reader = new SignatureReader("X");
+        result = typeMaker.parseReferenceTypeSignature(reader);
+        assertNull(result);
+
+        // Case where SignatureReader has no more characters available
+        reader = new SignatureReader("");
+        result = typeMaker.parseReferenceTypeSignature(reader);
+        assertNull(result);
+    }
+
+    private void assertObjectType(String signature, String expectedQualifiedName, int expectedDimension) {
+        SignatureReader reader = new SignatureReader(signature);
+        Type result = typeMaker.parseReferenceTypeSignature(reader);
+        assertTrue(result instanceof ObjectType);
+        assertEquals(expectedQualifiedName, ((ObjectType) result).getQualifiedName());
+        assertEquals(expectedDimension, result.getDimension());
+    }
+
+    private void assertPrimitiveType(String signature, String expectedName, int expectedDimension) {
+        SignatureReader reader = new SignatureReader(signature);
+        Type result = typeMaker.parseReferenceTypeSignature(reader);
+        assertTrue(result instanceof PrimitiveType);
+        assertEquals(expectedName, ((PrimitiveType) result).getName());
+        assertEquals(expectedDimension, result.getDimension());
+    }
+
+    private void assertGenericType(String signature, String expectedName, int expectedDimension) {
+        SignatureReader reader = new SignatureReader(signature);
+        Type result = typeMaker.parseReferenceTypeSignature(reader);
+        assertTrue(result instanceof GenericType);
+        assertEquals(expectedName, ((GenericType) result).getName());
+        assertEquals(expectedDimension, result.getDimension());
+    }
+
+    @Test
+    public void testParseTypeParameter() {
+        // Case: TypeParameter with no bounds
+        SignatureReader reader = new SignatureReader("T:");
+        TypeParameter result = typeMaker.parseTypeParameter(reader);
+        assertEquals("T", result.getIdentifier());
+        assertTrue(result instanceof TypeParameter);
+
+        // Case: TypeParameter with a single ClassBound
+        reader = new SignatureReader("T:Ljava/lang/String;");
+        result = typeMaker.parseTypeParameter(reader);
+        assertEquals("T", result.getIdentifier());
+        assertTrue(result instanceof TypeParameterWithTypeBounds);
+        assertEquals("java.lang.String", ((ObjectType) ((TypeParameterWithTypeBounds) result).getTypeBounds()).getQualifiedName());
+
+        // Case: TypeParameter with multiple InterfaceBounds
+        reader = new SignatureReader("T::Ljava/lang/Runnable;:Ljava/lang/Serializable;");
+        result = typeMaker.parseTypeParameter(reader);
+        assertEquals("T", result.getIdentifier());
+        assertTrue(result instanceof TypeParameterWithTypeBounds);
+        // Assuming getTypeBounds() returns a BaseType collection, and it can have multiple bounds
+        assertEquals(2, ((TypeParameterWithTypeBounds) result).getTypeBounds().size());
+        assertEquals("java.lang.Runnable", ((ObjectType) ((TypeParameterWithTypeBounds) result).getTypeBounds().getFirst()).getQualifiedName());
+        assertEquals("java.lang.Serializable", ((ObjectType) ((TypeParameterWithTypeBounds) result).getTypeBounds().getLast()).getQualifiedName());
     }
 
 }
