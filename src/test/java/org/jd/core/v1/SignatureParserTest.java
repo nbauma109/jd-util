@@ -401,7 +401,7 @@ public class SignatureParserTest extends TestCase {
 
         assertEquals("java.io.Closeable", source);
 
-        MethodTypes methodTypes = typeMaker.makeMethodTypes("java/io/InputStream", "read", "()I");
+        MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[2]);
 
         // Check exceptions
         assertNotNull(methodTypes.getExceptionTypes());
