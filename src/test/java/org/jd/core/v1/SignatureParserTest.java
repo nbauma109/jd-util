@@ -496,8 +496,8 @@ public class SignatureParserTest extends TestCase {
             
             assertEquals("java.lang.String, int, double, double", source);
 
-            methodTypes = typeMaker.makeMethodTypes(classFile.getInternalName(), method.getName(), method.getDescriptor());
-            
+            methodTypes = typeMaker.makeMethodTypes(classFile.getInternalTypeName(), method.getName(), method.getSignature());
+
             // Check parameterTypes
             assertNotNull(methodTypes.getParameterTypes());
             assertEquals(4, methodTypes.getParameterTypes().size());
