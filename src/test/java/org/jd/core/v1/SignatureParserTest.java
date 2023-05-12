@@ -439,4 +439,42 @@ public class SignatureParserTest extends TestCase {
         
         assertEquals("java.util.Map<K, V>", source);
     }
+    
+    @Test
+    public void testQualityLevel() throws Exception {
+        PrintTypeVisitor visitor = new PrintTypeVisitor();
+        ClassPathLoader loader = new ClassPathLoader();
+        TypeMaker typeMaker = new TypeMaker(loader);
+        
+        MethodTypes methodTypes = typeMaker.makeMethodTypes("org/jd/core/test/annotation/Quality$Level", "<init>", "(Ljava/lang/String;I)V");
+
+        // Check parameterTypes
+        assertNotNull(methodTypes.getParameterTypes());
+        assertEquals(2, methodTypes.getParameterTypes().size());
+
+        BaseType type = methodTypes.getParameterTypes();
+        type.accept(visitor);
+        String source = visitor.toString();
+
+        assertEquals("java.lang.String, int", source);
+    }
+    
+    @Test
+    public void testEnumPlanet() throws Exception {
+        PrintTypeVisitor visitor = new PrintTypeVisitor();
+        ClassPathLoader loader = new ClassPathLoader();
+        TypeMaker typeMaker = new TypeMaker(loader);
+        
+        MethodTypes methodTypes = typeMaker.makeMethodTypes("org/jd/core/test/Enum$Planet", "<init>", "(Ljava/lang/String;IDD)V");
+        
+        // Check parameterTypes
+        assertNotNull(methodTypes.getParameterTypes());
+        assertEquals(4, methodTypes.getParameterTypes().size());
+        
+        BaseType type = methodTypes.getParameterTypes();
+        type.accept(visitor);
+        String source = visitor.toString();
+        
+        assertEquals("java.lang.String, int, double, double", source);
+    }
 }
