@@ -484,7 +484,7 @@ public class TypeMaker {
      *  ClassBound: ':' FieldTypeSignature?
      *  InterfaceBound: ':' FieldTypeSignature
      */
-    private TypeParameter parseTypeParameter(SignatureReader reader) {
+    TypeParameter parseTypeParameter(SignatureReader reader) {
         int fistIndex = reader.index;
 
         // Search ':'
@@ -546,7 +546,7 @@ public class TypeMaker {
      *  SimpleClassTypeSignature: Identifier TypeArguments?
      *  ClassTypeSignatureSuffix: '.' SimpleClassTypeSignature
      */
-    private ObjectType parseClassTypeSignature(SignatureReader reader, int dimension) {
+    ObjectType parseClassTypeSignature(SignatureReader reader, int dimension) {
         if (reader.nextEqualsTo('L')) {
             // Skip 'L'. Parse 'PackageSpecifier* SimpleClassTypeSignature'
             int index = ++reader.index;
@@ -649,7 +649,7 @@ public class TypeMaker {
      *  BaseType: 'B' | 'C' | 'D' | 'F' | 'I' | 'J' | 'S' | 'Z'
      *  TypeVariableSignature: 'T' Identifier ';'
      */
-    private Type parseReferenceTypeSignature(SignatureReader reader) {
+    Type parseReferenceTypeSignature(SignatureReader reader) {
         if (reader.available()) {
             int dimension = 0;
             char c = reader.read();
@@ -725,7 +725,7 @@ public class TypeMaker {
         }
     }
 
-    private static boolean isAReferenceTypeSignature(SignatureReader reader) {
+    static boolean isAReferenceTypeSignature(SignatureReader reader) {
         if (reader.available()) {
             // Skip dimension
             char c = reader.read();
@@ -753,7 +753,7 @@ public class TypeMaker {
         return false;
     }
 
-    private static boolean isAClassTypeSignature(SignatureReader reader) {
+    static boolean isAClassTypeSignature(SignatureReader reader) {
         if (reader.nextEqualsTo('L')) {
             // Skip 'L'
             reader.index++;
@@ -1796,11 +1796,11 @@ public class TypeMaker {
         }
     }
 
-    private static class SignatureReader {
+    static class SignatureReader {
         private final String signature;
         private final char[] array;
         private final int length;
-        private int index;
+        int index;
 
         public SignatureReader(String signature) {
             this(signature, 0);
