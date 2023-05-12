@@ -501,9 +501,9 @@ public class SignatureParserTest extends TestCase {
             assertNotNull(methodTypes.getParameterTypes());
             assertEquals(4, methodTypes.getParameterTypes().size());
             
-            BaseType type = methodTypes.getParameterTypes();
+            type = methodTypes.getParameterTypes();
             type.accept(visitor);
-            String source = visitor.toString();
+            source = visitor.toString();
             
             assertEquals("java.lang.String, int, double, double", source);
 
