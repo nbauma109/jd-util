@@ -503,6 +503,7 @@ public class SignatureParserTest extends TestCase {
             assertEquals(4, methodTypes.getParameterTypes().size());
             
             type = methodTypes.getParameterTypes();
+            visitor.reset();
             type.accept(visitor);
             source = visitor.toString();
             
