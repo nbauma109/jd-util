@@ -1,6 +1,5 @@
-package org.jd.core.v1;
+package org.jd.core.v1.util;
 
-import org.jd.core.v1.util.DefaultList;
 import org.junit.Test;
 
 import java.util.Arrays;
