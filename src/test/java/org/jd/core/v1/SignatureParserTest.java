@@ -482,7 +482,7 @@ public class SignatureParserTest extends TestCase {
             TypeMaker typeMaker = new TypeMaker(loader);
 
             ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/Enum$Planet");
-            Method method = classFile.getMethods()[2]);
+            Method method = classFile.getMethods()[2];
             MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, method);
             
             // Check parameterTypes
