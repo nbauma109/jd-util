@@ -71,6 +71,20 @@ public class SignatureParserTest extends TestCase {
 
             Assert.assertEquals("boolean", source);
 
+            type = typeMaker.parseFieldSignature(classFile, classFile.getFields()[1]);
+            visitor.reset();
+            type.accept(visitor);
+            source = visitor.toString();
+            
+            Assert.assertEquals("byte", source);
+            
+            type = typeMaker.parseFieldSignature(classFile, classFile.getFields()[2]);
+            visitor.reset();
+            type.accept(visitor);
+            source = visitor.toString();
+            
+            Assert.assertEquals("short", source);
+
             // Check method 'add'
             //  public int add(int i1, int i2)
             TypeMaker.MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[1]);
@@ -359,5 +373,32 @@ public class SignatureParserTest extends TestCase {
         Assert.assertEquals(2, typeArguments.size());
         Assert.assertEquals("GenericType{K}", typeArguments.getFirst().toString());
         Assert.assertEquals("GenericType{V}", typeArguments.getLast().toString());
+    }
+
+    @Test
+    public void testSingleInterfaceAndSingleException() throws Exception {
+        PrintTypeVisitor visitor = new PrintTypeVisitor();
+        ClassPathLoader loader = new ClassPathLoader();
+        TypeMaker typeMaker = new TypeMaker(loader);
+
+        ClassFile classFile = deserializer.loadClassFile(loader, "java/io/InputStream");
+
+        // Check type
+        TypeMaker.TypeTypes typeTypes = typeMaker.parseClassFileSignature(classFile);
+
+        // Check type parameterTypes
+        assertNull(typeTypes.getTypeParameters());
+
+        // Check super type
+        assertNull(typeTypes.getSuperType());
+        visitor.reset();
+
+        // Check interfaces
+        assertNotNull(typeTypes.getInterfaces());
+        visitor.reset();
+        typeTypes.getInterfaces().accept(visitor);
+        String source = visitor.toString();
+
+        Assert.assertEquals("java.io.Closeable", source);
     }
 }
