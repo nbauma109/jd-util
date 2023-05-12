@@ -13,11 +13,13 @@ import org.jd.core.v1.model.javasyntax.type.GenericType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 import org.jd.core.v1.model.javasyntax.type.Type;
+import org.jd.core.v1.model.javasyntax.type.TypeArgument;
 import org.jd.core.v1.model.javasyntax.type.TypeArguments;
 import org.jd.core.v1.model.javasyntax.type.TypeParameter;
 import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
 import org.jd.core.v1.model.javasyntax.type.WildcardExtendsTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
+import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.SignatureReader;
 import org.jd.core.v1.util.StringConstants;
 import org.jd.core.v1.util.ZipLoader;
@@ -442,6 +444,35 @@ public class TypeMakerTest extends TestCase {
         // Case: Signature has TypeArgument in ClassTypeSignatureSuffix but does not close it with '>'
         assertThrows(SignatureFormatException.class, () ->
                 typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/util/Map.Entry<Ljava/lang/String;Ljava/lang/Integer;;"), 0));
+
+        // Case: '+' stands for an extends wildcard
+        SignatureReader reader = new SignatureReader("Ljava/util/List<+Ljava/lang/Number;>;");
+        Type result = typeMaker.parseClassTypeSignature(reader, 0);
+        assertTrue(result.isObjectType());
+        assertEquals("java.util.List", ((ObjectType) result).getQualifiedName());
+        assertTrue(((ObjectType) result).getTypeArguments().isWildcardExtendsTypeArgument());
+        TypeArgument typeArgument = ((ObjectType) result).getTypeArguments().getTypeArgumentFirst();
+        assertTrue(typeArgument.isWildcardExtendsTypeArgument());
+        assertEquals("java.lang.Number", ((ObjectType) ((WildcardExtendsTypeArgument) typeArgument).type()).getQualifiedName());
+
+        // Case: '-' stands for a super wildcard
+        reader = new SignatureReader("Ljava/util/List<-Ljava/lang/Number;>;");
+        result = typeMaker.parseClassTypeSignature(reader, 0);
+        assertTrue(result.isObjectType());
+        assertEquals("java.util.List", ((ObjectType) result).getQualifiedName());
+        assertTrue(((ObjectType) result).getTypeArguments().isWildcardSuperTypeArgument());
+        typeArgument = ((ObjectType) result).getTypeArguments().getTypeArgumentFirst();
+        assertTrue(typeArgument.isWildcardSuperTypeArgument());
+        assertEquals("java.lang.Number", ((ObjectType) ((WildcardSuperTypeArgument) typeArgument).type()).getQualifiedName());
+
+        // Case: '*' stands for an unbounded wildcard
+        reader = new SignatureReader("Ljava/util/List<*>;");
+        result = typeMaker.parseClassTypeSignature(reader, 0);
+        assertTrue(result.isObjectType());
+        assertEquals("java.util.List", ((ObjectType) result).getQualifiedName());
+        assertTrue(((ObjectType) result).getTypeArguments().isWildcardTypeArgument());
+        typeArgument = ((ObjectType) result).getTypeArguments().getTypeArgumentFirst();
+        assertTrue(typeArgument.isWildcardTypeArgument());
     }
 
     @Test
