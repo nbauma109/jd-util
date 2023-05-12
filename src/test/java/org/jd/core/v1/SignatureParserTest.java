@@ -299,7 +299,7 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            Assert.assertEquals(PrimitiveType.TYPE_VOID, typeMaker.makeMethodTypes(null, null, "()V").getReturnedType());
+            Assert.assertEquals(PrimitiveType.TYPE_VOID, typeMaker.makeMethodTypes("org/jd/core/test/Array", "declarations", "()V").getReturnedType());
         }
     }
 
@@ -309,7 +309,7 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            Assert.assertEquals(PrimitiveType.TYPE_BOOLEAN, typeMaker.makeMethodTypes(null, null, "()Z").getReturnedType());
+            Assert.assertEquals(PrimitiveType.TYPE_BOOLEAN, typeMaker.makeMethodTypes("org/jd/core/test/annotation/Value", "z", "()Z").getReturnedType());
         }
     }
 
@@ -319,7 +319,7 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            Assert.assertEquals(ObjectType.TYPE_STRING, typeMaker.makeMethodTypes(null, null, "()Ljava/lang/String;").getReturnedType());
+            Assert.assertEquals(ObjectType.TYPE_STRING, typeMaker.makeMethodTypes("org/jd/core/test/annotation/Name", "value", "()Ljava/lang/String;").getReturnedType());
         }
     }
 
