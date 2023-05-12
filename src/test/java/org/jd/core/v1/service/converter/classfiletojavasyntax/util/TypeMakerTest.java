@@ -5,7 +5,7 @@
  * copy and modify the code freely for non-commercial purposes.
  */
 
-package org.jd.core.v1;
+package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
 import org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator;
 import org.jd.core.v1.loader.ClassPathLoader;
@@ -13,17 +13,18 @@ import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.TypeArguments;
 import org.jd.core.v1.model.javasyntax.type.WildcardExtendsTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
-import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.SignatureReader;
 import org.jd.core.v1.util.StringConstants;
 import org.jd.core.v1.util.ZipLoader;
 import org.junit.Test;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PrimitiveIterator;
+
+import static org.junit.Assert.assertThrows;
 
 import junit.framework.TestCase;
 
@@ -337,4 +338,125 @@ public class TypeMakerTest extends TestCase {
         // Valid:   iterator1 = iterator2;
         assertTrue(typeMaker.isAssignable(ot1, ot2));
     }
+
+    @Test
+    public void testIsAClassTypeSignature() {
+        // Case: Signature doesn't start with 'L'
+        assertFalse(typeMaker.isAClassTypeSignature(new SignatureReader("X")));
+
+        // Case: Signature starts with 'L' but no class name
+        assertTrue(typeMaker.isAClassTypeSignature(new SignatureReader("L;")));
+
+        // Case: Signature with a class name without TypeArguments
+        assertTrue(typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/lang/String;")));
+
+        // Case: Signature with a class name with TypeArguments
+        assertTrue(typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Map<Ljava/lang/String;Ljava/lang/Integer;>;")));
+
+        // Case: Signature with multiple class names separated by '.' without TypeArguments
+        assertTrue(typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Map.Entry;")));
+
+        // Case: Signature with multiple class names separated by '.' with TypeArguments
+        assertTrue(typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Map.Entry<Ljava/lang/String;Ljava/lang/Integer;>;")));
+
+        // Case: Class name starting with a digit
+        assertTrue(typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Map.1Entry;")));
+
+        // Case: Signature with class name but missing valid end marker
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/lang/String")));
+
+        // Case: Signature with class name and TypeArguments but missing valid end marker
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Map<Ljava/lang/String;Ljava/lang/Integer")));
+
+        // Case: Signature with multiple class names separated by '.' and TypeArguments but missing valid end marker
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Entry.Map<Ljava/lang/String;Ljava/lang/Integer")));
+
+        // Case: Class name starting with a digit but missing valid end marker
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Entry.1Map")));
+
+        // Case: Signature with TypeArguments but missing closing '>'
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Map<Ljava/lang/String;Ljava/lang/Integer;;")));
+
+        // Case: Signature with multiple class names separated by '.' with TypeArguments but missing closing '>'
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.isAClassTypeSignature(new SignatureReader("Ljava/util/Map.Entry<Ljava/lang/String;Ljava/lang/Integer;;")));
+    }
+
+    @Test
+    public void testParseClassTypeSignature() {
+        // Case: Signature doesn't start with 'L'
+        assertNull(typeMaker.parseClassTypeSignature(new SignatureReader("X"), 0));
+
+        // Case: Signature starts with 'L' but no class name
+        assertNotNull(typeMaker.parseClassTypeSignature(new SignatureReader("L;"), 0));
+
+        // Case: Signature with a class name without TypeArguments
+        ObjectType objectType = typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/lang/String;"), 0);
+        assertNotNull(objectType);
+        assertEquals("java.lang.String", objectType.getQualifiedName());
+
+        // Case: Signature with a class name with TypeArguments
+        objectType = typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/util/Map<Ljava/lang/String;Ljava/lang/Integer;>;"), 0);
+        assertNotNull(objectType);
+
+        // Case: Signature with multiple class names separated by '.' without TypeArguments
+        objectType = typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/util/Entry.Map;"), 0);
+        assertNotNull(objectType);
+        assertEquals("java.util.Entry.Map", objectType.getQualifiedName());
+
+        // Case: Signature with multiple class names separated by '.' with TypeArguments
+        objectType = typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/util/Entry.Map<Ljava/lang/String;Ljava/lang/Integer;>;"), 0);
+        assertNotNull(objectType);
+
+        // Case: Class name starting with a digit
+        objectType = typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/util/Entry.1Map;"), 0);
+        assertNotNull(objectType);
+        assertNull(objectType.getQualifiedName());
+
+        // Case: Dimension greater than 0
+        objectType = typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/lang/String;"), 2);
+        assertNotNull(objectType);
+
+        // Case: Signature ends unexpectedly after 'L'
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/lang/String"), 0));
+
+        // Case: Signature has TypeArgument but does not close it with '>'
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/util/Map<Ljava/lang/String;Ljava/lang/Integer;;"), 0));
+
+        // Case: Signature ends unexpectedly after '.'
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/util/Map.Entry"), 0));
+
+        // Case: Signature has TypeArgument in ClassTypeSignatureSuffix but does not close it with '>'
+        assertThrows(SignatureFormatException.class, () ->
+                typeMaker.parseClassTypeSignature(new SignatureReader("Ljava/util/Map.Entry<Ljava/lang/String;Ljava/lang/Integer;;"), 0));
+    }
+
+
+    @Test
+    public void testIsAReferenceTypeSignature() {
+        // Test when reader is empty
+        assertFalse(typeMaker.isAReferenceTypeSignature(new SignatureReader("")));
+
+        // Test when reader's first character is '[' and subsequent character is each of 'B', 'C', 'D', 'F', 'I', 'J', 'S', 'V', 'Z'
+        assertTrue(typeMaker.isAReferenceTypeSignature(new SignatureReader("[B")));
+        // Repeat for each character
+
+        // Test when reader's first character is 'L' and rest of signature is a valid class type signature
+        assertTrue(typeMaker.isAReferenceTypeSignature(new SignatureReader("Ljava/lang/String;")));
+
+        // Test when reader's first character is 'T'
+        assertTrue(typeMaker.isAReferenceTypeSignature(new SignatureReader("T")));
+
+        // Test when reader's first character is not 'L', 'T', or any of the primitive type characters
+        assertFalse(typeMaker.isAReferenceTypeSignature(new SignatureReader("X")));
+    }
+
 }
