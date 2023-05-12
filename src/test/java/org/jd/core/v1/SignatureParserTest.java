@@ -443,38 +443,46 @@ public class SignatureParserTest extends TestCase {
     @Test
     public void testQualityLevel() throws Exception {
         PrintTypeVisitor visitor = new PrintTypeVisitor();
-        ClassPathLoader loader = new ClassPathLoader();
-        TypeMaker typeMaker = new TypeMaker(loader);
-        
-        MethodTypes methodTypes = typeMaker.makeMethodTypes("org/jd/core/test/annotation/Quality$Level", "<init>", "(Ljava/lang/String;I)V");
+        try (InputStream is = getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip")) {
+            ZipLoader loader = new ZipLoader(is);
+            TypeMaker typeMaker = new TypeMaker(loader);
 
-        // Check parameterTypes
-        assertNotNull(methodTypes.getParameterTypes());
-        assertEquals(2, methodTypes.getParameterTypes().size());
+            ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/annotation/Quality$Level");
 
-        BaseType type = methodTypes.getParameterTypes();
-        type.accept(visitor);
-        String source = visitor.toString();
-
-        assertEquals("java.lang.String, int", source);
+            MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[2]);
+    
+            // Check parameterTypes
+            assertNotNull(methodTypes.getParameterTypes());
+            assertEquals(2, methodTypes.getParameterTypes().size());
+    
+            BaseType type = methodTypes.getParameterTypes();
+            type.accept(visitor);
+            String source = visitor.toString();
+    
+            assertEquals("java.lang.String, int", source);
+        }
     }
     
     @Test
     public void testEnumPlanet() throws Exception {
         PrintTypeVisitor visitor = new PrintTypeVisitor();
-        ClassPathLoader loader = new ClassPathLoader();
-        TypeMaker typeMaker = new TypeMaker(loader);
-        
-        MethodTypes methodTypes = typeMaker.makeMethodTypes("org/jd/core/test/Enum$Planet", "<init>", "(Ljava/lang/String;IDD)V");
-        
-        // Check parameterTypes
-        assertNotNull(methodTypes.getParameterTypes());
-        assertEquals(4, methodTypes.getParameterTypes().size());
-        
-        BaseType type = methodTypes.getParameterTypes();
-        type.accept(visitor);
-        String source = visitor.toString();
-        
-        assertEquals("java.lang.String, int, double, double", source);
+        try (InputStream is = getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip")) {
+            ZipLoader loader = new ZipLoader(is);
+            TypeMaker typeMaker = new TypeMaker(loader);
+
+            ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/Enum$Planet");
+
+            MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[2]);
+            
+            // Check parameterTypes
+            assertNotNull(methodTypes.getParameterTypes());
+            assertEquals(4, methodTypes.getParameterTypes().size());
+            
+            BaseType type = methodTypes.getParameterTypes();
+            type.accept(visitor);
+            String source = visitor.toString();
+            
+            assertEquals("java.lang.String, int, double, double", source);
+        }
     }
 }
