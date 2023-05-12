@@ -411,6 +411,17 @@ public class SignatureParserTest extends TestCase {
         source = visitor.toString();
 
         assertEquals("java.io.IOException", source);
+
+        methodTypes = typeMaker.makeMethodTypes("java/io/InputStream", "read", "()I");
+
+        // Check exceptions
+        assertNotNull(methodTypes.getExceptionTypes());
+
+        visitor.reset();
+        methodTypes.getExceptionTypes().accept(visitor);
+        source = visitor.toString();
+
+        assertEquals("java.io.IOException", source);
     }
     
     @Test
