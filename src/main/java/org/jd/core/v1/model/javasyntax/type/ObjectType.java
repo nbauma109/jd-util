@@ -255,8 +255,7 @@ public class ObjectType implements Type {
             return typeArguments.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, ot.getTypeArguments());
         }
 
-        if (typeArgument instanceof GenericType) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
-            GenericType gt = (GenericType) typeArgument;
+        if (typeArgument instanceof GenericType gt) {
             BaseType bt = typeBounds.get(gt.getName());
             if (bt != null) {
                 for (Type type : bt) {
