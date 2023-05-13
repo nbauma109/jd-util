@@ -20,7 +20,9 @@ public class ObjectType implements Type {
     public static final ObjectType TYPE_CHARACTER         = new ObjectType(StringConstants.JAVA_LANG_CHARACTER, "java.lang.Character", "Character");
     public static final ObjectType TYPE_CLASS             = new ObjectType(StringConstants.JAVA_LANG_CLASS, "java.lang.Class", "Class");
     public static final ObjectType TYPE_CLASS_WILDCARD    = TYPE_CLASS.createType(WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT);
+    public static final ObjectType TYPE_DATE              = new ObjectType(StringConstants.JAVA_UTIL_DATE, "java.util.Date", "Date");
     public static final ObjectType TYPE_DOUBLE            = new ObjectType(StringConstants.JAVA_LANG_DOUBLE, "java.lang.Double", "Double");
+    public static final ObjectType TYPE_ENUM              = new ObjectType(StringConstants.JAVA_LANG_ENUM, "java.lang.Enum", "Enum");
     public static final ObjectType TYPE_EXCEPTION         = new ObjectType(StringConstants.JAVA_LANG_EXCEPTION, "java.lang.Exception", "Exception");
     public static final ObjectType TYPE_FLOAT             = new ObjectType(StringConstants.JAVA_LANG_FLOAT, "java.lang.Float", "Float");
     public static final ObjectType TYPE_INTEGER           = new ObjectType(StringConstants.JAVA_LANG_INTEGER, "java.lang.Integer", "Integer");
@@ -255,8 +257,7 @@ public class ObjectType implements Type {
             return typeArguments.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, ot.getTypeArguments());
         }
 
-        if (typeArgument instanceof GenericType) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
-            GenericType gt = (GenericType) typeArgument;
+        if (typeArgument instanceof GenericType gt) {
             BaseType bt = typeBounds.get(gt.getName());
             if (bt != null) {
                 for (Type type : bt) {

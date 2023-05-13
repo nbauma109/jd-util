@@ -93,6 +93,7 @@ public final class StringConstants
     public static final String JAVA_LANG_MATH = "java/lang/Math";
     public static final String JAVA_LANG_THROWABLE = "java/lang/Throwable";
     public static final String JAVA_LANG_ASSERTION_ERROR = "java/lang/AssertionError";
+    public static final String JAVA_LANG_ENUM = "java/lang/Enum";
     public static final String JAVA_LANG_EXCEPTION = "java/lang/Exception";
     public static final String JAVA_LANG_RUNTIME_EXCEPTION = "java/lang/RuntimeException";
     public static final String JAVA_LANG_COMPARABLE = "java/lang/Comparable";
@@ -110,4 +111,5 @@ public final class StringConstants
     public static final String JAVA_LANG_LONG = "java/lang/Long";
     public static final String JAVA_LANG_FLOAT = "java/lang/Float";
     public static final String JAVA_LANG_DOUBLE = "java/lang/Double";
+    public static final String JAVA_UTIL_DATE = "java/util/Date";
 }
