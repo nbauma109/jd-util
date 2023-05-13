@@ -651,4 +651,68 @@ public class TypeMakerTest extends TestCase {
         assertEquals(ObjectType.TYPE_PRIMITIVE_INT, typeMaker.makeFromDescriptor("I"));
         assertEquals(typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap"), typeMaker.makeFromDescriptor("Ljava/util/TreeMap;"));
     }
+
+    @Test
+    public void testCountDimension() {
+        assertEquals(0, TypeMaker.countDimension("java.lang.String"));
+        assertEquals(1, TypeMaker.countDimension("[java.lang.String"));
+        assertEquals(3, TypeMaker.countDimension("[[[java.lang.String"));
+        assertEquals(0, TypeMaker.countDimension("java[.lang.String"));
+        assertEquals(0, TypeMaker.countDimension("java.lang.String[]"));
+        assertEquals(0, TypeMaker.countDimension(""));
+    }
+
+    @Test
+    public void testMakeFromSignatureOrInternalTypeName() {
+        Type type;
+
+        // Test with null
+        try {
+            typeMaker.makeFromSignatureOrInternalTypeName(null);
+            fail("Expected an IllegalArgumentException to be thrown");
+        } catch (IllegalArgumentException e) {
+            assertEquals("ObjectTypeMaker.makeFromSignatureOrInternalTypeName(signatureOrInternalTypeName) : invalid signatureOrInternalTypeName", e.getMessage());
+        }
+
+        // Test with internal type name
+        type = typeMaker.makeFromSignatureOrInternalTypeName("java/lang/String");
+        assertTrue(type instanceof ObjectType);
+        assertEquals("java.lang.String", ((ObjectType) type).getQualifiedName());
+
+        // Test with signature starting with [
+        type = typeMaker.makeFromSignatureOrInternalTypeName("[Ljava/lang/String;");
+        assertTrue(type instanceof ObjectType);
+        assertEquals("java.lang.String", ((ObjectType) type).getQualifiedName());
+        assertEquals(1, ((ObjectType) type).getDimension());
+
+        // Test with signature ending with ;
+        type = typeMaker.makeFromSignatureOrInternalTypeName("Ljava/lang/String;");
+        assertTrue(type instanceof ObjectType);
+        assertEquals("java.lang.String", ((ObjectType) type).getQualifiedName());
+    }
+
+
+    @Test
+    public void testCreateWithInternalTypeName() {
+        // Test with standard class
+        ObjectType objectType = typeMaker.create("java/lang/String");
+        assertEquals("java.lang.String", objectType.getQualifiedName());
+        assertTrue(objectType.isObjectType());
+
+        // Test with inner class
+        ObjectType innerObjectType = typeMaker.create("java/util/Map$Entry");
+        assertEquals("java.util.Map.Entry", innerObjectType.getQualifiedName());
+        assertTrue(innerObjectType.isObjectType());
+
+        // Test with class name ending with $
+        ObjectType dollarObjectType = typeMaker.create("my/package/TestClass$");
+        assertEquals("my.package.TestClass$", dollarObjectType.getQualifiedName());
+        assertTrue(dollarObjectType.isObjectType());
+
+        // Test with inner name starting with digit
+        ObjectType digitObjectType = typeMaker.create("my/package/TestClass$1InnerClass");
+        assertNull(digitObjectType.getQualifiedName());
+        assertEquals("InnerClass", digitObjectType.getName());
+        assertTrue(digitObjectType.isObjectType());
+    }
 }
