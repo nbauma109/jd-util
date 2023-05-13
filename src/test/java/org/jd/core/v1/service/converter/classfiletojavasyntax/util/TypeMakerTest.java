@@ -621,4 +621,13 @@ public class TypeMakerTest extends TestCase {
         assertEquals(2, typeMaker.matchCount(StringConstants.JAVA_LANG_MATH, "round", 1, false));
         assertEquals(8, typeMaker.matchCount(StringConstants.JAVA_LANG_STRING, "valueOf", 1, false));
     }
+
+    @Test
+    public void testSearchSuperParameterizedType() throws Exception {
+        ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/HashMap");
+        ObjectType treeMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap");
+        ObjectType abstMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/AbstractMap");
+        assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, hashMap));
+        assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, treeMap));
+    }
 }
