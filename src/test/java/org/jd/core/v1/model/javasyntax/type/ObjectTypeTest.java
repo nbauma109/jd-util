@@ -1,8 +1,12 @@
 package org.jd.core.v1.model.javasyntax.type;
 
+import org.jd.core.v1.loader.ClassPathLoader;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,6 +14,13 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ObjectTypeTest {
+
+    private TypeMaker typeMaker;
+
+    @Before
+    public void setUp() {
+        typeMaker = new TypeMaker(new ClassPathLoader());
+    }
 
     @Test
     public void testObjectTypeCreation() {
@@ -123,6 +134,20 @@ public class ObjectTypeTest {
     public void testIsTypeArgumentAssignableFrom() {
         assertTrue(ObjectType.TYPE_BOOLEAN.isTypeArgumentAssignableFrom(null, null, null, ObjectType.TYPE_BOOLEAN));
         assertFalse(ObjectType.TYPE_BOOLEAN.isTypeArgumentAssignableFrom(null, null, null, ObjectType.TYPE_BYTE));
+        Map<String, TypeArgument> typeBindings = Collections.singletonMap("E", ObjectType.TYPE_ENUM);
+        Map<String, BaseType> typeBounds = Collections.singletonMap("E", new ObjectType("java/lang/Enum", "java.lang.Enum", "Enum", new GenericType("E"), 0));
+        BaseTypeArgument typeArgument = new GenericType("E");
+        boolean result = ObjectType.TYPE_ENUM.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
+        assertTrue(result);
+    }
+
+    @Test
+    public void testIsTypeArgumentAssignableFromWithTypeMakerAndBindingsAndBoundsExtendsWildcard() {
+        Map<String, TypeArgument> typeBindings = Collections.singletonMap("D", ObjectType.TYPE_DATE);
+        Map<String, BaseType> typeBounds = Collections.singletonMap("D", ObjectType.TYPE_DATE);
+        BaseTypeArgument typeArgument = new WildcardExtendsTypeArgument(ObjectType.TYPE_DATE);
+        boolean result = ObjectType.TYPE_DATE.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
+        assertFalse(result);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -176,5 +201,4 @@ public class ObjectTypeTest {
         ObjectType objectType = new ObjectType("java/lang/Class", "java.lang.Class", "Class", Collections.singleton("InnerType"), 0);
         assertEquals(Collections.singleton("InnerType"), objectType.getInnerTypeNames());
     }
-
 }
