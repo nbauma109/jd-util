@@ -643,5 +643,12 @@ public class TypeMakerTest extends TestCase {
         ObjectType abstMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/AbstractMap;");
         assertNull(typeMaker.searchSuperParameterizedType(abstMap, hashMap));
         assertNull(typeMaker.searchSuperParameterizedType(abstMap, treeMap));
+        assertEquals(ObjectType.TYPE_PRIMITIVE_INT.createType(3), typeMaker.makeFromDescriptorOrInternalTypeName("[[[I"));
+    }
+
+    @Test
+    public void testMakeFromDescriptor() throws Exception {
+        assertEquals(ObjectType.TYPE_PRIMITIVE_INT, typeMaker.makeFromDescriptor("I"));
+        assertEquals(typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap"), typeMaker.makeFromDescriptor("Ljava/util/TreeMap;"));
     }
 }
