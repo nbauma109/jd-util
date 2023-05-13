@@ -621,4 +621,34 @@ public class TypeMakerTest extends TestCase {
         assertEquals(2, typeMaker.matchCount(StringConstants.JAVA_LANG_MATH, "round", 1, false));
         assertEquals(8, typeMaker.matchCount(StringConstants.JAVA_LANG_STRING, "valueOf", 1, false));
     }
+
+    @Test
+    public void testSearchSuperParameterizedType() throws Exception {
+        ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/HashMap");
+        ObjectType treeMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap");
+        ObjectType abstMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/AbstractMap");
+        assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, hashMap));
+        assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, treeMap));
+        assertEquals(treeMap, typeMaker.searchSuperParameterizedType(ObjectType.TYPE_UNDEFINED_OBJECT, treeMap));
+        assertEquals(treeMap, typeMaker.searchSuperParameterizedType(ObjectType.TYPE_OBJECT, treeMap));
+        assertEquals(ObjectType.TYPE_CLASS, typeMaker.searchSuperParameterizedType(ObjectType.TYPE_CLASS, ObjectType.TYPE_CLASS));
+        assertNull(typeMaker.searchSuperParameterizedType((ObjectType) ObjectType.TYPE_CLASS.createType(1), ObjectType.TYPE_CLASS));
+        assertNull(typeMaker.searchSuperParameterizedType(ObjectType.TYPE_CLASS, (ObjectType) ObjectType.TYPE_CLASS.createType(1)));
+    }
+
+    @Test
+    public void testMakeFromDescriptorOrInternalTypeName() throws Exception {
+        ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/HashMap;");
+        ObjectType treeMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/TreeMap;");
+        ObjectType abstMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/AbstractMap;");
+        assertNull(typeMaker.searchSuperParameterizedType(abstMap, hashMap));
+        assertNull(typeMaker.searchSuperParameterizedType(abstMap, treeMap));
+        assertEquals(ObjectType.TYPE_PRIMITIVE_INT.createType(3), typeMaker.makeFromDescriptorOrInternalTypeName("[[[I"));
+    }
+
+    @Test
+    public void testMakeFromDescriptor() throws Exception {
+        assertEquals(ObjectType.TYPE_PRIMITIVE_INT, typeMaker.makeFromDescriptor("I"));
+        assertEquals(typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap"), typeMaker.makeFromDescriptor("Ljava/util/TreeMap;"));
+    }
 }
