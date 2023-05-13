@@ -19,7 +19,6 @@ import org.jd.core.v1.model.javasyntax.type.TypeParameter;
 import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
 import org.jd.core.v1.model.javasyntax.type.WildcardExtendsTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
-import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.SignatureReader;
 import org.jd.core.v1.util.StringConstants;
 import org.jd.core.v1.util.ZipLoader;
@@ -615,5 +614,10 @@ public class TypeMakerTest extends TestCase {
         assertEquals(2, ((TypeParameterWithTypeBounds) result).getTypeBounds().size());
         assertEquals("java.lang.Runnable", ((ObjectType) ((TypeParameterWithTypeBounds) result).getTypeBounds().getFirst()).getQualifiedName());
         assertEquals("java.lang.Serializable", ((ObjectType) ((TypeParameterWithTypeBounds) result).getTypeBounds().getLast()).getQualifiedName());
+    }
+
+    @Test
+    public void testMatchCount() throws Exception {
+        assertEquals(2, typeMaker.matchCount("java/lang/Math", "round", 1, false));
     }
 }
