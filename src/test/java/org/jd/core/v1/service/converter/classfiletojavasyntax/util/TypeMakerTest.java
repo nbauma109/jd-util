@@ -630,4 +630,13 @@ public class TypeMakerTest extends TestCase {
         assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, hashMap));
         assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, treeMap));
     }
+
+    @Test
+    public void testMakeFromDescriptorOrInternalTypeName() throws Exception {
+        ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/HashMap;");
+        ObjectType treeMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/TreeMap;");
+        ObjectType abstMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/AbstractMap;");
+        assertNull(typeMaker.searchSuperParameterizedType(abstMap, hashMap));
+        assertNull(typeMaker.searchSuperParameterizedType(abstMap, treeMap));
+    }
 }
