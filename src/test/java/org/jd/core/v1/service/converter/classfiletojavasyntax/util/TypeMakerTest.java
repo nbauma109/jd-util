@@ -7,8 +7,17 @@
 
 package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
+import org.apache.bcel.Const;
 import org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator;
+import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.jd.core.v1.loader.ClassPathLoader;
+import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
+import org.jd.core.v1.model.javasyntax.expression.Expression;
+import org.jd.core.v1.model.javasyntax.expression.Expressions;
+import org.jd.core.v1.model.javasyntax.expression.IntegerConstantExpression;
+import org.jd.core.v1.model.javasyntax.expression.NullExpression;
+import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
+import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.GenericType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
@@ -19,15 +28,22 @@ import org.jd.core.v1.model.javasyntax.type.TypeParameter;
 import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
 import org.jd.core.v1.model.javasyntax.type.WildcardExtendsTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.SignatureReader;
 import org.jd.core.v1.util.StringConstants;
 import org.jd.core.v1.util.ZipLoader;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.PrimitiveIterator;
 
 import static org.junit.Assert.assertThrows;
@@ -208,6 +224,7 @@ public class TypeMakerTest extends TestCase {
         assertNotNull(child);
         assertFalse(typeMaker.isAssignable(parent, child));
     }
+
     @Test
     public void testListAssignment() throws Exception {
         List list1 = null;
@@ -313,6 +330,21 @@ public class TypeMakerTest extends TestCase {
         assertFalse(typeMaker.isAssignable(ot2, ot1));
     }
 
+    @Test
+    public void testArrayNumberAndArrayIntegerAssignment() throws Exception {
+        Number[] arr1 = null;
+        Integer[] arr2 = null;
+        
+        ObjectType ot1 = (ObjectType) otNumber.createType(1);
+        ObjectType ot2 = (ObjectType) otInteger.createType(1);
+        
+        // Valid:   arr1 = arr2;
+        assertTrue(typeMaker.isAssignable(ot1, ot2));
+        
+        // Invalid: arr2 = arr1;
+        assertFalse(typeMaker.isAssignable(ot2, ot1));
+    }
+    
     @Test
     public void testIteratorNumberAndPrimitiveIteratorNumberAssignment() throws Exception {
         Iterator<Number> iterator1 = null;
@@ -623,6 +655,60 @@ public class TypeMakerTest extends TestCase {
     }
 
     @Test
+    public void testMatchCountWith1Arg() throws Exception {
+
+        // Prepare some test data
+        Map<String, TypeArgument> typeBindings = Collections.emptyMap();
+        Map<String, BaseType> typeBounds = Collections.emptyMap();
+
+        BaseExpression parameters = new StringConstantExpression("Hello World");
+
+        // Call the method
+        int count = typeMaker.matchCount(typeBindings, typeBounds, "java/io/PrintStream", "println", parameters, false);
+
+        // Verify the result
+        assertEquals(2, count);
+    }
+
+    @Test
+    public void testMatchCountWithPrimitiveArg() throws Exception {
+
+        // Prepare some test data
+        Map<String, TypeArgument> typeBindings = Collections.emptyMap();
+        Map<String, BaseType> typeBounds = Collections.emptyMap();
+
+        BaseExpression parameters = new IntegerConstantExpression(PrimitiveType.TYPE_CHAR, 1);
+
+        // Call the method
+        int count = typeMaker.matchCount(typeBindings, typeBounds, "java/lang/String", "indexOf", parameters, false);
+
+        // Verify the result
+        assertEquals(1, count);
+    }
+
+    @Test
+    public void testMatchCountWith3Args() throws Exception {
+
+        // Prepare some test data
+        Map<String, TypeArgument> typeBindings = Collections.emptyMap();
+        Map<String, BaseType> typeBounds = Collections.emptyMap();
+
+        String internalTypeName = "org/apache/commons/lang3/builder/ToStringStyle";
+        String name = "appendDetail";
+        Collection<Expression> arguments = new ArrayList<>();
+        arguments.add(new NullExpression(ObjectType.TYPE_STRING_BUFFER));
+        arguments.add(new NullExpression(ObjectType.TYPE_STRING));
+        arguments.add(new NullExpression(ObjectType.TYPE_OBJECT));
+        BaseExpression parameters = new Expressions(arguments);
+
+        // Call the method
+        int count = typeMaker.matchCount(typeBindings, typeBounds, internalTypeName, name, parameters, false);
+
+        // Verify the result
+        assertEquals(1, count);
+    }
+
+    @Test
     public void testSearchSuperParameterizedType() throws Exception {
         ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/HashMap");
         ObjectType treeMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap");
@@ -694,6 +780,7 @@ public class TypeMakerTest extends TestCase {
 
     @Test
     public void testCreateWithInternalTypeName() {
+        assertNull(TypeMaker.create(null));
         // Test with standard class
         ObjectType objectType = typeMaker.create("java/lang/String");
         assertEquals("java.lang.String", objectType.getQualifiedName());
@@ -743,6 +830,101 @@ public class TypeMakerTest extends TestCase {
         ObjectType arrayStringType = typeMaker.makeFromDescriptor("[Ljava/lang/String;");
         assertFalse(typeMaker.isRawTypeAssignable(arrayStringType, ObjectType.TYPE_STRING));
         assertFalse(typeMaker.isRawTypeAssignable(ObjectType.TYPE_STRING, arrayStringType));
+
+        // other special cases
+        ObjectType left = typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/util/StringMap");
+        ObjectType right = typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/util/SortedArrayStringMap");
+        assertTrue(typeMaker.isRawTypeAssignable(left, right));
     }
 
+    @Test
+    public void testMakeFromInternalTypeNameException() {
+        assertThrows(IllegalArgumentException.class, () -> typeMaker.makeFromInternalTypeName(null));
+        assertThrows(IllegalArgumentException.class, () -> typeMaker.makeFromInternalTypeName("java/lang/String;"));
+    }
+
+    @Test
+    public void testIsAssignable() {
+        Map<String, TypeArgument> typeBindings = Collections.singletonMap("D", ObjectType.TYPE_DATE);
+        Map<String, BaseType> typeBounds = Collections.singletonMap("D", ObjectType.TYPE_DATE);
+
+        ObjectType classOfDate = ObjectType.TYPE_CLASS.createType(ObjectType.TYPE_DATE);
+
+        WildcardExtendsTypeArgument wildcardTypeArgument = new WildcardExtendsTypeArgument(ObjectType.TYPE_DATE);
+        ObjectType classOfWildcardDate = ObjectType.TYPE_CLASS.createType(wildcardTypeArgument);
+
+        GenericType genericTypeD = new GenericType("D");
+        ObjectType classOfGenericTypeD = ObjectType.TYPE_CLASS.createType(genericTypeD);
+
+        assertTrue(typeMaker.isAssignable(typeBindings, typeBounds, classOfDate, classOfGenericTypeD, classOfWildcardDate));
+    }
+
+    @Test
+    public void testMakeMethodTypes() throws Exception {
+        MethodTypes methodTypes = typeMaker.makeMethodTypes("org/apache/logging/log4j/util/IndexedStringMap", "size", "()I");
+        assertEquals(Const.ACC_ABSTRACT | Const.ACC_PUBLIC, methodTypes.getAccessFlags());
+        assertEquals(PrimitiveType.TYPE_INT, methodTypes.getReturnedType());
+        assertNull(methodTypes.getExceptionTypes());
+        assertNull(methodTypes.getParameterTypes());
+        assertNull(methodTypes.getTypeParameters());
+
+        methodTypes = typeMaker.makeMethodTypes("java/util/List", "forEach", "(Ljava/util/function/Consumer;)V");
+        assertEquals(0, methodTypes.getAccessFlags());
+        assertEquals(PrimitiveType.TYPE_VOID, methodTypes.getReturnedType());
+        assertNull(methodTypes.getExceptionTypes());
+        assertNotNull(methodTypes.getParameterTypes());
+        assertEquals("[ObjectType{java/util/function/Consumer<WildcardSuperTypeArgument{? super GenericType{E}}>}]",
+                   methodTypes.getParameterTypes().toString());
+        assertNull(methodTypes.getTypeParameters());
+
+        methodTypes = typeMaker.makeMethodTypes("java/util/LinkedList", "iterator", "()Ljava/util/Iterator;");
+        assertEquals(0, methodTypes.getAccessFlags());
+        assertNotNull(methodTypes.getReturnedType());
+        assertEquals("ObjectType{java/util/Iterator<GenericType{E}>}", methodTypes.getReturnedType().toString());
+        assertNull(methodTypes.getExceptionTypes());
+        assertNull(methodTypes.getParameterTypes());
+        assertNull(methodTypes.getTypeParameters());
+        
+        methodTypes = typeMaker.makeMethodTypes("org/apache/commons/lang3/ClassUtils", "iterator", "(Ljava/lang/Class;)Ljava/lang/Iterable;");
+        assertEquals(0, methodTypes.getAccessFlags());
+        assertNotNull(methodTypes.getReturnedType());
+        assertEquals(ObjectType.TYPE_ITERABLE, methodTypes.getReturnedType());
+        assertNull(methodTypes.getExceptionTypes());
+        assertNotNull(methodTypes.getParameterTypes());
+        assertEquals(Collections.singletonList(ObjectType.TYPE_CLASS), methodTypes.getParameterTypes());
+        assertNull(methodTypes.getTypeParameters());
+
+        methodTypes = typeMaker.makeMethodTypes("org/apache/logging/log4j/message/StructuredDataMessage", "appendMap", "(Ljava/lang/StringBuilder;)V");
+        assertEquals(0, methodTypes.getAccessFlags());
+        assertNotNull(methodTypes.getReturnedType());
+        assertEquals(PrimitiveType.TYPE_VOID, methodTypes.getReturnedType());
+        assertNull(methodTypes.getExceptionTypes());
+        assertNotNull(methodTypes.getParameterTypes());
+        assertEquals(Collections.singletonList(ObjectType.TYPE_STRING_BUILDER), methodTypes.getParameterTypes());
+        assertNull(methodTypes.getTypeParameters());
+
+        methodTypes = typeMaker.makeMethodTypes("java/lang/String", "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");
+        assertTrue(methodTypes.isVarArgs());
+        assertEquals(Const.ACC_VARARGS | Const.ACC_STATIC | Const.ACC_PUBLIC, methodTypes.getAccessFlags());
+        assertNotNull(methodTypes.getReturnedType());
+        assertEquals(ObjectType.TYPE_STRING, methodTypes.getReturnedType());
+        assertNull(methodTypes.getExceptionTypes());
+        assertNotNull(methodTypes.getParameterTypes());
+        assertEquals("[ObjectType{java/lang/String}, ObjectType{java/lang/Object, dimension=1}]", methodTypes.getParameterTypes().toString());
+        assertNull(methodTypes.getTypeParameters());
+    }
+
+    @Test
+    public void testMakeFieldType() throws Exception {
+        testMakeFieldType(AbstractFileFilter.class, "org/apache/commons/io/filefilter/AbstractFileFilter", "EMPTY_STRING_ARRAY", "[Ljava/lang/String;");
+    }
+
+    private void testMakeFieldType(Class<?> clazz, String internalTypeName, String name, String descriptor) throws Exception {
+        File file = Paths.get(clazz.getProtectionDomain().getCodeSource().getLocation().toURI()).toFile();
+        try (FileInputStream fis = new FileInputStream(file)) {
+            ZipLoader loader = new ZipLoader(fis);
+            TypeMaker typeMaker = new TypeMaker(loader);
+            assertNotNull(typeMaker.makeFieldType(internalTypeName, name, descriptor));
+        }
+    }
 }

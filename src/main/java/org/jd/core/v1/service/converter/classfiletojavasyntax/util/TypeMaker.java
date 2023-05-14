@@ -970,14 +970,15 @@ public class TypeMaker {
             if (ot != null && leftInternalTypeName.equals(ot.getInternalName())) {
                 return left.getTypeArguments() == null || ot.getTypeArguments() == null
                         || left.getTypeArguments().isTypeArgumentAssignableFrom(this, typeBindings, typeBounds, ot.getTypeArguments())
-                        || (leftUnbound instanceof ObjectType && isAssignable(typeBindings, typeBounds, (ObjectType) leftUnbound, right));
+                        || (leftUnbound instanceof ObjectType lt
+                                && isAssignable(typeBindings, typeBounds, lt, right));
             }
         }
         if (leftDim == rightDim && leftDim > 0 && rightDim > 0) {
             Type leftType = left.createType(leftDim - 1);
             Type rightType = right.createType(rightDim - 1);
-            if (leftType instanceof ObjectType && rightType instanceof ObjectType) {
-                return isAssignable(typeBindings, typeBounds, (ObjectType) leftType, (ObjectType) rightType);
+            if (leftType instanceof ObjectType lt && rightType instanceof ObjectType rt) {
+                return isAssignable(typeBindings, typeBounds, lt, rt);
             }
         }
         return false;
@@ -1453,9 +1454,6 @@ public class TypeMaker {
     }
 
     private ObjectType loadType(String internalTypeName, byte[] data) throws IOException {
-        if (data == null) {
-            return null;
-        }
 
         try (DataInputStream reader = new DataInputStream(new ByteArrayInputStream(data))) {
             Object[] constants = loadClassFile(internalTypeName, reader);
