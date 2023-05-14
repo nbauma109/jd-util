@@ -7,11 +7,8 @@
 
 package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
-import org.apache.commons.collections4.bidimap.AbstractDualBidiMap;
-import org.apache.commons.collections4.functors.AbstractQuantifierPredicate;
+import org.apache.bcel.Const;
 import org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator;
-import org.apache.commons.collections4.list.AbstractLinkedList;
-import org.apache.commons.collections4.map.AbstractMapDecorator;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
@@ -708,7 +705,6 @@ public class TypeMakerTest extends TestCase {
         int count = typeMaker.matchCount(typeBindings, typeBounds, internalTypeName, name, parameters, false);
 
         // Verify the result
-        // The expected result depends on the actual contents of the `setOfParameterTypes`
         assertEquals(1, count);
     }
 
@@ -866,7 +862,7 @@ public class TypeMakerTest extends TestCase {
     @Test
     public void testMakeMethodTypes() throws Exception {
         MethodTypes methodTypes = typeMaker.makeMethodTypes("org/apache/logging/log4j/util/IndexedStringMap", "size", "()I");
-        assertEquals(1025, methodTypes.getAccessFlags());
+        assertEquals(Const.ACC_ABSTRACT | Const.ACC_PUBLIC, methodTypes.getAccessFlags());
         assertEquals(PrimitiveType.TYPE_INT, methodTypes.getReturnedType());
         assertNull(methodTypes.getExceptionTypes());
         assertNull(methodTypes.getParameterTypes());
@@ -909,7 +905,7 @@ public class TypeMakerTest extends TestCase {
 
         methodTypes = typeMaker.makeMethodTypes("java/lang/String", "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");
         assertTrue(methodTypes.isVarArgs());
-        assertEquals(137, methodTypes.getAccessFlags());
+        assertEquals(Const.ACC_VARARGS | Const.ACC_STATIC | Const.ACC_PUBLIC, methodTypes.getAccessFlags());
         assertNotNull(methodTypes.getReturnedType());
         assertEquals(ObjectType.TYPE_STRING, methodTypes.getReturnedType());
         assertNull(methodTypes.getExceptionTypes());
