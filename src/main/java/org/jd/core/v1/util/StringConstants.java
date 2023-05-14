@@ -91,6 +91,7 @@ public final class StringConstants
     public static final String JAVA_LANG_OBJECT = "java/lang/Object";
     public static final String JAVA_LANG_CLASS = "java/lang/Class";
     public static final String JAVA_LANG_MATH = "java/lang/Math";
+    public static final String JAVA_LANG_NUMBER = "java/lang/Number";
     public static final String JAVA_LANG_THROWABLE = "java/lang/Throwable";
     public static final String JAVA_LANG_ASSERTION_ERROR = "java/lang/AssertionError";
     public static final String JAVA_LANG_ENUM = "java/lang/Enum";
