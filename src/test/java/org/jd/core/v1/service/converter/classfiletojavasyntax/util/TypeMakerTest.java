@@ -715,4 +715,34 @@ public class TypeMakerTest extends TestCase {
         assertEquals("InnerClass", digitObjectType.getName());
         assertTrue(digitObjectType.isObjectType());
     }
+
+    @Test
+    public void testIsRawTypeAssignable() {
+        // Same type
+        assertTrue(typeMaker.isRawTypeAssignable(ObjectType.TYPE_STRING, ObjectType.TYPE_STRING));
+
+        // left is parent class, right is child class
+        assertTrue(typeMaker.isRawTypeAssignable(ObjectType.TYPE_OBJECT, ObjectType.TYPE_STRING));
+        assertTrue(typeMaker.isRawTypeAssignable(ObjectType.TYPE_NUMBER, ObjectType.TYPE_INTEGER));
+
+        // left is child class, right is parent class
+        assertFalse(typeMaker.isRawTypeAssignable(ObjectType.TYPE_STRING, ObjectType.TYPE_OBJECT));
+        assertFalse(typeMaker.isRawTypeAssignable(ObjectType.TYPE_INTEGER, ObjectType.TYPE_NUMBER));
+
+        // Unrelated classes
+        assertFalse(typeMaker.isRawTypeAssignable(ObjectType.TYPE_STRING, ObjectType.TYPE_NUMBER));
+
+        // left is undefined or object
+        assertTrue(typeMaker.isRawTypeAssignable(ObjectType.TYPE_UNDEFINED_OBJECT, ObjectType.TYPE_STRING));
+        assertTrue(typeMaker.isRawTypeAssignable(ObjectType.TYPE_OBJECT, ObjectType.TYPE_STRING));
+
+        // left and right are equal
+        assertTrue(typeMaker.isRawTypeAssignable(ObjectType.TYPE_STRING, ObjectType.TYPE_STRING));
+
+        // left or right have dimensions
+        ObjectType arrayStringType = typeMaker.makeFromDescriptor("[Ljava/lang/String;");
+        assertFalse(typeMaker.isRawTypeAssignable(arrayStringType, ObjectType.TYPE_STRING));
+        assertFalse(typeMaker.isRawTypeAssignable(ObjectType.TYPE_STRING, arrayStringType));
+    }
+
 }

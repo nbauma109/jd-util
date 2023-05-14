@@ -144,26 +144,30 @@ public class TypeMaker {
         descriptorToObjectType.put("Ljava/lang/String;", ObjectType.TYPE_STRING);
         descriptorToObjectType.put("Ljava/lang/System;", ObjectType.TYPE_SYSTEM);
 
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_BOOLEAN, ObjectType.TYPE_BOOLEAN);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_BYTE, ObjectType.TYPE_BYTE);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_CHARACTER, ObjectType.TYPE_CHARACTER);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_CLASS, ObjectType.TYPE_CLASS);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_DOUBLE, ObjectType.TYPE_DOUBLE);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_EXCEPTION, ObjectType.TYPE_EXCEPTION);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_FLOAT, ObjectType.TYPE_FLOAT);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_INTEGER, ObjectType.TYPE_INTEGER);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_ITERABLE, ObjectType.TYPE_ITERABLE);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_LONG, ObjectType.TYPE_LONG);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_MATH, ObjectType.TYPE_MATH);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_OBJECT, TYPE_OBJECT);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_RUNTIME_EXCEPTION, ObjectType.TYPE_RUNTIME_EXCEPTION);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_SHORT, ObjectType.TYPE_SHORT);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_STRING, ObjectType.TYPE_STRING);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_STRING_BUFFER, ObjectType.TYPE_STRING_BUFFER);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_STRING_BUILDER, ObjectType.TYPE_STRING_BUILDER);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_SYSTEM, ObjectType.TYPE_SYSTEM);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_THREAD, ObjectType.TYPE_THREAD);
-        internalTypeNameToObjectType.put(StringConstants.JAVA_LANG_THROWABLE, ObjectType.TYPE_THROWABLE);
+        loadType(StringConstants.JAVA_LANG_BOOLEAN);
+        loadType(StringConstants.JAVA_LANG_BYTE);
+        loadType(StringConstants.JAVA_LANG_CHARACTER);
+        loadType(StringConstants.JAVA_LANG_CLASS);
+        loadType(StringConstants.JAVA_LANG_DOUBLE);
+        loadType(StringConstants.JAVA_LANG_ENUM);
+        loadType(StringConstants.JAVA_LANG_EXCEPTION);
+        loadType(StringConstants.JAVA_LANG_FLOAT);
+        loadType(StringConstants.JAVA_LANG_INTEGER);
+        loadType(StringConstants.JAVA_LANG_ITERABLE);
+        loadType(StringConstants.JAVA_LANG_LONG);
+        loadType(StringConstants.JAVA_LANG_MATH);
+        loadType(StringConstants.JAVA_LANG_NUMBER);
+        loadType(StringConstants.JAVA_LANG_OBJECT);
+        loadType(StringConstants.JAVA_LANG_RUNTIME_EXCEPTION);
+        loadType(StringConstants.JAVA_LANG_SHORT);
+        loadType(StringConstants.JAVA_LANG_STRING);
+        loadType(StringConstants.JAVA_LANG_STRING_BUFFER);
+        loadType(StringConstants.JAVA_LANG_STRING_BUILDER);
+        loadType(StringConstants.JAVA_LANG_SYSTEM);
+        loadType(StringConstants.JAVA_LANG_THREAD);
+        loadType(StringConstants.JAVA_LANG_THROWABLE);
+        loadType(StringConstants.JAVA_UTIL_DATE);
+
     }
 
     /**

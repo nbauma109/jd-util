@@ -29,6 +29,7 @@ public class ObjectType implements Type {
     public static final ObjectType TYPE_ITERABLE          = new ObjectType(StringConstants.JAVA_LANG_ITERABLE, "java.lang.Iterable", "Iterable");
     public static final ObjectType TYPE_LONG              = new ObjectType(StringConstants.JAVA_LANG_LONG, "java.lang.Long", "Long");
     public static final ObjectType TYPE_MATH              = new ObjectType(StringConstants.JAVA_LANG_MATH, "java.lang.Math", "Math");
+    public static final ObjectType TYPE_NUMBER            = new ObjectType(StringConstants.JAVA_LANG_NUMBER, "java.lang.Number", "Number");
     public static final ObjectType TYPE_OBJECT            = new ObjectType(StringConstants.JAVA_LANG_OBJECT, "java.lang.Object", "Object");
     public static final ObjectType TYPE_RUNTIME_EXCEPTION = new ObjectType(StringConstants.JAVA_LANG_RUNTIME_EXCEPTION, "java.lang.RuntimeException", "RuntimeException");
     public static final ObjectType TYPE_SHORT             = new ObjectType(StringConstants.JAVA_LANG_SHORT, "java.lang.Short", "Short");
