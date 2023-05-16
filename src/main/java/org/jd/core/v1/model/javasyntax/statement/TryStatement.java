@@ -18,17 +18,14 @@ public class TryStatement implements Statement {
     private BaseStatement finallyStatements;
 
     public TryStatement(BaseStatement tryStatements, DefaultList<CatchClause> catchClauses, BaseStatement finallyStatements) {
-        this.resources = null;
-        this.tryStatements = tryStatements;
-        this.catchClauses = catchClauses;
-        this.finallyStatements = finallyStatements;
+        this(null, tryStatements, catchClauses, finallyStatements);
     }
 
     public TryStatement(DefaultList<Resource> resources, BaseStatement tryStatements, DefaultList<CatchClause> catchClauses, BaseStatement finallyStatements) {
         this.resources = resources;
-        this.tryStatements = tryStatements;
+        this.setTryStatements(tryStatements);
         this.catchClauses = catchClauses;
-        this.finallyStatements = finallyStatements;
+        this.setFinallyStatements(finallyStatements);
     }
 
     public DefaultList<Resource> getResources() {
