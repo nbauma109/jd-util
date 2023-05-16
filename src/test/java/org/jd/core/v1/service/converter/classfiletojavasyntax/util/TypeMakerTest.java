@@ -968,6 +968,8 @@ public class TypeMakerTest extends TestCase {
 
     @Test
     public void testMakeFieldType() throws Exception {
+        testMakeFieldType(AbstractDualBidiMap.class, "java/io/ObjectInputStream", "STREAM_MAGIC", "S");
+        testMakeFieldType(AbstractDualBidiMap.class, "org/apache/commons/collections4/list/NodeCachingLinkedList", "size", "I");
         testMakeFieldType(AbstractDualBidiMap.class, "org/apache/commons/collections4/bidimap/AbstractDualBidiMap$EntrySet", "parent", "Lorg/apache/commons/collections4/bidimap/AbstractDualBidiMap;");
         testMakeFieldType(AbstractFileFilter.class, "org/apache/commons/io/filefilter/AbstractFileFilter", "EMPTY_STRING_ARRAY", "[Ljava/lang/String;");
     }
