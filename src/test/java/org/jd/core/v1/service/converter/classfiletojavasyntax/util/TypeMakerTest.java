@@ -860,6 +860,7 @@ public class TypeMakerTest extends TestCase {
         ObjectType classOfGenericTypeD = ObjectType.TYPE_CLASS.createType(genericTypeD);
 
         assertTrue(typeMaker.isAssignable(typeBindings, typeBounds, classOfDate, classOfGenericTypeD, classOfWildcardDate));
+        assertFalse(typeMaker.isAssignable(ObjectType.TYPE_STRING, ObjectType.TYPE_CLASS_WILDCARD));
     }
 
     @Test
