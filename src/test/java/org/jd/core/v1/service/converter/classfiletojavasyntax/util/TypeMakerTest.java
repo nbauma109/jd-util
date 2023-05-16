@@ -28,6 +28,7 @@ import org.jd.core.v1.model.javasyntax.type.TypeParameter;
 import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
 import org.jd.core.v1.model.javasyntax.type.WildcardExtendsTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
+import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.SignatureReader;
 import org.jd.core.v1.util.StringConstants;
@@ -39,8 +40,10 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -857,6 +860,32 @@ public class TypeMakerTest extends TestCase {
         ObjectType classOfGenericTypeD = ObjectType.TYPE_CLASS.createType(genericTypeD);
 
         assertTrue(typeMaker.isAssignable(typeBindings, typeBounds, classOfDate, classOfGenericTypeD, classOfWildcardDate));
+    }
+
+    @Test
+    public void testIsAssignable2() {
+        // Prepare some test data
+        Map<String, TypeArgument> typeBindings = new HashMap<>();
+        typeBindings.put("X", typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/core/net/MailManager"));
+        typeBindings.put("Y", WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT);
+
+        Map<String, BaseType> typeBounds = new HashMap<>();
+        typeBounds.put("X", typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/core/appender/AbstractManager"));
+
+        ObjectType left = typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/core/appender/ManagerFactory");
+        ObjectType leftUnbound = typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/core/appender/ManagerFactory");
+        left = left.createType(new TypeArguments(Arrays.asList(
+                                                    typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/core/net/MailManager"),
+                                                    WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT)));
+        leftUnbound = leftUnbound.createType(new TypeArguments(Arrays.asList(new GenericType("X"), new GenericType("Y"))));
+
+        ObjectType right = typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/core/net/SmtpManager$SMTPManagerFactory");
+
+        // Call the method
+        boolean result = typeMaker.isAssignable(typeBindings, typeBounds, left, leftUnbound, right);
+
+        // Verify the result
+        assertTrue(result);
     }
 
     @Test
