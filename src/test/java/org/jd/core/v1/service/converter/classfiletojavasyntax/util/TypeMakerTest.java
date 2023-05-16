@@ -18,6 +18,7 @@ import org.jd.core.v1.model.javasyntax.expression.IntegerConstantExpression;
 import org.jd.core.v1.model.javasyntax.expression.NullExpression;
 import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
+import org.jd.core.v1.model.javasyntax.type.BaseTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.GenericType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
@@ -26,6 +27,7 @@ import org.jd.core.v1.model.javasyntax.type.TypeArgument;
 import org.jd.core.v1.model.javasyntax.type.TypeArguments;
 import org.jd.core.v1.model.javasyntax.type.TypeParameter;
 import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
+import org.jd.core.v1.model.javasyntax.type.Types;
 import org.jd.core.v1.model.javasyntax.type.WildcardExtendsTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
@@ -887,6 +889,25 @@ public class TypeMakerTest extends TestCase {
 
         // Verify the result
         assertTrue(result);
+    }
+
+    @Test
+    public void testIsAssignable3() {
+        // Prepare some test data
+        GenericType genericType = new GenericType("E");
+        Map<String, BaseType> typeBounds = Collections.singletonMap("E", ObjectType.TYPE_ENUM.createType(genericType));
+
+        ObjectType left = typeMaker.makeFromInternalTypeName("java/util/Map");
+        BaseTypeArgument leftTypeArguments = new TypeArguments(Arrays.asList(ObjectType.TYPE_STRING, genericType));
+        left = left.createType(leftTypeArguments);
+
+        ObjectType right = typeMaker.makeFromInternalTypeName("java/util/LinkedHashMap");
+        BaseTypeArgument rightTypeArguments = new TypeArguments(Arrays.asList(ObjectType.TYPE_STRING, genericType));
+        right = right.createType(rightTypeArguments);
+
+        // Verify the result
+        assertTrue(typeMaker.isAssignable(typeBounds, left, right));
+        assertTrue(typeMaker.isAssignable(Collections.emptyMap(), left, right));
     }
 
     @Test

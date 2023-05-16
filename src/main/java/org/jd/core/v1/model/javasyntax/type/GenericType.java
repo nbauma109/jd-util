@@ -96,8 +96,8 @@ public class GenericType implements Type {
         if (typeArgument instanceof GenericType) {
             GenericType genericType = (GenericType) typeArgument;
             BaseType boundType = typeBounds.get(genericType.getName());
-            if (boundType != null) {
-                return equals(boundType);
+            if (boundType != null && equals(boundType)) {
+                return true;
             }
         }
         return equals(typeArgument);
