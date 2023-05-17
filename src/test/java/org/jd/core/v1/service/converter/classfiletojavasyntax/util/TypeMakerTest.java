@@ -967,6 +967,36 @@ public class TypeMakerTest extends TestCase {
     }
 
     @Test
+    public void testHandlePolymorphicSignature() {
+        // Arrange
+        MethodTypes methodTypes = new MethodTypes();
+        String typeName = "java/lang/invoke/MethodHandle";
+        String name = "invokeExact"; // A method with @PolymorphicSignature in MethodHandle class
+
+        // Act
+        methodTypes.handlePolymorphicSignature(typeName, name);
+
+        // Assert
+        assertTrue(methodTypes.getReturnedType() instanceof GenericType);
+        assertEquals("XXX", ((GenericType) methodTypes.getReturnedType()).getName());
+    }
+
+    @Test
+    public void testHandlePolymorphicSignatureForVarHandle() {
+        // Arrange
+        MethodTypes methodTypes = new MethodTypes();
+        String typeName = "java/lang/invoke/VarHandle";
+        String name = "get"; // A method with @PolymorphicSignature in VarHandle class
+
+        // Act
+        methodTypes.handlePolymorphicSignature(typeName, name);
+
+        // Assert
+        assertTrue(methodTypes.getReturnedType() instanceof GenericType);
+        assertEquals("XXX", ((GenericType) methodTypes.getReturnedType()).getName());
+    }
+
+    @Test
     public void testMakeFieldType() throws Exception {
         testMakeFieldType(AbstractDualBidiMap.class, "java/io/ObjectInputStream", "STREAM_MAGIC", "S");
         testMakeFieldType(AbstractDualBidiMap.class, "org/apache/commons/collections4/list/NodeCachingLinkedList", "size", "I");
