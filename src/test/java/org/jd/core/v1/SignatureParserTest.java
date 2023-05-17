@@ -6,6 +6,7 @@
  */
 package org.jd.core.v1;
 
+import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.classfile.ClassFile;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
@@ -463,6 +464,27 @@ public class SignatureParserTest extends TestCase {
         }
     }
     
+    @Test
+    public void testExceptionTypes() throws Exception {
+        PrintTypeVisitor visitor = new PrintTypeVisitor();
+        Loader loader = new ClassPathLoader();
+        TypeMaker typeMaker = new TypeMaker(loader);
+        
+        ClassFile classFile = deserializer.loadClassFile(loader, "org/apache/commons/lang3/function/FailableBooleanSupplier");
+        
+        MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[0]);
+        
+        // Check exceptionTypes
+        assertNotNull(methodTypes.getExceptionTypes());
+        assertEquals(1, methodTypes.getExceptionTypes().size());
+        
+        BaseType type = methodTypes.getExceptionTypes();
+        type.accept(visitor);
+        String source = visitor.toString();
+        
+        assertEquals("E", source);
+    }
+
     @Test
     public void testEnumPlanet() throws Exception {
         PrintTypeVisitor visitor = new PrintTypeVisitor();

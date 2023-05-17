@@ -12,6 +12,7 @@ import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.FieldOrMethod;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.classfile.Signature;
+import org.apache.commons.lang3.Validate;
 import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.classfile.ClassFile;
@@ -696,7 +697,7 @@ public class TypeMaker {
 
                     return new GenericType(identifier, dimension);
                 case 'V':
-                    assert dimension == 0;
+                    Validate.isTrue(dimension == 0);
                     return PrimitiveType.TYPE_VOID;
                 case 'Z':
                     return dimension == 0 ? PrimitiveType.TYPE_BOOLEAN : PrimitiveType.TYPE_BOOLEAN.createType(dimension);

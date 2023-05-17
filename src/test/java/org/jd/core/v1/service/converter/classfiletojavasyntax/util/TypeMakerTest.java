@@ -8,6 +8,7 @@
 package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
 import org.apache.bcel.Const;
+import org.apache.commons.collections4.bidimap.AbstractDualBidiMap;
 import org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.jd.core.v1.loader.ClassPathLoader;
@@ -27,12 +28,12 @@ import org.jd.core.v1.model.javasyntax.type.TypeArgument;
 import org.jd.core.v1.model.javasyntax.type.TypeArguments;
 import org.jd.core.v1.model.javasyntax.type.TypeParameter;
 import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
-import org.jd.core.v1.model.javasyntax.type.Types;
 import org.jd.core.v1.model.javasyntax.type.WildcardExtendsTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.SignatureReader;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.TypeTypes;
 import org.jd.core.v1.util.StringConstants;
 import org.jd.core.v1.util.ZipLoader;
 import org.junit.Test;
@@ -967,6 +968,9 @@ public class TypeMakerTest extends TestCase {
 
     @Test
     public void testMakeFieldType() throws Exception {
+        testMakeFieldType(AbstractDualBidiMap.class, "java/io/ObjectInputStream", "STREAM_MAGIC", "S");
+        testMakeFieldType(AbstractDualBidiMap.class, "org/apache/commons/collections4/list/NodeCachingLinkedList", "size", "I");
+        testMakeFieldType(AbstractDualBidiMap.class, "org/apache/commons/collections4/bidimap/AbstractDualBidiMap$EntrySet", "parent", "Lorg/apache/commons/collections4/bidimap/AbstractDualBidiMap;");
         testMakeFieldType(AbstractFileFilter.class, "org/apache/commons/io/filefilter/AbstractFileFilter", "EMPTY_STRING_ARRAY", "[Ljava/lang/String;");
     }
 
