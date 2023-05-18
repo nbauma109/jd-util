@@ -18,13 +18,7 @@ public class NewArray extends AbstractLineNumberTypeExpression {
     }
 
     public boolean isEmptyNewArray() {
-        if (dimensionExpressionList instanceof IntegerConstantExpression) {
-            IntegerConstantExpression integerConstantExpression = (IntegerConstantExpression) dimensionExpressionList;
-            if (integerConstantExpression.getIntegerValue() == 0) {
-                return true;
-            }
-        }
-        return false;
+        return dimensionExpressionList instanceof IntegerConstantExpression ice && ice.getIntegerValue() == 0;
     }
 
     @Override
