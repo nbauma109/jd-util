@@ -1,5 +1,43 @@
 package org.jd.core.v1.service.converter.classfiletojavasyntax.visitor;
 
+import org.jd.core.v1.model.javasyntax.expression.ArrayExpression;
+import org.jd.core.v1.model.javasyntax.expression.BinaryOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.BooleanExpression;
+import org.jd.core.v1.model.javasyntax.expression.CastExpression;
+import org.jd.core.v1.model.javasyntax.expression.CommentExpression;
+import org.jd.core.v1.model.javasyntax.expression.ConstructorInvocationExpression;
+import org.jd.core.v1.model.javasyntax.expression.ConstructorReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.DoubleConstantExpression;
+import org.jd.core.v1.model.javasyntax.expression.EnumConstantReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.ExpressionVisitor;
+import org.jd.core.v1.model.javasyntax.expression.Expressions;
+import org.jd.core.v1.model.javasyntax.expression.FieldReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.FloatConstantExpression;
+import org.jd.core.v1.model.javasyntax.expression.InstanceOfExpression;
+import org.jd.core.v1.model.javasyntax.expression.IntegerConstantExpression;
+import org.jd.core.v1.model.javasyntax.expression.LambdaFormalParametersExpression;
+import org.jd.core.v1.model.javasyntax.expression.LambdaIdentifiersExpression;
+import org.jd.core.v1.model.javasyntax.expression.LengthExpression;
+import org.jd.core.v1.model.javasyntax.expression.LocalVariableReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.LongConstantExpression;
+import org.jd.core.v1.model.javasyntax.expression.MethodInvocationExpression;
+import org.jd.core.v1.model.javasyntax.expression.MethodReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.NewArray;
+import org.jd.core.v1.model.javasyntax.expression.NewExpression;
+import org.jd.core.v1.model.javasyntax.expression.NewInitializedArray;
+import org.jd.core.v1.model.javasyntax.expression.NoExpression;
+import org.jd.core.v1.model.javasyntax.expression.NullExpression;
+import org.jd.core.v1.model.javasyntax.expression.ObjectTypeReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.ParenthesesExpression;
+import org.jd.core.v1.model.javasyntax.expression.PostOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.PreOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.QualifiedSuperExpression;
+import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
+import org.jd.core.v1.model.javasyntax.expression.SuperConstructorInvocationExpression;
+import org.jd.core.v1.model.javasyntax.expression.SuperExpression;
+import org.jd.core.v1.model.javasyntax.expression.TernaryOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
+import org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression;
 import org.jd.core.v1.model.javasyntax.statement.AssertStatement;
 import org.jd.core.v1.model.javasyntax.statement.BreakStatement;
 import org.jd.core.v1.model.javasyntax.statement.CommentStatement;
@@ -31,7 +69,10 @@ import org.jd.core.v1.model.javasyntax.statement.TryStatement.Resource;
 import org.jd.core.v1.model.javasyntax.statement.TypeDeclarationStatement;
 import org.jd.core.v1.model.javasyntax.statement.WhileStatement;
 
-public class TestVisitor implements StatementVisitor {
+public class TestVisitor implements StatementVisitor, ExpressionVisitor {
+
+    // --- statement counters ---
+
     private int tryStatementCount;
     private int assertStatementCount;
     private int breakStatementCount;
@@ -61,6 +102,50 @@ public class TestVisitor implements StatementVisitor {
     private int catchClauseCount;
     private int typeDeclarationStatementCount;
     private int whileStatementCount;
+
+
+    // --- expression counters ---
+
+    private int arrayExpressionCount;
+    private int binaryOperatorExpressionCount;
+    private int booleanExpressionCount;
+    private int castExpressionCount;
+    private int commentExpressionCount;
+    private int constructorInvocationExpressionCount;
+    private int constructorReferenceExpressionCount;
+    private int doubleConstantExpressionCount;
+    private int enumConstantReferenceExpressionCount;
+    private int expressionsCount;
+    private int fieldReferenceExpressionCount;
+    private int floatConstantExpressionCount;
+    private int instanceOfExpressionCount;
+    private int integerConstantExpressionCount;
+    private int lambdaFormalParametersExpressionCount;
+    private int lambdaIdentifiersExpressionCount;
+    private int lengthExpressionCount;
+    private int localVariableReferenceExpressionCount;
+    private int longConstantExpressionCount;
+    private int methodInvocationExpressionCount;
+    private int methodReferenceExpressionCount;
+    private int newArrayCount;
+    private int newExpressionCount;
+    private int newInitializedArrayCount;
+    private int noExpressionCount;
+    private int nullExpressionCount;
+    private int objectTypeReferenceExpressionCount;
+    private int parenthesesExpressionCount;
+    private int postOperatorExpressionCount;
+    private int preOperatorExpressionCount;
+    private int qualifiedSuperExpressionCount;
+    private int stringConstantExpressionCount;
+    private int superConstructorInvocationExpressionCount;
+    private int superExpressionCount;
+    private int ternaryOperatorExpressionCount;
+    private int thisExpressionCount;
+    private int typeReferenceDotClassExpressionCount;
+
+
+    // --- statement visit methods ---
 
     @Override
     public void visit(TryStatement statement) {
@@ -206,6 +291,197 @@ public class TestVisitor implements StatementVisitor {
     public void visit(WhileStatement statement) {
         whileStatementCount++;
     }
+
+
+    // --- expression visit methods ---
+
+    @Override
+    public void visit(ArrayExpression expression) {
+        arrayExpressionCount++;
+    }
+
+    @Override
+    public void visit(BinaryOperatorExpression expression) {
+        binaryOperatorExpressionCount++;
+    }
+
+    @Override
+    public void visit(BooleanExpression expression) {
+        booleanExpressionCount++;
+    }
+
+    @Override
+    public void visit(CastExpression expression) {
+        castExpressionCount++;
+    }
+
+    @Override
+    public void visit(CommentExpression expression) {
+        commentExpressionCount++;
+    }
+
+    @Override
+    public void visit(ConstructorInvocationExpression expression) {
+        constructorInvocationExpressionCount++;
+    }
+
+    @Override
+    public void visit(ConstructorReferenceExpression expression) {
+        constructorReferenceExpressionCount++;
+    }
+
+    @Override
+    public void visit(DoubleConstantExpression expression) {
+        doubleConstantExpressionCount++;
+    }
+
+    @Override
+    public void visit(EnumConstantReferenceExpression expression) {
+        enumConstantReferenceExpressionCount++;
+    }
+
+    @Override
+    public void visit(Expressions expression) {
+        expressionsCount++;
+    }
+
+    @Override
+    public void visit(FieldReferenceExpression expression) {
+        fieldReferenceExpressionCount++;
+    }
+
+    @Override
+    public void visit(FloatConstantExpression expression) {
+        floatConstantExpressionCount++;
+    }
+
+    @Override
+    public void visit(InstanceOfExpression expression) {
+        instanceOfExpressionCount++;
+    }
+
+    @Override
+    public void visit(IntegerConstantExpression expression) {
+        integerConstantExpressionCount++;
+    }
+
+    @Override
+    public void visit(LambdaFormalParametersExpression expression) {
+        lambdaFormalParametersExpressionCount++;
+    }
+
+    @Override
+    public void visit(LambdaIdentifiersExpression expression) {
+        lambdaIdentifiersExpressionCount++;
+    }
+
+    @Override
+    public void visit(LengthExpression expression) {
+        lengthExpressionCount++;
+    }
+
+    @Override
+    public void visit(LocalVariableReferenceExpression expression) {
+        localVariableReferenceExpressionCount++;
+    }
+
+    @Override
+    public void visit(LongConstantExpression expression) {
+        longConstantExpressionCount++;
+    }
+
+    @Override
+    public void visit(MethodInvocationExpression expression) {
+        methodInvocationExpressionCount++;
+    }
+
+    @Override
+    public void visit(MethodReferenceExpression expression) {
+        methodReferenceExpressionCount++;
+    }
+
+    @Override
+    public void visit(NewArray expression) {
+        newArrayCount++;
+    }
+
+    @Override
+    public void visit(NewExpression expression) {
+        newExpressionCount++;
+    }
+
+    @Override
+    public void visit(NewInitializedArray expression) {
+        newInitializedArrayCount++;
+    }
+
+    @Override
+    public void visit(NoExpression expression) {
+        noExpressionCount++;
+    }
+
+    @Override
+    public void visit(NullExpression expression) {
+        nullExpressionCount++;
+    }
+
+    @Override
+    public void visit(ObjectTypeReferenceExpression expression) {
+        objectTypeReferenceExpressionCount++;
+    }
+
+    @Override
+    public void visit(ParenthesesExpression expression) {
+        parenthesesExpressionCount++;
+    }
+
+    @Override
+    public void visit(PostOperatorExpression expression) {
+        postOperatorExpressionCount++;
+    }
+
+    @Override
+    public void visit(PreOperatorExpression expression) {
+        preOperatorExpressionCount++;
+    }
+
+    @Override
+    public void visit(QualifiedSuperExpression expression) {
+        qualifiedSuperExpressionCount++;
+    }
+
+    @Override
+    public void visit(StringConstantExpression expression) {
+        stringConstantExpressionCount++;
+    }
+
+    @Override
+    public void visit(SuperConstructorInvocationExpression expression) {
+        superConstructorInvocationExpressionCount++;
+    }
+
+    @Override
+    public void visit(SuperExpression expression) {
+        superExpressionCount++;
+    }
+
+    @Override
+    public void visit(TernaryOperatorExpression expression) {
+        ternaryOperatorExpressionCount++;
+    }
+
+    @Override
+    public void visit(ThisExpression expression) {
+        thisExpressionCount++;
+    }
+
+    @Override
+    public void visit(TypeReferenceDotClassExpression expression) {
+        typeReferenceDotClassExpressionCount++;
+    }
+
+
+    // --- getters & setters ---
 
     public int getTryStatementCount() {
         return tryStatementCount;
@@ -437,5 +713,301 @@ public class TestVisitor implements StatementVisitor {
 
     public void setWhileStatementCount(int whileStatementCount) {
         this.whileStatementCount = whileStatementCount;
+    }
+
+    public int getArrayExpressionCount() {
+        return arrayExpressionCount;
+    }
+
+    public void setArrayExpressionCount(int arrayExpressionCount) {
+        this.arrayExpressionCount = arrayExpressionCount;
+    }
+
+    public int getBinaryOperatorExpressionCount() {
+        return binaryOperatorExpressionCount;
+    }
+
+    public void setBinaryOperatorExpressionCount(int binaryOperatorExpressionCount) {
+        this.binaryOperatorExpressionCount = binaryOperatorExpressionCount;
+    }
+
+    public int getBooleanExpressionCount() {
+        return booleanExpressionCount;
+    }
+
+    public void setBooleanExpressionCount(int booleanExpressionCount) {
+        this.booleanExpressionCount = booleanExpressionCount;
+    }
+
+    public int getCastExpressionCount() {
+        return castExpressionCount;
+    }
+
+    public void setCastExpressionCount(int castExpressionCount) {
+        this.castExpressionCount = castExpressionCount;
+    }
+
+    public int getCommentExpressionCount() {
+        return commentExpressionCount;
+    }
+
+    public void setCommentExpressionCount(int commentExpressionCount) {
+        this.commentExpressionCount = commentExpressionCount;
+    }
+
+    public int getConstructorInvocationExpressionCount() {
+        return constructorInvocationExpressionCount;
+    }
+
+    public void setConstructorInvocationExpressionCount(int constructorInvocationExpressionCount) {
+        this.constructorInvocationExpressionCount = constructorInvocationExpressionCount;
+    }
+
+    public int getConstructorReferenceExpressionCount() {
+        return constructorReferenceExpressionCount;
+    }
+
+    public void setConstructorReferenceExpressionCount(int constructorReferenceExpressionCount) {
+        this.constructorReferenceExpressionCount = constructorReferenceExpressionCount;
+    }
+
+    public int getDoubleConstantExpressionCount() {
+        return doubleConstantExpressionCount;
+    }
+
+    public void setDoubleConstantExpressionCount(int doubleConstantExpressionCount) {
+        this.doubleConstantExpressionCount = doubleConstantExpressionCount;
+    }
+
+    public int getEnumConstantReferenceExpressionCount() {
+        return enumConstantReferenceExpressionCount;
+    }
+
+    public void setEnumConstantReferenceExpressionCount(int enumConstantReferenceExpressionCount) {
+        this.enumConstantReferenceExpressionCount = enumConstantReferenceExpressionCount;
+    }
+
+    public int getExpressionsCount() {
+        return expressionsCount;
+    }
+
+    public void setExpressionsCount(int expressionsCount) {
+        this.expressionsCount = expressionsCount;
+    }
+
+    public int getFieldReferenceExpressionCount() {
+        return fieldReferenceExpressionCount;
+    }
+
+    public void setFieldReferenceExpressionCount(int fieldReferenceExpressionCount) {
+        this.fieldReferenceExpressionCount = fieldReferenceExpressionCount;
+    }
+
+    public int getFloatConstantExpressionCount() {
+        return floatConstantExpressionCount;
+    }
+
+    public void setFloatConstantExpressionCount(int floatConstantExpressionCount) {
+        this.floatConstantExpressionCount = floatConstantExpressionCount;
+    }
+
+    public int getInstanceOfExpressionCount() {
+        return instanceOfExpressionCount;
+    }
+
+    public void setInstanceOfExpressionCount(int instanceOfExpressionCount) {
+        this.instanceOfExpressionCount = instanceOfExpressionCount;
+    }
+
+    public int getIntegerConstantExpressionCount() {
+        return integerConstantExpressionCount;
+    }
+
+    public void setIntegerConstantExpressionCount(int integerConstantExpressionCount) {
+        this.integerConstantExpressionCount = integerConstantExpressionCount;
+    }
+
+    public int getLambdaFormalParametersExpressionCount() {
+        return lambdaFormalParametersExpressionCount;
+    }
+
+    public void setLambdaFormalParametersExpressionCount(int lambdaFormalParametersExpressionCount) {
+        this.lambdaFormalParametersExpressionCount = lambdaFormalParametersExpressionCount;
+    }
+
+    public int getLambdaIdentifiersExpressionCount() {
+        return lambdaIdentifiersExpressionCount;
+    }
+
+    public void setLambdaIdentifiersExpressionCount(int lambdaIdentifiersExpressionCount) {
+        this.lambdaIdentifiersExpressionCount = lambdaIdentifiersExpressionCount;
+    }
+
+    public int getLengthExpressionCount() {
+        return lengthExpressionCount;
+    }
+
+    public void setLengthExpressionCount(int lengthExpressionCount) {
+        this.lengthExpressionCount = lengthExpressionCount;
+    }
+
+    public int getLocalVariableReferenceExpressionCount() {
+        return localVariableReferenceExpressionCount;
+    }
+
+    public void setLocalVariableReferenceExpressionCount(int localVariableReferenceExpressionCount) {
+        this.localVariableReferenceExpressionCount = localVariableReferenceExpressionCount;
+    }
+
+    public int getLongConstantExpressionCount() {
+        return longConstantExpressionCount;
+    }
+
+    public void setLongConstantExpressionCount(int longConstantExpressionCount) {
+        this.longConstantExpressionCount = longConstantExpressionCount;
+    }
+
+    public int getMethodInvocationExpressionCount() {
+        return methodInvocationExpressionCount;
+    }
+
+    public void setMethodInvocationExpressionCount(int methodInvocationExpressionCount) {
+        this.methodInvocationExpressionCount = methodInvocationExpressionCount;
+    }
+
+    public int getMethodReferenceExpressionCount() {
+        return methodReferenceExpressionCount;
+    }
+
+    public void setMethodReferenceExpressionCount(int methodReferenceExpressionCount) {
+        this.methodReferenceExpressionCount = methodReferenceExpressionCount;
+    }
+
+    public int getNewArrayCount() {
+        return newArrayCount;
+    }
+
+    public void setNewArrayCount(int newArrayCount) {
+        this.newArrayCount = newArrayCount;
+    }
+
+    public int getNewExpressionCount() {
+        return newExpressionCount;
+    }
+
+    public void setNewExpressionCount(int newExpressionCount) {
+        this.newExpressionCount = newExpressionCount;
+    }
+
+    public int getNewInitializedArrayCount() {
+        return newInitializedArrayCount;
+    }
+
+    public void setNewInitializedArrayCount(int newInitializedArrayCount) {
+        this.newInitializedArrayCount = newInitializedArrayCount;
+    }
+
+    public int getNoExpressionCount() {
+        return noExpressionCount;
+    }
+
+    public void setNoExpressionCount(int noExpressionCount) {
+        this.noExpressionCount = noExpressionCount;
+    }
+
+    public int getNullExpressionCount() {
+        return nullExpressionCount;
+    }
+
+    public void setNullExpressionCount(int nullExpressionCount) {
+        this.nullExpressionCount = nullExpressionCount;
+    }
+
+    public int getObjectTypeReferenceExpressionCount() {
+        return objectTypeReferenceExpressionCount;
+    }
+
+    public void setObjectTypeReferenceExpressionCount(int objectTypeReferenceExpressionCount) {
+        this.objectTypeReferenceExpressionCount = objectTypeReferenceExpressionCount;
+    }
+
+    public int getParenthesesExpressionCount() {
+        return parenthesesExpressionCount;
+    }
+
+    public void setParenthesesExpressionCount(int parenthesesExpressionCount) {
+        this.parenthesesExpressionCount = parenthesesExpressionCount;
+    }
+
+    public int getPostOperatorExpressionCount() {
+        return postOperatorExpressionCount;
+    }
+
+    public void setPostOperatorExpressionCount(int postOperatorExpressionCount) {
+        this.postOperatorExpressionCount = postOperatorExpressionCount;
+    }
+
+    public int getPreOperatorExpressionCount() {
+        return preOperatorExpressionCount;
+    }
+
+    public void setPreOperatorExpressionCount(int preOperatorExpressionCount) {
+        this.preOperatorExpressionCount = preOperatorExpressionCount;
+    }
+
+    public int getQualifiedSuperExpressionCount() {
+        return qualifiedSuperExpressionCount;
+    }
+
+    public void setQualifiedSuperExpressionCount(int qualifiedSuperExpressionCount) {
+        this.qualifiedSuperExpressionCount = qualifiedSuperExpressionCount;
+    }
+
+    public int getStringConstantExpressionCount() {
+        return stringConstantExpressionCount;
+    }
+
+    public void setStringConstantExpressionCount(int stringConstantExpressionCount) {
+        this.stringConstantExpressionCount = stringConstantExpressionCount;
+    }
+
+    public int getSuperConstructorInvocationExpressionCount() {
+        return superConstructorInvocationExpressionCount;
+    }
+
+    public void setSuperConstructorInvocationExpressionCount(int superConstructorInvocationExpressionCount) {
+        this.superConstructorInvocationExpressionCount = superConstructorInvocationExpressionCount;
+    }
+
+    public int getSuperExpressionCount() {
+        return superExpressionCount;
+    }
+
+    public void setSuperExpressionCount(int superExpressionCount) {
+        this.superExpressionCount = superExpressionCount;
+    }
+
+    public int getTernaryOperatorExpressionCount() {
+        return ternaryOperatorExpressionCount;
+    }
+
+    public void setTernaryOperatorExpressionCount(int ternaryOperatorExpressionCount) {
+        this.ternaryOperatorExpressionCount = ternaryOperatorExpressionCount;
+    }
+
+    public int getThisExpressionCount() {
+        return thisExpressionCount;
+    }
+
+    public void setThisExpressionCount(int thisExpressionCount) {
+        this.thisExpressionCount = thisExpressionCount;
+    }
+
+    public int getTypeReferenceDotClassExpressionCount() {
+        return typeReferenceDotClassExpressionCount;
+    }
+
+    public void setTypeReferenceDotClassExpressionCount(int typeReferenceDotClassExpressionCount) {
+        this.typeReferenceDotClassExpressionCount = typeReferenceDotClassExpressionCount;
     }
 }

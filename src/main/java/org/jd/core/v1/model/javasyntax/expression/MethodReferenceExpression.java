@@ -16,11 +16,7 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
     protected final String descriptor;
 
     public MethodReferenceExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor) {
-        super(type);
-        this.expression = expression;
-        this.internalTypeName = internalTypeName;
-        this.name = name;
-        this.descriptor = descriptor;
+        this(UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor);
     }
 
     public MethodReferenceExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor) {
