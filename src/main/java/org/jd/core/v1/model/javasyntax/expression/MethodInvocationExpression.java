@@ -14,6 +14,7 @@ import org.jd.core.v1.model.javasyntax.type.TypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class MethodInvocationExpression extends MethodReferenceExpression {
     private BaseTypeArgument nonWildcardTypeArguments;
@@ -23,14 +24,11 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     private Map<String, TypeArgument> typeBindings;
 
     public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, MethodTypes methodTypes) {
-        super(type, expression, internalTypeName, name, descriptor);
-        this.methodTypes = methodTypes;
+        this(type, expression, internalTypeName, name, descriptor, null, methodTypes);
     }
 
     public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
-        super(type, expression, internalTypeName, name, descriptor);
-        this.parameters = parameters;
-        this.methodTypes = methodTypes;
+        this(UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor, parameters, methodTypes);
     }
 
     public MethodInvocationExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
@@ -40,11 +38,11 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     }
 
     public boolean isVarArgs() {
-        return methodTypes != null && methodTypes.isVarArgs();
+        return Optional.ofNullable(methodTypes).map(MethodTypes::isVarArgs).orElse(false);
     }
 
     public BaseType getExceptionTypes() {
-        return methodTypes == null ? null : methodTypes.getExceptionTypes();
+        return Optional.ofNullable(methodTypes).map(MethodTypes::getExceptionTypes).orElse(null);
     }
     
     public BaseTypeArgument getNonWildcardTypeArguments() {
@@ -91,6 +89,11 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     @Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public Expression copyTo(int lineNumber) {
+        return new MethodInvocationExpression(lineNumber, getType(), expression, getInternalTypeName(), name, descriptor, parameters, methodTypes);
     }
 
     @Override
