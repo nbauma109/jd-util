@@ -21,7 +21,7 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
 
     public MethodReferenceExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor) {
         super(lineNumber, type);
-        this.expression = expression;
+        this.setExpression(expression);
         this.internalTypeName = internalTypeName;
         this.name = name;
         this.descriptor = descriptor;
@@ -59,5 +59,10 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
     @Override
     public Expression copyTo(int lineNumber) {
         return new MethodReferenceExpression(lineNumber, getType(), expression, internalTypeName, name, descriptor);
+    }
+
+    @Override
+    public String toString() {
+        return "MethodReferenceExpression{call " + expression + " :: " + name + "(" + descriptor + ")}";
     }
 }

@@ -85,5 +85,41 @@ public class MethodInvocationExpressionTest {
         TestVisitor testVisitor = new TestVisitor();
         methodInvocationExpression.accept(testVisitor);
         assertEquals(1, testVisitor.getMethodInvocationExpressionCount());
+
+        // Check copyTo
+        Expression copy = methodInvocationExpression.copyTo(42);
+        assertEquals(42, copy.getLineNumber());
+        assertEquals(methodInvocationExpression.getName(), copy.getName());
+        assertEquals(methodInvocationExpression.getInternalTypeName(), copy.getInternalTypeName());
+        assertEquals(methodInvocationExpression.getDescriptor(), copy.getDescriptor());
+        assertEquals(methodInvocationExpression.getExpression(), copy.getExpression());
+    }
+
+    @Test
+    public void testMethodReferenceExpression() {
+        String internalTypeName = "java/lang/String";
+        String name = "testMethod";
+        String descriptor = "(Ljava/lang/String;)V";
+        Expression expression = new StringConstantExpression("Expression");
+
+        Type type = typeMaker.makeFromInternalTypeName(internalTypeName);
+
+        MethodReferenceExpression methodReferenceExpression = new MethodReferenceExpression(type, expression, internalTypeName, name, descriptor);
+
+        // Check toString
+        assertEquals("MethodReferenceExpression{call " + expression + " :: " + name + "(" + descriptor + ")}", methodReferenceExpression.toString());
+
+        // Check accept
+        TestVisitor testVisitor = new TestVisitor();
+        methodReferenceExpression.accept(testVisitor);
+        assertEquals(1, testVisitor.getMethodReferenceExpressionCount());
+
+        // Check copyTo
+        Expression copy = methodReferenceExpression.copyTo(42);
+        assertEquals(42, copy.getLineNumber());
+        assertEquals(methodReferenceExpression.getName(), copy.getName());
+        assertEquals(methodReferenceExpression.getInternalTypeName(), copy.getInternalTypeName());
+        assertEquals(methodReferenceExpression.getDescriptor(), copy.getDescriptor());
+        assertEquals(methodReferenceExpression.getExpression(), copy.getExpression());
     }
 }

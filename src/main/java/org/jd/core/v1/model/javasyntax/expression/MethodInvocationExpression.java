@@ -92,6 +92,11 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     }
 
     @Override
+    public Expression copyTo(int lineNumber) {
+        return new MethodInvocationExpression(lineNumber, getType(), expression, getInternalTypeName(), name, descriptor, parameters, methodTypes);
+    }
+
+    @Override
     public String toString() {
         return "MethodInvocationExpression{call " + expression + " . " + name + "(" + descriptor + ")}";
     }
