@@ -259,6 +259,7 @@ public class ByteCodeUtilTest {
             ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
             Method[] methods = classFile.getMethods();
             byte[] code = methods[6].getCode().getCode();
+            assertEquals(3, ByteCodeUtil.nextInstructionOffset(code, 2));
             assertEquals(31, ByteCodeUtil.nextInstructionOffset(code, 15));
         }
     }
