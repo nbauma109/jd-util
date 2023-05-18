@@ -26,7 +26,7 @@ public class NewExpression extends AbstractLineNumberExpression {
 
     public NewExpression(int lineNumber, ObjectType type, String descriptor, BodyDeclaration bodyDeclaration, boolean varArgs, boolean diamondPossible) {
         super(lineNumber);
-        this.type = type;
+        this.setType(type);
         this.descriptor = descriptor;
         this.bodyDeclaration = bodyDeclaration;
         this.diamondPossible = diamondPossible;
@@ -52,7 +52,7 @@ public class NewExpression extends AbstractLineNumberExpression {
     }
 
     public void setType(ObjectType type) {
-        this.type = type;
+        setObjectType(type);
     }
 
     @Override

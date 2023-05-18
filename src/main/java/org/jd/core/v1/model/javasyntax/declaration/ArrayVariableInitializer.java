@@ -36,7 +36,7 @@ public class ArrayVariableInitializer extends DefaultList<VariableInitializer> i
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        return 31 * result + (type == null ? 0 : type.hashCode());
+        return 31 * result + Objects.hashCode(type);
     }
 
     @Override

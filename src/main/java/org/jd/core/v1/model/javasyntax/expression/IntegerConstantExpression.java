@@ -30,6 +30,10 @@ public class IntegerConstantExpression extends AbstractLineNumberTypeExpression 
         }
     }
 
+    public IntegerConstantExpression(int lineNumber, int value) {
+        this(lineNumber, PrimitiveTypeUtil.getPrimitiveTypeFromValue(value), value);
+    }
+
     @Override
     public int getIntegerValue() {
         return value;
