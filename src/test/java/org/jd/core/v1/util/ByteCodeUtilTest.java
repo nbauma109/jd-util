@@ -235,7 +235,7 @@ public class ByteCodeUtilTest {
             ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
             Method[] methods = classFile.getMethods();
             byte[] code = methods[1].getCode().getCode();
-            assertEquals(5, ByteCodeUtil.nextWideOffset(code, 2));
+            assertEquals(5, ByteCodeUtil.nextInstructionOffset(code, 2));
         }
     }
 
@@ -247,7 +247,7 @@ public class ByteCodeUtilTest {
             ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
             Method[] methods = classFile.getMethods();
             byte[] code = methods[6].getCode().getCode();
-            assertEquals(31, ByteCodeUtil.nextLookupSwitchOffset(code, 13));
+            assertEquals(31, ByteCodeUtil.nextInstructionOffset(code, 13));
         }
     }
     
@@ -259,7 +259,7 @@ public class ByteCodeUtilTest {
             ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
             Method[] methods = classFile.getMethods();
             byte[] code = methods[6].getCode().getCode();
-            assertEquals(31, ByteCodeUtil.nextTableSwitchOffset(code, 15));
+            assertEquals(31, ByteCodeUtil.nextInstructionOffset(code, 15));
         }
     }
 }
