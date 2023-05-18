@@ -1,7 +1,13 @@
 package org.jd.core.v1.util;
 
+import org.apache.bcel.classfile.Method;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jd.core.v1.loader.ClassPathLoader;
+import org.jd.core.v1.model.classfile.ClassFile;
+import org.jd.core.v1.service.deserializer.classfile.ClassFileDeserializer;
 import org.junit.Test;
+
+import java.io.InputStream;
 
 import static org.apache.bcel.Const.*;
 import static org.junit.Assert.assertArrayEquals;
@@ -211,4 +217,49 @@ public class ByteCodeUtilTest {
         assertArrayEquals(ArrayUtils.subarray(expected, 0, 58), ByteCodeUtil.cleanUpByteCode(ArrayUtils.subarray(code, 0, 58)));
     }
 
+    @Test
+    public void testJumpTo() throws Exception {
+        ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
+        ClassFile classFile = classFileDeserializer.loadClassFile(new ClassPathLoader(), "org/apache/commons/io/FileSystemUtils");
+        Method[] methods = classFile.getMethods();
+        byte[] code = methods[11].getCode().getCode();
+        assertFalse(ByteCodeUtil.jumpTo(code, 95, 98));
+        assertTrue(ByteCodeUtil.jumpTo(code, 98, 98));
+    }
+
+    @Test
+    public void testNextTableSwitchOffset() throws Exception {
+        try (InputStream in = getClass().getResourceAsStream("/jar/wide-instructions-jdk17.0.4.jar")) {
+            ZipLoader loader = new ZipLoader(in);
+            ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
+            ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
+            Method[] methods = classFile.getMethods();
+            byte[] code = methods[1].getCode().getCode();
+            assertEquals(5, ByteCodeUtil.nextWideOffset(code, 2));
+        }
+    }
+
+    @Test
+    public void testNextLookupSwitchOffset() throws Exception {
+        try (InputStream in = getClass().getResourceAsStream("/jar/wide-instructions-jdk17.0.4.jar")) {
+            ZipLoader loader = new ZipLoader(in);
+            ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
+            ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
+            Method[] methods = classFile.getMethods();
+            byte[] code = methods[6].getCode().getCode();
+            assertEquals(31, ByteCodeUtil.nextLookupSwitchOffset(code, 13));
+        }
+    }
+    
+    @Test
+    public void testNextWideOffset() throws Exception {
+        try (InputStream in = getClass().getResourceAsStream("/jar/wide-instructions-ecj17.jar")) {
+            ZipLoader loader = new ZipLoader(in);
+            ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
+            ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
+            Method[] methods = classFile.getMethods();
+            byte[] code = methods[6].getCode().getCode();
+            assertEquals(31, ByteCodeUtil.nextTableSwitchOffset(code, 15));
+        }
+    }
 }
