@@ -17,8 +17,12 @@ public interface VersionAware {
     }
 
     default String getMainAttribute(String attributeName) throws IOException {
-        String className = getClass().getSimpleName() + StringConstants.CLASS_FILE_SUFFIX;
-        String classPath = getClass().getResource(className).toString();
+        return getMainAttribute(getClass(), attributeName);
+    }
+
+    default String getMainAttribute(Class<?> clazz, String attributeName) throws IOException {
+        String className = clazz.getSimpleName() + StringConstants.CLASS_FILE_SUFFIX;
+        String classPath = clazz.getResource(className).toString();
         if (!classPath.startsWith("jar")) {
             return findFirstMainAttribute(attributeName);
         }
