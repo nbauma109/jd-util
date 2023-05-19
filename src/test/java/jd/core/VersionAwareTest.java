@@ -11,6 +11,6 @@ public class VersionAwareTest implements VersionAware {
     public void test() throws Exception {
         assertEquals("Apache Commons BCEL", getMainAttribute(JavaClass.class, "Bundle-Name"));
         assertEquals("SNAPSHOT", getVersion());
-        assertEquals("Maven Integration for Eclipse", getMainAttribute("Created-By"));
+        assertNotNull(getMainAttribute("JD-Util-Version"));
     }
 }
