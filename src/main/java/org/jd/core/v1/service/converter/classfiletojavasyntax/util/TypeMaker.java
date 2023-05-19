@@ -373,9 +373,7 @@ public class TypeMaker {
             methodTypes.setTypeParameters(parseTypeParameters(reader));
 
             // Parameters
-            if (reader.read() != '(') {
-                throw new SignatureFormatException(signature);
-            }
+            ensureReadCharacter(reader, '(');
 
             Type firstParameterType = parseReferenceTypeSignature(reader);
 
@@ -395,9 +393,7 @@ public class TypeMaker {
                 methodTypes.setParameterTypes(types);
             }
 
-            if (reader.read() != ')') {
-                throw new SignatureFormatException(signature);
-            }
+            ensureReadCharacter(reader, ')');
 
             // Result
             methodTypes.setReturnedType(parseReferenceTypeSignature(reader));
@@ -474,9 +470,7 @@ public class TypeMaker {
                 typeParameters = list;
             }
 
-            if (reader.read() != '>') {
-                throw new SignatureFormatException(reader.signature);
-            }
+            ensureReadCharacter(reader, '>');
 
             return typeParameters;
         }
@@ -555,11 +549,7 @@ public class TypeMaker {
         if (reader.nextEqualsTo('L')) {
             // Skip 'L'. Parse 'PackageSpecifier* SimpleClassTypeSignature'
             int index = ++reader.index;
-            char endMarker = reader.searchEndMarker();
-
-            if (endMarker == 0) {
-                throw new SignatureFormatException(reader.signature);
-            }
+            char endMarker = ensureNonZeroEndMarker(reader);
 
             String internalTypeName = reader.substring(index);
             ObjectType ot = makeFromInternalTypeName(internalTypeName);
@@ -568,9 +558,7 @@ public class TypeMaker {
                 // Skip '<'
                 reader.index++;
                 ot = ot.createType(parseTypeArguments(reader));
-                if (reader.read() != '>') {
-                    throw new SignatureFormatException(reader.signature);
-                }
+                ensureReadCharacter(reader, '>');
             }
 
             String name;
@@ -579,11 +567,7 @@ public class TypeMaker {
             while (reader.nextEqualsTo('.')) {
                 // Skip '.'
                 index = ++reader.index;
-                endMarker = reader.searchEndMarker();
-
-                if (endMarker == 0) {
-                    throw new SignatureFormatException(reader.signature);
-                }
+                endMarker = ensureNonZeroEndMarker(reader);
 
                 name = reader.substring(index);
                 internalTypeName = String.join("$", internalTypeName, name);
@@ -599,9 +583,7 @@ public class TypeMaker {
                     reader.index++;
 
                     BaseTypeArgument typeArguments = parseTypeArguments(reader);
-                    if (reader.read() != '>') {
-                        throw new SignatureFormatException(reader.signature);
-                    }
+                    ensureReadCharacter(reader, '>');
 
                     ot = new InnerObjectType(internalTypeName, qualifiedName, name, typeArguments, ot);
                 } else {
@@ -615,6 +597,20 @@ public class TypeMaker {
             return dimension==0 ? ot : (ObjectType)ot.createType(dimension);
         }
         return null;
+    }
+
+    private static char ensureNonZeroEndMarker(SignatureReader reader) {
+        char endMarker = reader.searchEndMarker();
+        if (endMarker == 0) {
+            throw new SignatureFormatException(reader.signature);
+        }
+        return endMarker;
+    }
+
+    private static void ensureReadCharacter(SignatureReader reader, char closingCharacter) {
+        if (reader.read() != closingCharacter) {
+            throw new SignatureFormatException(reader.signature);
+        }
     }
 
     /** Rules: TypeArguments: '<' TypeArgument+ '>' */
@@ -764,19 +760,13 @@ public class TypeMaker {
             reader.index++;
 
             // Parse 'PackageSpecifier* SimpleClassTypeSignature'
-            char endMarker = reader.searchEndMarker();
-
-            if (endMarker == 0) {
-                throw new SignatureFormatException(reader.signature);
-            }
+            char endMarker = ensureNonZeroEndMarker(reader);
 
             if (endMarker == '<') {
                 // Skip '<'
                 reader.index++;
                 isATypeArguments(reader);
-                if (reader.read() != '>') {
-                    throw new SignatureFormatException(reader.signature);
-                }
+                ensureReadCharacter(reader, '>');
             }
 
             // Parse 'ClassTypeSignatureSuffix*'
@@ -784,19 +774,13 @@ public class TypeMaker {
                 // Skip '.'
                 reader.index++;
 
-                endMarker = reader.searchEndMarker();
-
-                if (endMarker == 0) {
-                    throw new SignatureFormatException(reader.signature);
-                }
+                endMarker = ensureNonZeroEndMarker(reader);
 
                 if (endMarker == '<') {
                     // Skip '<'
                     reader.index++;
                     isATypeArguments(reader);
-                    if (reader.read() != '>') {
-                        throw new SignatureFormatException(reader.signature);
-                    }
+                    ensureReadCharacter(reader, '>');
                 }
             }
 
@@ -1324,10 +1308,6 @@ public class TypeMaker {
 
     public void setMethodReturnedType(String internalTypeName, String methodName, String descriptor, Type type) {
         makeMethodTypes(internalTypeName, methodName, descriptor).setReturnedType(type);
-    }
-
-    public MethodTypes makeMethodTypes(String internalTypeName, String descriptor) {
-        return parseMethodSignature(internalTypeName, null, descriptor, null);
     }
 
     public MethodTypes makeMethodTypes(String internalTypeName, String methodName, String descriptor) {
