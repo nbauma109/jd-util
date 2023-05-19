@@ -1,28 +1,6 @@
 package org.jd.core.v1.service.converter.classfiletojavasyntax.visitor;
 
-import org.jd.core.v1.model.javasyntax.declaration.AnnotationDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.ArrayVariableInitializer;
-import org.jd.core.v1.model.javasyntax.declaration.BodyDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.ClassDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.ConstructorDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.DeclarationVisitor;
-import org.jd.core.v1.model.javasyntax.declaration.EnumDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.EnumDeclaration.Constant;
-import org.jd.core.v1.model.javasyntax.declaration.ExpressionVariableInitializer;
-import org.jd.core.v1.model.javasyntax.declaration.FieldDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.FieldDeclarator;
-import org.jd.core.v1.model.javasyntax.declaration.FieldDeclarators;
-import org.jd.core.v1.model.javasyntax.declaration.FormalParameter;
-import org.jd.core.v1.model.javasyntax.declaration.FormalParameters;
-import org.jd.core.v1.model.javasyntax.declaration.InterfaceDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.LocalVariableDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.LocalVariableDeclarator;
-import org.jd.core.v1.model.javasyntax.declaration.LocalVariableDeclarators;
-import org.jd.core.v1.model.javasyntax.declaration.MemberDeclarations;
-import org.jd.core.v1.model.javasyntax.declaration.MethodDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.ModuleDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.StaticInitializerDeclaration;
-import org.jd.core.v1.model.javasyntax.declaration.TypeDeclarations;
+import org.jd.core.v1.model.javasyntax.expression.AbstractNopExpressionVisitor;
 import org.jd.core.v1.model.javasyntax.expression.ArrayExpression;
 import org.jd.core.v1.model.javasyntax.expression.BinaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.BooleanExpression;
@@ -32,7 +10,6 @@ import org.jd.core.v1.model.javasyntax.expression.ConstructorInvocationExpressio
 import org.jd.core.v1.model.javasyntax.expression.ConstructorReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.DoubleConstantExpression;
 import org.jd.core.v1.model.javasyntax.expression.EnumConstantReferenceExpression;
-import org.jd.core.v1.model.javasyntax.expression.ExpressionVisitor;
 import org.jd.core.v1.model.javasyntax.expression.Expressions;
 import org.jd.core.v1.model.javasyntax.expression.FieldReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.FloatConstantExpression;
@@ -92,7 +69,7 @@ import org.jd.core.v1.model.javasyntax.statement.TryStatement.Resource;
 import org.jd.core.v1.model.javasyntax.statement.TypeDeclarationStatement;
 import org.jd.core.v1.model.javasyntax.statement.WhileStatement;
 
-public class TestVisitor implements StatementVisitor, ExpressionVisitor, DeclarationVisitor {
+public class TestVisitor extends AbstractNopExpressionVisitor implements StatementVisitor {
 
     // --- statement counters ---
 
@@ -166,32 +143,6 @@ public class TestVisitor implements StatementVisitor, ExpressionVisitor, Declara
     private int ternaryOperatorExpressionCount;
     private int thisExpressionCount;
     private int typeReferenceDotClassExpressionCount;
-
-
-    // --- declaration counters ---
-
-    private int annotationDeclarationCount;
-    private int arrayVariableInitializerCount;
-    private int bodyDeclarationCount;
-    private int classDeclarationCount;
-    private int constructorDeclarationCount;
-    private int enumDeclarationCount;
-    private int constantCount;
-    private int expressionVariableInitializerCount;
-    private int fieldDeclarationCount;
-    private int fieldDeclaratorCount;
-    private int fieldDeclaratorsCount;
-    private int formalParameterCount;
-    private int formalParametersCount;
-    private int interfaceDeclarationCount;
-    private int localVariableDeclarationCount;
-    private int localVariableDeclaratorCount;
-    private int localVariableDeclaratorsCount;
-    private int methodDeclarationCount;
-    private int memberDeclarationsCount;
-    private int moduleDeclarationCount;
-    private int staticInitializerDeclarationCount;
-    private int typeDeclarationsCount;
 
 
     // --- statement visit methods ---
@@ -346,279 +297,226 @@ public class TestVisitor implements StatementVisitor, ExpressionVisitor, Declara
 
     @Override
     public void visit(ArrayExpression expression) {
+        super.visit(expression);
         arrayExpressionCount++;
     }
 
     @Override
     public void visit(BinaryOperatorExpression expression) {
+        super.visit(expression);
         binaryOperatorExpressionCount++;
     }
 
     @Override
     public void visit(BooleanExpression expression) {
+        super.visit(expression);
         booleanExpressionCount++;
     }
 
     @Override
     public void visit(CastExpression expression) {
+        super.visit(expression);
         castExpressionCount++;
     }
 
     @Override
     public void visit(CommentExpression expression) {
+        super.visit(expression);
         commentExpressionCount++;
     }
 
     @Override
     public void visit(ConstructorInvocationExpression expression) {
+        super.visit(expression);
         constructorInvocationExpressionCount++;
     }
 
     @Override
     public void visit(ConstructorReferenceExpression expression) {
+        super.visit(expression);
         constructorReferenceExpressionCount++;
     }
 
     @Override
     public void visit(DoubleConstantExpression expression) {
+        super.visit(expression);
         doubleConstantExpressionCount++;
     }
 
     @Override
     public void visit(EnumConstantReferenceExpression expression) {
+        super.visit(expression);
         enumConstantReferenceExpressionCount++;
     }
 
     @Override
     public void visit(Expressions expression) {
+        super.visit(expression);
         expressionsCount++;
     }
 
     @Override
     public void visit(FieldReferenceExpression expression) {
+        super.visit(expression);
         fieldReferenceExpressionCount++;
     }
 
     @Override
     public void visit(FloatConstantExpression expression) {
+        super.visit(expression);
         floatConstantExpressionCount++;
     }
 
     @Override
     public void visit(InstanceOfExpression expression) {
+        super.visit(expression);
         instanceOfExpressionCount++;
     }
 
     @Override
     public void visit(IntegerConstantExpression expression) {
+        super.visit(expression);
         integerConstantExpressionCount++;
     }
 
     @Override
     public void visit(LambdaFormalParametersExpression expression) {
+        super.visit(expression);
         lambdaFormalParametersExpressionCount++;
     }
 
     @Override
     public void visit(LambdaIdentifiersExpression expression) {
+        super.visit(expression);
         lambdaIdentifiersExpressionCount++;
     }
 
     @Override
     public void visit(LengthExpression expression) {
+        super.visit(expression);
         lengthExpressionCount++;
     }
 
     @Override
     public void visit(LocalVariableReferenceExpression expression) {
+        super.visit(expression);
         localVariableReferenceExpressionCount++;
     }
 
     @Override
     public void visit(LongConstantExpression expression) {
+        super.visit(expression);
         longConstantExpressionCount++;
     }
 
     @Override
     public void visit(MethodInvocationExpression expression) {
+        super.visit(expression);
         methodInvocationExpressionCount++;
     }
 
     @Override
     public void visit(MethodReferenceExpression expression) {
+        super.visit(expression);
         methodReferenceExpressionCount++;
     }
 
     @Override
     public void visit(NewArray expression) {
+        super.visit(expression);
         newArrayCount++;
     }
 
     @Override
     public void visit(NewExpression expression) {
+        super.visit(expression);
         newExpressionCount++;
     }
 
     @Override
     public void visit(NewInitializedArray expression) {
+        super.visit(expression);
         newInitializedArrayCount++;
     }
 
     @Override
     public void visit(NoExpression expression) {
+        super.visit(expression);
         noExpressionCount++;
     }
 
     @Override
     public void visit(NullExpression expression) {
+        super.visit(expression);
         nullExpressionCount++;
     }
 
     @Override
     public void visit(ObjectTypeReferenceExpression expression) {
+        super.visit(expression);
         objectTypeReferenceExpressionCount++;
     }
 
     @Override
     public void visit(ParenthesesExpression expression) {
+        super.visit(expression);
         parenthesesExpressionCount++;
     }
 
     @Override
     public void visit(PostOperatorExpression expression) {
+        super.visit(expression);
         postOperatorExpressionCount++;
     }
 
     @Override
     public void visit(PreOperatorExpression expression) {
+        super.visit(expression);
         preOperatorExpressionCount++;
     }
 
     @Override
     public void visit(QualifiedSuperExpression expression) {
+        super.visit(expression);
         qualifiedSuperExpressionCount++;
     }
 
     @Override
     public void visit(StringConstantExpression expression) {
+        super.visit(expression);
         stringConstantExpressionCount++;
     }
 
     @Override
     public void visit(SuperConstructorInvocationExpression expression) {
+        super.visit(expression);
         superConstructorInvocationExpressionCount++;
     }
 
     @Override
     public void visit(SuperExpression expression) {
+        super.visit(expression);
         superExpressionCount++;
     }
 
     @Override
     public void visit(TernaryOperatorExpression expression) {
+        super.visit(expression);
         ternaryOperatorExpressionCount++;
     }
 
     @Override
     public void visit(ThisExpression expression) {
+        super.visit(expression);
         thisExpressionCount++;
     }
 
     @Override
     public void visit(TypeReferenceDotClassExpression expression) {
+        super.visit(expression);
         typeReferenceDotClassExpressionCount++;
     }
 
-
-    // --- declaration visit methods ---
-
-    public void visit(AnnotationDeclaration declaration) {
-        annotationDeclarationCount++;
-    }
-
-    public void visit(ArrayVariableInitializer declaration) {
-        arrayVariableInitializerCount++;
-    }
-
-    public void visit(BodyDeclaration declaration) {
-        bodyDeclarationCount++;
-    }
-
-    public void visit(ClassDeclaration declaration) {
-        classDeclarationCount++;
-    }
-
-    public void visit(ConstructorDeclaration declaration) {
-        constructorDeclarationCount++;
-    }
-
-    public void visit(EnumDeclaration declaration) {
-        enumDeclarationCount++;
-    }
-
-    public void visit(Constant declaration) {
-        constantCount++;
-    }
-
-    public void visit(ExpressionVariableInitializer declaration) {
-        expressionVariableInitializerCount++;
-    }
-
-    public void visit(FieldDeclaration declaration) {
-        fieldDeclarationCount++;
-    }
-
-    public void visit(FieldDeclarator declaration) {
-        fieldDeclaratorCount++;
-    }
-
-    public void visit(FieldDeclarators declarations) {
-        fieldDeclaratorsCount++;
-    }
-
-    public void visit(FormalParameter declaration) {
-        formalParameterCount++;
-    }
-
-    public void visit(FormalParameters declarations) {
-        formalParametersCount++;
-    }
-
-    public void visit(InterfaceDeclaration declaration) {
-        interfaceDeclarationCount++;
-    }
-
-    public void visit(LocalVariableDeclaration declaration) {
-        localVariableDeclarationCount++;
-    }
-
-    public void visit(LocalVariableDeclarator declarator) {
-        localVariableDeclaratorCount++;
-    }
-
-    public void visit(LocalVariableDeclarators declarators) {
-        localVariableDeclaratorsCount++;
-    }
-
-    public void visit(MethodDeclaration declaration) {
-        methodDeclarationCount++;
-    }
-
-    public void visit(MemberDeclarations declarations) {
-        memberDeclarationsCount++;
-    }
-
-    public void visit(ModuleDeclaration declaration) {
-        moduleDeclarationCount++;
-    }
-
-    public void visit(StaticInitializerDeclaration declaration) {
-        staticInitializerDeclarationCount++;
-    }
-
-    public void visit(TypeDeclarations declarations) {
-        typeDeclarationsCount++;
-    }
 
     // --- getters & setters ---
 
@@ -1148,181 +1046,5 @@ public class TestVisitor implements StatementVisitor, ExpressionVisitor, Declara
 
     public void setTypeReferenceDotClassExpressionCount(int typeReferenceDotClassExpressionCount) {
         this.typeReferenceDotClassExpressionCount = typeReferenceDotClassExpressionCount;
-    }
-
-    public int getAnnotationDeclarationCount() {
-        return annotationDeclarationCount;
-    }
-
-    public void setAnnotationDeclarationCount(int annotationDeclarationCount) {
-        this.annotationDeclarationCount = annotationDeclarationCount;
-    }
-
-    public int getArrayVariableInitializerCount() {
-        return arrayVariableInitializerCount;
-    }
-
-    public void setArrayVariableInitializerCount(int arrayVariableInitializerCount) {
-        this.arrayVariableInitializerCount = arrayVariableInitializerCount;
-    }
-
-    public int getBodyDeclarationCount() {
-        return bodyDeclarationCount;
-    }
-
-    public void setBodyDeclarationCount(int bodyDeclarationCount) {
-        this.bodyDeclarationCount = bodyDeclarationCount;
-    }
-
-    public int getClassDeclarationCount() {
-        return classDeclarationCount;
-    }
-
-    public void setClassDeclarationCount(int classDeclarationCount) {
-        this.classDeclarationCount = classDeclarationCount;
-    }
-
-    public int getConstructorDeclarationCount() {
-        return constructorDeclarationCount;
-    }
-
-    public void setConstructorDeclarationCount(int constructorDeclarationCount) {
-        this.constructorDeclarationCount = constructorDeclarationCount;
-    }
-
-    public int getEnumDeclarationCount() {
-        return enumDeclarationCount;
-    }
-
-    public void setEnumDeclarationCount(int enumDeclarationCount) {
-        this.enumDeclarationCount = enumDeclarationCount;
-    }
-
-    public int getConstantCount() {
-        return constantCount;
-    }
-
-    public void setConstantCount(int constantCount) {
-        this.constantCount = constantCount;
-    }
-
-    public int getExpressionVariableInitializerCount() {
-        return expressionVariableInitializerCount;
-    }
-
-    public void setExpressionVariableInitializerCount(int expressionVariableInitializerCount) {
-        this.expressionVariableInitializerCount = expressionVariableInitializerCount;
-    }
-
-    public int getFieldDeclarationCount() {
-        return fieldDeclarationCount;
-    }
-
-    public void setFieldDeclarationCount(int fieldDeclarationCount) {
-        this.fieldDeclarationCount = fieldDeclarationCount;
-    }
-
-    public int getFieldDeclaratorCount() {
-        return fieldDeclaratorCount;
-    }
-
-    public void setFieldDeclaratorCount(int fieldDeclaratorCount) {
-        this.fieldDeclaratorCount = fieldDeclaratorCount;
-    }
-
-    public int getFieldDeclaratorsCount() {
-        return fieldDeclaratorsCount;
-    }
-
-    public void setFieldDeclaratorsCount(int fieldDeclaratorsCount) {
-        this.fieldDeclaratorsCount = fieldDeclaratorsCount;
-    }
-
-    public int getFormalParameterCount() {
-        return formalParameterCount;
-    }
-
-    public void setFormalParameterCount(int formalParameterCount) {
-        this.formalParameterCount = formalParameterCount;
-    }
-
-    public int getFormalParametersCount() {
-        return formalParametersCount;
-    }
-
-    public void setFormalParametersCount(int formalParametersCount) {
-        this.formalParametersCount = formalParametersCount;
-    }
-
-    public int getInterfaceDeclarationCount() {
-        return interfaceDeclarationCount;
-    }
-
-    public void setInterfaceDeclarationCount(int interfaceDeclarationCount) {
-        this.interfaceDeclarationCount = interfaceDeclarationCount;
-    }
-
-    public int getLocalVariableDeclarationCount() {
-        return localVariableDeclarationCount;
-    }
-
-    public void setLocalVariableDeclarationCount(int localVariableDeclarationCount) {
-        this.localVariableDeclarationCount = localVariableDeclarationCount;
-    }
-
-    public int getLocalVariableDeclaratorCount() {
-        return localVariableDeclaratorCount;
-    }
-
-    public void setLocalVariableDeclaratorCount(int localVariableDeclaratorCount) {
-        this.localVariableDeclaratorCount = localVariableDeclaratorCount;
-    }
-
-    public int getLocalVariableDeclaratorsCount() {
-        return localVariableDeclaratorsCount;
-    }
-
-    public void setLocalVariableDeclaratorsCount(int localVariableDeclaratorsCount) {
-        this.localVariableDeclaratorsCount = localVariableDeclaratorsCount;
-    }
-
-    public int getMethodDeclarationCount() {
-        return methodDeclarationCount;
-    }
-
-    public void setMethodDeclarationCount(int methodDeclarationCount) {
-        this.methodDeclarationCount = methodDeclarationCount;
-    }
-
-    public int getMemberDeclarationsCount() {
-        return memberDeclarationsCount;
-    }
-
-    public void setMemberDeclarationsCount(int memberDeclarationsCount) {
-        this.memberDeclarationsCount = memberDeclarationsCount;
-    }
-
-    public int getModuleDeclarationCount() {
-        return moduleDeclarationCount;
-    }
-
-    public void setModuleDeclarationCount(int moduleDeclarationCount) {
-        this.moduleDeclarationCount = moduleDeclarationCount;
-    }
-
-    public int getStaticInitializerDeclarationCount() {
-        return staticInitializerDeclarationCount;
-    }
-
-    public void setStaticInitializerDeclarationCount(int staticInitializerDeclarationCount) {
-        this.staticInitializerDeclarationCount = staticInitializerDeclarationCount;
-    }
-
-    public int getTypeDeclarationsCount() {
-        return typeDeclarationsCount;
-    }
-
-    public void setTypeDeclarationsCount(int typeDeclarationsCount) {
-        this.typeDeclarationsCount = typeDeclarationsCount;
     }
 }
