@@ -1031,6 +1031,41 @@ public class TypeMakerTest extends TestCase {
     }
 
     @Test
+    public void testSetFieldType() {
+        String internalTypeName = "java/lang/String";
+        String fieldName = "hash";
+        ObjectType type = ObjectType.TYPE_PRIMITIVE_INT;
+
+        typeMaker.setFieldType(internalTypeName, fieldName, type);
+
+        Type fieldtype = typeMaker.makeFieldType(internalTypeName, fieldName, "I");
+        assertEquals(type, fieldtype);
+    }
+
+    @Test
+    public void testSetMethodReturnedType() {
+        String internalTypeName = "java/lang/String";
+        String methodName = "toString";
+        String descriptor = "()Ljava/lang/String;";
+        Type type = ObjectType.TYPE_STRING;
+
+        typeMaker.setMethodReturnedType(internalTypeName, methodName, descriptor, type);
+
+        MethodTypes methodTypes = typeMaker.makeMethodTypes(internalTypeName, methodName, descriptor);
+        Type returnType = methodTypes.getReturnedType();
+        assertEquals(type, returnType);
+    }
+
+    @Test
+    public void testGetThisType() {
+        String internalTypeName = "java/lang/String";
+        TypeMaker.TypeTypes typeTypes = typeMaker.makeTypeTypes(internalTypeName);
+        ObjectType thisType = typeTypes.getThisType();
+
+        assertNotNull(thisType);
+    }
+
+    @Test
     public void testMakeFieldType() throws Exception {
         testMakeFieldType(AbstractDualBidiMap.class, "java/io/ObjectInputStream", "STREAM_MAGIC", "S");
         testMakeFieldType(AbstractDualBidiMap.class, "org/apache/commons/collections4/list/NodeCachingLinkedList", "size", "I");
