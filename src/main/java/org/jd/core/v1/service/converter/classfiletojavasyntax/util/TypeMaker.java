@@ -449,9 +449,7 @@ public class TypeMaker {
 
             TypeParameter firstTypeParameter = parseTypeParameter(reader);
 
-            if (firstTypeParameter == null) {
-                throw new SignatureFormatException(reader.signature);
-            }
+            requireNonNull(reader, firstTypeParameter);
 
             TypeParameter nextTypeParameter = parseTypeParameter(reader);
             BaseTypeParameter typeParameters;
@@ -617,9 +615,7 @@ public class TypeMaker {
     private BaseTypeArgument parseTypeArguments(SignatureReader reader) {
         TypeArgument firstTypeArgument = parseTypeArgument(reader);
 
-        if (firstTypeArgument == null) {
-            throw new SignatureFormatException(reader.signature);
-        }
+        requireNonNull(reader, firstTypeArgument);
 
         TypeArgument nextTypeArgument = parseTypeArgument(reader);
 
@@ -635,6 +631,12 @@ public class TypeMaker {
         } while (nextTypeArgument != null);
 
         return typeArguments;
+    }
+
+    private static void requireNonNull(SignatureReader reader, Object o) {
+        if (o == null) {
+            throw new SignatureFormatException(reader.signature);
+        }
     }
 
     private Type parseReferenceTypeSignature(String signature) {
@@ -1725,7 +1727,8 @@ public class TypeMaker {
         if (count == 0) {
             throw new ClassFormatException("Zero-length constant pool");
         }
-                Object[] constants = new Object[count];
+
+        Object[] constants = new Object[count];
 
         int tag;
         for (int i=1; i<count; i++) {
