@@ -719,6 +719,13 @@ public class TypeMakerTest extends TestCase {
         ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/HashMap");
         ObjectType treeMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap");
         ObjectType abstMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/AbstractMap");
+        ObjectType set = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/Set");
+        ObjectType unmodifiableEntrySet = typeMaker.makeFromInternalTypeName("org/apache/commons/collections4/map/UnmodifiableEntrySet");
+        ObjectType mapEntry = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/Map$Entry");
+        TypeArguments typeArguments = new TypeArguments(Arrays.asList(new GenericType("K"), new GenericType("V")));
+        mapEntry = mapEntry.createType(typeArguments);
+        unmodifiableEntrySet = unmodifiableEntrySet.createType(typeArguments);
+        set = set.createType(mapEntry);
         assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, hashMap));
         assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, treeMap));
         assertEquals(treeMap, typeMaker.searchSuperParameterizedType(ObjectType.TYPE_UNDEFINED_OBJECT, treeMap));
@@ -726,8 +733,9 @@ public class TypeMakerTest extends TestCase {
         assertEquals(ObjectType.TYPE_CLASS, typeMaker.searchSuperParameterizedType(ObjectType.TYPE_CLASS, ObjectType.TYPE_CLASS));
         assertNull(typeMaker.searchSuperParameterizedType((ObjectType) ObjectType.TYPE_CLASS.createType(1), ObjectType.TYPE_CLASS));
         assertNull(typeMaker.searchSuperParameterizedType(ObjectType.TYPE_CLASS, (ObjectType) ObjectType.TYPE_CLASS.createType(1)));
+        assertEquals(set, typeMaker.searchSuperParameterizedType(set, unmodifiableEntrySet));
     }
-
+    
     @Test
     public void testMakeFromDescriptorOrInternalTypeName() throws Exception {
         ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/HashMap;");
@@ -912,6 +920,23 @@ public class TypeMakerTest extends TestCase {
     }
 
     @Test
+    public void testIsAssignable4() {
+        // Prepare some test data
+        ObjectType left = typeMaker.makeFromInternalTypeName("java/util/Set");
+        left = left.createType(ObjectType.TYPE_STRING);
+        Map<String, BaseType> typeBounds = Collections.emptyMap();
+        Map<String, TypeArgument> typeBindings = new HashMap<>();
+        typeBindings.put("K", ObjectType.TYPE_STRING);
+        typeBindings.put("V", left);
+
+        ObjectType right = typeMaker.makeFromInternalTypeName("java/util/Collection");
+        right = right.createType(new WildcardExtendsTypeArgument(ObjectType.TYPE_STRING));
+
+        // Verify the result
+        assertFalse(typeMaker.isAssignable(typeBindings, typeBounds, left, right));
+    }
+
+    @Test
     public void testMakeMethodTypes() throws Exception {
         MethodTypes methodTypes = typeMaker.makeMethodTypes("org/apache/logging/log4j/util/IndexedStringMap", "size", "()I");
         assertEquals(Const.ACC_ABSTRACT | Const.ACC_PUBLIC, methodTypes.getAccessFlags());
@@ -927,6 +952,15 @@ public class TypeMakerTest extends TestCase {
         assertNotNull(methodTypes.getParameterTypes());
         assertEquals("[ObjectType{java/util/function/Consumer<WildcardSuperTypeArgument{? super GenericType{E}}>}]",
                    methodTypes.getParameterTypes().toString());
+        assertNull(methodTypes.getTypeParameters());
+
+        methodTypes = typeMaker.makeMethodTypes("org/apache/logging/log4j/spi/ThreadContextStack", "addAll", "(Ljava/util/Collection;)Z");
+        assertEquals(0, methodTypes.getAccessFlags());
+        assertEquals(PrimitiveType.TYPE_BOOLEAN, methodTypes.getReturnedType());
+        assertNull(methodTypes.getExceptionTypes());
+        assertNotNull(methodTypes.getParameterTypes());
+        assertEquals("[ObjectType{java/util/Collection<WildcardExtendsTypeArgument{? extends ObjectType{java/lang/String}}>}]",
+                methodTypes.getParameterTypes().toString());
         assertNull(methodTypes.getTypeParameters());
 
         methodTypes = typeMaker.makeMethodTypes("java/util/LinkedList", "iterator", "()Ljava/util/Iterator;");
