@@ -25,7 +25,7 @@ public class FieldDeclaration implements MemberDeclaration {
         this.flags = flags;
         this.annotationReferences = annotationReferences;
         this.type = type;
-        this.fieldDeclarators = fieldDeclarators;
+        this.setFieldDeclarators(fieldDeclarators);
         fieldDeclarators.setFieldDeclaration(this);
     }
 
