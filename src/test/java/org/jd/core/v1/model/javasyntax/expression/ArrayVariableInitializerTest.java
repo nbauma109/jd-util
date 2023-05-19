@@ -4,6 +4,7 @@ import org.jd.core.v1.model.javasyntax.declaration.ArrayVariableInitializer;
 import org.jd.core.v1.model.javasyntax.declaration.ExpressionVariableInitializer;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.Type;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.TestDeclarationVisitor;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.TestVisitor;
 import org.junit.Test;
 
@@ -42,7 +43,7 @@ public class ArrayVariableInitializerTest {
         assertNotEquals(arrayInitializer1, "Not an ArrayVariableInitializer");
         assertEquals(arrayInitializer1, arrayInitializer1);
 
-        TestVisitor visitor = new TestVisitor();
+        TestDeclarationVisitor visitor = new TestDeclarationVisitor();
         arrayInitializer1.accept(visitor);
         assertEquals(1, visitor.getArrayVariableInitializerCount());
 
