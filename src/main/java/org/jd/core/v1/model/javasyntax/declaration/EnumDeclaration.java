@@ -62,7 +62,7 @@ public class EnumDeclaration extends TypeDeclaration {
         public Constant(int lineNumber, String name, BaseExpression arguments, BodyDeclaration bodyDeclaration) {
             this.lineNumber = lineNumber;
             this.name = name;
-            this.arguments = arguments;
+            this.setArguments(arguments);
             this.bodyDeclaration = bodyDeclaration;
         }
 
