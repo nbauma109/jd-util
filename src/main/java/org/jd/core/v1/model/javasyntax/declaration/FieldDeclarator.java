@@ -14,7 +14,7 @@ public class FieldDeclarator implements BaseFieldDeclarator {
     private VariableInitializer variableInitializer;
 
     public FieldDeclarator(String name) {
-        this.name = name;
+        this(name, null);
     }
 
     public FieldDeclarator(String name, VariableInitializer variableInitializer) {
