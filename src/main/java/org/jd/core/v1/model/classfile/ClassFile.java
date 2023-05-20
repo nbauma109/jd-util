@@ -146,6 +146,6 @@ public class ClassFile {
 
     @Override
     public String toString() {
-        return "ClassFile{" + javaClass.getFileName() + "}";
+        return "ClassFile{" + getInternalTypeName() + "}";
     }
 }
