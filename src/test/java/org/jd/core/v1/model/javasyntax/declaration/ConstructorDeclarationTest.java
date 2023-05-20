@@ -21,8 +21,8 @@ public class ConstructorDeclarationTest {
         String name = "param";
 
         FormalParameter formalParameter = new FormalParameter(type, varargs, name);
-        String descriptor = "descriptor";
-        BaseStatement statements = new ExpressionStatement(new SuperConstructorInvocationExpression(0, ObjectType.TYPE_OBJECT, "()V", null, false));
+        String descriptor = "()V";
+        BaseStatement statements = new ExpressionStatement(new SuperConstructorInvocationExpression(0, ObjectType.TYPE_OBJECT, descriptor, null, false));
 
         ConstructorDeclaration constructorDeclaration = new ConstructorDeclaration(0, formalParameter, descriptor, statements);
 
