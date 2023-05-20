@@ -1,6 +1,5 @@
 package org.jd.core.v1.model.javasyntax.declaration;
 
-import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationElementValue;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
@@ -86,7 +85,7 @@ public class FormalParameterTest {
     public void testFormalParameterConstructor2() {
         Type type = ObjectType.TYPE_INTEGER.createType(1);
         String name = "param";
-        TypeMaker typeMaker = new TypeMaker(new ClassPathLoader());
+        TypeMaker typeMaker = new TypeMaker();
         ObjectType annoType = typeMaker.makeFromInternalTypeName("java/lang/SuppressWarnings");
         AnnotationReference annotationReference = new AnnotationReference(annoType);
         AnnotationElementValue annotationElementValue = new AnnotationElementValue(annotationReference);

@@ -1,6 +1,5 @@
 package org.jd.core.v1.model.javasyntax.type;
 
-import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +18,7 @@ public class ObjectTypeTest {
 
     @Before
     public void setUp() {
-        typeMaker = new TypeMaker(new ClassPathLoader());
+        typeMaker = new TypeMaker();
     }
 
     @Test

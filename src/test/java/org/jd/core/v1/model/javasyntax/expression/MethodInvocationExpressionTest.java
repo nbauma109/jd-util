@@ -1,6 +1,5 @@
 package org.jd.core.v1.model.javasyntax.expression;
 
-import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.Type;
@@ -27,7 +26,7 @@ public class MethodInvocationExpressionTest {
 
     @Before
     public void setUp() {
-        this.typeMaker = new TypeMaker(new ClassPathLoader());
+        this.typeMaker = new TypeMaker();
     }
 
     @Test

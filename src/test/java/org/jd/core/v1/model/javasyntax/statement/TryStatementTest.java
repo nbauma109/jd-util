@@ -1,6 +1,5 @@
 package org.jd.core.v1.model.javasyntax.statement;
 
-import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
@@ -76,7 +75,7 @@ public class TryStatementTest {
     @Test
     public void testAcceptMethods() {
         // Create TypeMaker instance
-        TypeMaker typeMaker = new TypeMaker(new ClassPathLoader());
+        TypeMaker typeMaker = new TypeMaker();
 
         // Create resources
         DefaultList<TryStatement.Resource> resources = new DefaultList<>();

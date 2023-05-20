@@ -1,6 +1,5 @@
 package org.jd.core.v1.model.javasyntax.reference;
 
-import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.javasyntax.expression.NullExpression;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
@@ -22,7 +21,7 @@ public class AnnotationReferenceTest {
 
     @Before
     public void setUp() {
-        typeMaker = new TypeMaker(new ClassPathLoader());
+        typeMaker = new TypeMaker();
         objectType = typeMaker.makeFromInternalTypeName("java/lang/Deprecated");
         elementValuePairs = new ElementValuePairs();
         elementValue = null;

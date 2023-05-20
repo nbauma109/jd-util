@@ -119,6 +119,10 @@ public class TypeMaker {
     private static final ClassPathLoader classPathLoader = new ClassPathLoader();
     private final Loader loader;
 
+    public TypeMaker() {
+        this(classPathLoader);
+    }
+
     public TypeMaker(Loader loader) {
         this.loader = loader;
 
