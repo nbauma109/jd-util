@@ -14,9 +14,7 @@ public class ArrayExpression extends AbstractLineNumberTypeExpression {
     private Expression index;
 
     public ArrayExpression(Expression expression, Expression index) {
-        super(createItemType(expression));
-        this.expression = expression;
-        this.index = index;
+        this(UNKNOWN_LINE_NUMBER, expression, index);
     }
 
     public ArrayExpression(int lineNumber, Expression expression, Expression index) {
