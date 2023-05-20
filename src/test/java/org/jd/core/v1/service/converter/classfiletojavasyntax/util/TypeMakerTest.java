@@ -58,7 +58,7 @@ import junit.framework.TestCase;
 
 @SuppressWarnings("all")
 public class TypeMakerTest extends TestCase {
-    protected TypeMaker typeMaker = new TypeMaker(new ClassPathLoader());
+    protected TypeMaker typeMaker = new TypeMaker();
 
     protected ObjectType otAbstractUntypedIteratorDecorator = makeObjectType(AbstractUntypedIteratorDecorator.class);
     protected ObjectType otArrayList = makeObjectType(ArrayList.class);
@@ -720,12 +720,14 @@ public class TypeMakerTest extends TestCase {
         ObjectType treeMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap");
         ObjectType abstMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/AbstractMap");
         ObjectType set = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/Set");
+        ObjectType genericSet = set.createType(new GenericType("V"));
         ObjectType unmodifiableEntrySet = typeMaker.makeFromInternalTypeName("org/apache/commons/collections4/map/UnmodifiableEntrySet");
         ObjectType mapEntry = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/Map$Entry");
+        ObjectType valueView = typeMaker.makeFromInternalTypeName("org/apache/commons/collections4/bidimap/TreeBidiMap$ValueView");
         TypeArguments typeArguments = new TypeArguments(Arrays.asList(new GenericType("K"), new GenericType("V")));
         mapEntry = mapEntry.createType(typeArguments);
         unmodifiableEntrySet = unmodifiableEntrySet.createType(typeArguments);
-        set = set.createType(mapEntry);
+        ObjectType mapEntrySet = set.createType(mapEntry);
         assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, hashMap));
         assertEquals(abstMap, typeMaker.searchSuperParameterizedType(abstMap, treeMap));
         assertEquals(treeMap, typeMaker.searchSuperParameterizedType(ObjectType.TYPE_UNDEFINED_OBJECT, treeMap));
@@ -733,7 +735,8 @@ public class TypeMakerTest extends TestCase {
         assertEquals(ObjectType.TYPE_CLASS, typeMaker.searchSuperParameterizedType(ObjectType.TYPE_CLASS, ObjectType.TYPE_CLASS));
         assertNull(typeMaker.searchSuperParameterizedType((ObjectType) ObjectType.TYPE_CLASS.createType(1), ObjectType.TYPE_CLASS));
         assertNull(typeMaker.searchSuperParameterizedType(ObjectType.TYPE_CLASS, (ObjectType) ObjectType.TYPE_CLASS.createType(1)));
-        assertEquals(set, typeMaker.searchSuperParameterizedType(set, unmodifiableEntrySet));
+        assertEquals(mapEntrySet, typeMaker.searchSuperParameterizedType(set, unmodifiableEntrySet));
+        assertEquals(set, typeMaker.searchSuperParameterizedType(genericSet, valueView));
     }
     
     @Test
