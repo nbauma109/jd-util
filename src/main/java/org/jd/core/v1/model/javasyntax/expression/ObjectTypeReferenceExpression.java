@@ -16,7 +16,7 @@ public class ObjectTypeReferenceExpression implements Expression {
     private boolean explicit;
 
     public ObjectTypeReferenceExpression(ObjectType type) {
-        this(0, type, true);
+        this(0, type);
     }
 
     public ObjectTypeReferenceExpression(int lineNumber, ObjectType type) {
