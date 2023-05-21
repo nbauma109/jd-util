@@ -22,6 +22,7 @@ public class ThrowStatementTest {
         ThrowStatement throwStatement = new ThrowStatement(newExpression);
 
         assertTrue(throwStatement.getExpression() instanceof NewExpression);
+        assertTrue(throwStatement.isThrowStatement());
 
         // Test setExpression method
         NewExpression newNewExpression = new NewExpression(2, type, "(Ljava/lang/String;)V", false, false);
