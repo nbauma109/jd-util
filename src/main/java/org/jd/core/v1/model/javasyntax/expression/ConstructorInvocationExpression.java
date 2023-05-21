@@ -16,7 +16,7 @@ public class ConstructorInvocationExpression extends ConstructorReferenceExpress
 
     public ConstructorInvocationExpression(int lineNumber, ObjectType type, String descriptor, BaseExpression parameters, boolean varArgs) {
         super(lineNumber, PrimitiveType.TYPE_VOID, type, descriptor);
-        this.parameters = parameters;
+        this.setParameters(parameters);
         this.varArgs = varArgs;
     }
 
