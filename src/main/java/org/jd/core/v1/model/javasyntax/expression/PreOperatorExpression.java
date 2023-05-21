@@ -16,7 +16,7 @@ public class PreOperatorExpression extends AbstractLineNumberExpression {
     public PreOperatorExpression(int lineNumber, String operator, Expression expression) {
         super(lineNumber);
         this.operator = operator;
-        this.expression = expression;
+        this.setExpression(expression);
     }
 
     @Override
