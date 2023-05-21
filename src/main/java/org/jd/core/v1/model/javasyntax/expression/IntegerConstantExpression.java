@@ -15,23 +15,20 @@ public class IntegerConstantExpression extends AbstractLineNumberTypeExpression 
     private final int value;
 
     public IntegerConstantExpression(Type type, int value) {
-        super(type);
-        this.value = value;
-        if (!type.isPrimitiveType()) {
-            throw new IllegalArgumentException("Non-primitive type");
-        }
+        this(UNKNOWN_LINE_NUMBER, type, value);
     }
 
     public IntegerConstantExpression(int lineNumber, Type type, int value) {
         super(lineNumber, type);
         this.value = value;
-        if (!type.isPrimitiveType()) {
-            throw new IllegalArgumentException("Non-primitive type");
-        }
     }
 
     public IntegerConstantExpression(int lineNumber, int value) {
         this(lineNumber, PrimitiveTypeUtil.getPrimitiveTypeFromValue(value), value);
+    }
+
+    public IntegerConstantExpression(int value) {
+        this(UNKNOWN_LINE_NUMBER, value);
     }
 
     @Override
