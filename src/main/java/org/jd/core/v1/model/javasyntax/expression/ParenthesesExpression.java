@@ -18,7 +18,7 @@ public class ParenthesesExpression extends AbstractLineNumberExpression {
 
     public ParenthesesExpression(int lineNumber, Expression expression) {
         super(lineNumber);
-        this.expression = expression;
+        this.setExpression(expression);
     }
 
     @Override
