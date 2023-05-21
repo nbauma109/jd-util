@@ -16,7 +16,7 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
 
     public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType) {
         super(lineNumber);
-        this.expression = expression;
+        this.setExpression(expression);
         this.instanceOfType = instanceOfType;
     }
 
