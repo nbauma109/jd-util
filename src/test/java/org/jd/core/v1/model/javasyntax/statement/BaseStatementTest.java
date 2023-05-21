@@ -27,6 +27,7 @@ public class BaseStatementTest {
 
         assertFalse(statement.isBreakStatement());
         assertFalse(statement.isContinueStatement());
+        assertFalse(statement.isDoWhileStatement());
         assertFalse(statement.isExpressionStatement());
         assertFalse(statement.isForStatement());
         assertFalse(statement.isIfStatement());
