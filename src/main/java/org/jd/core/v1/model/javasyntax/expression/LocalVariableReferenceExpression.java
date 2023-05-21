@@ -13,8 +13,7 @@ public class LocalVariableReferenceExpression extends AbstractLineNumberTypeExpr
     private String name;
 
     public LocalVariableReferenceExpression(Type type, String name) {
-        super(type);
-        this.name = name;
+        this(UNKNOWN_LINE_NUMBER, type, name);
     }
 
     public LocalVariableReferenceExpression(int lineNumber, Type type, String name) {
