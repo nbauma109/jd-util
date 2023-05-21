@@ -33,6 +33,9 @@ public class DoWhileStatement implements Statement {
     }
 
     @Override
+    public boolean isDoWhileStatement() { return true; }
+
+    @Override
     public void accept(StatementVisitor visitor) {
         visitor.visit(this);
     }

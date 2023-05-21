@@ -21,6 +21,7 @@ public interface BaseStatement extends Base<Statement> {
 
     default boolean isBreakStatement() { return false; }
     default boolean isContinueStatement() { return false; }
+    default boolean isDoWhileStatement() { return false; }
     default boolean isExpressionStatement() { return false; }
     default boolean isForStatement() { return false; }
     default boolean isIfStatement() { return false; }
