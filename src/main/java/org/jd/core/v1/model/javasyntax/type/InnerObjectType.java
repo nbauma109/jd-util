@@ -15,31 +15,25 @@ public class InnerObjectType extends ObjectType {
 
     public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, ObjectType outerType) {
         super(internalName, qualifiedName, name, innerTypeNames);
-        this.outerType = outerType;
-        checkArguments(qualifiedName, name);
-    }
-
-    public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, ObjectType outerType) {
-        super(internalName, qualifiedName, name, innerTypeNames, typeArguments);
-        this.outerType = outerType;
+        this.setOuterType(outerType);
         checkArguments(qualifiedName, name);
     }
 
     public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, int dimension, ObjectType outerType) {
         super(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension);
-        this.outerType = outerType;
+        this.setOuterType(outerType);
         checkArguments(qualifiedName, name);
     }
 
     public InnerObjectType(String internalName, String qualifiedName, String name, ObjectType outerType) {
         super(internalName, qualifiedName, name, Collections.emptySet());
-        this.outerType = outerType;
+        this.setOuterType(outerType);
         checkArguments(qualifiedName, name);
     }
     
     public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, ObjectType outerType) {
         super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments);
-        this.outerType = outerType;
+        this.setOuterType(outerType);
         checkArguments(qualifiedName, name);
     }
     
