@@ -11,8 +11,6 @@ import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 import static org.junit.Assert.assertEquals;
 
 public class TypeArgumentToTypeVisitorTest {
@@ -64,7 +62,7 @@ public class TypeArgumentToTypeVisitorTest {
         assertEquals(ObjectType.TYPE_OBJECT, visitor.getType());
 
         // Act & Assert - TypeArguments
-        TypeArguments typeArguments = new TypeArguments(Arrays.asList(ObjectType.TYPE_OBJECT));
+        TypeArguments typeArguments = new TypeArguments();
         typeArguments.accept(visitor);
         assertEquals(ObjectType.TYPE_UNDEFINED_OBJECT, visitor.getType());
     }
