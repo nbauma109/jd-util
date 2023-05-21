@@ -16,7 +16,7 @@ public class PostOperatorExpression extends AbstractLineNumberExpression {
     public PostOperatorExpression(int lineNumber, Expression expression, String operator) {
         super(lineNumber);
         this.operator = operator;
-        this.expression = expression;
+        this.setExpression(expression);
     }
 
     @Override
