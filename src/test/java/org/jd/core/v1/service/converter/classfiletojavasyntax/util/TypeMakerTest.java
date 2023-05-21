@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PrimitiveIterator;
 
 import static org.junit.Assert.assertThrows;
@@ -942,7 +943,8 @@ public class TypeMakerTest extends TestCase {
     @Test
     public void testMakeMethodTypes() throws Exception {
         assertMethodTypes("org/apache/logging/log4j/util/IndexedStringMap", "size", "()I",
-                Const.ACC_ABSTRACT | Const.ACC_PUBLIC, PrimitiveType.TYPE_INT, null, null);
+                Const.ACC_ABSTRACT | Const.ACC_PUBLIC, PrimitiveType.TYPE_INT, null, null,
+                false);
 
         assertMethodTypes("java/util/List", "forEach", "(Ljava/util/function/Consumer;)V",
                 0, PrimitiveType.TYPE_VOID, null,
@@ -952,8 +954,7 @@ public class TypeMakerTest extends TestCase {
                                         new GenericType("E")
                                 )
                         )
-                )
-        );
+                ), false);
 
         assertMethodTypes("org/apache/logging/log4j/spi/ThreadContextStack", "addAll", "(Ljava/util/Collection;)Z",
                 0, PrimitiveType.TYPE_BOOLEAN, null,
@@ -963,41 +964,40 @@ public class TypeMakerTest extends TestCase {
                                         new ObjectType("java/lang/String", "java.lang.String", "String")
                                 )
                         )
-                )
-        );
+                ), false);
 
         assertMethodTypes("java/util/LinkedList", "iterator", "()Ljava/util/Iterator;",
                 0, new ObjectType("java/util/Iterator", "java.util.Iterator", "Iterator",
-                        new GenericType("E")), null, null);
+                        new GenericType("E")), null, null, false);
 
         assertMethodTypes("org/apache/commons/lang3/ClassUtils", "iterator", "(Ljava/lang/Class;)Ljava/lang/Iterable;",
                 0, ObjectType.TYPE_ITERABLE, null,
-                Collections.singletonList(ObjectType.TYPE_CLASS)
-        );
+                Collections.singletonList(ObjectType.TYPE_CLASS), false);
 
         assertMethodTypes("org/apache/logging/log4j/message/StructuredDataMessage", "appendMap", "(Ljava/lang/StringBuilder;)V",
                 0, PrimitiveType.TYPE_VOID, null,
-                Collections.singletonList(ObjectType.TYPE_STRING_BUILDER)
-        );
+                Collections.singletonList(ObjectType.TYPE_STRING_BUILDER), false);
 
         assertMethodTypes("java/lang/String", "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;",
                 Const.ACC_VARARGS | Const.ACC_STATIC | Const.ACC_PUBLIC, ObjectType.TYPE_STRING, null,
                 Arrays.asList(
                         ObjectType.TYPE_STRING,
                         new ObjectType("java/lang/Object", "java.lang.Object", "Object", 1)
-                )
-        );
+                ), true);
     }
 
     private void assertMethodTypes(String className, String methodName, String methodDescriptor,
                                    int expectedAccessFlags, Type expectedReturnType, Type[] expectedExceptionTypes,
-                                   List<Type> expectedParameterTypes) {
+                                   List<Type> expectedParameterTypes, boolean expectedIsVarArgs) {
         MethodTypes methodTypes = typeMaker.makeMethodTypes(className, methodName, methodDescriptor);
 
         assertEquals(expectedAccessFlags, methodTypes.getAccessFlags());
         assertEquals(expectedReturnType, methodTypes.getReturnedType());
+        assertEquals(Objects.toString(expectedReturnType), Objects.toString(methodTypes.getReturnedType()));
         assertNull(methodTypes.getExceptionTypes());
         assertEquals(expectedParameterTypes, methodTypes.getParameterTypes());
+        assertEquals(Objects.toString(expectedParameterTypes), Objects.toString(methodTypes.getParameterTypes()));
+        assertEquals(expectedIsVarArgs, methodTypes.isVarArgs());
     }
 
     @Test
