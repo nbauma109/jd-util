@@ -14,12 +14,12 @@ public class LengthExpression extends AbstractLineNumberExpression {
     private Expression expression;
 
     public LengthExpression(Expression expression) {
-        this.expression = expression;
+        this(UNKNOWN_LINE_NUMBER, expression);
     }
 
     public LengthExpression(int lineNumber, Expression expression) {
         super(lineNumber);
-        this.expression = expression;
+        this.setExpression(expression);
     }
 
     @Override
