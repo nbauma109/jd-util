@@ -34,6 +34,15 @@ public class InnerObjectTypeTest {
 
         // Test toString
         assertEquals("InnerObjectType{" + outerType + "." + innerObjectType.getDescriptor() + "}", innerObjectType.toString());
+
+        // Create a BaseTypeArgument
+        WildcardExtendsTypeArgument wildcardExtendsTypeArgument = new WildcardExtendsTypeArgument(ObjectType.TYPE_CLASS);
+
+        // Pass it as an argument when you create a new InnerObjectType
+        InnerObjectType innerObjectTypeWithArgument = new InnerObjectType(internalName, qualifiedName, name, wildcardExtendsTypeArgument, outerType);
+
+        // Test toString with typeArguments
+        assertEquals("InnerObjectType{" + outerType + "." + innerObjectTypeWithArgument.getDescriptor() + "<" + wildcardExtendsTypeArgument + ">}", innerObjectTypeWithArgument.toString());
     }
 
     @Test(expected = IllegalArgumentException.class)
