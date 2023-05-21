@@ -11,7 +11,7 @@ public class ElementValueArrayInitializerElementValue implements BaseElementValu
     private final BaseElementValue elementValueArrayInitializer;
 
     public ElementValueArrayInitializerElementValue() {
-        this.elementValueArrayInitializer = null;
+        this(null);
     }
 
     public ElementValueArrayInitializerElementValue(BaseElementValue elementValueArrayInitializer) {
