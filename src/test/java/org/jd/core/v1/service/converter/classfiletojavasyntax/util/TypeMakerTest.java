@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PrimitiveIterator;
 
 import static org.junit.Assert.assertThrows;
@@ -941,66 +942,62 @@ public class TypeMakerTest extends TestCase {
 
     @Test
     public void testMakeMethodTypes() throws Exception {
-        MethodTypes methodTypes = typeMaker.makeMethodTypes("org/apache/logging/log4j/util/IndexedStringMap", "size", "()I");
-        assertEquals(Const.ACC_ABSTRACT | Const.ACC_PUBLIC, methodTypes.getAccessFlags());
-        assertEquals(PrimitiveType.TYPE_INT, methodTypes.getReturnedType());
-        assertNull(methodTypes.getExceptionTypes());
-        assertNull(methodTypes.getParameterTypes());
-        assertNull(methodTypes.getTypeParameters());
+        assertMethodTypes("org/apache/logging/log4j/util/IndexedStringMap", "size", "()I",
+                Const.ACC_ABSTRACT | Const.ACC_PUBLIC, PrimitiveType.TYPE_INT, null, null,
+                false);
 
-        methodTypes = typeMaker.makeMethodTypes("java/util/List", "forEach", "(Ljava/util/function/Consumer;)V");
-        assertEquals(0, methodTypes.getAccessFlags());
-        assertEquals(PrimitiveType.TYPE_VOID, methodTypes.getReturnedType());
-        assertNull(methodTypes.getExceptionTypes());
-        assertNotNull(methodTypes.getParameterTypes());
-        assertEquals("[ObjectType{java/util/function/Consumer<WildcardSuperTypeArgument{? super GenericType{E}}>}]",
-                   methodTypes.getParameterTypes().toString());
-        assertNull(methodTypes.getTypeParameters());
+        assertMethodTypes("java/util/List", "forEach", "(Ljava/util/function/Consumer;)V",
+                0, PrimitiveType.TYPE_VOID, null,
+                Collections.singletonList(
+                        new ObjectType("java/util/function/Consumer", "java.util.function.Consumer", "Consumer",
+                                new WildcardSuperTypeArgument(
+                                        new GenericType("E")
+                                )
+                        )
+                ), false);
 
-        methodTypes = typeMaker.makeMethodTypes("org/apache/logging/log4j/spi/ThreadContextStack", "addAll", "(Ljava/util/Collection;)Z");
-        assertEquals(0, methodTypes.getAccessFlags());
-        assertEquals(PrimitiveType.TYPE_BOOLEAN, methodTypes.getReturnedType());
-        assertNull(methodTypes.getExceptionTypes());
-        assertNotNull(methodTypes.getParameterTypes());
-        assertEquals("[ObjectType{java/util/Collection<WildcardExtendsTypeArgument{? extends ObjectType{java/lang/String}}>}]",
-                methodTypes.getParameterTypes().toString());
-        assertNull(methodTypes.getTypeParameters());
+        assertMethodTypes("org/apache/logging/log4j/spi/ThreadContextStack", "addAll", "(Ljava/util/Collection;)Z",
+                0, PrimitiveType.TYPE_BOOLEAN, null,
+                Collections.singletonList(
+                        new ObjectType("java/util/Collection", "java.util.Collection", "Collection",
+                                new WildcardExtendsTypeArgument(
+                                        new ObjectType("java/lang/String", "java.lang.String", "String")
+                                )
+                        )
+                ), false);
 
-        methodTypes = typeMaker.makeMethodTypes("java/util/LinkedList", "iterator", "()Ljava/util/Iterator;");
-        assertEquals(0, methodTypes.getAccessFlags());
-        assertNotNull(methodTypes.getReturnedType());
-        assertEquals("ObjectType{java/util/Iterator<GenericType{E}>}", methodTypes.getReturnedType().toString());
-        assertNull(methodTypes.getExceptionTypes());
-        assertNull(methodTypes.getParameterTypes());
-        assertNull(methodTypes.getTypeParameters());
-        
-        methodTypes = typeMaker.makeMethodTypes("org/apache/commons/lang3/ClassUtils", "iterator", "(Ljava/lang/Class;)Ljava/lang/Iterable;");
-        assertEquals(0, methodTypes.getAccessFlags());
-        assertNotNull(methodTypes.getReturnedType());
-        assertEquals(ObjectType.TYPE_ITERABLE, methodTypes.getReturnedType());
-        assertNull(methodTypes.getExceptionTypes());
-        assertNotNull(methodTypes.getParameterTypes());
-        assertEquals(Collections.singletonList(ObjectType.TYPE_CLASS), methodTypes.getParameterTypes());
-        assertNull(methodTypes.getTypeParameters());
+        assertMethodTypes("java/util/LinkedList", "iterator", "()Ljava/util/Iterator;",
+                0, new ObjectType("java/util/Iterator", "java.util.Iterator", "Iterator",
+                        new GenericType("E")), null, null, false);
 
-        methodTypes = typeMaker.makeMethodTypes("org/apache/logging/log4j/message/StructuredDataMessage", "appendMap", "(Ljava/lang/StringBuilder;)V");
-        assertEquals(0, methodTypes.getAccessFlags());
-        assertNotNull(methodTypes.getReturnedType());
-        assertEquals(PrimitiveType.TYPE_VOID, methodTypes.getReturnedType());
-        assertNull(methodTypes.getExceptionTypes());
-        assertNotNull(methodTypes.getParameterTypes());
-        assertEquals(Collections.singletonList(ObjectType.TYPE_STRING_BUILDER), methodTypes.getParameterTypes());
-        assertNull(methodTypes.getTypeParameters());
+        assertMethodTypes("org/apache/commons/lang3/ClassUtils", "iterator", "(Ljava/lang/Class;)Ljava/lang/Iterable;",
+                0, ObjectType.TYPE_ITERABLE, null,
+                Collections.singletonList(ObjectType.TYPE_CLASS), false);
 
-        methodTypes = typeMaker.makeMethodTypes("java/lang/String", "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");
-        assertTrue(methodTypes.isVarArgs());
-        assertEquals(Const.ACC_VARARGS | Const.ACC_STATIC | Const.ACC_PUBLIC, methodTypes.getAccessFlags());
-        assertNotNull(methodTypes.getReturnedType());
-        assertEquals(ObjectType.TYPE_STRING, methodTypes.getReturnedType());
+        assertMethodTypes("org/apache/logging/log4j/message/StructuredDataMessage", "appendMap", "(Ljava/lang/StringBuilder;)V",
+                0, PrimitiveType.TYPE_VOID, null,
+                Collections.singletonList(ObjectType.TYPE_STRING_BUILDER), false);
+
+        assertMethodTypes("java/lang/String", "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;",
+                Const.ACC_VARARGS | Const.ACC_STATIC | Const.ACC_PUBLIC, ObjectType.TYPE_STRING, null,
+                Arrays.asList(
+                        ObjectType.TYPE_STRING,
+                        new ObjectType("java/lang/Object", "java.lang.Object", "Object", 1)
+                ), true);
+    }
+
+    private void assertMethodTypes(String className, String methodName, String methodDescriptor,
+                                   int expectedAccessFlags, Type expectedReturnType, Type[] expectedExceptionTypes,
+                                   List<Type> expectedParameterTypes, boolean expectedIsVarArgs) {
+        MethodTypes methodTypes = typeMaker.makeMethodTypes(className, methodName, methodDescriptor);
+
+        assertEquals(expectedAccessFlags, methodTypes.getAccessFlags());
+        assertEquals(expectedReturnType, methodTypes.getReturnedType());
+        assertEquals(Objects.toString(expectedReturnType), Objects.toString(methodTypes.getReturnedType()));
         assertNull(methodTypes.getExceptionTypes());
-        assertNotNull(methodTypes.getParameterTypes());
-        assertEquals("[ObjectType{java/lang/String}, ObjectType{java/lang/Object, dimension=1}]", methodTypes.getParameterTypes().toString());
-        assertNull(methodTypes.getTypeParameters());
+        assertEquals(expectedParameterTypes, methodTypes.getParameterTypes());
+        assertEquals(Objects.toString(expectedParameterTypes), Objects.toString(methodTypes.getParameterTypes()));
+        assertEquals(expectedIsVarArgs, methodTypes.isVarArgs());
     }
 
     @Test
