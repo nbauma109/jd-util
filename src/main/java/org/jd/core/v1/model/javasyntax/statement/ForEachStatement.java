@@ -20,7 +20,7 @@ public class ForEachStatement implements Statement {
     public ForEachStatement(Type type, String name, Expression expression, BaseStatement statements) {
         this.type = type;
         this.name = name;
-        this.expression = expression;
+        this.setExpression(expression);
         this.statements = statements;
     }
 
