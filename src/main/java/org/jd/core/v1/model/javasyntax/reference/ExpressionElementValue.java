@@ -13,7 +13,7 @@ public class ExpressionElementValue implements BaseElementValue {
     private Expression expression;
 
     public ExpressionElementValue(Expression expression) {
-        this.expression = expression;
+        setExpression(expression);
     }
 
     public Expression getExpression() {
