@@ -8,8 +8,11 @@ import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.TestDeclar
 import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.TestVisitor;
 import org.junit.Test;
 
+import static org.jd.core.v1.model.javasyntax.expression.NoExpression.NO_EXPRESSION;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+
 
 public class ArrayVariableInitializerTest {
     private static final int LINE_NUMBER = 1;
@@ -50,6 +53,9 @@ public class ArrayVariableInitializerTest {
         int hashCode1 = arrayInitializer1.hashCode();
         int hashCode2 = arrayInitializer2.hashCode();
         assertEquals(hashCode1, hashCode2);
+
+        assertFalse(arrayInitializer1.isExpressionVariableInitializer());
+        assertEquals(NO_EXPRESSION, arrayInitializer1.getExpression());
     }
 
     @Test
