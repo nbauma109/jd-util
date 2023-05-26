@@ -14,8 +14,7 @@ public class ThisExpression extends AbstractLineNumberExpression {
     private final boolean explicit;
 
     public ThisExpression(Type type) {
-        this.type = type;
-        this.explicit = true;
+        this(UNKNOWN_LINE_NUMBER, type);
     }
 
     public ThisExpression(int lineNumber, Type type) {
