@@ -83,5 +83,4 @@ public class ByteCodeConstants
     public static final int CMP_GE  = 6;
     public static final int CMP_NE  = 7;
 
-    public static final int[] NO_OF_OPERANDS  = {};
 }
