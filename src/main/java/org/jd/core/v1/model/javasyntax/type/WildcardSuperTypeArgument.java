@@ -19,7 +19,7 @@ public record WildcardSuperTypeArgument(Type type) implements TypeArgument {
         if (typeArgument.isWildcardSuperTypeArgument()) {
             return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument.type());
         }
-        if (typeArgument instanceof Type) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
+        if (typeArgument instanceof Type) {
             return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
         }
 

@@ -19,10 +19,10 @@ public record WildcardExtendsTypeArgument(Type type) implements TypeArgument {
         if (typeArgument.isWildcardExtendsTypeArgument()) {
             return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument.type());
         }
-        if (type instanceof ObjectType && typeArgument instanceof ObjectType) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
-            return typeMaker.isAssignable(typeBindings, typeBounds, (ObjectType)type, (ObjectType) typeArgument);
+        if (type instanceof ObjectType ot && typeArgument instanceof ObjectType ta) {
+            return typeMaker.isAssignable(typeBindings, typeBounds, ot, ta);
         }
-        if (typeArgument instanceof Type) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
+        if (typeArgument instanceof Type) {
             return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
         }
         
