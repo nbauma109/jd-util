@@ -34,8 +34,7 @@ public class TypeArguments extends DefaultList<TypeArgument> implements BaseType
 
     @Override
     public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
-        if (typeArgument instanceof TypeArguments) { // to convert to jdk16 pattern matching only when spotbugs #1617 and eclipse #577987 are solved
-            TypeArguments ata = (TypeArguments) typeArgument;
+        if (typeArgument instanceof TypeArguments ata) {
             if (size() != ata.size()) {
                 return false;
             }
