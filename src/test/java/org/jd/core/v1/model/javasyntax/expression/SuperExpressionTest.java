@@ -1,35 +1,38 @@
-import org.jd.core.v1.model.javasyntax.expression.QualifiedSuperExpression;
+package org.jd.core.v1.model.javasyntax.expression;
+
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.TestVisitor;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class QualifiedSuperExpressionTest {
+public class SuperExpressionTest {
 
     @Test
-    public void testQualifiedSuperExpression() {
+    public void testSuperExpression() {
         // Arrange
-        ObjectType type = ObjectType.TYPE_OBJECT;
         int lineNumber = 10;
-        TestVisitor visitor = new TestVisitor();
+        ObjectType type = ObjectType.TYPE_STRING_BUILDER;
 
         // Act
-        QualifiedSuperExpression expression = new QualifiedSuperExpression(lineNumber, type);
-        expression.accept(visitor);
+        SuperExpression expression = new SuperExpression(lineNumber, type);
 
         // Assert
         Assert.assertEquals(lineNumber, expression.getLineNumber());
         Assert.assertEquals(type, expression.getType());
         Assert.assertTrue(expression.isSuperExpression());
-        Assert.assertEquals(1, visitor.getQualifiedSuperExpressionCount());
+
+        // Test accept method
+        TestVisitor visitor = new TestVisitor();
+        expression.accept(visitor);
+        Assert.assertEquals(1, visitor.getSuperExpressionCount());
 
         // Test toString method
-        String expectedToString = "QualifiedSuperExpression{ObjectType{java/lang/Object}}";
+        String expectedToString = "SuperExpression{" + type + "}";
         Assert.assertEquals(expectedToString, expression.toString());
 
         // Test copyTo method
         int newLineNumber = 20;
-        QualifiedSuperExpression copiedExpression = (QualifiedSuperExpression) expression.copyTo(newLineNumber);
+        SuperExpression copiedExpression = (SuperExpression) expression.copyTo(newLineNumber);
         Assert.assertEquals(newLineNumber, copiedExpression.getLineNumber());
         Assert.assertEquals(type, copiedExpression.getType());
     }
