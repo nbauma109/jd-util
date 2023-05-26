@@ -8,9 +8,11 @@ package org.jd.core.v1.service.deserializer.classfile;
 
 import org.apache.bcel.Const;
 import org.apache.bcel.classfile.ClassParser;
+import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.InnerClass;
 import org.apache.bcel.classfile.InnerClasses;
+import org.apache.bcel.classfile.Method;
 import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.model.classfile.ClassFile;
 import org.jd.core.v1.util.DefaultList;
@@ -21,6 +23,8 @@ import java.io.IOException;
 
 import static org.apache.bcel.Const.ACC_SYNTHETIC;
 
+import jd.core.process.analyzer.instruction.bytecode.util.ByteCodeUtil;
+
 public final class ClassFileDeserializer {
 
     public ClassFile loadClassFile(Loader loader, String internalTypeName) throws IOException {
@@ -28,6 +32,13 @@ public final class ClassFileDeserializer {
 
         if (classFile == null) {
             throw new IllegalArgumentException("Class '" + internalTypeName + "' could not be loaded");
+        }
+        for (Method method : classFile.getMethods()) {
+            Code methodCode = method.getCode();
+            if (methodCode == null) {
+                continue;
+            }
+           ByteCodeUtil.cleanUpByteCode(methodCode.getCode());
         }
         return classFile;
     }
