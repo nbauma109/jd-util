@@ -11,10 +11,6 @@ public class SignatureFormatException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public SignatureFormatException() {
-        super();
-    }
-
     public SignatureFormatException(String s) {
         super(s);
     }
