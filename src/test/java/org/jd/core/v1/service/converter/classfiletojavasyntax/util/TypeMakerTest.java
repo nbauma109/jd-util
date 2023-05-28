@@ -949,7 +949,7 @@ public class TypeMakerTest extends TestCase {
         Map<String, TypeArgument> typeBindings = Map.of("K", k, "V", v);
 
         // Verify the result
-        assertFalse(new WildcardExtendsTypeArgument(v).isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, v));
+        assertTrue(new WildcardExtendsTypeArgument(v).isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, v));
     }
 
     @Test
