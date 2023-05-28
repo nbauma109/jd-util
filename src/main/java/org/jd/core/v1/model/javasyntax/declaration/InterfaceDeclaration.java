@@ -11,6 +11,8 @@ import org.jd.core.v1.model.javasyntax.reference.BaseAnnotationReference;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 
+import static org.apache.bcel.Const.ACC_STATIC;
+
 public class InterfaceDeclaration extends TypeDeclaration {
     private final BaseTypeParameter typeParameters;
     private final BaseType interfaces;
@@ -32,6 +34,8 @@ public class InterfaceDeclaration extends TypeDeclaration {
     public BaseType getInterfaces() {
         return interfaces;
     }
+
+    public boolean isStatic() { return (flags & ACC_STATIC) != 0; }
 
     @Override
     public void accept(DeclarationVisitor visitor) {

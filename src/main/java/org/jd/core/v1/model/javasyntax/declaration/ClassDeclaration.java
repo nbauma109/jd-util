@@ -12,8 +12,6 @@ import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 
-import static org.apache.bcel.Const.ACC_STATIC;
-
 public class ClassDeclaration extends InterfaceDeclaration {
     private final ObjectType superType;
 
@@ -29,8 +27,6 @@ public class ClassDeclaration extends InterfaceDeclaration {
     public ObjectType getSuperType() {
         return superType;
     }
-
-    public boolean isStatic() { return (flags & ACC_STATIC) != 0; }
 
     @Override
     public boolean isClassDeclaration() { return true; }
