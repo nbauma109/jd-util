@@ -941,6 +941,18 @@ public class TypeMakerTest extends TestCase {
     }
 
     @Test
+    public void testIsTypeArgumentAssignableFrom() {
+        // Prepare some test data
+        GenericType k = new GenericType("K");
+        GenericType v = new GenericType("V");
+        Map<String, BaseType> typeBounds = Collections.emptyMap();
+        Map<String, TypeArgument> typeBindings = Map.of("K", k, "V", v);
+
+        // Verify the result
+        assertFalse(new WildcardExtendsTypeArgument(v).isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, v));
+    }
+
+    @Test
     public void testMakeMethodTypes() throws Exception {
         assertMethodTypes("org/apache/logging/log4j/util/IndexedStringMap", "size", "()I",
                 Const.ACC_ABSTRACT | Const.ACC_PUBLIC, PrimitiveType.TYPE_INT, null, null,
