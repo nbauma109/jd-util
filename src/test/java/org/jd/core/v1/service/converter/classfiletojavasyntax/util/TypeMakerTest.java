@@ -941,6 +941,24 @@ public class TypeMakerTest extends TestCase {
     }
 
     @Test
+    public void testIsAssignable5() {
+        // Prepare some test data
+        ObjectType left = typeMaker.makeFromInternalTypeName("org/apache/commons/collections4/MapIterator");
+        GenericType k = new GenericType("K");
+        GenericType v = new GenericType("V");
+        left = left.createType(new WildcardExtendsTypeArgument(k));
+        Map<String, BaseType> typeBounds = Collections.emptyMap();
+        Map<String, TypeArgument> typeBindings = new HashMap<>();
+        typeBindings.put("V", v);
+        typeBindings.put("K", k);
+
+        ObjectType right = typeMaker.makeFromInternalTypeName("org/apache/commons/collections4/MapIterator");
+        right = right.createType(new WildcardExtendsTypeArgument(v));
+
+        // Verify the result
+        assertFalse(typeMaker.isAssignable(typeBindings, typeBounds, left, right));
+    }
+    @Test
     public void testIsTypeArgumentAssignableFrom() {
         // Prepare some test data
         GenericType k = new GenericType("K");
