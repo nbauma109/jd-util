@@ -46,7 +46,9 @@ public class ClassFileDeserializerTest extends TestCase {
             fail("Expected exception");
         }
         // Expecting exception because class cannot be loaded
-        catch (IllegalArgumentException expected) { }
+        catch (IllegalArgumentException expected) {
+            assertEquals("Class DoesNotExist could not be loaded", expected.getMessage());
+        }
     }
 
     @Test

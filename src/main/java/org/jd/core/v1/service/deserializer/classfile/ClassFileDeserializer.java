@@ -13,6 +13,7 @@ import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.InnerClass;
 import org.apache.bcel.classfile.InnerClasses;
 import org.apache.bcel.classfile.Method;
+import org.apache.commons.lang3.Validate;
 import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.model.classfile.ClassFile;
 import org.jd.core.v1.util.DefaultList;
@@ -28,31 +29,11 @@ import jd.core.process.analyzer.instruction.bytecode.util.ByteCodeUtil;
 public final class ClassFileDeserializer {
 
     public ClassFile loadClassFile(Loader loader, String internalTypeName) throws IOException {
-        ClassFile classFile = innerLoadClassFile(loader, internalTypeName);
-
-        if (classFile == null) {
-            throw new IllegalArgumentException("Class '" + internalTypeName + "' could not be loaded");
-        }
-        for (Method method : classFile.getMethods()) {
-            Code methodCode = method.getCode();
-            if (methodCode == null) {
-                continue;
-            }
-           ByteCodeUtil.cleanUpByteCode(methodCode.getCode());
-        }
-        return classFile;
-    }
-
-    private ClassFile innerLoadClassFile(Loader loader, String internalTypeName) throws IOException {
-        if (!loader.canLoad(internalTypeName)) {
-            return null;
-        }
+        Validate.isTrue(loader.canLoad(internalTypeName), "Class %s could not be loaded", internalTypeName);
 
         byte[] data = loader.load(internalTypeName);
 
-        if (data == null) {
-            return null;
-        }
+        Validate.notNull(data, "Class %s could not be loaded", internalTypeName);
 
         try (DataInputStream reader = new DataInputStream(new ByteArrayInputStream(data))) {
 
@@ -72,7 +53,7 @@ public final class ClassFileDeserializer {
                     String outerTypeName = ic.getOuterClassIndex() == 0 ? null : cp.getConstantString(ic.getOuterClassIndex(), Const.CONSTANT_Class);
 
                     if (!internalTypeName.equals(innerTypeName) && (internalTypeName.equals(outerTypeName) || innerTypeName.startsWith(innerTypePrefix))) {
-                        ClassFile innerClassFile = innerLoadClassFile(loader, innerTypeName);
+                        ClassFile innerClassFile = loadClassFile(loader, innerTypeName);
                         int flags = ic.getInnerAccessFlags();
                         int length;
 
@@ -100,6 +81,13 @@ public final class ClassFileDeserializer {
                 if (!innerClassFiles.isEmpty()) {
                     classFile.setInnerClassFiles(innerClassFiles);
                 }
+            }
+            for (Method method : classFile.getMethods()) {
+                Code methodCode = method.getCode();
+                if (methodCode == null) {
+                    continue;
+                }
+                ByteCodeUtil.cleanUpByteCode(methodCode.getCode());
             }
             return classFile;
         }
