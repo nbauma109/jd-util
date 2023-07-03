@@ -13,6 +13,7 @@ public class CastExpression extends AbstractLineNumberTypeExpression {
     private Expression expression;
     private boolean explicit;
     private boolean byteCodeCheckCast;
+    private Type intersectType;
 
     public CastExpression(Type type, Expression expression) {
         this(UNKNOWN_LINE_NUMBER, type, expression);
@@ -32,7 +33,16 @@ public class CastExpression extends AbstractLineNumberTypeExpression {
         this.explicit = explicit;
         this.byteCodeCheckCast = byteCodeCheckCast;
     }
-    
+
+    public Type getIntersectType() {
+        return intersectType;
+    }
+
+    public void setIntersectType(Type type) {
+        this.intersectType = getType();
+        setType(type);
+    }
+
     @Override
     public Expression getExpression() {
         return expression;

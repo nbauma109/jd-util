@@ -972,6 +972,12 @@ public class TypeMaker {
                 return isAssignable(typeBindings, typeBounds, lt, rt);
             }
         }
+        if (leftUnbound instanceof GenericType gt) {
+            TypeArgument typeArgument = typeBindings.get(gt.getName());
+            if (typeArgument instanceof WildcardSuperTypeArgument wsta && wsta.type().equals(left)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -1651,7 +1657,9 @@ public class TypeMaker {
                         methodTypes = parseMethodSignature(internalTypeName, name, descriptor, signature, exceptionTypeNames);
                     }
                     methodTypes.setAccessFlags(accessFlags);
-
+                    if ((accessFlags & Const.ACC_SYNTHETIC) != 0) {
+                        continue;
+                    }
                     internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
 
                     parameterCount = methodTypes.getParameterTypes() == null ? 0 : methodTypes.getParameterTypes().size();
@@ -1940,8 +1948,8 @@ public class TypeMaker {
         }
     }
 
-    private boolean match(Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, Type leftType, Type rightType) {
-        if (leftType.equals(rightType)) {
+    boolean match(Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, Type leftType, Type rightType) {
+        if (ObjectType.TYPE_OBJECT.equals(leftType) || leftType.equals(rightType)) {
             return true;
         }
 
@@ -1950,10 +1958,17 @@ public class TypeMaker {
             return flags != 0;
         }
 
-        if (leftType.isObjectType() && rightType.isObjectType()) {
-            ObjectType ot1 = (ObjectType)leftType;
-            ObjectType ot2 = (ObjectType)rightType;
-            return isAssignable(typeBindings, typeBounds, ot1, ot2);
+        if (rightType instanceof ObjectType otRight) {
+            if (leftType  instanceof ObjectType otLeft) {
+                return isAssignable(typeBindings, typeBounds, otLeft, otRight);
+            }
+    
+            if (leftType instanceof GenericType gt) {
+                BaseType boundType = typeBounds.get(gt.getName());
+                if (boundType instanceof ObjectType ot && isAssignable(ot, otRight)) {
+                    return true;
+                }
+            }
         }
 
         return false;

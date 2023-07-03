@@ -656,9 +656,17 @@ public class TypeMakerTest extends TestCase {
     }
 
     @Test
+    public void testMatch() throws Exception {
+        Map<String, TypeArgument> typeBindings = Collections.emptyMap();
+        Map<String, BaseType> typeBounds = Collections.emptyMap();
+        assertTrue(typeMaker.match(typeBindings, typeBounds, ObjectType.TYPE_OBJECT, new GenericType("T", 1)));
+    }
+
+    @Test
     public void testMatchCount() throws Exception {
         assertEquals(2, typeMaker.matchCount(StringConstants.JAVA_LANG_MATH, "round", 1, false));
         assertEquals(8, typeMaker.matchCount(StringConstants.JAVA_LANG_STRING, "valueOf", 1, false));
+        assertEquals(1, typeMaker.matchCount("java/util/concurrent/DelayQueue", "add", 1, false));
     }
 
     @Test
@@ -958,6 +966,19 @@ public class TypeMakerTest extends TestCase {
         // Verify the result
         assertFalse(typeMaker.isAssignable(typeBindings, typeBounds, left, right));
     }
+
+    @Test
+    public void testIsAssignable6() {
+        // Prepare some test data
+        ObjectType map = typeMaker.makeFromInternalTypeName("java/util/Map");
+        map = map.createType(new TypeArguments(Arrays.asList(WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT, WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT)));
+        Map<String, BaseType> typeBounds = Collections.emptyMap();
+        Map<String, TypeArgument> typeBindings = Collections.singletonMap("T", new WildcardSuperTypeArgument(map));
+
+        // Verify the result
+        assertTrue(typeMaker.isAssignable(typeBindings, typeBounds, map, new GenericType("T"), ObjectType.TYPE_OBJECT));
+    }
+
     @Test
     public void testIsTypeArgumentAssignableFrom() {
         // Prepare some test data
