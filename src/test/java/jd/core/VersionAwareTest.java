@@ -12,6 +12,6 @@ public class VersionAwareTest implements VersionAware {
         assertEquals("Apache Commons BCEL", getMainAttribute(JavaClass.class, "Bundle-Name"));
         assertEquals("SNAPSHOT", getVersion());
         assertNotNull(getMainAttribute("JD-Util-Version"));
-        assertEquals("1.8", getMainAttribute("X-Compile-Source-JDK"));
+        assertEquals("Plexus Archiver", getMainAttribute("Archiver-Version"));
     }
 }
