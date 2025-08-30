@@ -16,7 +16,6 @@
  ******************************************************************************/
 package jd.core;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jd.core.v1.util.StringConstants;
 
 public final class ClassUtil {
@@ -25,7 +24,7 @@ public final class ClassUtil {
     }
 
     public static String getInternalName(String s) {
-        if (!StringUtils.endsWith(s, StringConstants.CLASS_FILE_SUFFIX)) {
+        if (s == null || !s.endsWith(StringConstants.CLASS_FILE_SUFFIX)) {
             throw new IllegalArgumentException("Not a .class file: " + s);
         }
         return s.substring(0, s.length() - 6); // 6 = ".class".length()
