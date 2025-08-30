@@ -9,6 +9,8 @@ package org.jd.core.v1.model.javasyntax.expression;
 
 import org.jd.core.v1.model.javasyntax.type.Type;
 
+import java.util.Objects;
+
 public class ArrayExpression extends AbstractLineNumberTypeExpression {
     private Expression expression;
     private Expression index;
@@ -69,5 +71,22 @@ public class ArrayExpression extends AbstractLineNumberTypeExpression {
     @Override
     public Expression copyTo(int lineNumber) {
         return new ArrayExpression(lineNumber, expression, index);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(expression, index);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        ArrayExpression other = (ArrayExpression) obj;
+        return Objects.equals(expression, other.expression) && Objects.equals(index, other.index);
     }
 }
