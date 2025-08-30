@@ -19,6 +19,7 @@ public class NewExpression extends AbstractLineNumberExpression {
     private boolean diamondPossible;
     private Expression qualifier;
     private final boolean varArgs;
+    private boolean hasTypeArguments;
 
     public NewExpression(int lineNumber, ObjectType type, String descriptor, boolean varArgs, boolean diamondPossible) {
         this(lineNumber, type, descriptor, null, varArgs, diamondPossible);
@@ -92,6 +93,14 @@ public class NewExpression extends AbstractLineNumberExpression {
 
     public void setQualifier(Expression qualifier) {
         this.qualifier = qualifier;
+    }
+
+    public boolean hasTypeArguments() {
+        return hasTypeArguments;
+    }
+
+    public void setHasTypeArguments(boolean hasTypeArguments) {
+        this.hasTypeArguments = hasTypeArguments;
     }
 
     @Override
