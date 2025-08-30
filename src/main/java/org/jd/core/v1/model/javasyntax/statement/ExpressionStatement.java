@@ -26,6 +26,11 @@ public class ExpressionStatement implements Statement {
     }
 
     @Override
+    public int getLineNumber() {
+        return expression.getLineNumber();
+    }
+
+    @Override
     public boolean isExpressionStatement() { return true; }
 
     @Override
