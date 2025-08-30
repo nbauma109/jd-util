@@ -9,3 +9,11 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+      time: "17:00"
+      timezone: "Europe/Paris"
+  - package-ecosystem: "github-actions"
+    directory: "/" # Location of GitHub Actions workflows
+    schedule:
+      interval: "daily"
+      time: "17:00"
+      timezone: "Europe/Paris"
