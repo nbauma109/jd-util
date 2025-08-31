@@ -34,20 +34,52 @@ public final class ByteCodeUtil implements Opcodes
     public static final short UNPREDICTABLE = -2;
     public static final short RESERVED = -3;
 
+    public static final short LDC_W = 19;
+    public static final short LDC2_W = 20;
     public static final short ILOAD_0 = 26;
     public static final short ILOAD_1 = 27;
     public static final short ILOAD_2 = 28;
     public static final short ILOAD_3 = 29;
+    public static final short LLOAD_0 = 30;
+    public static final short LLOAD_1 = 31;
+    public static final short LLOAD_2 = 32;
+    public static final short LLOAD_3 = 33;
+    public static final short FLOAD_0 = 34;
+    public static final short FLOAD_1 = 35;
+    public static final short FLOAD_2 = 36;
+    public static final short FLOAD_3 = 37;
+    public static final short DLOAD_0 = 38;
+    public static final short DLOAD_1 = 39;
+    public static final short DLOAD_2 = 40;
+    public static final short DLOAD_3 = 41;
     public static final short ALOAD_0 = 42;
     public static final short ALOAD_1 = 43;
     public static final short ALOAD_2 = 44;
     public static final short ALOAD_3 = 45;
+    public static final short ISTORE_0 = 59;
+    public static final short ISTORE_1 = 60;
+    public static final short ISTORE_2 = 61;
+    public static final short ISTORE_3 = 62;
+    public static final short LSTORE_0 = 63;
+    public static final short LSTORE_1 = 64;
+    public static final short LSTORE_2 = 65;
+    public static final short LSTORE_3 = 66;
+    public static final short FSTORE_0 = 67;
+    public static final short FSTORE_1 = 68;
+    public static final short FSTORE_2 = 69;
+    public static final short FSTORE_3 = 70;
+    public static final short DSTORE_0 = 71;
+    public static final short DSTORE_1 = 72;
+    public static final short DSTORE_2 = 73;
+    public static final short DSTORE_3 = 74;
     public static final short ASTORE_0 = 75;
     public static final short ASTORE_1 = 76;
     public static final short ASTORE_2 = 77;
     public static final short ASTORE_3 = 78;
     public static final short WIDE = 196;
     public static final short GOTO_W = 200;
+    public static final short JSR_W = 201;
+
 
     static final short[] NO_OF_OPERANDS = {0/* nop */, 0/* aconst_null */, 0/* iconst_m1 */, 0/* iconst_0 */, 0/* iconst_1 */, 0/* iconst_2 */,
             0/* iconst_3 */, 0/* iconst_4 */, 0/* iconst_5 */, 0/* lconst_0 */, 0/* lconst_1 */, 0/* fconst_0 */, 0/* fconst_1 */, 0/* fconst_2 */, 0/* dconst_0 */,
