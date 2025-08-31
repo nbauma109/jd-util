@@ -1,7 +1,12 @@
 package org.jd.core.v1.service.deserializer.classfile;
 
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.ClassFormatException;
+
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public final class ClassCodeExtractor {
 
@@ -30,11 +35,6 @@ public final class ClassCodeExtractor {
         public int hashCode() {
             return Objects.hash(name, descriptor);
         }
-
-        @Override
-        public String toString() {
-            return name + descriptor;
-        }
     }
 
     public static final class Code {
@@ -47,17 +47,13 @@ public final class ClassCodeExtractor {
             this.maxLocals = maxLocals;
             this.code = code;
         }
-
-        public Code withCode(byte[] newCode) {
-            return new Code(maxStack, maxLocals, newCode);
-        }
     }
 
     public static Map<MethodKey, Code> extractCode(byte[] classBytes) {
         Cursor c = new Cursor(classBytes);
 
         if (c.u4() != 0xCAFEBABE)
-            throw new IllegalArgumentException("Not a classfile");
+            throw new ClassFormatException("Not a classfile");
         c.u2(); // minor
         c.u2(); // major
 

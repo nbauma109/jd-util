@@ -33,6 +33,8 @@ import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.SignatureReader;
+import org.jd.core.v1.service.deserializer.classfile.ClassCodeExtractor;
+import org.jd.core.v1.service.deserializer.classfile.ClassFileDeserializer;
 import org.jd.core.v1.util.StringConstants;
 import org.jd.core.v1.util.ZipLoader;
 import org.junit.Test;
@@ -92,6 +94,22 @@ public class TypeMakerTest extends TestCase {
         tm.makeTypeTypes("invalid/Class"); // should throw ClassFormatException
     }
 
+    @Test
+    public void testExtractCodeThrowsOnInvalidMagic() throws IOException {
+        Loader badLoader = new Loader() {
+            
+            @Override
+            public byte[] load(String internalName) throws IOException {
+                return new byte[]{0x00, 0x11, 0x22, 0x33}; // wrong magic
+            }
+            
+            @Override
+            public boolean canLoad(String internalName) {
+                return true;
+            }
+        };
+        assertThrows("Not a classfile", ClassFormatException.class, () -> ClassFileDeserializer.loadClassFile(badLoader, "invalid/Class"));
+    }
 
     @Test
     public void testOuterClass() throws Exception {
