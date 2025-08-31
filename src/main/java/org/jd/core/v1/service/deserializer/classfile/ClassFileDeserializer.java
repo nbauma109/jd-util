@@ -47,7 +47,7 @@ public final class ClassFileDeserializer {
                     new ClassCodeExtractor.MethodKey(mn.name, mn.desc);
 
             final ClassCodeExtractor.Code code = codeMap.get(key);
-            if (code == null || code.code == null) {
+            if (code == null) {
                 continue; // abstract/native or no Code attribute
             }
 

@@ -22,7 +22,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ClassFileDeserializerTest {
 
@@ -114,6 +118,45 @@ public class ClassFileDeserializerTest {
             assertEquals("()V", ctor.desc);
             assertNotNull("cleaned code must exist", cf.getCleanedCode(ctor.name, ctor.desc));
         }
+    }
+
+    @Test
+    public void testLoaderCannotLoadThrows() {
+        Loader badLoader = new Loader() {
+            @Override
+            public boolean canLoad(String internalName) {
+                return false;
+            }
+
+            @Override
+            public byte[] load(String internalName) {
+                return null;
+            }
+        };
+
+        assertThrows(IllegalArgumentException.class, () -> ClassFileDeserializer.loadClassFile(badLoader, "some/InvalidClass"));
+    }
+
+    @Test
+    public void testLoaderReturnsNullBytesThrows() {
+        Loader badLoader = new Loader() {
+            @Override
+            public boolean canLoad(String internalName) {
+                return true;
+            }
+
+            @Override
+            public byte[] load(String internalName) {
+                return null;
+            }
+        };
+
+        assertThrows(IllegalArgumentException.class, () -> ClassFileDeserializer.loadClassFile(badLoader, "org/jd/core/SomeClass"));
+    }
+
+    @Test
+    public void testNullLoaderThrows() {
+        assertThrows(IllegalArgumentException.class, () -> ClassFileDeserializer.loadClassFile(null, "org/jd/core/SomeClass"));
     }
 
     // ---------- Helpers ----------
