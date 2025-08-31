@@ -82,7 +82,7 @@ public class ClassFile {
     }
 
     public final boolean isClass() {
-        return !isInterface() && !isEnum() && !isAnnotation();
+        return !isInterface() && !isEnum() && !isAnnotation() && !isModule();
     }
 
     public final int getAccessFlags() {
