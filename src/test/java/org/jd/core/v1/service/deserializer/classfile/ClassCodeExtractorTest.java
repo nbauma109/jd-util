@@ -4,8 +4,11 @@ import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.loader.ClassPathLoader;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -48,5 +51,58 @@ public class ClassCodeExtractorTest {
 
         // module-info has no methods, so result is empty, but CP contained CONSTANT_Package
         assertTrue(map.isEmpty());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUtf8NotAStringThrows() {
+        Object[] cp = new Object[2];
+        cp[1] = 123; // not a String
+        // should throw IllegalArgumentException
+        invokeUtf8(cp, 1);
+    }
+
+    private static String invokeUtf8(Object[] cp, int index) {
+        try {
+            var m = ClassCodeExtractor.class.getDeclaredMethod("utf8", Object[].class, int.class);
+            m.setAccessible(true);
+            return (String) m.invoke(null, cp, index);
+        } catch (ReflectiveOperationException e) {
+            if (e.getCause() instanceof RuntimeException re) throw re;
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testMethodKeyEqualsAndHashCode() {
+        ClassCodeExtractor.MethodKey k1 = new ClassCodeExtractor.MethodKey("foo", "()V");
+        ClassCodeExtractor.MethodKey k2 = new ClassCodeExtractor.MethodKey("foo", "()V");
+        ClassCodeExtractor.MethodKey k3 = new ClassCodeExtractor.MethodKey("bar", "()V");
+        ClassCodeExtractor.MethodKey k4 = new ClassCodeExtractor.MethodKey("foo", "(I)V");
+
+        // same instance
+        assertTrue(k1.equals(k1));
+
+        // null
+        assertFalse(k1.equals(null));
+
+        // different type
+        assertFalse(k1.equals("not a key"));
+
+        // equal contents
+        assertTrue(k1.equals(k2));
+        assertEquals(k1.hashCode(), k2.hashCode());
+
+        // different name
+        assertFalse(k1.equals(k3));
+
+        // different descriptor
+        assertFalse(k1.equals(k4));
+
+        // consistent behavior in collections
+        HashSet<ClassCodeExtractor.MethodKey> set = new HashSet<>();
+        set.add(k1);
+        assertTrue(set.contains(k2));
+        assertFalse(set.contains(k3));
+        assertFalse(set.contains(k4));
     }
 }
