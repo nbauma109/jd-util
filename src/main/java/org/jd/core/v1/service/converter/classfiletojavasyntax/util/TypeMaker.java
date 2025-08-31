@@ -6,14 +6,6 @@
  */
 package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
-import org.apache.bcel.Const;
-import org.apache.bcel.classfile.ClassFormatException;
-import org.apache.bcel.classfile.ExceptionTable;
-import org.apache.bcel.classfile.Field;
-import org.apache.bcel.classfile.FieldOrMethod;
-import org.apache.bcel.classfile.Method;
-import org.apache.bcel.classfile.Signature;
-import org.apache.commons.lang3.Validate;
 import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.classfile.ClassFile;
@@ -39,6 +31,10 @@ import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.BindTypesToTypesVisitor;
 import org.jd.core.v1.util.StringConstants;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
@@ -48,30 +44,30 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
-import static org.apache.bcel.Const.CONSTANT_Class;
-import static org.apache.bcel.Const.CONSTANT_Double;
-import static org.apache.bcel.Const.CONSTANT_Dynamic;
-import static org.apache.bcel.Const.CONSTANT_Fieldref;
-import static org.apache.bcel.Const.CONSTANT_Float;
-import static org.apache.bcel.Const.CONSTANT_Integer;
-import static org.apache.bcel.Const.CONSTANT_InterfaceMethodref;
-import static org.apache.bcel.Const.CONSTANT_InvokeDynamic;
-import static org.apache.bcel.Const.CONSTANT_Long;
-import static org.apache.bcel.Const.CONSTANT_MethodHandle;
-import static org.apache.bcel.Const.CONSTANT_MethodType;
-import static org.apache.bcel.Const.CONSTANT_Methodref;
-import static org.apache.bcel.Const.CONSTANT_Module;
-import static org.apache.bcel.Const.CONSTANT_NameAndType;
-import static org.apache.bcel.Const.CONSTANT_Package;
-import static org.apache.bcel.Const.CONSTANT_String;
-import static org.apache.bcel.Const.CONSTANT_Utf8;
 import static org.jd.core.v1.model.javasyntax.type.ObjectType.TYPE_OBJECT;
 import static org.jd.core.v1.model.javasyntax.type.ObjectType.TYPE_UNDEFINED_OBJECT;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Class;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Double;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Dynamic;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Fieldref;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Float;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Integer;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_InterfaceMethodref;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_InvokeDynamic;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Long;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_MethodHandle;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_MethodType;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Methodref;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Module;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_NameAndType;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Package;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_String;
+import static org.jd.core.v1.service.converter.classfiletojavasyntax.util.ConstantPoolTags.CONSTANT_Utf8;
 
 import jd.core.CoreConstants;
 
@@ -184,35 +180,35 @@ public class TypeMaker {
     public TypeTypes parseClassFileSignature(ClassFile classFile) {
         TypeTypes typeTypes = new TypeTypes();
         String internalTypeName = classFile.getInternalTypeName();
+        ClassNode cn = classFile.getClassNode();
 
         typeTypes.setThisType(makeFromInternalTypeName(internalTypeName));
 
-        Signature attributeSignature = classFile.getAttribute(Const.ATTR_SIGNATURE);
+        String signature = cn.signature; // ASM extracts Signature attribute directly here
 
-        if (attributeSignature == null) {
-            String superTypeName = classFile.getSuperTypeName();
-            String[] interfaceTypeNames = classFile.getInterfaceTypeNames();
+        if (signature == null) {
+            // No generic signature attribute → fallback to raw super and interface names
+            String superTypeName = cn.superName;
+            List<String> interfaceTypeNames = cn.interfaces;
 
-            if (superTypeName != null  && ! StringConstants.JAVA_LANG_OBJECT.equals(superTypeName)) {
+            if (superTypeName != null && !StringConstants.JAVA_LANG_OBJECT.equals(superTypeName)) {
                 typeTypes.setSuperType(makeFromInternalTypeName(superTypeName));
             }
 
-            if (interfaceTypeNames != null) {
-                int length = interfaceTypeNames.length;
-
-                if (length == 1) {
-                    typeTypes.setInterfaces(makeFromInternalTypeName(interfaceTypeNames[0]));
+            if (interfaceTypeNames != null && !interfaceTypeNames.isEmpty()) {
+                if (interfaceTypeNames.size() == 1) {
+                    typeTypes.setInterfaces(makeFromInternalTypeName(interfaceTypeNames.get(0)));
                 } else {
-                    UnmodifiableTypes list = new UnmodifiableTypes(length);
-                    for (String interfaceTypeName : interfaceTypeNames) {
-                        list.add(makeFromInternalTypeName(interfaceTypeName));
+                    UnmodifiableTypes list = new UnmodifiableTypes(interfaceTypeNames.size());
+                    for (String intf : interfaceTypeNames) {
+                        list.add(makeFromInternalTypeName(intf));
                     }
                     typeTypes.setInterfaces(list);
                 }
             }
         } else {
-            // Parse 'signature' attribute
-            SignatureReader signatureReader = new SignatureReader(attributeSignature.getSignature());
+            // Parse generic signature with ASM SignatureReader
+            SignatureReader signatureReader = new SignatureReader(signature);
 
             typeTypes.setTypeParameters(parseTypeParameters(signatureReader));
             typeTypes.setSuperType(parseClassTypeSignature(signatureReader, 0));
@@ -225,8 +221,7 @@ public class TypeMaker {
                 if (nextInterface == null) {
                     typeTypes.setInterfaces(firstInterface);
                 } else {
-                    UnmodifiableTypes list = new UnmodifiableTypes(classFile.getInterfaceTypeNames().length);
-
+                    UnmodifiableTypes list = new UnmodifiableTypes(cn.interfaces.size());
                     list.add(firstInterface);
 
                     do {
@@ -240,60 +235,51 @@ public class TypeMaker {
         }
 
         internalTypeNameToTypeTypes.put(internalTypeName, typeTypes);
-
         return typeTypes;
     }
 
-    public MethodTypes parseMethodSignature(ClassFile classFile, Method method) {
-        String key = classFile.getInternalTypeName() + ':' + method.getName() + method.getSignature();
-        return parseMethodSignature(classFile.getInternalTypeName(), method, key);
+
+    public MethodTypes parseMethodSignature(ClassFile classFile, MethodNode method) {
+        String internalTypeName = classFile.getInternalTypeName();
+        String methodKey = internalTypeName + ':' + method.name + method.desc;
+        return parseMethodSignature(internalTypeName, method, methodKey);
     }
 
-    private MethodTypes parseMethodSignature(String internalTypeName, Method method, String key) {
-        Signature attributeSignature = getSignature(method);
+    private MethodTypes parseMethodSignature(String internalTypeName, MethodNode method, String key) {
+        String signature = method.signature; // null if no generics
         String[] exceptionTypeNames = getExceptionTypeNames(method);
+
         MethodTypes methodTypes;
-        if (attributeSignature == null) {
-            methodTypes = parseMethodSignature(internalTypeName, method.getName(), method.getSignature(), exceptionTypeNames);
+        if (signature == null) {
+            // No generic signature: fallback to descriptor
+            methodTypes = parseMethodSignature(internalTypeName, method.name, method.desc, exceptionTypeNames);
         } else {
-            methodTypes = parseMethodSignature(internalTypeName, method.getName(), method.getSignature(), attributeSignature.getSignature(), exceptionTypeNames);
+            // Generic signature present
+            methodTypes = parseMethodSignature(internalTypeName, method.name, method.desc, signature, exceptionTypeNames);
         }
 
         internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
-
         return methodTypes;
     }
 
-    private static String[] getExceptionTypeNames(Method method) {
-        if (method != null) {
-            ExceptionTable attributeExceptions = method.getExceptionTable();
+    private static String[] getExceptionTypeNames(MethodNode method) {
+        List<String> exceptions = method.exceptions;
+        if (exceptions == null || exceptions.isEmpty()) return null;
 
-            if (attributeExceptions != null) {
-                int[] exceptionIndexTable = attributeExceptions.getExceptionIndexTable();
-                String[] exceptionNames = new String[exceptionIndexTable.length];
-                for (int i = 0; i < exceptionNames.length; i++) {
-                    exceptionNames[i] = attributeExceptions.getConstantPool().getConstantString(exceptionIndexTable[i], CONSTANT_Class);
-                }
-                return exceptionNames;
-            }
-        }
-
-        return null;
+        return exceptions.toArray(new String[0]); // Already internal names
     }
 
-    public Type parseFieldSignature(ClassFile classFile, Field field) {
-        String key = classFile.getInternalTypeName() + ':' + field.getName();
-        Signature attributeSignature = getSignature(field);
-        String signature = attributeSignature == null ? field.getSignature() : attributeSignature.getSignature();
+    public Type parseFieldSignature(ClassFile classFile, FieldNode field) {
+        String key = classFile.getInternalTypeName() + ':' + field.name;
+
+        // field.signature may be null if no generics are used
+        String signature = field.signature != null ? field.signature : field.desc;
+
         Type type = makeFromSignature(signature);
 
         putInternalTypeNameFieldNameToType(key, type);
 
         return type;
-    }
-
-    private static Signature getSignature(FieldOrMethod fm) {
-        return (Signature) Stream.of(fm.getAttributes()).filter(Signature.class::isInstance).findAny().orElse(null);
     }
 
     public Type makeFromSignature(String signature) {
@@ -699,7 +685,9 @@ public class TypeMaker {
 
                     return new GenericType(identifier, dimension);
                 case 'V':
-                    Validate.isTrue(dimension == 0);
+                    if (dimension != 0) {
+                        throw new IllegalArgumentException("Void dimension cannot be 0");
+                    }
                     return PrimitiveType.TYPE_VOID;
                 case 'Z':
                     return dimension == 0 ? PrimitiveType.TYPE_BOOLEAN : PrimitiveType.TYPE_BOOLEAN.createType(dimension);
@@ -1657,7 +1645,7 @@ public class TypeMaker {
                         methodTypes = parseMethodSignature(internalTypeName, name, descriptor, signature, exceptionTypeNames);
                     }
                     methodTypes.setAccessFlags(accessFlags);
-                    if ((accessFlags & Const.ACC_SYNTHETIC) != 0) {
+                    if ((accessFlags & Opcodes.ACC_SYNTHETIC) != 0) {
                         continue;
                     }
                     internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
@@ -2025,7 +2013,7 @@ public class TypeMaker {
         private int accessFlags;
 
         public boolean isVarArgs() {
-            return (accessFlags & Const.ACC_VARARGS) != 0;
+            return (accessFlags & Opcodes.ACC_VARARGS) != 0;
         }
         
         public int getAccessFlags() {

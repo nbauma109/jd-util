@@ -16,7 +16,7 @@
  ******************************************************************************/
 package jd.core.process.analyzer.instruction.bytecode.util;
 
-import org.apache.bcel.Const;
+import org.objectweb.asm.Opcodes;
 
 import java.util.Arrays;
 
@@ -24,31 +24,60 @@ import static jd.core.model.instruction.bytecode.ByteCodeConstants.COMPLEXIF;
 import static jd.core.model.instruction.bytecode.ByteCodeConstants.ICONST;
 import static jd.core.model.instruction.bytecode.ByteCodeConstants.IF;
 import static jd.core.model.instruction.bytecode.ByteCodeConstants.IFXNULL;
-import static org.apache.bcel.Const.ACONST_NULL;
-import static org.apache.bcel.Const.ALOAD;
-import static org.apache.bcel.Const.ALOAD_0;
-import static org.apache.bcel.Const.ALOAD_1;
-import static org.apache.bcel.Const.ALOAD_2;
-import static org.apache.bcel.Const.ALOAD_3;
-import static org.apache.bcel.Const.ASTORE;
-import static org.apache.bcel.Const.ASTORE_0;
-import static org.apache.bcel.Const.ASTORE_1;
-import static org.apache.bcel.Const.ASTORE_2;
-import static org.apache.bcel.Const.ASTORE_3;
-import static org.apache.bcel.Const.BIPUSH;
-import static org.apache.bcel.Const.CHECKCAST;
-import static org.apache.bcel.Const.GETFIELD;
-import static org.apache.bcel.Const.GOTO;
-import static org.apache.bcel.Const.INVOKEINTERFACE;
-import static org.apache.bcel.Const.INVOKESPECIAL;
-import static org.apache.bcel.Const.INVOKESTATIC;
-import static org.apache.bcel.Const.INVOKEVIRTUAL;
-import static org.apache.bcel.Const.SIPUSH;
 
 import jd.core.model.instruction.bytecode.ByteCodeConstants;
 
-public final class ByteCodeUtil
+public final class ByteCodeUtil implements Opcodes
 {
+
+    public static final short UNDEFINED = -1;
+    public static final short UNPREDICTABLE = -2;
+    public static final short RESERVED = -3;
+
+    public static final short ILOAD_0 = 26;
+    public static final short ILOAD_1 = 27;
+    public static final short ILOAD_2 = 28;
+    public static final short ILOAD_3 = 29;
+    public static final short ALOAD_0 = 42;
+    public static final short ALOAD_1 = 43;
+    public static final short ALOAD_2 = 44;
+    public static final short ALOAD_3 = 45;
+    public static final short ASTORE_0 = 75;
+    public static final short ASTORE_1 = 76;
+    public static final short ASTORE_2 = 77;
+    public static final short ASTORE_3 = 78;
+    public static final short WIDE = 196;
+    public static final short GOTO_W = 200;
+
+    static final short[] NO_OF_OPERANDS = {0/* nop */, 0/* aconst_null */, 0/* iconst_m1 */, 0/* iconst_0 */, 0/* iconst_1 */, 0/* iconst_2 */,
+            0/* iconst_3 */, 0/* iconst_4 */, 0/* iconst_5 */, 0/* lconst_0 */, 0/* lconst_1 */, 0/* fconst_0 */, 0/* fconst_1 */, 0/* fconst_2 */, 0/* dconst_0 */,
+            0/* dconst_1 */, 1/* bipush */, 2/* sipush */, 1/* ldc */, 2/* ldc_w */, 2/* ldc2_w */, 1/* iload */, 1/* lload */, 1/* fload */, 1/* dload */,
+            1/* aload */, 0/* iload_0 */, 0/* iload_1 */, 0/* iload_2 */, 0/* iload_3 */, 0/* lload_0 */, 0/* lload_1 */, 0/* lload_2 */, 0/* lload_3 */,
+            0/* fload_0 */, 0/* fload_1 */, 0/* fload_2 */, 0/* fload_3 */, 0/* dload_0 */, 0/* dload_1 */, 0/* dload_2 */, 0/* dload_3 */, 0/* aload_0 */,
+            0/* aload_1 */, 0/* aload_2 */, 0/* aload_3 */, 0/* iaload */, 0/* laload */, 0/* faload */, 0/* daload */, 0/* aaload */, 0/* baload */, 0/* caload */,
+            0/* saload */, 1/* istore */, 1/* lstore */, 1/* fstore */, 1/* dstore */, 1/* astore */, 0/* istore_0 */, 0/* istore_1 */, 0/* istore_2 */,
+            0/* istore_3 */, 0/* lstore_0 */, 0/* lstore_1 */, 0/* lstore_2 */, 0/* lstore_3 */, 0/* fstore_0 */, 0/* fstore_1 */, 0/* fstore_2 */, 0/* fstore_3 */,
+            0/* dstore_0 */, 0/* dstore_1 */, 0/* dstore_2 */, 0/* dstore_3 */, 0/* astore_0 */, 0/* astore_1 */, 0/* astore_2 */, 0/* astore_3 */, 0/* iastore */,
+            0/* lastore */, 0/* fastore */, 0/* dastore */, 0/* aastore */, 0/* bastore */, 0/* castore */, 0/* sastore */, 0/* pop */, 0/* pop2 */, 0/* dup */,
+            0/* dup_x1 */, 0/* dup_x2 */, 0/* dup2 */, 0/* dup2_x1 */, 0/* dup2_x2 */, 0/* swap */, 0/* iadd */, 0/* ladd */, 0/* fadd */, 0/* dadd */, 0/* isub */,
+            0/* lsub */, 0/* fsub */, 0/* dsub */, 0/* imul */, 0/* lmul */, 0/* fmul */, 0/* dmul */, 0/* idiv */, 0/* ldiv */, 0/* fdiv */, 0/* ddiv */,
+            0/* irem */, 0/* lrem */, 0/* frem */, 0/* drem */, 0/* ineg */, 0/* lneg */, 0/* fneg */, 0/* dneg */, 0/* ishl */, 0/* lshl */, 0/* ishr */,
+            0/* lshr */, 0/* iushr */, 0/* lushr */, 0/* iand */, 0/* land */, 0/* ior */, 0/* lor */, 0/* ixor */, 0/* lxor */, 2/* iinc */, 0/* i2l */,
+            0/* i2f */, 0/* i2d */, 0/* l2i */, 0/* l2f */, 0/* l2d */, 0/* f2i */, 0/* f2l */, 0/* f2d */, 0/* d2i */, 0/* d2l */, 0/* d2f */, 0/* i2b */,
+            0/* i2c */, 0/* i2s */, 0/* lcmp */, 0/* fcmpl */, 0/* fcmpg */, 0/* dcmpl */, 0/* dcmpg */, 2/* ifeq */, 2/* ifne */, 2/* iflt */, 2/* ifge */,
+            2/* ifgt */, 2/* ifle */, 2/* if_icmpeq */, 2/* if_icmpne */, 2/* if_icmplt */, 2/* if_icmpge */, 2/* if_icmpgt */, 2/* if_icmple */, 2/* if_acmpeq */,
+            2/* if_acmpne */, 2/* goto */, 2/* jsr */, 1/* ret */, UNPREDICTABLE/* tableswitch */, UNPREDICTABLE/* lookupswitch */, 0/* ireturn */, 0/* lreturn */,
+            0/* freturn */, 0/* dreturn */, 0/* areturn */, 0/* return */, 2/* getstatic */, 2/* putstatic */, 2/* getfield */, 2/* putfield */,
+            2/* invokevirtual */, 2/* invokespecial */, 2/* invokestatic */, 4/* invokeinterface */, 4/* invokedynamic */, 2/* new */, 1/* newarray */,
+            2/* anewarray */, 0/* arraylength */, 0/* athrow */, 2/* checkcast */, 2/* instanceof */, 0/* monitorenter */, 0/* monitorexit */,
+            UNPREDICTABLE/* wide */, 3/* multianewarray */, 2/* ifnull */, 2/* ifnonnull */, 4/* goto_w */, 4/* jsr_w */, 0/* breakpoint */, UNDEFINED, UNDEFINED,
+            UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+            UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+            UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+            UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, RESERVED/* impdep1 */,
+            RESERVED/* impdep2 */
+    };
+
     private ByteCodeUtil() {
         super();
     }
@@ -97,7 +126,7 @@ public final class ByteCodeUtil
     {
         final int opcode = code[index+1] & 255;
 
-        return index + (opcode == Const.IINC ? 5 : 3);
+        return index + (opcode == IINC ? 5 : 3);
     }
 
     public static int nextInstructionOffset(byte[] code, int index)
@@ -106,10 +135,10 @@ public final class ByteCodeUtil
 
         return switch (opcode)
         {
-            case Const.TABLESWITCH  -> nextTableSwitchOffset(code, index);
-            case Const.LOOKUPSWITCH -> nextLookupSwitchOffset(code, index);
-            case Const.WIDE         -> nextWideOffset(code, index);
-            default                 -> index + 1 + Const.getNoOfOperands(opcode);
+            case TABLESWITCH  -> nextTableSwitchOffset(code, index);
+            case LOOKUPSWITCH -> nextLookupSwitchOffset(code, index);
+            case WIDE         -> nextWideOffset(code, index);
+            default                 -> index + 1 + getNoOfOperands(opcode);
         };
     }
 
@@ -127,9 +156,9 @@ public final class ByteCodeUtil
 
                 int opcode = code[offset] & 255;
 
-                if (opcode == Const.GOTO) {
+                if (opcode == GOTO) {
                     offset += (short) ((code[offset + 1] & 255) << 8 | code[offset + 2] & 255);
-                } else if (opcode == Const.GOTO_W) {
+                } else if (opcode == GOTO_W) {
 
                     offset += (code[offset + 1] & 255) << 24 | (code[offset + 2] & 255) << 16
                             | (code[offset + 3] & 255) << 8 | code[offset + 4] & 255;
@@ -170,7 +199,7 @@ public final class ByteCodeUtil
             }
             while (offset < code.length && opCodeIn(code, offset, GETFIELD, INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE, CHECKCAST)) {
                 // skip GETFIELD, INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE, CHECKCAST and parameters
-                offset += 1 + Const.getNoOfOperands(getOpCode(code, offset));
+                offset += 1 + getNoOfOperands(getOpCode(code, offset));
             }
             if (offset >= code.length || !opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
                 continue;
@@ -195,7 +224,7 @@ public final class ByteCodeUtil
             if (offset >= code.length || !opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
                 continue;
             }
-            offset += 1 + Const.getNoOfOperands(getOpCode(code, offset));
+            offset += 1 + getNoOfOperands(getOpCode(code, offset));
             if (offset >= code.length || !opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
@@ -221,7 +250,7 @@ public final class ByteCodeUtil
             if (!opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
                 continue;
             }
-            offset += 1 + Const.getNoOfOperands(getOpCode(code, offset));
+            offset += 1 + getNoOfOperands(getOpCode(code, offset));
             if (offset >= code.length || !opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
@@ -269,7 +298,7 @@ public final class ByteCodeUtil
             if (!opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
                 continue;
             }
-            offset += 1 + Const.getNoOfOperands(getOpCode(code, offset));
+            offset += 1 + getNoOfOperands(getOpCode(code, offset));
             if (offset >= code.length) {
                 continue;
             }
@@ -328,7 +357,7 @@ public final class ByteCodeUtil
                 System.arraycopy(code, i, code, paramEndIdx, paramLength);
             }
             // clear what's left in the middle
-            Arrays.fill(code, clearFromIdx, newInvokeVirtualIdx, (byte)Const.NOP);
+            Arrays.fill(code, clearFromIdx, newInvokeVirtualIdx, (byte)NOP);
         }
 
         return code;
@@ -360,19 +389,23 @@ public final class ByteCodeUtil
 
     public static boolean getArrayRefIndex(byte[] code) {
         return code.length == 5 
-                && (code[0] & 255) == Const.ILOAD_0 
-                && (code[1] & 255) == Const.ANEWARRAY
-                && (code[4] & 255) == Const.ARETURN;
+                && (code[0] & 255) == ILOAD_0 
+                && (code[1] & 255) == ANEWARRAY
+                && (code[4] & 255) == ARETURN;
     }
 
     public static int getLoadOpCode(int storeOpCode) {
         return switch (storeOpCode) {
-            case Const.ASTORE -> Const.ALOAD;
-            case Const.ISTORE -> Const.ILOAD;
+            case ASTORE -> ALOAD;
+            case ISTORE -> ILOAD;
             case ByteCodeConstants.STORE -> ByteCodeConstants.LOAD;
-            case Const.PUTFIELD -> Const.GETFIELD;
-            case Const.PUTSTATIC -> Const.GETSTATIC;
+            case PUTFIELD -> GETFIELD;
+            case PUTSTATIC -> GETSTATIC;
             default -> -1;
         };
+    }
+
+    public static short getNoOfOperands(final int index) {
+        return NO_OF_OPERANDS[index];
     }
 }

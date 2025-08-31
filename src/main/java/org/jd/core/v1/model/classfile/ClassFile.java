@@ -4,34 +4,37 @@
  * This is a Copyleft license that gives the user the right to use,
  * copy and modify the code freely for non-commercial purposes.
  */
-
 package org.jd.core.v1.model.classfile;
 
-import org.apache.bcel.classfile.AnnotationEntry;
-import org.apache.bcel.classfile.Attribute;
-import org.apache.bcel.classfile.ConstantPool;
-import org.apache.bcel.classfile.Field;
-import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.classfile.Method;
-import org.apache.bcel.classfile.Utility;
-import java.util.List;
-import java.util.stream.Stream;
+import org.jd.core.v1.service.deserializer.classfile.ClassCodeExtractor.MethodKey;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
-import static org.apache.bcel.Const.ACC_MODULE;
-import static org.apache.bcel.Const.CONSTANT_Class;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ClassFile {
 
-    private final JavaClass javaClass;
+    private final ClassNode classNode;
     private ClassFile outerClassFile;
     private List<ClassFile> innerClassFiles;
 
-    public ClassFile(JavaClass javaClass) {
-        this.javaClass = javaClass;
+    /** Map key: methodName+desc → cleaned byte[] */
+    private final Map<MethodKey, byte[]> cleanedCode = new HashMap<>();
+
+    public ClassFile(ClassNode classNode) {
+        this.classNode = classNode;
+    }
+
+    // --- Accessors to mirror old API, but now delegate to ASM ClassNode ---
+
+    public ClassNode getClassNode() {
+        return classNode;
     }
 
     public boolean isModule() {
-        return (javaClass.getAccessFlags() & ACC_MODULE) != 0;
+        return (classNode.access & org.objectweb.asm.Opcodes.ACC_MODULE) != 0;
     }
 
     public ClassFile getOuterClassFile() {
@@ -51,93 +54,77 @@ public class ClassFile {
     }
 
     public final boolean isAbstract() {
-        return javaClass.isAbstract();
+        return (classNode.access & org.objectweb.asm.Opcodes.ACC_ABSTRACT) != 0;
     }
 
     public final boolean isEnum() {
-        return javaClass.isEnum();
+        return (classNode.access & org.objectweb.asm.Opcodes.ACC_ENUM) != 0;
     }
 
     public final boolean isInterface() {
-        return javaClass.isInterface();
+        return (classNode.access & org.objectweb.asm.Opcodes.ACC_INTERFACE) != 0;
     }
 
     public final boolean isPublic() {
-        return javaClass.isPublic();
+        return (classNode.access & org.objectweb.asm.Opcodes.ACC_PUBLIC) != 0;
     }
 
     public final boolean isStatic() {
-        return javaClass.isStatic();
+        return (classNode.access & org.objectweb.asm.Opcodes.ACC_STATIC) != 0;
     }
 
     public int getMajorVersion() {
-        return javaClass.getMajor();
+        return classNode.version & 0xFFFF;
     }
 
     public int getMinorVersion() {
-        return javaClass.getMinor();
+        return classNode.version >>> 16;
     }
 
     public final boolean isClass() {
-        return javaClass.isClass();
+        return !isInterface() && !isEnum() && !isAnnotation();
     }
 
     public final int getAccessFlags() {
-        return javaClass.getAccessFlags();
+        return classNode.access;
     }
 
     public final void setAccessFlags(int accessFlags) {
-        javaClass.setAccessFlags(accessFlags);
+        classNode.access = accessFlags;
     }
 
     public boolean isAnnotation() {
-        return javaClass.isAnnotation();
+        return (classNode.access & org.objectweb.asm.Opcodes.ACC_ANNOTATION) != 0;
     }
 
-    public Method[] getMethods() {
-        return javaClass.getMethods();
+    public List<MethodNode> getMethods() {
+        return classNode.methods;
     }
 
-    public Field[] getFields() {
-        return javaClass.getFields();
+    public List<org.objectweb.asm.tree.FieldNode> getFields() {
+        return classNode.fields;
     }
 
-    public String[] getInterfaceTypeNames() {
-        int[] interfaceIndices = javaClass.getInterfaceIndices();
-        String[] interfaceNames = new String[interfaceIndices.length];
-        for (int i = 0; i < interfaceNames.length; i++) {
-            interfaceNames[i] = getConstantPool().getConstantString(interfaceIndices[i], CONSTANT_Class);
-        }
-        return interfaceNames;
+    public List<String> getInterfaceTypeNames() {
+        return classNode.interfaces;
     }
 
     public String getSuperTypeName() {
-        return getConstantPool().getConstantString(getSuperclassNameIndex(), CONSTANT_Class);
-    }
-
-    public int getSuperclassNameIndex() {
-        return javaClass.getSuperclassNameIndex();
+        return classNode.superName;
     }
 
     public String getInternalTypeName() {
-        return Utility.packageToPath(javaClass.getClassName());
+        return classNode.name;
     }
 
-    public ConstantPool getConstantPool() {
-        return javaClass.getConstantPool();
-    }
-    
-    public Attribute[] getAttributes() {
-        return javaClass.getAttributes();
+    // --- Cleaned code storage (replaces BCEL Method.getCode().getCode()) ---
+
+    public void setCleanedCode(String name, String desc, byte[] code) {
+        cleanedCode.put(new MethodKey(name, desc), code == null ? new byte[0] : code);
     }
 
-    public AnnotationEntry[] getAnnotationEntries() {
-        return javaClass.getAnnotationEntries();
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Attribute> T getAttribute(byte tag) {
-        return (T) Stream.of(javaClass.getAttributes()).filter(a -> a.getTag() == tag).findAny().orElse(null);
+    public byte[] getCleanedCode(String name, String desc) {
+        return cleanedCode.getOrDefault(new MethodKey(name, desc), new byte[0]);
     }
 
     public boolean isAInnerClass() {
@@ -148,4 +135,5 @@ public class ClassFile {
     public String toString() {
         return "ClassFile{" + getInternalTypeName() + "}";
     }
+
 }

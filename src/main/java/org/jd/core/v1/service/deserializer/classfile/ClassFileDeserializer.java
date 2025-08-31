@@ -6,90 +6,59 @@
  */
 package org.jd.core.v1.service.deserializer.classfile;
 
-import org.apache.bcel.Const;
-import org.apache.bcel.classfile.ClassParser;
-import org.apache.bcel.classfile.Code;
-import org.apache.bcel.classfile.ConstantPool;
-import org.apache.bcel.classfile.InnerClass;
-import org.apache.bcel.classfile.InnerClasses;
-import org.apache.bcel.classfile.Method;
-import org.apache.commons.lang3.Validate;
+import jd.core.process.analyzer.instruction.bytecode.util.ByteCodeUtil;
 import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.model.classfile.ClassFile;
-import org.jd.core.v1.util.DefaultList;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
-
-import static org.apache.bcel.Const.ACC_SYNTHETIC;
-
-import jd.core.process.analyzer.instruction.bytecode.util.ByteCodeUtil;
+import java.util.Arrays;
+import java.util.Map;
 
 public final class ClassFileDeserializer {
 
-    public ClassFile loadClassFile(Loader loader, String internalTypeName) throws IOException {
-        Validate.isTrue(loader.canLoad(internalTypeName), "Class %s could not be loaded", internalTypeName);
-
-        byte[] data = loader.load(internalTypeName);
-
-        Validate.notNull(data, "Class %s could not be loaded", internalTypeName);
-
-        try (DataInputStream reader = new DataInputStream(new ByteArrayInputStream(data))) {
-
-            // Load main type
-            ClassParser classParser = new ClassParser(reader, internalTypeName);
-            ClassFile classFile = new ClassFile(classParser.parse());
-            InnerClasses innerClasses = classFile.getAttribute(Const.ATTR_INNER_CLASSES);
-
-            // Load inner types
-            if (innerClasses != null) {
-                DefaultList<ClassFile> innerClassFiles = new DefaultList<>();
-                String innerTypePrefix = internalTypeName + '$';
-
-                for (InnerClass ic : innerClasses.getInnerClasses()) {
-                    ConstantPool cp = classFile.getConstantPool();
-                    String innerTypeName = cp.getConstantString(ic.getInnerClassIndex(), Const.CONSTANT_Class);
-                    String outerTypeName = ic.getOuterClassIndex() == 0 ? null : cp.getConstantString(ic.getOuterClassIndex(), Const.CONSTANT_Class);
-
-                    if (!internalTypeName.equals(innerTypeName) && (internalTypeName.equals(outerTypeName) || innerTypeName.startsWith(innerTypePrefix))) {
-                        ClassFile innerClassFile = loadClassFile(loader, innerTypeName);
-                        int flags = ic.getInnerAccessFlags();
-                        int length;
-
-                        if (innerTypeName.startsWith(innerTypePrefix)) {
-                            length = internalTypeName.length() + 1;
-                        } else {
-                            length = innerTypeName.indexOf('$') + 1;
-                        }
-
-                        if (Character.isDigit(innerTypeName.charAt(length))) {
-                            flags |= ACC_SYNTHETIC;
-                        }
-
-                        if (innerClassFile == null) {
-                            // Inner class not found. Create an empty one.
-                            innerClassFile = new ClassFile(null);
-                        }
-
-                        innerClassFile.setOuterClassFile(classFile);
-                        innerClassFile.setAccessFlags(flags);
-                        innerClassFiles.add(innerClassFile);
-                    }
-                }
-
-                if (!innerClassFiles.isEmpty()) {
-                    classFile.setInnerClassFiles(innerClassFiles);
-                }
-            }
-            for (Method method : classFile.getMethods()) {
-                Code methodCode = method.getCode();
-                if (methodCode == null) {
-                    continue;
-                }
-                ByteCodeUtil.cleanUpByteCode(methodCode.getCode());
-            }
-            return classFile;
+    public static ClassFile loadClassFile(Loader loader, String internalTypeName) throws IOException {
+        if (loader == null || !loader.canLoad(internalTypeName)) {
+            throw new IllegalArgumentException("Class " + internalTypeName + " could not be loaded");
         }
+
+        final byte[] data = loader.load(internalTypeName);
+        if (data == null) {
+            throw new IllegalArgumentException("Class " + internalTypeName + " could not be loaded");
+        }
+
+        // 1) Extract all Code attributes (maxStack, maxLocals, raw code[]) directly from bytes.
+        final Map<ClassCodeExtractor.MethodKey, ClassCodeExtractor.Code> codeMap =
+                ClassCodeExtractor.extractCode(data);
+
+        // 2) Build ASM tree (we still want all the structural info).
+        final ClassReader cr = new ClassReader(data);
+        final ClassNode cn = new ClassNode();
+        cr.accept(cn, ClassReader.SKIP_FRAMES);
+
+        // 3) Wrap in our model.
+        final ClassFile cf = new ClassFile(cn);
+
+        // 4) Clean and store per-method code[] when present.
+        for (MethodNode mn : cn.methods) {
+            final ClassCodeExtractor.MethodKey key =
+                    new ClassCodeExtractor.MethodKey(mn.name, mn.desc);
+
+            final ClassCodeExtractor.Code code = codeMap.get(key);
+            if (code == null || code.code == null) {
+                continue; // abstract/native or no Code attribute
+            }
+
+            // Work on a copy, then clean.
+            final byte[] cleaned = Arrays.copyOf(code.code, code.code.length);
+            ByteCodeUtil.cleanUpByteCode(cleaned);
+
+            // Save cleaned bytes so the rest of your pipeline can use them.
+            cf.setCleanedCode(mn.name, mn.desc, cleaned);
+        }
+
+        return cf;
     }
 }

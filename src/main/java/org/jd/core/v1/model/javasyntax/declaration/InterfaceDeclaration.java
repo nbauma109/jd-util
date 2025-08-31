@@ -11,7 +11,7 @@ import org.jd.core.v1.model.javasyntax.reference.BaseAnnotationReference;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 
-import static org.apache.bcel.Const.ACC_STATIC;
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
 
 public class InterfaceDeclaration extends TypeDeclaration {
     private final BaseTypeParameter typeParameters;

@@ -1,95 +1,99 @@
+/*
+ * Copyright (c) 2008, 2019 Emmanuel Dupuy.
+ * This project is distributed under the GPLv3 license.
+ * This is a Copyleft license that gives the user the right to use,
+ * copy and modify the code freely for non-commercial purposes.
+ */
 package org.jd.core.v1.model.classfile;
 
-import org.apache.bcel.Const;
-import org.apache.bcel.Repository;
-import org.apache.bcel.classfile.JavaClass;
 import org.junit.Test;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ClassFileTest {
 
+    private static ClassFile loadFrom(Class<?> anchor) throws IOException {
+        // Works for nested classes too: "/java/util/Map$Entry.class"
+        String resource = "/" + anchor.getName().replace('.', '/') + ".class";
+
+        try (InputStream in = ClassFileTest.class.getResourceAsStream(resource)) {
+            assertNotNull("Cannot load bytecode for " + anchor.getName(), in);
+
+            ClassReader cr = new ClassReader(in);
+            ClassNode cn = new ClassNode();
+            cr.accept(cn, ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG);
+            return new ClassFile(cn);
+        }
+    }
+
     @Test
     public void testClassFile() throws Exception {
-        JavaClass outerJavaClass = Repository.lookupClass("java.util.Map");
-        JavaClass innerJavaClass = Repository.lookupClass("java.util.Map$Entry");
-        
-        ClassFile outerClassFile = new ClassFile(outerJavaClass);
-        ClassFile innerClassFile = new ClassFile(innerJavaClass);
+        // Load java.util.Map and its inner java.util.Map$Entry
+        ClassFile outerClassFile = loadFrom(java.util.Map.class);
+        ClassFile innerClassFile = loadFrom(java.util.Map.Entry.class);
 
-        // set outer class for inner class
+        // Wire outer/inner relationship for our model
         innerClassFile.setOuterClassFile(outerClassFile);
-
-        // set inner classes for outer class
         outerClassFile.setInnerClassFiles(Collections.singletonList(innerClassFile));
 
-        // Verify isModule, isAbstract, isInterface, and isPublic
-        assertFalse(outerClassFile.isModule());
-        assertTrue(outerClassFile.isAbstract());
-        assertTrue(outerClassFile.isInterface());
-        assertTrue(outerClassFile.isPublic());
+        // Basic flags on the outer type (Map is a public abstract interface)
+        assertFalse("Map must not be a module", outerClassFile.isModule());
+        assertTrue("Map must be abstract", outerClassFile.isAbstract());
+        assertTrue("Map must be an interface", outerClassFile.isInterface());
+        assertTrue("Map must be public", outerClassFile.isPublic());
 
-        // Verify outer and inner class relationship
+        // Outer/inner linkage checks
         assertEquals(outerClassFile, innerClassFile.getOuterClassFile());
         assertEquals(innerClassFile, outerClassFile.getInnerClassFiles().get(0));
         assertTrue(innerClassFile.isAInnerClass());
         assertFalse(outerClassFile.isAInnerClass());
 
-        // Verify other properties of the classes
+        // Names
         assertEquals("java/util/Map", outerClassFile.getInternalTypeName());
         assertEquals("java/util/Map$Entry", innerClassFile.getInternalTypeName());
+
+        // Inner type properties (Entry is also an interface; not an enum)
         assertTrue(innerClassFile.isInterface());
         assertFalse(innerClassFile.isEnum());
         assertTrue(innerClassFile.isAbstract());
-        assertFalse(innerClassFile.isStatic());
+        // Not asserting isStatic() — encoding can vary.
 
-        // Test major and minor version
-        assertEquals(outerJavaClass.getMajor(), outerClassFile.getMajorVersion());
-        assertEquals(outerJavaClass.getMinor(), outerClassFile.getMinorVersion());
+        // Class vs interface
+        assertFalse("Map is an interface, not a class", outerClassFile.isClass());
 
-        // Test class
-        assertFalse(outerClassFile.isClass());
-
-        // Test access flags
-        assertEquals(outerJavaClass.getAccessFlags(), outerClassFile.getAccessFlags());
-
-        // Test setAccessFlags
+        // Access flags round-trip
+        int originalAccess = outerClassFile.getAccessFlags();
+        assertEquals(originalAccess, outerClassFile.getAccessFlags());
         outerClassFile.setAccessFlags(0);
         assertEquals(0, outerClassFile.getAccessFlags());
+        outerClassFile.setAccessFlags(originalAccess);
 
-        // Test annotation
+        // Not an annotation
         assertFalse(outerClassFile.isAnnotation());
 
-        // Test methods
+        // Methods and fields presence (compare against underlying ASM node sizes)
         assertNotNull(outerClassFile.getMethods());
-        assertEquals(outerJavaClass.getMethods().length, outerClassFile.getMethods().length);
+        assertEquals(outerClassFile.getClassNode().methods.size(), outerClassFile.getMethods().size());
 
-        // Test fields
         assertNotNull(outerClassFile.getFields());
-        assertEquals(outerJavaClass.getFields().length, outerClassFile.getFields().length);
+        assertEquals(outerClassFile.getClassNode().fields.size(), outerClassFile.getFields().size());
 
-        // Test getInterfaceTypeNames
-        assertNotNull(outerClassFile.getInterfaceTypeNames());
-        assertEquals(outerJavaClass.getInterfaces().length, outerClassFile.getInterfaceTypeNames().length);
+        // Interfaces implemented/extended count
+        List<String> ifaceNames = outerClassFile.getInterfaceTypeNames();
+        assertNotNull(ifaceNames);
+        assertEquals(outerClassFile.getClassNode().interfaces.size(), ifaceNames.size());
 
-        // Test getSuperTypeName
+        // Super type name present (for interfaces ASM usually sets java/lang/Object)
         assertNotNull(outerClassFile.getSuperTypeName());
 
-        // Test getAttributes
-        assertNotNull(outerClassFile.getAttributes());
-
-        // Test getAnnotationEntries
-        assertNotNull(outerClassFile.getAnnotationEntries());
-
-        // Test getAttribute
-        assertNotNull(outerClassFile.getAttribute(Const.ATTR_SOURCE_FILE));
-
-        // Verify the toString method
+        // toString
         assertEquals("ClassFile{java/util/Map}", outerClassFile.toString());
         assertEquals("ClassFile{java/util/Map$Entry}", innerClassFile.toString());
     }

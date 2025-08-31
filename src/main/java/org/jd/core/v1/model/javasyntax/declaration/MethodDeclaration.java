@@ -14,9 +14,9 @@ import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
-import static org.apache.bcel.Const.ACC_ABSTRACT;
-import static org.apache.bcel.Const.ACC_PUBLIC;
-import static org.apache.bcel.Const.ACC_STATIC;
+import static org.objectweb.asm.Opcodes.ACC_ABSTRACT;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
 
 public class MethodDeclaration implements MemberDeclaration {
     private final BaseAnnotationReference annotationReferences;

@@ -27,7 +27,6 @@ import java.io.InputStream;
 import junit.framework.TestCase;
 
 public class SignatureParserTest extends TestCase {
-    protected ClassFileDeserializer deserializer = new ClassFileDeserializer();
 
     @Test
     public void testAnnotatedClass() throws Exception {
@@ -36,7 +35,7 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/AnnotatedClass");
+            ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "org/jd/core/test/AnnotatedClass");
 
             // Check type
             TypeMaker.TypeTypes typeTypes = typeMaker.parseClassFileSignature(classFile);
@@ -65,21 +64,21 @@ public class SignatureParserTest extends TestCase {
 
             // Check field 'list1'
             //  public List<List<? extends Generic>> list1
-            BaseType type = typeMaker.parseFieldSignature(classFile, classFile.getFields()[0]);
+            BaseType type = typeMaker.parseFieldSignature(classFile, classFile.getFields().get(0));
             visitor.reset();
             type.accept(visitor);
             source = visitor.toString();
 
             assertEquals("boolean", source);
 
-            type = typeMaker.parseFieldSignature(classFile, classFile.getFields()[1]);
+            type = typeMaker.parseFieldSignature(classFile, classFile.getFields().get(1));
             visitor.reset();
             type.accept(visitor);
             source = visitor.toString();
             
             assertEquals("byte", source);
             
-            type = typeMaker.parseFieldSignature(classFile, classFile.getFields()[2]);
+            type = typeMaker.parseFieldSignature(classFile, classFile.getFields().get(2));
             visitor.reset();
             type.accept(visitor);
             source = visitor.toString();
@@ -88,7 +87,7 @@ public class SignatureParserTest extends TestCase {
 
             // Check method 'add'
             //  public int add(int i1, int i2)
-            TypeMaker.MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[1]);
+            TypeMaker.MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods().get(1));
 
             // Check type parameterTypes
             assertNull(methodTypes.getTypeParameters());
@@ -119,7 +118,7 @@ public class SignatureParserTest extends TestCase {
 
             // Check method 'ping'
             //  public void ping(String host) throws UnknownHostException, UnsatisfiedLinkError
-            methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[2]);
+            methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods().get(2));
 
             // Check type parameterTypes
             assertNull(methodTypes.getTypeParameters());
@@ -163,7 +162,7 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/GenericClass");
+            ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "org/jd/core/test/GenericClass");
 
             // Check type
             TypeMaker.TypeTypes typeTypes = typeMaker.parseClassFileSignature(classFile);
@@ -215,7 +214,7 @@ public class SignatureParserTest extends TestCase {
 
             // Check field 'list1'
             //  public List<List<? extends Generic>> list1
-            BaseType type = typeMaker.parseFieldSignature(classFile, classFile.getFields()[0]);
+            BaseType type = typeMaker.parseFieldSignature(classFile, classFile.getFields().get(0));
             visitor.reset();
             type.accept(visitor);
             source = visitor.toString();
@@ -224,7 +223,7 @@ public class SignatureParserTest extends TestCase {
 
             // Check method 'copy2'
             //  public <T, S extends T> List<? extends Number> copy2(List<? super T> dest, List<S> src) throws InvalidParameterException, ClassCastException
-            TypeMaker.MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[3]);
+            TypeMaker.MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods().get(3));
 
             // Check type parameterTypes
             assertNotNull(methodTypes.getTypeParameters());
@@ -266,7 +265,7 @@ public class SignatureParserTest extends TestCase {
 
             // Check method 'print'
             //  public <T1, T2 extends Exception> List<? extends Number> print(List<? super T1> list) throws InvalidParameterException, T2
-            methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[4]);
+            methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods().get(4));
 
             // Check type parameterTypes
             assertNotNull(methodTypes.getTypeParameters());
@@ -382,7 +381,7 @@ public class SignatureParserTest extends TestCase {
         ClassPathLoader loader = new ClassPathLoader();
         TypeMaker typeMaker = new TypeMaker(loader);
 
-        ClassFile classFile = deserializer.loadClassFile(loader, "java/io/InputStream");
+        ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "java/io/InputStream");
 
         // Check type
         TypeMaker.TypeTypes typeTypes = typeMaker.parseClassFileSignature(classFile);
@@ -420,7 +419,7 @@ public class SignatureParserTest extends TestCase {
         ClassPathLoader loader = new ClassPathLoader();
         TypeMaker typeMaker = new TypeMaker(loader);
         
-        ClassFile classFile = deserializer.loadClassFile(loader, "java/util/AbstractMap");
+        ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "java/util/AbstractMap");
         
         // Check type
         TypeMaker.TypeTypes typeTypes = typeMaker.parseClassFileSignature(classFile);
@@ -448,9 +447,9 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/annotation/Quality$Level");
+            ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "org/jd/core/test/annotation/Quality$Level");
 
-            MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[2]);
+            MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods().get(2));
     
             // Check parameterTypes
             assertNotNull(methodTypes.getParameterTypes());
@@ -470,9 +469,9 @@ public class SignatureParserTest extends TestCase {
         Loader loader = new ClassPathLoader();
         TypeMaker typeMaker = new TypeMaker(loader);
         
-        ClassFile classFile = deserializer.loadClassFile(loader, "org/apache/commons/lang3/function/FailableBooleanSupplier");
+        ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "org/apache/commons/lang3/function/FailableBooleanSupplier");
         
-        MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[0]);
+        MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods().get(0));
         
         // Check exceptionTypes
         assertNotNull(methodTypes.getExceptionTypes());
@@ -492,9 +491,9 @@ public class SignatureParserTest extends TestCase {
             ZipLoader loader = new ZipLoader(is);
             TypeMaker typeMaker = new TypeMaker(loader);
 
-            ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/Enum$Planet");
+            ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "org/jd/core/test/Enum$Planet");
 
-            MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[2]);
+            MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods().get(2));
             
             // Check parameterTypes
             assertNotNull(methodTypes.getParameterTypes());

@@ -1,11 +1,11 @@
 package org.jd.core.v1.util;
 
-import org.apache.bcel.classfile.Method;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.classfile.ClassFile;
 import org.jd.core.v1.service.deserializer.classfile.ClassFileDeserializer;
 import org.junit.Test;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.InputStream;
 
@@ -13,6 +13,7 @@ import static org.apache.bcel.Const.*;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import jd.core.model.instruction.bytecode.ByteCodeConstants;
@@ -219,10 +220,18 @@ public class ByteCodeUtilTest {
 
     @Test
     public void testJumpTo() throws Exception {
-        ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
-        ClassFile classFile = classFileDeserializer.loadClassFile(new ClassPathLoader(), "org/apache/commons/io/FileSystemUtils");
-        Method[] methods = classFile.getMethods();
-        byte[] code = methods[11].getCode().getCode();
+        ClassFile classFile = ClassFileDeserializer.loadClassFile(
+                new ClassPathLoader(), 
+                "org/apache/commons/io/FileSystemUtils"
+        );
+        assertNotNull(classFile);
+
+        MethodNode method = classFile.getMethods().get(11);
+        assertNotNull(method);
+
+        byte[] code = classFile.getCleanedCode(method.name, method.desc);
+        assertNotNull(code);
+
         assertFalse(ByteCodeUtil.jumpTo(code, 95, 98));
         assertTrue(ByteCodeUtil.jumpTo(code, 98, 98));
     }
@@ -231,10 +240,15 @@ public class ByteCodeUtilTest {
     public void testNextTableSwitchOffset() throws Exception {
         try (InputStream in = getClass().getResourceAsStream("/jar/wide-instructions-jdk17.0.4.jar")) {
             ZipLoader loader = new ZipLoader(in);
-            ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
-            ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
-            Method[] methods = classFile.getMethods();
-            byte[] code = methods[1].getCode().getCode();
+            ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
+            assertNotNull(classFile);
+
+            MethodNode method = classFile.getMethods().get(1);
+            assertNotNull(method);
+
+            byte[] code = classFile.getCleanedCode(method.name, method.desc);
+            assertNotNull(code);
+
             assertEquals(5, ByteCodeUtil.nextInstructionOffset(code, 2));
         }
     }
@@ -243,10 +257,15 @@ public class ByteCodeUtilTest {
     public void testNextLookupSwitchOffset() throws Exception {
         try (InputStream in = getClass().getResourceAsStream("/jar/wide-instructions-jdk17.0.4.jar")) {
             ZipLoader loader = new ZipLoader(in);
-            ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
-            ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
-            Method[] methods = classFile.getMethods();
-            byte[] code = methods[6].getCode().getCode();
+            ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
+            assertNotNull(classFile);
+
+            MethodNode method = classFile.getMethods().get(6);
+            assertNotNull(method);
+
+            byte[] code = classFile.getCleanedCode(method.name, method.desc);
+            assertNotNull(code);
+
             assertEquals(31, ByteCodeUtil.nextInstructionOffset(code, 13));
         }
     }
@@ -255,10 +274,20 @@ public class ByteCodeUtilTest {
     public void testNextWideOffset() throws Exception {
         try (InputStream in = getClass().getResourceAsStream("/jar/wide-instructions-ecj17.jar")) {
             ZipLoader loader = new ZipLoader(in);
-            ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
-            ClassFile classFile = classFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
-            Method[] methods = classFile.getMethods();
-            byte[] code = methods[6].getCode().getCode();
+
+            // Load WideInstruction class
+            ClassFile classFile = ClassFileDeserializer.loadClassFile(loader, "jd/core/test/WideInstruction");
+            assertNotNull("ClassFile must be loaded", classFile);
+
+            // Fetch the 7th method (index 6)
+            MethodNode method = classFile.getMethods().get(6);
+            assertNotNull(method);
+
+            // Retrieve its cleaned bytecode directly
+            byte[] code = classFile.getCleanedCode(method.name, method.desc);
+            assertNotNull("Method bytecode must not be null", code);
+
+            // Run the bytecode offset checks
             assertEquals(3, ByteCodeUtil.nextInstructionOffset(code, 2));
             assertEquals(31, ByteCodeUtil.nextInstructionOffset(code, 15));
         }

@@ -4,27 +4,28 @@
  * This is a Copyleft license that gives the user the right to use,
  * copy and modify the code freely for non-commercial purposes.
  */
-
 package org.jd.core.v1;
 
-import org.apache.bcel.Const;
-import org.apache.bcel.classfile.AnnotationElementValue;
-import org.apache.bcel.classfile.Annotations;
-import org.apache.bcel.classfile.Field;
-import org.apache.bcel.classfile.SimpleElementValue;
 import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.model.classfile.ClassFile;
 import org.jd.core.v1.service.deserializer.classfile.ClassFileDeserializer;
 import org.jd.core.v1.util.StringConstants;
 import org.jd.core.v1.util.ZipLoader;
 import org.junit.Test;
+import org.objectweb.asm.tree.AnnotationNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
-public class ClassFileDeserializerTest extends TestCase {
+public class ClassFileDeserializerTest {
+
     @Test
     public void testMissingClass() throws Exception {
         class NoOpLoader implements Loader {
@@ -32,7 +33,6 @@ public class ClassFileDeserializerTest extends TestCase {
             public boolean canLoad(String internalName) {
                 return false;
             }
-
             @Override
             public byte[] load(String internalName) throws IOException {
                 fail("Loader cannot load anything");
@@ -40,85 +40,114 @@ public class ClassFileDeserializerTest extends TestCase {
             }
         }
 
-        ClassFileDeserializer deserializer = new ClassFileDeserializer();
         try {
-            deserializer.loadClassFile(new NoOpLoader(), "DoesNotExist");
+            ClassFileDeserializer.loadClassFile(new NoOpLoader(), "DoesNotExist");
             fail("Expected exception");
-        }
-        // Expecting exception because class cannot be loaded
-        catch (IllegalArgumentException expected) {
+        } catch (IllegalArgumentException expected) {
             assertEquals("Class DoesNotExist could not be loaded", expected.getMessage());
         }
     }
 
     @Test
-    public void testAnnotatedClass() throws Exception {
+    public void testAnnotatedClass_AllAnnotations() throws Exception {
         try (InputStream is = this.getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip")) {
+            assertNotNull("Test resource not found", is);
+
             ZipLoader loader = new ZipLoader(is);
-            ClassFileDeserializer deserializer = new ClassFileDeserializer();
 
-            ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/AnnotatedClass");
+            ClassFile cf = ClassFileDeserializer.loadClassFile(loader, "org/jd/core/test/AnnotatedClass");
+            assertNotNull(cf);
 
-            // Check class
-            assertNotNull(classFile);
-            assertEquals("org/jd/core/test/AnnotatedClass", classFile.getInternalTypeName());
-            assertEquals("java/util/ArrayList", classFile.getSuperTypeName());
+            // ----- Class-level annotations -----
+            AnnotationNode quality = findAnn(cf.getClassNode().visibleAnnotations, cf.getClassNode().invisibleAnnotations,
+                    "Lorg/jd/core/test/annotation/Quality;");
+            assertNotNull("Missing @Quality", quality);
 
-            Annotations invAttr = classFile.getAttribute(Const.ATTR_RUNTIME_INVISIBLE_ANNOTATIONS);
-            assertNotNull(invAttr.getAnnotationEntries());
-            assertEquals(2, invAttr.getNumAnnotations());
-            assertNotNull(invAttr.getAnnotationEntries()[0].getElementValuePairs());
-            assertEquals(1, invAttr.getAnnotationEntries()[0].getNumElementValuePairs());
+            AnnotationNode author = findAnn(cf.getClassNode().visibleAnnotations, cf.getClassNode().invisibleAnnotations,
+                    "Lorg/jd/core/test/annotation/Author;");
+            assertNotNull("Missing @Author", author);
 
-            AnnotationElementValue annotationValue = (AnnotationElementValue) invAttr.getAnnotationEntries()[1].getElementValuePairs()[0].getValue();
-            assertEquals("Lorg/jd/core/test/annotation/Name;", annotationValue.getAnnotationEntry().getAnnotationType());
-            assertNotNull(annotationValue.getAnnotationEntry().getElementValuePairs());
-            assertEquals(3, annotationValue.getAnnotationEntry().getNumElementValuePairs());
-            assertEquals("salutation", annotationValue.getAnnotationEntry().getElementValuePairs()[0].getNameString());
+            // @Author(value=@Name(...), contributors={@Name("Huey"), @Name("Dewey"), @Name("Louie")})
+            // value: nested annotation @Name with fields salutation, value, last
+            Object authorValue = getAnnValue(author, "value");
+            assertTrue("author.value should be an AnnotationNode", authorValue instanceof AnnotationNode);
+            AnnotationNode nameValue = (AnnotationNode) authorValue;
+            assertEquals("Lorg/jd/core/test/annotation/Name;", nameValue.desc);
+            assertEquals("Mr", getAnnValue(nameValue, "salutation"));
+            assertEquals("Donald", getAnnValue(nameValue, "value"));
+            assertEquals("Duck", getAnnValue(nameValue, "last"));
 
-            SimpleElementValue ev = (SimpleElementValue) annotationValue.getAnnotationEntry().getElementValuePairs()[1].getValue();
-            assertEquals("Donald", ev.toString());
+            // contributors: List<AnnotationNode> of @Name
+            Object contributorsObj = getAnnValue(author, "contributors");
+            assertTrue("author.contributors should be a List", contributorsObj instanceof List<?>);
+            @SuppressWarnings("unchecked")
+            List<Object> contributors = (List<Object>) contributorsObj;
+            assertEquals(3, contributors.size());
+            assertNameLiteral(contributors.get(0), "Huey");
+            assertNameLiteral(contributors.get(1), "Dewey");
+            assertNameLiteral(contributors.get(2), "Louie");
 
-            // Check fields
-            assertNotNull(classFile.getFields());
-            assertEquals(10, classFile.getFields().length);
+            // ----- Field-level annotations -----
+            List<FieldNode> fields = cf.getClassNode().fields;
+            assertEquals(10, fields.size());
 
-            // Check 1st field
-            Field field = classFile.getFields()[1];
-            assertEquals("b1", field.getName());
-            assertEquals("B", field.getSignature());
+            FieldNode b1 = fields.stream()
+                    .filter(f -> f.name.equals("b1"))
+                    .findFirst()
+                    .orElseThrow();
+            assertNotNull("Missing @Value on field b1",
+                    findAnn(b1.visibleAnnotations, b1.invisibleAnnotations, "Lorg/jd/core/test/annotation/Value;"));
 
-            assertNotNull(field.getAnnotationEntries());
-            assertEquals(1, field.getAnnotationEntries().length);
-            assertNotNull(field.getAnnotationEntries()[0].getElementValuePairs());
-            assertEquals(1, field.getAnnotationEntries()[0].getElementValuePairs().length);
-            assertEquals("b", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString());
+            FieldNode str2 = fields.stream()
+                    .filter(f -> f.name.equals("str2"))
+                    .findFirst()
+                    .orElseThrow();
+            assertNotNull("Missing @Value on field str2",
+                    findAnn(str2.visibleAnnotations, str2.invisibleAnnotations, "Lorg/jd/core/test/annotation/Value;"));
 
-            ev = (SimpleElementValue) field.getAnnotationEntries()[0].getElementValuePairs()[0].getValue();
-            assertEquals(-15, ev.getValueByte());
+            // ----- Methods, constructor + cleaned code -----
+            List<MethodNode> methods = cf.getClassNode().methods;
+            assertEquals(3, methods.size());
 
-            // Check 8th field
-            field = classFile.getFields()[8];
-            assertEquals("str2", field.getName());
-            assertEquals("Ljava/lang/String;", field.getSignature());
-
-            assertNotNull(field.getAnnotationEntries());
-            assertEquals(1, field.getAnnotationEntries().length);
-            assertNotNull(field.getAnnotationEntries()[0].getElementValuePairs());
-            assertEquals(1, field.getAnnotationEntries()[0].getElementValuePairs().length);
-            assertEquals("str", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString());
-
-            ev = (SimpleElementValue) field.getAnnotationEntries()[0].getElementValuePairs()[0].getValue();
-            assertEquals("str \u0083 \u0909 \u1109", ev.toString());
-
-            // Check getters
-            assertNotNull(classFile.getMethods());
-            assertEquals(3, classFile.getMethods().length);
-
-            // Check constructor
-            assertEquals(StringConstants.INSTANCE_CONSTRUCTOR, classFile.getMethods()[0].getName());
-            assertEquals("()V", classFile.getMethods()[0].getSignature());
-            assertNotNull(classFile.getMethods()[0].getCode());
+            MethodNode ctor = methods.get(0);
+            assertEquals(StringConstants.INSTANCE_CONSTRUCTOR, ctor.name);
+            assertEquals("()V", ctor.desc);
+            assertNotNull("cleaned code must exist", cf.getCleanedCode(ctor.name, ctor.desc));
         }
+    }
+
+    // ---------- Helpers ----------
+
+    private static void assertNameLiteral(Object o, String expectedValue) {
+        assertTrue("Expected an AnnotationNode", o instanceof AnnotationNode);
+        AnnotationNode n = (AnnotationNode) o;
+        assertEquals("Lorg/jd/core/test/annotation/Name;", n.desc);
+        Object v = getAnnValue(n, "value"); // @Name("Huey") stores under 'value'
+        assertEquals(expectedValue, v);
+    }
+
+    private static AnnotationNode findAnn(List<AnnotationNode> visible, List<AnnotationNode> invisible, String desc) {
+        return Stream.concat(streamOf(visible), streamOf(invisible))
+                .filter(Objects::nonNull)
+                .filter(a -> desc.equals(a.desc))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /** ASM stores AnnotationNode.values as [name1, val1, name2, val2, ...] or null. */
+    private static Object getAnnValue(AnnotationNode ann, String key) {
+        if (ann == null || ann.values == null) return null;
+        List<?> v = ann.values;
+        for (int i = 0; i + 1 < v.size(); i += 2) {
+            Object k = v.get(i);
+            if (key.equals(k)) {
+                return v.get(i + 1);
+            }
+        }
+        return null;
+    }
+
+    private static <T> Stream<T> streamOf(List<T> list) {
+        return list == null ? Stream.empty() : list.stream();
     }
 }
