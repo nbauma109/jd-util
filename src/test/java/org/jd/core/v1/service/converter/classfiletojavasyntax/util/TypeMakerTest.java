@@ -11,7 +11,7 @@ import org.apache.bcel.Const;
 import org.apache.commons.collections4.bidimap.AbstractDualBidiMap;
 import org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
-import org.jd.core.v1.loader.ClassPathLoader;
+import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 import org.jd.core.v1.model.javasyntax.expression.Expressions;
@@ -33,13 +33,13 @@ import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.SignatureReader;
-import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.TypeTypes;
 import org.jd.core.v1.util.StringConstants;
 import org.jd.core.v1.util.ZipLoader;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -72,6 +72,26 @@ public class TypeMakerTest extends TestCase {
     protected ObjectType makeObjectType(Class<?> clazz) {
         return typeMaker.makeFromInternalTypeName(clazz.getName().replace('.', '/'));
     }
+
+    @Test(expected = ClassFormatException.class)
+    public void testInvalidClassBytesThroughLoader() {
+        Loader badLoader = new Loader() {
+            
+            @Override
+            public byte[] load(String internalName) throws IOException {
+                return new byte[]{0x00, 0x11, 0x22, 0x33}; // wrong magic
+            }
+            
+            @Override
+            public boolean canLoad(String internalName) {
+                return true;
+            }
+        };
+        
+        TypeMaker tm = new TypeMaker(badLoader);
+        tm.makeTypeTypes("invalid/Class"); // should throw ClassFormatException
+    }
+
 
     @Test
     public void testOuterClass() throws Exception {
