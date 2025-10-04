@@ -44,6 +44,10 @@ jobs:
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
       ECLIPSE_CMD: eclipse-oxygen-vanilla
       OXYGEN_REPO: https://download.eclipse.org/releases/oxygen
+      # Timeouts (seconds)
+      ECLIPSE_TIMEOUT_WARMUP: "240"
+      ECLIPSE_TIMEOUT_LIST: "480"
+      ECLIPSE_TIMEOUT_APPLY: "3600"
 
     steps:
       - name: Checkout repository
@@ -88,11 +92,8 @@ jobs:
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
-          # cli/pom.xml: parent + module -> 1.2.0-SNAPSHOT
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
-          # MANIFEST.MF: Bundle-Version -> 1.2.0.qualifier
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
-          # build-cli: copy 1.2.0-SNAPSHOT jars
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
           chmod +x ./build-cli
@@ -109,7 +110,18 @@ jobs:
           REPO="$(cd tools/AutoRefactorCli/repository/target/repository && pwd)"
           DEST="${{ steps.dl.outputs.home }}"
           REPOS="file:${REPO},${OXYGEN_REPO}"
-          if ! xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
+
+          dump_dest_logs() {
+            echo "::group::P2 Director Logs (DEST & temp)"
+            shopt -s nullglob
+            for f in "${DEST}"/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
+              [[ -f "$f" ]] || continue
+              echo "----- $f -----"; cat "$f" || true
+            done
+            echo "::endgroup::"
+          }
+
+          if ! timeout "${ECLIPSE_TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
                 -application org.eclipse.equinox.p2.director \
                 -repository "${REPOS}" \
                 -installIU org.autorefactor.feature.feature.group \
@@ -118,22 +130,24 @@ jobs:
                 -profileProperties org.eclipse.update.install.features=true \
                 -roaming; then
             echo "Error: P2 installation failed from ${REPO} into ${DEST}"
-            echo "::group::P2 Director Logs (DEST)"
-            shopt -s nullglob
-            for f in "${DEST}"/configuration/*.log; do
-              echo "----- $f -----"; cat "$f" || true
-            done
-            echo "::endgroup::"
-            echo "::group::P2 Director Logs (/home/runner/work/_temp/eclipse/configuration)"
-            for f in /home/runner/work/_temp/eclipse/configuration/*.log; do
-              echo "----- $f -----"; cat "$f" || true
-            done
-            echo "::endgroup::"
+            dump_dest_logs
             exit 1
           fi
-          echo "repo=$REPO" >> "$GITHUB_OUTPUT"
 
-      - name: Collect all refactorings (full log on failure)
+      - name: Warm up Eclipse once (avoid first-run stalls)
+        shell: bash
+        run: |
+          set -euo pipefail
+          WS="/tmp/workspace-warmup-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
+          # Use a harmless app; create OSGi/metadata ahead of time
+          if ! timeout "${ECLIPSE_TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
+                -data "$WS" \
+                -application org.eclipse.equinox.app.error \
+                -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1024m; then
+            echo "Warning: warmup timed out; continuing."
+          fi
+
+      - name: Collect all refactorings (timeouts + full log on failure)
         id: collect
         shell: bash
         run: |
@@ -145,18 +159,22 @@ jobs:
             shopt -s nullglob
             for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
               [[ -f "$f" ]] || continue
-              echo "----- $f -----"
-              cat "$f" || true
+              echo "----- $f -----"; cat "$f" || true
             done
             echo "::endgroup::"
           }
 
-          if ! OUT="$(xvfb-run -a "${ECLIPSE_CMD}" -nosplash -clean -consoleLog \
+          # Run 'list' with a hard timeout; kill on hang and dump logs.
+          if ! OUT="$(timeout "${ECLIPSE_TIMEOUT_LIST}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
               -data "$WS" \
               -application org.autorefactor.cli.AutoRefactor \
-              --consolelog list)"; then
-            echo "Error: 'list' failed."
+              --consolelog list \
+              -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1024m)"; then
+            echo "Error: 'list' failed or timed out."
             dump_logs
+            # Try to kill any stray java/xvfb to unblock the job
+            pkill -9 -f 'org.eclipse.equinox.launcher' || true
+            pkill -9 -f 'Xvfb' || true
             exit 1
           fi
 
@@ -201,29 +219,33 @@ jobs:
           fi
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
 
-      - name: Apply refactorings (full log on failure)
+      - name: Apply refactorings (timeouts + full log on failure)
         id: apply
         shell: bash
         run: |
           set -euo pipefail
           WS="${{ steps.collect.outputs.workspace }}"
+
           dump_logs() {
             echo "::group::Eclipse/AutoRefactor logs"
             shopt -s nullglob
             for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
               [[ -f "$f" ]] || continue
-              echo "----- $f -----"
-              cat "$f" || true
+              echo "----- $f -----"; cat "$f" || true
             done
             echo "::endgroup::"
           }
+
           mapfile -d '' ARGS < /tmp/autorefactor.args
-          if ! xvfb-run -a "${ECLIPSE_CMD}" -nosplash -clean -consoleLog \
+          if ! timeout "${ECLIPSE_TIMEOUT_APPLY}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
                 -data "$WS" \
                 -application org.autorefactor.cli.AutoRefactor \
-                --consolelog "${ARGS[@]}"; then
-            echo "Error: 'apply' failed."
+                --consolelog "${ARGS[@]}" \
+                -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1536m; then
+            echo "Error: 'apply' failed or timed out."
             dump_logs
+            pkill -9 -f 'org.eclipse.equinox.launcher' || true
+            pkill -9 -f 'Xvfb' || true
             exit 1
           fi
 
@@ -246,7 +268,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with JDK 8, provisioned into Eclipse Oxygen via P2 (local + Oxygen repos), and applied all available refactorings under a headless display.
+            Built AutoRefactorCli with JDK 8, provisioned into Eclipse Oxygen via P2, warmed up Eclipse, and applied all available refactorings under a headless virtual display. Timeouts guard against stalls; logs printed on failure.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
