@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       project_file:
-        description: "Path to Eclipse .project file in this repo (e.g., ./.project or ./eclipse/.project)"
+        description: "Path to Eclipse .project file (e.g., ./.project or ./eclipse/.project)"
         required: true
         default: ".project"
       exclude_refactorings:
@@ -31,6 +31,14 @@ on:
         description: "Classpath variables (optional), one per line as KEY=/abs/path"
         required: false
         default: ""
+      eclipse_url:
+        description: "Eclipse tar.gz URL (Linux x86_64). Override if needed."
+        required: false
+        default: "https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz"
+      eclipse_cmd_name:
+        description: "Command name the wrapper will call via AUTOREFACTOR_ECLIPSE"
+        required: false
+        default: "eclipse-oxygen-vanilla"
 
 permissions:
   contents: write
@@ -40,6 +48,9 @@ jobs:
   autorefactor:
     name: Run AutoRefactor (ALL refactorings) and open PR
     runs-on: ubuntu-latest
+    env:
+      # Make Eclipse instance discoverable by the wrapper script
+      AUTOREFACTOR_ECLIPSE: ${{ inputs.eclipse_cmd_name }}
 
     steps:
       - name: Checkout target repository
@@ -61,12 +72,31 @@ jobs:
           java-version: 8
           cache: maven
 
+      - name: Download & install Eclipse (headless)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          echo "Downloading Eclipse from: ${{ inputs.eclipse_url }}"
+          curl -fL -o eclipse.tar.gz "${{ inputs.eclipse_url }}"
+          tar -xzf eclipse.tar.gz
+          # Find extracted dir (starts with 'eclipse')
+          ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
+          if [[ -z "$ECLIPSE_DIR" || ! -x "$ECLIPSE_DIR/eclipse" ]]; then
+            echo "::error::Could not locate Eclipse executable after extraction."
+            exit 1
+          fi
+          sudo ln -s "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${{ inputs.eclipse_cmd_name }}"
+          which "${{ inputs.eclipse_cmd_name }}"
+          "${{ inputs.eclipse_cmd_name }}" -nosplash -application org.eclipse.equinox.p2.director -help >/dev/null 2>&1 || true
+
       - name: Patch versions (pom.xml, MANIFEST.MF, build-cli)
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
           set -euo pipefail
-          echo ">> Before:"
+
+          echo ">> Before patch:"
           grep '<version>' cli/pom.xml || true
           grep '^Bundle-Version' cli/META-INF/MANIFEST.MF || true
           grep 'org\.autorefactor\.plugin-.*SNAPSHOT\.jar' build-cli || true
@@ -74,20 +104,17 @@ jobs:
 
           # 1) pom.xml: 2.0.0-SNAPSHOT -> 1.2.0-SNAPSHOT
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
-
           # 2) MANIFEST.MF: 2.0.0 -> 1.2.0
-          sed -i 's|^Bundle-Version:\s*2\.0\.0\b|Bundle-Version: 1.2.0|g' cli/META-INF/MANIFEST.MF
-
-          # 3) build-cli: cp lines need to copy 1.2.0-SNAPSHOT jars
+          sed -i 's|^Bundle-Version:\s*2\.0\.0$|Bundle-Version: 1.2.0|g' cli/META-INF/MANIFEST.MF
+          # 3) build-cli: copy correct jar names
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
 
-          echo ">> After:"
+          echo ">> After patch:"
           grep '<version>' cli/pom.xml || true
           grep '^Bundle-Version' cli/META-INF/MANIFEST.MF || true
           grep 'org\.autorefactor\.plugin-.*SNAPSHOT\.jar' build-cli || true
           grep 'org\.autorefactor\.cli-.*SNAPSHOT\.jar' build-cli || true
-          echo "Patching done."
 
       - name: Build AutoRefactorCli (Linux)
         working-directory: tools/AutoRefactorCli
@@ -103,16 +130,12 @@ jobs:
           set -euo pipefail
           BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
 
-          # Optional sanity check (non-fatal)
-          "$BIN" eclipse --project "${{ inputs.project_file }}" || true
-
-          # Parse names before " - " from 'list' output
+          # Gather names before " - " from list output
           mapfile -t NAMES < <("$BIN" list | awk -F' - ' '/Refactoring/ {gsub(/^[[:space:]]+/, "", $1); print $1}')
           if [[ ${#NAMES[@]} -eq 0 ]]; then
             echo "::error title=No refactorings found::Could not parse any refactoring names from 'autorefactor list'."
             exit 1
           fi
-
           REFS=$(IFS=, ; echo "${NAMES[*]}")
           echo "refactorings=$REFS" >> "$GITHUB_OUTPUT"
           printf '%s' "$REFS" > /tmp/all_refactorings.txt
@@ -122,7 +145,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           PROJECT_FILE="${{ inputs.project_file }}"
           EXCLUDE="${{ inputs.exclude_refactorings }}"
           PATH_FILTER="${{ inputs.path_filter }}"
@@ -139,7 +161,6 @@ jobs:
 
           declare -a ARGS
           ARGS+=(apply --project "$PROJECT_FILE" --refactorings "$REFACTORINGS")
-
           [[ -n "$EXCLUDE" ]] && ARGS+=(--exclude-refactorings "$EXCLUDE")
           [[ -n "$PATH_FILTER" ]] && ARGS+=(--path-filter "$PATH_FILTER")
           [[ -n "$PATH_RE" ]] && ARGS+=(--path-re "$PATH_RE")
@@ -155,6 +176,7 @@ jobs:
           if [[ -n "$CLASSPATH_VARS_RAW" ]]; then
             while IFS= read -r kv; do
               [[ -z "$kv" ]] && continue
+              # README shows: --classpath-variable key=value
               ARGS+=(--classpath-variable "$kv")
             done <<< "$CLASSPATH_VARS_RAW"
           fi
@@ -164,10 +186,13 @@ jobs:
 
       - name: Apply refactorings (ALL)
         shell: bash
+        env:
+          AUTOREFACTOR_ECLIPSE: ${{ inputs.eclipse_cmd_name }}
         run: |
           set -euo pipefail
           mapfile -d '' ARGS < /tmp/autorefactor.args
           BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
+          echo "Using Eclipse: $AUTOREFACTOR_ECLIPSE"
           echo "Running: $BIN ${ARGS[*]@Q}"
           "$BIN" "${ARGS[@]}"
 
@@ -187,6 +212,7 @@ jobs:
           body: |
             This PR was generated by **AutoRefactorCli** on JDK 8, applying *all* available refactorings.
 
+            Eclipse: `${{ inputs.eclipse_cmd_name }}` from `${{ inputs.eclipse_url }}`
             Patched to build against 1.2.0:
             - `cli/pom.xml`: `2.0.0-SNAPSHOT` → `1.2.0-SNAPSHOT`
             - `cli/META-INF/MANIFEST.MF`: `2.0.0` → `1.2.0`
