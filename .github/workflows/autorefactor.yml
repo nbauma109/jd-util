@@ -43,6 +43,7 @@ jobs:
     env:
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
       ECLIPSE_CMD: eclipse-oxygen-vanilla
+      OXYGEN_REPO: https://download.eclipse.org/releases/oxygen
 
     steps:
       - name: Checkout repository
@@ -70,15 +71,17 @@ jobs:
           sudo apt-get install -y xvfb
 
       - name: Download Eclipse Oxygen
+        id: dl
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
           curl -fL -o eclipse.tar.gz "$ECLIPSE_TAR"
           tar -xzf eclipse.tar.gz
-          ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
+          ECLIPSE_DIR="$(find "$PWD" -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
-          sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
+          echo "home=$ECLIPSE_DIR" >> "$GITHUB_OUTPUT"
+          sudo ln -sf "$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
           which "${ECLIPSE_CMD}"
 
       - name: Patch versions (align to 1.2.0)
@@ -98,20 +101,36 @@ jobs:
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
-      - name: Provision AutoRefactor into Eclipse (p2 director)
+      - name: Provision AutoRefactor into Eclipse (P2 director; local + Oxygen repos)
         id: p2
         shell: bash
         run: |
           set -euo pipefail
           REPO="$(cd tools/AutoRefactorCli/repository/target/repository && pwd)"
-          # Install the feature group (brings in plugin + CLI)
-          xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
-            -application org.eclipse.equinox.p2.director \
-            -repository "file:${REPO}" \
-            -installIU org.autorefactor.feature.feature.group,org.autorefactor.cli || {
-              echo "Error: P2 installation failed from ${REPO}"
-              exit 1
-            }
+          DEST="${{ steps.dl.outputs.home }}"
+          REPOS="file:${REPO},${OXYGEN_REPO}"
+          if ! xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
+                -application org.eclipse.equinox.p2.director \
+                -repository "${REPOS}" \
+                -installIU org.autorefactor.feature.feature.group \
+                -destination "${DEST}" \
+                -profile SDKProfile \
+                -profileProperties org.eclipse.update.install.features=true \
+                -roaming; then
+            echo "Error: P2 installation failed from ${REPO} into ${DEST}"
+            echo "::group::P2 Director Logs (DEST)"
+            shopt -s nullglob
+            for f in "${DEST}"/configuration/*.log; do
+              echo "----- $f -----"; cat "$f" || true
+            done
+            echo "::endgroup::"
+            echo "::group::P2 Director Logs (/home/runner/work/_temp/eclipse/configuration)"
+            for f in /home/runner/work/_temp/eclipse/configuration/*.log; do
+              echo "----- $f -----"; cat "$f" || true
+            done
+            echo "::endgroup::"
+            exit 1
+          fi
           echo "repo=$REPO" >> "$GITHUB_OUTPUT"
 
       - name: Collect all refactorings (full log on failure)
@@ -227,7 +246,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with JDK 8, provisioned into Eclipse Oxygen via P2, and applied all available refactorings under a headless display.
+            Built AutoRefactorCli with JDK 8, provisioned into Eclipse Oxygen via P2 (local + Oxygen repos), and applied all available refactorings under a headless display.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
