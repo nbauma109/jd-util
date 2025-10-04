@@ -1,0 +1,181 @@
+name: AutoRefactor (CLI) PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_file:
+        description: "Path to Eclipse .project file in this repo (e.g., ./eclipse/.project or ./ .project)"
+        required: true
+        default: ".project"
+      refactorings:
+        description: "Comma-separated list of refactorings to APPLY (e.g., UseDiamondOperatorRefactoring,TryWithResourceRefactoring)"
+        required: true
+        default: "UseDiamondOperatorRefactoring"
+      exclude_refactorings:
+        description: "Comma-separated list to EXCLUDE (optional)"
+        required: false
+        default: ""
+      path_filter:
+        description: "Only refactor files whose path contains this string (optional)"
+        required: false
+        default: ""
+      path_re:
+        description: "Java regex to select files (optional; defaults to '.*' if empty)"
+        required: false
+        default: ""
+      source_dirs:
+        description: "Repeatable source dirs to target (optional). Use newline to add multiple, e.g. 'src/main/java\\nsrc/test/java'"
+        required: false
+        default: ""
+      source_level:
+        description: "Java source level (e.g., 1.8, 11, 17) — optional"
+        required: false
+        default: ""
+      classpath_vars:
+        description: "Classpath variables (optional), one per line as KEY=/abs/path"
+        required: false
+        default: ""
+      java_version:
+        description: "JDK used to build/run AutoRefactorCli"
+        required: true
+        default: "11"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  autorefactor:
+    name: Run AutoRefactor and open PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout AutoRefactorCli tool
+        uses: actions/checkout@v4
+        with:
+          repository: cal101/AutoRefactorCli
+          path: tools/AutoRefactorCli
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java_version }}
+
+      - name: Build AutoRefactorCli (Linux)
+        working-directory: tools/AutoRefactorCli
+        run: |
+          chmod +x ./build-cli
+          ./build-cli
+          ls -la ./cli/target/autorefactor/bin
+
+      - name: Prepare AutoRefactor arguments
+        id: args
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Inputs
+          PROJECT_FILE="${{ inputs.project_file }}"
+          REFACTORINGS="${{ inputs.refactorings }}"
+          EXCLUDE="${{ inputs.exclude_refactorings }}"
+          PATH_FILTER="${{ inputs.path_filter }}"
+          PATH_RE="${{ inputs.path_re }}"
+          SOURCE_DIRS_RAW="${{ inputs.source_dirs }}"
+          SOURCE_LEVEL="${{ inputs.source_level }}"
+          CLASSPATH_VARS_RAW="${{ inputs.classpath_vars }}"
+
+          # Basic existence check for the Eclipse project file
+          if [[ ! -f "$PROJECT_FILE" ]]; then
+            echo "::error file=$PROJECT_FILE,title=.project not found::The specified Eclipse project file was not found. Provide a valid path via 'project_file'."
+            exit 1
+          fi
+
+          # Build argument array
+          declare -a ARGS
+          ARGS+=(apply --project "$PROJECT_FILE" --refactorings "$REFACTORINGS")
+
+          # Optional selectors
+          if [[ -n "$EXCLUDE" ]]; then ARGS+=(--exclude-refactorings "$EXCLUDE"); fi
+          if [[ -n "$PATH_FILTER" ]]; then ARGS+=(--path-filter "$PATH_FILTER"); fi
+          if [[ -n "$PATH_RE" ]]; then ARGS+=(--path-re "$PATH_RE"); fi
+          if [[ -n "$SOURCE_LEVEL" ]]; then ARGS+=(--source-level "$SOURCE_LEVEL"); fi
+
+          # Optional repeated source dirs (newline-separated)
+          if [[ -n "$SOURCE_DIRS_RAW" ]]; then
+            while IFS= read -r line; do
+              [[ -z "$line" ]] && continue
+              ARGS+=(--source "$line")
+            done <<< "$SOURCE_DIRS_RAW"
+          fi
+
+          # Optional classpath variables (newline-separated KEY=/abs/path)
+          if [[ -n "$CLASSPATH_VARS_RAW" ]]; then
+            while IFS= read -r kv; do
+              [[ -z "$kv" ]] && continue
+              # README syntax indicates: --classpath-variablekey=value (no space)
+              # We'll pass it as two tokens to cover both parsers: option + "KEY=VALUE".
+              ARGS+=(--classpath-variable "$kv")
+            done <<< "$CLASSPATH_VARS_RAW"
+          fi
+
+          printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
+
+          echo "args_ready=true" >> "$GITHUB_OUTPUT"
+          echo "rendered=$(printf '%q ' autorefactor "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
+
+      - name: Run AutoRefactor (dry info)
+        run: |
+          tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor eclipse \
+            --project "${{ inputs.project_file }}" || true
+
+      - name: Apply refactorings
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' ARGS < /tmp/autorefactor.args
+          # Prepend binary path
+          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
+          echo "Running: $BIN ${ARGS[*]@Q}"
+          "$BIN" "${ARGS[@]}"
+
+      - name: Show diff (for logs)
+        run: |
+          git status
+          git --no-pager diff --name-only
+
+      - name: Create PR with changes
+        if: ${{ !cancelled() }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            chore(refactor): apply AutoRefactorCli
+          title: "Apply AutoRefactorCli: ${{ github.ref_name }} ($(date +'%Y-%m-%d'))"
+          body: |
+            This PR was generated by **AutoRefactorCli**.
+
+            **Command**
+            ```
+            $ {{ steps.args.outputs.rendered }}
+            ```
+
+            **Notes**
+            - Tool: [cal101/AutoRefactorCli](https://github.com/cal101/AutoRefactorCli)
+            - Triggered by: ${{ github.actor }}
+          branch: "autorefactor/cli-${{ github.run_id }}"
+          delete-branch: true
+          add-paths: |
+            **/*.java
+            **/*.kt
+            **/*.groovy
+            **/*.xml
+            **/*.gradle
+            **/*.md
+            **/*
