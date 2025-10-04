@@ -136,17 +136,36 @@ jobs:
             exit 1
           fi
 
-      - name: Warm up Eclipse (safe p2 call; no GUI)
+      - name: Warm up Eclipse (fail on any error)
         shell: bash
         run: |
           set -euo pipefail
           DEST="${{ steps.dl.outputs.home }}"
-          # This initializes OSGi/p2 state without triggering GUI or error app
+
+          dump_dest_logs() {
+            echo "::group::Warmup Logs (DEST & temp)"
+            shopt -s nullglob
+            for f in "${DEST}"/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
+              [[ -f "$f" ]] || continue
+              echo "----- $f -----"; cat "$f" || true
+            done
+            echo "::endgroup::"
+          }
+
+          echo "Running warmup p2 director -listInstalledRoots (timeout=${ECLIPSE_TIMEOUT_WARMUP}s)"
+          set +e
           timeout "${ECLIPSE_TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
             -application org.eclipse.equinox.p2.director \
-            -listInstalledRoots || echo "Warmup timed out; continuing."
-          # Show installed roots for diagnostics
-          xvfb-run -a "${ECLIPSE_CMD}" -nosplash -application org.eclipse.equinox.p2.director -listInstalledRoots || true
+            -listInstalledRoots > /tmp/_warmup.out 2>&1
+          status=$?
+          set -e
+          if [[ $status -ne 0 ]]; then
+            echo "Error: Warmup failed or timed out (status=$status)."
+            echo "::group::warmup stdout/stderr"; cat /tmp/_warmup.out || true; echo "::endgroup::"
+            dump_dest_logs
+            exit 1
+          fi
+          echo "::group::Installed roots"; cat /tmp/_warmup.out || true; echo "::endgroup::"
 
       - name: Collect all refactorings (timeouts + full log on failure)
         id: collect
