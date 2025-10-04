@@ -44,10 +44,10 @@ jobs:
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
       ECLIPSE_CMD: eclipse-oxygen-vanilla
       OXYGEN_REPO: https://download.eclipse.org/releases/oxygen
-      # Timeouts (seconds)
-      ECLIPSE_TIMEOUT_WARMUP: "240"
-      ECLIPSE_TIMEOUT_LIST: "480"
-      ECLIPSE_TIMEOUT_APPLY: "3600"
+      # Tight timeouts to avoid hangs (seconds)
+      ECLIPSE_TIMEOUT_WARMUP: "120"
+      ECLIPSE_TIMEOUT_LIST: "120"
+      ECLIPSE_TIMEOUT_APPLY: "900"
 
     steps:
       - name: Checkout repository
@@ -92,8 +92,11 @@ jobs:
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
+          # cli/pom.xml: parent + module -> 1.2.0-SNAPSHOT
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
+          # MANIFEST.MF: Bundle-Version -> 1.2.0.qualifier
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
+          # build-cli: copy 1.2.0-SNAPSHOT jars
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
           chmod +x ./build-cli
@@ -134,18 +137,15 @@ jobs:
             exit 1
           fi
 
-      - name: Warm up Eclipse once (avoid first-run stalls)
+      - name: Warm up Eclipse (pre-initialize OSGi)
         shell: bash
         run: |
           set -euo pipefail
           WS="/tmp/workspace-warmup-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
-          # Use a harmless app; create OSGi/metadata ahead of time
-          if ! timeout "${ECLIPSE_TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
-                -data "$WS" \
-                -application org.eclipse.equinox.app.error \
-                -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1024m; then
-            echo "Warning: warmup timed out; continuing."
-          fi
+          timeout "${ECLIPSE_TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
+            -data "$WS" \
+            -application org.eclipse.equinox.app.error \
+            -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1024m || echo "Warmup timed out; continuing."
 
       - name: Collect all refactorings (timeouts + full log on failure)
         id: collect
@@ -157,30 +157,37 @@ jobs:
           dump_logs() {
             echo "::group::Eclipse/AutoRefactor logs"
             shopt -s nullglob
-            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
+            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
               [[ -f "$f" ]] || continue
               echo "----- $f -----"; cat "$f" || true
             done
             echo "::endgroup::"
           }
 
-          # Run 'list' with a hard timeout; kill on hang and dump logs.
-          if ! OUT="$(timeout "${ECLIPSE_TIMEOUT_LIST}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
-              -data "$WS" \
-              -application org.autorefactor.cli.AutoRefactor \
-              --consolelog list \
-              -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1024m)"; then
-            echo "Error: 'list' failed or timed out."
+          echo "Starting 'list' (timeout=${ECLIPSE_TIMEOUT_LIST}s)"
+          set +e
+          timeout "${ECLIPSE_TIMEOUT_LIST}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
+            -data "$WS" \
+            -application org.autorefactor.cli.AutoRefactor \
+            --consolelog list \
+            -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1024m > /tmp/_list.out 2>&1
+          status=$?
+          set -e
+
+          if [[ $status -ne 0 ]]; then
+            echo "Error: 'list' failed or timed out (status=$status)."
+            echo "::group::'list' stdout/stderr"; cat /tmp/_list.out || true; echo "::endgroup::"
             dump_logs
-            # Try to kill any stray java/xvfb to unblock the job
             pkill -9 -f 'org.eclipse.equinox.launcher' || true
             pkill -9 -f 'Xvfb' || true
             exit 1
           fi
 
+          OUT="$(cat /tmp/_list.out)"
           mapfile -t NAMES < <(printf '%s\n' "$OUT" | awk -F' - ' '/Refactoring/ {sub(/^[[:space:]]+/, "", $1); print $1}')
           if [[ ${#NAMES[@]} -eq 0 ]]; then
             echo "Error: No refactoring names parsed from 'list'."
+            echo "::group::'list' stdout/stderr"; cat /tmp/_list.out || true; echo "::endgroup::"
             dump_logs
             exit 1
           fi
@@ -229,7 +236,7 @@ jobs:
           dump_logs() {
             echo "::group::Eclipse/AutoRefactor logs"
             shopt -s nullglob
-            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
+            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
               [[ -f "$f" ]] || continue
               echo "----- $f -----"; cat "$f" || true
             done
@@ -237,12 +244,19 @@ jobs:
           }
 
           mapfile -d '' ARGS < /tmp/autorefactor.args
-          if ! timeout "${ECLIPSE_TIMEOUT_APPLY}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
-                -data "$WS" \
-                -application org.autorefactor.cli.AutoRefactor \
-                --consolelog "${ARGS[@]}" \
-                -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1536m; then
-            echo "Error: 'apply' failed or timed out."
+          echo "Starting 'apply' (timeout=${ECLIPSE_TIMEOUT_APPLY}s)"
+          set +e
+          timeout "${ECLIPSE_TIMEOUT_APPLY}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
+            -data "$WS" \
+            -application org.autorefactor.cli.AutoRefactor \
+            --consolelog "${ARGS[@]}" \
+            -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1536m > /tmp/_apply.out 2>&1
+          status=$?
+          set -e
+
+          if [[ $status -ne 0 ]]; then
+            echo "Error: 'apply' failed or timed out (status=$status)."
+            echo "::group::'apply' stdout/stderr"; cat /tmp/_apply.out || true; echo "::endgroup::"
             dump_logs
             pkill -9 -f 'org.eclipse.equinox.launcher' || true
             pkill -9 -f 'Xvfb' || true
