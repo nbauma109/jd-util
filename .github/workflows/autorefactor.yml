@@ -41,6 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla
+      ECLIPSE_REPO: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
+      RELEASE_REPO: https://download.eclipse.org/releases/oxygen
 
     steps:
       - name: Checkout repository
@@ -67,22 +69,28 @@ jobs:
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
-          curl -fL -o eclipse.tar.gz "https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz"
+          curl -fL -o eclipse.tar.gz "$ECLIPSE_REPO"
           tar -xzf eclipse.tar.gz
           ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
           sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
           which "${AUTOREFACTOR_ECLIPSE}"
 
+      - name: Install Equinox Console + Felix Gogo (p2 director)
+        shell: bash
+        run: |
+          set -euo pipefail
+          "${AUTOREFACTOR_ECLIPSE}" -nosplash \
+            -application org.eclipse.equinox.p2.director \
+            -repository "$RELEASE_REPO" \
+            -installIU org.eclipse.equinox.console,org.apache.felix.gogo.command,org.apache.felix.gogo.shell || true
+
       - name: Patch versions (align to 1.2.0)
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
-          # cli/pom.xml: parent + module -> 1.2.0-SNAPSHOT
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
-          # MANIFEST.MF: Bundle-Version -> 1.2.0.qualifier
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
-          # build-cli: copy 1.2.0-SNAPSHOT jars
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
           chmod +x ./build-cli
