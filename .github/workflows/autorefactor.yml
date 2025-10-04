@@ -39,9 +39,11 @@ permissions:
 jobs:
   autorefactor:
     runs-on: ubuntu-latest
+
     env:
+      # Eclipse + repos
       AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla
-      ECLIPSE_REPO: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
+      ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
       RELEASE_REPO: https://download.eclipse.org/releases/oxygen
 
     steps:
@@ -69,14 +71,14 @@ jobs:
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
-          curl -fL -o eclipse.tar.gz "$ECLIPSE_REPO"
+          curl -fL -o eclipse.tar.gz "$ECLIPSE_TAR"
           tar -xzf eclipse.tar.gz
           ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
           sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
           which "${AUTOREFACTOR_ECLIPSE}"
 
-      - name: Install Equinox Console + Felix Gogo (p2 director)
+      - name: (Optional) Install Equinox Console + Gogo via p2
         shell: bash
         run: |
           set -euo pipefail
@@ -99,35 +101,50 @@ jobs:
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
-      - name: Collect all refactorings (full log on failure)
+      - name: Collect all refactorings (Eclipse direct, full log on failure)
         id: collect
         shell: bash
         run: |
           set -euo pipefail
+
+          ECL="${AUTOREFACTOR_ECLIPSE}"
+          CFG="$(pwd)/tools/AutoRefactorCli/cli/target/autorefactor"
+          WS="/tmp/workspace-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
+
           dump_logs() {
             echo "::group::Eclipse/AutoRefactor logs"
             shopt -s nullglob
-            for f in /tmp/workspace*/configuration/*.log; do
+            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
+              [[ -f "$f" ]] || continue
               echo "----- $f -----"
               cat "$f" || true
             done
             echo "::endgroup::"
           }
-          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
-          if ! OUT="$("$BIN" --consolelog list)"; then
-            echo "Error: 'autorefactor list' failed."
+
+          # Call Eclipse directly with explicit configuration + workspace
+          if ! OUT="$("$ECL" -nosplash -clean -consoleLog \
+              -configuration "$CFG" \
+              -data "$WS" \
+              -application org.autorefactor.cli.AutoRefactor \
+              list)"; then
+            echo "Error: 'list' failed."
             dump_logs
             exit 1
           fi
-          mapfile -t NAMES < <(printf '%s\n' "$OUT" | awk -F' - ' '/Refactoring/ {gsub(/^[[:space:]]+/, "", $1); print $1}')
+
+          mapfile -t NAMES < <(printf '%s\n' "$OUT" | awk -F' - ' '/Refactoring/ {sub(/^[[:space:]]+/, "", $1); print $1}')
           if [[ ${#NAMES[@]} -eq 0 ]]; then
-            echo "Error: No refactoring names parsed from 'autorefactor list'."
+            echo "Error: No refactoring names parsed from 'list'."
             dump_logs
             exit 1
           fi
+
           REFS=$(IFS=, ; echo "${NAMES[*]}")
           echo "refactorings=$REFS" >> "$GITHUB_OUTPUT"
           printf '%s' "$REFS" > /tmp/all_refactorings.txt
+          echo "workspace=$WS" >> "$GITHUB_OUTPUT"
+          echo "configuration=$CFG" >> "$GITHUB_OUTPUT"
 
       - name: Prepare arguments
         id: args
@@ -159,26 +176,36 @@ jobs:
           fi
 
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
-          echo "rendered=$(printf '%q ' autorefactor --consolelog "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
 
-      - name: Apply refactorings (full log on failure)
+      - name: Apply refactorings (Eclipse direct, full log on failure)
         id: apply
         shell: bash
         run: |
           set -euo pipefail
+
+          ECL="${AUTOREFACTOR_ECLIPSE}"
+          CFG="${{ steps.collect.outputs.configuration }}"
+          WS="${{ steps.collect.outputs.workspace }}"
+
           dump_logs() {
             echo "::group::Eclipse/AutoRefactor logs"
             shopt -s nullglob
-            for f in /tmp/workspace*/configuration/*.log; do
+            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
+              [[ -f "$f" ]] || continue
               echo "----- $f -----"
               cat "$f" || true
             done
             echo "::endgroup::"
           }
+
           mapfile -d '' ARGS < /tmp/autorefactor.args
-          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
-          if ! "$BIN" --consolelog "${ARGS[@]}"; then
-            echo "Error: 'autorefactor apply' failed."
+
+          if ! "$ECL" -nosplash -clean -consoleLog \
+                -configuration "$CFG" \
+                -data "$WS" \
+                -application org.autorefactor.cli.AutoRefactor \
+                "${ARGS[@]}"; then
+            echo "Error: 'apply' failed."
             dump_logs
             exit 1
           fi
@@ -202,7 +229,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with JDK 8 and Eclipse Oxygen. Applied all available refactorings.
+            Built AutoRefactorCli with JDK 8 and Eclipse Oxygen. Applied all available refactorings using explicit Eclipse configuration.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
