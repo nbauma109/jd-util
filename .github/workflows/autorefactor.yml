@@ -70,15 +70,17 @@ jobs:
           sudo apt-get install -y xvfb
 
       - name: Download Eclipse Oxygen
+        id: dl
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
           curl -fL -o eclipse.tar.gz "$ECLIPSE_TAR"
           tar -xzf eclipse.tar.gz
-          ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
+          ECLIPSE_DIR="$(find "$PWD" -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
-          sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
+          echo "home=$ECLIPSE_DIR" >> "$GITHUB_OUTPUT"
+          sudo ln -sf "$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
           which "${ECLIPSE_CMD}"
 
       - name: Patch versions (align to 1.2.0)
@@ -104,12 +106,17 @@ jobs:
         run: |
           set -euo pipefail
           REPO="$(cd tools/AutoRefactorCli/repository/target/repository && pwd)"
-          # Install the feature group (brings in plugin + CLI)
+          DEST="${{ steps.dl.outputs.home }}"
+          # Install the feature group into the Eclipse installation
           xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
             -application org.eclipse.equinox.p2.director \
             -repository "file:${REPO}" \
-            -installIU org.autorefactor.feature.feature.group,org.autorefactor.cli || {
-              echo "Error: P2 installation failed from ${REPO}"
+            -installIU org.autorefactor.feature.feature.group \
+            -destination "${DEST}" \
+            -profile SDKProfile \
+            -profileProperties org.eclipse.update.install.features=true \
+            -roaming || {
+              echo "Error: P2 installation failed from ${REPO} into ${DEST}"
               exit 1
             }
           echo "repo=$REPO" >> "$GITHUB_OUTPUT"
