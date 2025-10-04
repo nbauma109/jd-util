@@ -48,6 +48,8 @@ jobs:
       ECLIPSE_TIMEOUT_WARMUP: "120"
       ECLIPSE_TIMEOUT_LIST: "120"
       ECLIPSE_TIMEOUT_APPLY: "900"
+      # Reduce GTK flakiness in CI
+      SWT_GTK3: "0"
 
     steps:
       - name: Checkout repository
@@ -92,11 +94,8 @@ jobs:
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
-          # cli/pom.xml: parent + module -> 1.2.0-SNAPSHOT
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
-          # MANIFEST.MF: Bundle-Version -> 1.2.0.qualifier
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
-          # build-cli: copy 1.2.0-SNAPSHOT jars
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
           chmod +x ./build-cli
@@ -137,15 +136,17 @@ jobs:
             exit 1
           fi
 
-      - name: Warm up Eclipse (pre-initialize OSGi)
+      - name: Warm up Eclipse (safe p2 call; no GUI)
         shell: bash
         run: |
           set -euo pipefail
-          WS="/tmp/workspace-warmup-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
+          DEST="${{ steps.dl.outputs.home }}"
+          # This initializes OSGi/p2 state without triggering GUI or error app
           timeout "${ECLIPSE_TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
-            -data "$WS" \
-            -application org.eclipse.equinox.app.error \
-            -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1024m || echo "Warmup timed out; continuing."
+            -application org.eclipse.equinox.p2.director \
+            -listInstalledRoots || echo "Warmup timed out; continuing."
+          # Show installed roots for diagnostics
+          xvfb-run -a "${ECLIPSE_CMD}" -nosplash -application org.eclipse.equinox.p2.director -listInstalledRoots || true
 
       - name: Collect all refactorings (timeouts + full log on failure)
         id: collect
@@ -282,7 +283,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with JDK 8, provisioned into Eclipse Oxygen via P2, warmed up Eclipse, and applied all available refactorings under a headless virtual display. Timeouts guard against stalls; logs printed on failure.
+            Built AutoRefactorCli with JDK 8, provisioned into Eclipse Oxygen via P2, warmed up Eclipse using a safe p2 director call, and applied all available refactorings under a headless virtual display. Timeouts guard against stalls; logs printed on failure.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
