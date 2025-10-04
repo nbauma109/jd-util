@@ -1,0 +1,10 @@
+name: Test Manual Run
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello from workflow_dispatch"
