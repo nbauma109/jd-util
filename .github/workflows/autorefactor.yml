@@ -20,7 +20,7 @@ on:
         required: false
         default: ""
       source_dirs:
-        description: "Repeatable source dirs (newline-separated), e.g. 'src/main/java\nsrc/test/java'"
+        description: "Repeatable source dirs (newline-separated)"
         required: false
         default: ""
       source_level:
@@ -43,12 +43,12 @@ jobs:
       AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla
 
     steps:
-      - name: Checkout target repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Checkout AutoRefactorCli tool
+      - name: Checkout AutoRefactorCli
         uses: actions/checkout@v4
         with:
           repository: cal101/AutoRefactorCli
@@ -62,7 +62,7 @@ jobs:
           java-version: 8
           cache: maven
 
-      - name: Download Eclipse Oxygen and register command
+      - name: Download Eclipse Oxygen
         shell: bash
         run: |
           set -euo pipefail
@@ -72,44 +72,53 @@ jobs:
           ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
           sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
-          which "${AUTOREFACTOR_ECLIPSE}"
 
-      - name: Patch versions (exactly like your local diff)
+      - name: Patch versions (align to 1.2.0 as per working diff)
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
-          set -euo pipefail
-          # cli/pom.xml: parent + module to 1.2.0-SNAPSHOT
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
-          # cli/MANIFEST.MF: Bundle-Version to 1.2.0.qualifier
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
-          # build-cli: copy 1.2.0-SNAPSHOT jars
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
           chmod +x ./build-cli
 
-      - name: Build AutoRefactorCli (Linux)
+      - name: Build AutoRefactorCli
         working-directory: tools/AutoRefactorCli
-        run: |
-          ./build-cli
-          ls -la ./cli/target/autorefactor/bin
+        run: ./build-cli
 
-      - name: Collect ALL refactorings from CLI
+      - name: Collect all refactorings (with console log + log dump on failure)
         id: collect
         shell: bash
         run: |
           set -euo pipefail
+          dump_logs() {
+            echo "::group::Eclipse/AutoRefactor logs"
+            shopt -s nullglob
+            for f in /tmp/workspace*/configuration/*.log; do
+              echo "----- $f -----"
+              sed -n '1,400p' "$f" || true
+            done
+            echo "::endgroup::"
+          }
           BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
-          mapfile -t NAMES < <("$BIN" list | awk -F' - ' '/Refactoring/ {gsub(/^[[:space:]]+/, "", $1); print $1}')
+          # MUST pass --consolelog first per CLI help
+          if ! OUT="$("$BIN" --consolelog list)"; then
+            echo "Error: 'autorefactor list' failed."
+            dump_logs
+            exit 1
+          fi
+          mapfile -t NAMES < <(printf '%s\n' "$OUT" | awk -F' - ' '/Refactoring/ {gsub(/^[[:space:]]+/, "", $1); print $1}')
           if [[ ${#NAMES[@]} -eq 0 ]]; then
-            echo "::error title=No refactorings found::Could not parse any refactoring names from 'autorefactor list'."
+            echo "Error: No refactoring names parsed from 'autorefactor list'."
+            dump_logs
             exit 1
           fi
           REFS=$(IFS=, ; echo "${NAMES[*]}")
           echo "refactorings=$REFS" >> "$GITHUB_OUTPUT"
           printf '%s' "$REFS" > /tmp/all_refactorings.txt
 
-      - name: Prepare AutoRefactor arguments (apply ALL)
+      - name: Prepare arguments
         id: args
         shell: bash
         run: |
@@ -122,10 +131,10 @@ jobs:
           SOURCE_LEVEL="${{ inputs.source_level }}"
           CLASSPATH_VARS_RAW="${{ inputs.classpath_vars }}"
           REFACTORINGS="$(cat /tmp/all_refactorings.txt)"
-
-          [[ -f "$PROJECT_FILE" ]] || { echo "::error file=$PROJECT_FILE::.project not found"; exit 1; }
+          [[ -f "$PROJECT_FILE" ]]
 
           declare -a ARGS
+          # keep 'apply' as first positional after --consolelog
           ARGS+=(apply --project "$PROJECT_FILE" --refactorings "$REFACTORINGS")
           [[ -n "$EXCLUDE" ]] && ARGS+=(--exclude-refactorings "$EXCLUDE")
           [[ -n "$PATH_FILTER" ]] && ARGS+=(--path-filter "$PATH_FILTER")
@@ -140,32 +149,52 @@ jobs:
           fi
 
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
-          echo "rendered=$(printf '%q ' autorefactor "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
+          echo "rendered=$(printf '%q ' autorefactor --consolelog "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
 
-      - name: Apply refactorings (ALL)
+      - name: Apply refactorings (with console log + log dump on failure)
+        id: apply
         shell: bash
         run: |
           set -euo pipefail
+          dump_logs() {
+            echo "::group::Eclipse/AutoRefactor logs"
+            shopt -s nullglob
+            for f in /tmp/workspace*/configuration/*.log; do
+              echo "----- $f -----"
+              # Large logs get trimmed to avoid overwhelming the job
+              tail -n 400 "$f" || true
+            done
+            echo "::endgroup::"
+          }
           mapfile -d '' ARGS < /tmp/autorefactor.args
           BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
-          echo "Using Eclipse: $AUTOREFACTOR_ECLIPSE"
-          echo "Running: $BIN ${ARGS[*]@Q}"
-          "$BIN" "${ARGS[@]}"
+          # Prepend --consolelog as required
+          if ! "$BIN" --consolelog "${ARGS[@]}"; then
+            echo "Error: 'autorefactor apply' failed."
+            dump_logs
+            exit 1
+          fi
 
-      - name: Show diff (for logs)
+      - name: Check for changes
+        id: gitdiff
         run: |
-          git status
-          git --no-pager diff --name-only
+          git update-index -q --refresh
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create PR with changes
+        if: steps.apply.outcome == 'success' && steps.gitdiff.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: |
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
-          title: "Apply AutoRefactorCli (ALL) — ${{ github.ref_name }}"
+          title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with **JDK 8** and **Eclipse** (`${{ env.AUTOREFACTOR_ECLIPSE }}`), patched versions to **1.2.0** exactly like your local diff, then applied **all** refactorings.
+            Built AutoRefactorCli with JDK 8 and Eclipse Oxygen. Applied all available refactorings.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
