@@ -39,12 +39,8 @@ permissions:
 jobs:
   autorefactor:
     runs-on: ubuntu-latest
-
     env:
-      # Eclipse + repos
       AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla
-      ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
-      RELEASE_REPO: https://download.eclipse.org/releases/oxygen
 
     steps:
       - name: Checkout repository
@@ -66,33 +62,32 @@ jobs:
           java-version: 8
           cache: maven
 
+      - name: Install Xvfb (virtual display for headless Eclipse)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
       - name: Download Eclipse Oxygen
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
-          curl -fL -o eclipse.tar.gz "$ECLIPSE_TAR"
+          curl -fL -o eclipse.tar.gz "https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz"
           tar -xzf eclipse.tar.gz
           ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
           sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
           which "${AUTOREFACTOR_ECLIPSE}"
 
-      - name: (Optional) Install Equinox Console + Gogo via p2
-        shell: bash
-        run: |
-          set -euo pipefail
-          "${AUTOREFACTOR_ECLIPSE}" -nosplash \
-            -application org.eclipse.equinox.p2.director \
-            -repository "$RELEASE_REPO" \
-            -installIU org.eclipse.equinox.console,org.apache.felix.gogo.command,org.apache.felix.gogo.shell || true
-
       - name: Patch versions (align to 1.2.0)
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
+          # cli/pom.xml: parent + module -> 1.2.0-SNAPSHOT
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
+          # MANIFEST.MF: Bundle-Version -> 1.2.0.qualifier
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
+          # build-cli: copy 1.2.0-SNAPSHOT jars
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
           chmod +x ./build-cli
@@ -101,14 +96,12 @@ jobs:
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
-      - name: Collect all refactorings (Eclipse direct, full log on failure)
+      - name: Collect all refactorings (full log on failure)
         id: collect
         shell: bash
         run: |
           set -euo pipefail
-
-          ECL="${AUTOREFACTOR_ECLIPSE}"
-          CFG="$(pwd)/tools/AutoRefactorCli/cli/target/autorefactor"
+          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
           WS="/tmp/workspace-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
 
           dump_logs() {
@@ -122,29 +115,29 @@ jobs:
             echo "::endgroup::"
           }
 
-          # Call Eclipse directly with explicit configuration + workspace
-          if ! OUT="$("$ECL" -nosplash -clean -consoleLog \
-              -configuration "$CFG" \
-              -data "$WS" \
-              -application org.autorefactor.cli.AutoRefactor \
-              list)"; then
-            echo "Error: 'list' failed."
+          # Use wrapper with virtual display; include --consolelog as first arg.
+          if ! OUT="$(xvfb-run -a "$BIN" --consolelog list)"; then
+            echo "Error: 'autorefactor list' failed."
             dump_logs
             exit 1
           fi
 
           mapfile -t NAMES < <(printf '%s\n' "$OUT" | awk -F' - ' '/Refactoring/ {sub(/^[[:space:]]+/, "", $1); print $1}')
+          if [[ ${#NAMES[@]} -eq 1 && "${NAMES[0]}" == "Available refactorings:" ]]; then
+            # Fallback: extract names even if heading printed separately
+            mapfile -t NAMES < <(printf '%s\n' "$OUT" | awk '/Refactoring - /{print $1}')
+          fi
           if [[ ${#NAMES[@]} -eq 0 ]]; then
-            echo "Error: No refactoring names parsed from 'list'."
+            echo "Error: No refactoring names parsed from 'autorefactor list'."
             dump_logs
             exit 1
           fi
 
           REFS=$(IFS=, ; echo "${NAMES[*]}")
           echo "refactorings=$REFS" >> "$GITHUB_OUTPUT"
-          printf '%s' "$REFS" > /tmp/all_refactorings.txt
+          # record workspace for logs
           echo "workspace=$WS" >> "$GITHUB_OUTPUT"
-          echo "configuration=$CFG" >> "$GITHUB_OUTPUT"
+          printf '%s' "$REFS" > /tmp/all_refactorings.txt
 
       - name: Prepare arguments
         id: args
@@ -176,15 +169,14 @@ jobs:
           fi
 
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
+          echo "rendered=$(printf '%q ' autorefactor --consolelog "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
 
-      - name: Apply refactorings (Eclipse direct, full log on failure)
+      - name: Apply refactorings (full log on failure)
         id: apply
         shell: bash
         run: |
           set -euo pipefail
-
-          ECL="${AUTOREFACTOR_ECLIPSE}"
-          CFG="${{ steps.collect.outputs.configuration }}"
+          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
           WS="${{ steps.collect.outputs.workspace }}"
 
           dump_logs() {
@@ -199,13 +191,8 @@ jobs:
           }
 
           mapfile -d '' ARGS < /tmp/autorefactor.args
-
-          if ! "$ECL" -nosplash -clean -consoleLog \
-                -configuration "$CFG" \
-                -data "$WS" \
-                -application org.autorefactor.cli.AutoRefactor \
-                "${ARGS[@]}"; then
-            echo "Error: 'apply' failed."
+          if ! xvfb-run -a "$BIN" --consolelog "${ARGS[@]}"; then
+            echo "Error: 'autorefactor apply' failed."
             dump_logs
             exit 1
           fi
@@ -229,7 +216,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with JDK 8 and Eclipse Oxygen. Applied all available refactorings using explicit Eclipse configuration.
+            Built AutoRefactorCli with JDK 8 and Eclipse Oxygen. Applied all available refactorings in a headless virtual display.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
