@@ -34,7 +34,7 @@ on:
       java_version:
         description: "JDK used to build/run AutoRefactorCli"
         required: true
-        default: "11"
+        default: "8"
 
 permissions:
   contents: write
