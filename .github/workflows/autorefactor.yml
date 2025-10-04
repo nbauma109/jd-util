@@ -72,13 +72,17 @@ jobs:
           ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
           sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
+          which "${AUTOREFACTOR_ECLIPSE}"
 
-      - name: Patch versions (align to 1.2.0 as per working diff)
+      - name: Patch versions (align to 1.2.0)
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
+          # cli/pom.xml: parent + module -> 1.2.0-SNAPSHOT
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
+          # MANIFEST.MF: Bundle-Version -> 1.2.0.qualifier
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
+          # build-cli: copy 1.2.0-SNAPSHOT jars
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
           chmod +x ./build-cli
@@ -87,7 +91,7 @@ jobs:
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
-      - name: Collect all refactorings (with console log + log dump on failure)
+      - name: Collect all refactorings (full log on failure)
         id: collect
         shell: bash
         run: |
@@ -97,12 +101,11 @@ jobs:
             shopt -s nullglob
             for f in /tmp/workspace*/configuration/*.log; do
               echo "----- $f -----"
-              sed -n '1,400p' "$f" || true
+              cat "$f" || true
             done
             echo "::endgroup::"
           }
           BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
-          # MUST pass --consolelog first per CLI help
           if ! OUT="$("$BIN" --consolelog list)"; then
             echo "Error: 'autorefactor list' failed."
             dump_logs
@@ -134,7 +137,6 @@ jobs:
           [[ -f "$PROJECT_FILE" ]]
 
           declare -a ARGS
-          # keep 'apply' as first positional after --consolelog
           ARGS+=(apply --project "$PROJECT_FILE" --refactorings "$REFACTORINGS")
           [[ -n "$EXCLUDE" ]] && ARGS+=(--exclude-refactorings "$EXCLUDE")
           [[ -n "$PATH_FILTER" ]] && ARGS+=(--path-filter "$PATH_FILTER")
@@ -151,7 +153,7 @@ jobs:
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
           echo "rendered=$(printf '%q ' autorefactor --consolelog "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
 
-      - name: Apply refactorings (with console log + log dump on failure)
+      - name: Apply refactorings (full log on failure)
         id: apply
         shell: bash
         run: |
@@ -161,14 +163,12 @@ jobs:
             shopt -s nullglob
             for f in /tmp/workspace*/configuration/*.log; do
               echo "----- $f -----"
-              # Large logs get trimmed to avoid overwhelming the job
-              tail -n 400 "$f" || true
+              cat "$f" || true
             done
             echo "::endgroup::"
           }
           mapfile -d '' ARGS < /tmp/autorefactor.args
           BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
-          # Prepend --consolelog as required
           if ! "$BIN" --consolelog "${ARGS[@]}"; then
             echo "Error: 'autorefactor apply' failed."
             dump_logs
