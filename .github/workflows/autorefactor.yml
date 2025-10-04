@@ -42,13 +42,10 @@ jobs:
 
     env:
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
-      ECLIPSE_CMD: eclipse-oxygen-vanilla
-      OXYGEN_REPO: https://download.eclipse.org/releases/oxygen
-      # Tight timeouts to avoid hangs (seconds)
-      ECLIPSE_TIMEOUT_WARMUP: "120"
-      ECLIPSE_TIMEOUT_LIST: "120"
-      ECLIPSE_TIMEOUT_APPLY: "900"
-      # Reduce GTK flakiness in CI
+      AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla
+      # Tight timeouts (seconds)
+      TIMEOUT_LIST: "120"
+      TIMEOUT_APPLY: "900"
       SWT_GTK3: "0"
 
     steps:
@@ -71,24 +68,22 @@ jobs:
           java-version: 8
           cache: maven
 
-      - name: Install Xvfb (virtual display for headless Eclipse)
+      - name: Install Xvfb
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb
 
       - name: Download Eclipse Oxygen
-        id: dl
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
           curl -fL -o eclipse.tar.gz "$ECLIPSE_TAR"
           tar -xzf eclipse.tar.gz
-          ECLIPSE_DIR="$(find "$PWD" -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
+          ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
-          echo "home=$ECLIPSE_DIR" >> "$GITHUB_OUTPUT"
-          sudo ln -sf "$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
-          which "${ECLIPSE_CMD}"
+          sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
+          which "${AUTOREFACTOR_ECLIPSE}"
 
       - name: Patch versions (align to 1.2.0)
         working-directory: tools/AutoRefactorCli
@@ -96,6 +91,7 @@ jobs:
         run: |
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
+          # ensure build-cli copies 1.2.0 jars for plugin + cli
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
           chmod +x ./build-cli
@@ -104,74 +100,27 @@ jobs:
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
-      - name: Provision AutoRefactor into Eclipse (P2 director; local + Oxygen repos)
-        id: p2
+      - name: Add missing plugin.ui jar to dropins
+        working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
           set -euo pipefail
-          REPO="$(cd tools/AutoRefactorCli/repository/target/repository && pwd)"
-          DEST="${{ steps.dl.outputs.home }}"
-          REPOS="file:${REPO},${OXYGEN_REPO}"
-
-          dump_dest_logs() {
-            echo "::group::P2 Director Logs (DEST & temp)"
-            shopt -s nullglob
-            for f in "${DEST}"/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
-              [[ -f "$f" ]] || continue
-              echo "----- $f -----"; cat "$f" || true
-            done
-            echo "::endgroup::"
-          }
-
-          if ! timeout "${ECLIPSE_TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
-                -application org.eclipse.equinox.p2.director \
-                -repository "${REPOS}" \
-                -installIU org.autorefactor.feature.feature.group \
-                -destination "${DEST}" \
-                -profile SDKProfile \
-                -profileProperties org.eclipse.update.install.features=true \
-                -roaming; then
-            echo "Error: P2 installation failed from ${REPO} into ${DEST}"
-            dump_dest_logs
+          UI_JAR="$(ls -1 plugin.ui/target/org.autorefactor.plugin.ui-1.2.0-SNAPSHOT.jar 2>/dev/null || true)"
+          if [[ -z "$UI_JAR" ]]; then
+            echo "plugin.ui jar not found; listing targets for debug:"
+            ls -la plugin.ui/target || true
             exit 1
           fi
+          mkdir -p cli/target/autorefactor/dropins/plugins
+          cp "$UI_JAR" cli/target/autorefactor/dropins/plugins
+          echo "Copied $(basename "$UI_JAR") into dropins/plugins."
 
-      - name: Warm up Eclipse (fail on any error)
-        shell: bash
-        run: |
-          set -euo pipefail
-          DEST="${{ steps.dl.outputs.home }}"
-
-          dump_dest_logs() {
-            echo "::group::Warmup Logs (DEST & temp)"
-            shopt -s nullglob
-            for f in "${DEST}"/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
-              [[ -f "$f" ]] || continue
-              echo "----- $f -----"; cat "$f" || true
-            done
-            echo "::endgroup::"
-          }
-
-          echo "Running warmup p2 director -listInstalledRoots (timeout=${ECLIPSE_TIMEOUT_WARMUP}s)"
-          set +e
-          timeout "${ECLIPSE_TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
-            -application org.eclipse.equinox.p2.director \
-            -listInstalledRoots > /tmp/_warmup.out 2>&1
-          status=$?
-          set -e
-          if [[ $status -ne 0 ]]; then
-            echo "Error: Warmup failed or timed out (status=$status)."
-            echo "::group::warmup stdout/stderr"; cat /tmp/_warmup.out || true; echo "::endgroup::"
-            dump_dest_logs
-            exit 1
-          fi
-          echo "::group::Installed roots"; cat /tmp/_warmup.out || true; echo "::endgroup::"
-
-      - name: Collect all refactorings (timeouts + full log on failure)
+      - name: Collect all refactorings (xvfb, full logs, hard timeout)
         id: collect
         shell: bash
         run: |
           set -euo pipefail
+          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
           WS="/tmp/workspace-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
 
           dump_logs() {
@@ -184,18 +133,13 @@ jobs:
             echo "::endgroup::"
           }
 
-          echo "Starting 'list' (timeout=${ECLIPSE_TIMEOUT_LIST}s)"
+          echo "Starting 'list' (timeout=${TIMEOUT_LIST}s)"
           set +e
-          timeout "${ECLIPSE_TIMEOUT_LIST}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
-            -data "$WS" \
-            -application org.autorefactor.cli.AutoRefactor \
-            --consolelog list \
-            -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1024m > /tmp/_list.out 2>&1
+          timeout "${TIMEOUT_LIST}"s xvfb-run -a "$BIN" --consolelog list > /tmp/_list.out 2>&1
           status=$?
           set -e
-
           if [[ $status -ne 0 ]]; then
-            echo "Error: 'list' failed or timed out (status=$status)."
+            echo "Error: 'autorefactor list' failed or timed out (status=$status)."
             echo "::group::'list' stdout/stderr"; cat /tmp/_list.out || true; echo "::endgroup::"
             dump_logs
             pkill -9 -f 'org.eclipse.equinox.launcher' || true
@@ -245,12 +189,14 @@ jobs:
             while IFS= read -r kv; do [[ -n "$kv" ]] && ARGS+=(--classpath-variable "$kv"); done <<< "$CLASSPATH_VARS_RAW"
           fi
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
+          echo "rendered=$(printf '%q ' autorefactor --consolelog "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
 
-      - name: Apply refactorings (timeouts + full log on failure)
+      - name: Apply refactorings (xvfb, full logs, hard timeout)
         id: apply
         shell: bash
         run: |
           set -euo pipefail
+          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
           WS="${{ steps.collect.outputs.workspace }}"
 
           dump_logs() {
@@ -264,18 +210,13 @@ jobs:
           }
 
           mapfile -d '' ARGS < /tmp/autorefactor.args
-          echo "Starting 'apply' (timeout=${ECLIPSE_TIMEOUT_APPLY}s)"
+          echo "Starting 'apply' (timeout=${TIMEOUT_APPLY}s)"
           set +e
-          timeout "${ECLIPSE_TIMEOUT_APPLY}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog \
-            -data "$WS" \
-            -application org.autorefactor.cli.AutoRefactor \
-            --consolelog "${ARGS[@]}" \
-            -vmargs -Djava.awt.headless=true -Dosgi.locking=none -Xmx1536m > /tmp/_apply.out 2>&1
+          timeout "${TIMEOUT_APPLY}"s xvfb-run -a "$BIN" --consolelog "${ARGS[@]}" > /tmp/_apply.out 2>&1
           status=$?
           set -e
-
           if [[ $status -ne 0 ]]; then
-            echo "Error: 'apply' failed or timed out (status=$status)."
+            echo "Error: 'autorefactor apply' failed or timed out (status=$status)."
             echo "::group::'apply' stdout/stderr"; cat /tmp/_apply.out || true; echo "::endgroup::"
             dump_logs
             pkill -9 -f 'org.eclipse.equinox.launcher' || true
@@ -302,7 +243,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with JDK 8, provisioned into Eclipse Oxygen via P2, warmed up Eclipse using a safe p2 director call, and applied all available refactorings under a headless virtual display. Timeouts guard against stalls; logs printed on failure.
+            Built AutoRefactorCli (1.2.0) and ran under Eclipse Oxygen headlessly. Included missing plugin.ui bundle in dropins. Applied all refactorings; logs printed on failure; PR only on success with changes.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
