@@ -39,8 +39,10 @@ permissions:
 jobs:
   autorefactor:
     runs-on: ubuntu-latest
+
     env:
-      AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla
+      ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
+      ECLIPSE_CMD: eclipse-oxygen-vanilla
 
     steps:
       - name: Checkout repository
@@ -72,12 +74,12 @@ jobs:
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
-          curl -fL -o eclipse.tar.gz "https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz"
+          curl -fL -o eclipse.tar.gz "$ECLIPSE_TAR"
           tar -xzf eclipse.tar.gz
           ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
-          sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
-          which "${AUTOREFACTOR_ECLIPSE}"
+          sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
+          which "${ECLIPSE_CMD}"
 
       - name: Patch versions (align to 1.2.0)
         working-directory: tools/AutoRefactorCli
@@ -96,12 +98,27 @@ jobs:
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
+      - name: Provision AutoRefactor into Eclipse (p2 director)
+        id: p2
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPO="$(cd tools/AutoRefactorCli/repository/target/repository && pwd)"
+          # Install the feature group (brings in plugin + CLI)
+          xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
+            -application org.eclipse.equinox.p2.director \
+            -repository "file:${REPO}" \
+            -installIU org.autorefactor.feature.feature.group,org.autorefactor.cli || {
+              echo "Error: P2 installation failed from ${REPO}"
+              exit 1
+            }
+          echo "repo=$REPO" >> "$GITHUB_OUTPUT"
+
       - name: Collect all refactorings (full log on failure)
         id: collect
         shell: bash
         run: |
           set -euo pipefail
-          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
           WS="/tmp/workspace-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
 
           dump_logs() {
@@ -115,27 +132,24 @@ jobs:
             echo "::endgroup::"
           }
 
-          # Use wrapper with virtual display; include --consolelog as first arg.
-          if ! OUT="$(xvfb-run -a "$BIN" --consolelog list)"; then
-            echo "Error: 'autorefactor list' failed."
+          if ! OUT="$(xvfb-run -a "${ECLIPSE_CMD}" -nosplash -clean -consoleLog \
+              -data "$WS" \
+              -application org.autorefactor.cli.AutoRefactor \
+              --consolelog list)"; then
+            echo "Error: 'list' failed."
             dump_logs
             exit 1
           fi
 
           mapfile -t NAMES < <(printf '%s\n' "$OUT" | awk -F' - ' '/Refactoring/ {sub(/^[[:space:]]+/, "", $1); print $1}')
-          if [[ ${#NAMES[@]} -eq 1 && "${NAMES[0]}" == "Available refactorings:" ]]; then
-            # Fallback: extract names even if heading printed separately
-            mapfile -t NAMES < <(printf '%s\n' "$OUT" | awk '/Refactoring - /{print $1}')
-          fi
           if [[ ${#NAMES[@]} -eq 0 ]]; then
-            echo "Error: No refactoring names parsed from 'autorefactor list'."
+            echo "Error: No refactoring names parsed from 'list'."
             dump_logs
             exit 1
           fi
 
           REFS=$(IFS=, ; echo "${NAMES[*]}")
           echo "refactorings=$REFS" >> "$GITHUB_OUTPUT"
-          # record workspace for logs
           echo "workspace=$WS" >> "$GITHUB_OUTPUT"
           printf '%s' "$REFS" > /tmp/all_refactorings.txt
 
@@ -160,25 +174,20 @@ jobs:
           [[ -n "$PATH_FILTER" ]] && ARGS+=(--path-filter "$PATH_FILTER")
           [[ -n "$PATH_RE" ]] && ARGS+=(--path-re "$PATH_RE")
           [[ -n "$SOURCE_LEVEL" ]] && ARGS+=(--source-level "$SOURCE_LEVEL")
-
           if [[ -n "$SOURCE_DIRS_RAW" ]]; then
             while IFS= read -r line; do [[ -n "$line" ]] && ARGS+=(--source "$line"); done <<< "$SOURCE_DIRS_RAW"
           fi
           if [[ -n "$CLASSPATH_VARS_RAW" ]]; then
             while IFS= read -r kv; do [[ -n "$kv" ]] && ARGS+=(--classpath-variable "$kv"); done <<< "$CLASSPATH_VARS_RAW"
           fi
-
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
-          echo "rendered=$(printf '%q ' autorefactor --consolelog "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
 
       - name: Apply refactorings (full log on failure)
         id: apply
         shell: bash
         run: |
           set -euo pipefail
-          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
           WS="${{ steps.collect.outputs.workspace }}"
-
           dump_logs() {
             echo "::group::Eclipse/AutoRefactor logs"
             shopt -s nullglob
@@ -189,10 +198,12 @@ jobs:
             done
             echo "::endgroup::"
           }
-
           mapfile -d '' ARGS < /tmp/autorefactor.args
-          if ! xvfb-run -a "$BIN" --consolelog "${ARGS[@]}"; then
-            echo "Error: 'autorefactor apply' failed."
+          if ! xvfb-run -a "${ECLIPSE_CMD}" -nosplash -clean -consoleLog \
+                -data "$WS" \
+                -application org.autorefactor.cli.AutoRefactor \
+                --consolelog "${ARGS[@]}"; then
+            echo "Error: 'apply' failed."
             dump_logs
             exit 1
           fi
@@ -216,7 +227,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with JDK 8 and Eclipse Oxygen. Applied all available refactorings in a headless virtual display.
+            Built AutoRefactorCli with JDK 8, provisioned into Eclipse Oxygen via P2, and applied all available refactorings under a headless display.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
