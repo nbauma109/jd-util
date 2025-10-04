@@ -20,25 +20,17 @@ on:
         required: false
         default: ""
       source_dirs:
-        description: "Repeatable source dirs to target (optional). Use newline to add multiple, e.g. 'src/main/java\\nsrc/test/java'"
+        description: "Repeatable source dirs (newline-separated), e.g. 'src/main/java\nsrc/test/java'"
         required: false
         default: ""
       source_level:
-        description: "Java source level (e.g., 8, 11, 17) — optional"
+        description: "Java source level (e.g., 8, 11, 17)"
         required: false
         default: "8"
       classpath_vars:
-        description: "Classpath variables (optional), one per line as KEY=/abs/path"
+        description: "Classpath vars (newline-separated KEY=/abs/path)"
         required: false
         default: ""
-      eclipse_url:
-        description: "Eclipse tar.gz URL (Linux x86_64). Override if needed."
-        required: false
-        default: "https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz"
-      eclipse_cmd_name:
-        description: "Command name the wrapper will call via AUTOREFACTOR_ECLIPSE"
-        required: false
-        default: "eclipse-oxygen-vanilla"
 
 permissions:
   contents: write
@@ -46,11 +38,9 @@ permissions:
 
 jobs:
   autorefactor:
-    name: Run AutoRefactor (ALL refactorings) and open PR
     runs-on: ubuntu-latest
     env:
-      # Make Eclipse instance discoverable by the wrapper script
-      AUTOREFACTOR_ECLIPSE: ${{ inputs.eclipse_cmd_name }}
+      AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla
 
     steps:
       - name: Checkout target repository
@@ -72,54 +62,35 @@ jobs:
           java-version: 8
           cache: maven
 
-      - name: Download & install Eclipse (headless)
+      - name: Download Eclipse Oxygen and register command
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
-          echo "Downloading Eclipse from: ${{ inputs.eclipse_url }}"
-          curl -fL -o eclipse.tar.gz "${{ inputs.eclipse_url }}"
+          curl -fL -o eclipse.tar.gz "https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz"
           tar -xzf eclipse.tar.gz
-          # Find extracted dir (starts with 'eclipse')
           ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
-          if [[ -z "$ECLIPSE_DIR" || ! -x "$ECLIPSE_DIR/eclipse" ]]; then
-            echo "::error::Could not locate Eclipse executable after extraction."
-            exit 1
-          fi
-          sudo ln -s "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${{ inputs.eclipse_cmd_name }}"
-          which "${{ inputs.eclipse_cmd_name }}"
-          "${{ inputs.eclipse_cmd_name }}" -nosplash -application org.eclipse.equinox.p2.director -help >/dev/null 2>&1 || true
+          [[ -x "$ECLIPSE_DIR/eclipse" ]]
+          sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
+          which "${AUTOREFACTOR_ECLIPSE}"
 
-      - name: Patch versions (pom.xml, MANIFEST.MF, build-cli)
+      - name: Patch versions (exactly like your local diff)
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
           set -euo pipefail
-
-          echo ">> Before patch:"
-          grep '<version>' cli/pom.xml || true
-          grep '^Bundle-Version' cli/META-INF/MANIFEST.MF || true
-          grep 'org\.autorefactor\.plugin-.*SNAPSHOT\.jar' build-cli || true
-          grep 'org\.autorefactor\.cli-.*SNAPSHOT\.jar' build-cli || true
-
-          # 1) pom.xml: 2.0.0-SNAPSHOT -> 1.2.0-SNAPSHOT
+          # cli/pom.xml: parent + module to 1.2.0-SNAPSHOT
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
-          # 2) MANIFEST.MF: 2.0.0 -> 1.2.0
-          sed -i 's|^Bundle-Version:\s*2\.0\.0$|Bundle-Version: 1.2.0|g' cli/META-INF/MANIFEST.MF
-          # 3) build-cli: copy correct jar names
+          # cli/MANIFEST.MF: Bundle-Version to 1.2.0.qualifier
+          sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
+          # build-cli: copy 1.2.0-SNAPSHOT jars
           sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
           sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
-
-          echo ">> After patch:"
-          grep '<version>' cli/pom.xml || true
-          grep '^Bundle-Version' cli/META-INF/MANIFEST.MF || true
-          grep 'org\.autorefactor\.plugin-.*SNAPSHOT\.jar' build-cli || true
-          grep 'org\.autorefactor\.cli-.*SNAPSHOT\.jar' build-cli || true
+          chmod +x ./build-cli
 
       - name: Build AutoRefactorCli (Linux)
         working-directory: tools/AutoRefactorCli
         run: |
-          chmod +x ./build-cli
           ./build-cli
           ls -la ./cli/target/autorefactor/bin
 
@@ -129,8 +100,6 @@ jobs:
         run: |
           set -euo pipefail
           BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
-
-          # Gather names before " - " from list output
           mapfile -t NAMES < <("$BIN" list | awk -F' - ' '/Refactoring/ {gsub(/^[[:space:]]+/, "", $1); print $1}')
           if [[ ${#NAMES[@]} -eq 0 ]]; then
             echo "::error title=No refactorings found::Could not parse any refactoring names from 'autorefactor list'."
@@ -154,10 +123,7 @@ jobs:
           CLASSPATH_VARS_RAW="${{ inputs.classpath_vars }}"
           REFACTORINGS="$(cat /tmp/all_refactorings.txt)"
 
-          if [[ ! -f "$PROJECT_FILE" ]]; then
-            echo "::error file=$PROJECT_FILE,title=.project not found::The specified Eclipse project file was not found."
-            exit 1
-          fi
+          [[ -f "$PROJECT_FILE" ]] || { echo "::error file=$PROJECT_FILE::.project not found"; exit 1; }
 
           declare -a ARGS
           ARGS+=(apply --project "$PROJECT_FILE" --refactorings "$REFACTORINGS")
@@ -167,18 +133,10 @@ jobs:
           [[ -n "$SOURCE_LEVEL" ]] && ARGS+=(--source-level "$SOURCE_LEVEL")
 
           if [[ -n "$SOURCE_DIRS_RAW" ]]; then
-            while IFS= read -r line; do
-              [[ -z "$line" ]] && continue
-              ARGS+=(--source "$line")
-            done <<< "$SOURCE_DIRS_RAW"
+            while IFS= read -r line; do [[ -n "$line" ]] && ARGS+=(--source "$line"); done <<< "$SOURCE_DIRS_RAW"
           fi
-
           if [[ -n "$CLASSPATH_VARS_RAW" ]]; then
-            while IFS= read -r kv; do
-              [[ -z "$kv" ]] && continue
-              # README shows: --classpath-variable key=value
-              ARGS+=(--classpath-variable "$kv")
-            done <<< "$CLASSPATH_VARS_RAW"
+            while IFS= read -r kv; do [[ -n "$kv" ]] && ARGS+=(--classpath-variable "$kv"); done <<< "$CLASSPATH_VARS_RAW"
           fi
 
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
@@ -186,8 +144,6 @@ jobs:
 
       - name: Apply refactorings (ALL)
         shell: bash
-        env:
-          AUTOREFACTOR_ECLIPSE: ${{ inputs.eclipse_cmd_name }}
         run: |
           set -euo pipefail
           mapfile -d '' ARGS < /tmp/autorefactor.args
@@ -202,7 +158,6 @@ jobs:
           git --no-pager diff --name-only
 
       - name: Create PR with changes
-        if: ${{ !cancelled() }}
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -210,13 +165,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL) — ${{ github.ref_name }}"
           body: |
-            This PR was generated by **AutoRefactorCli** on JDK 8, applying *all* available refactorings.
-
-            Eclipse: `${{ inputs.eclipse_cmd_name }}` from `${{ inputs.eclipse_url }}`
-            Patched to build against 1.2.0:
-            - `cli/pom.xml`: `2.0.0-SNAPSHOT` → `1.2.0-SNAPSHOT`
-            - `cli/META-INF/MANIFEST.MF`: `2.0.0` → `1.2.0`
-            - `build-cli`: copies `-1.2.0-SNAPSHOT.jar` artifacts
+            Built AutoRefactorCli with **JDK 8** and **Eclipse** (`${{ env.AUTOREFACTOR_ECLIPSE }}`), patched versions to **1.2.0** exactly like your local diff, then applied **all** refactorings.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
