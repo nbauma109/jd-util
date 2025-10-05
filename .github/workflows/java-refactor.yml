@@ -24,8 +24,8 @@ jobs:
   refactor:
     runs-on: ubuntu-latest
     env:
-      DEFAULT_RECIPES: org.openrewrite.java.cleanup.CommonStaticAnalysis,org.openrewrite.java.format.AutoFormat
-      REWRITE_PLUGIN_VER: 5.29.0
+      DEFAULT_RECIPES: org.openrewrite.staticanalysis.CommonStaticAnalysis
+      REWRITE_PLUGIN_VER: 6.19.0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
