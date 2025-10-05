@@ -1,0 +1,92 @@
+name: Java Refactor (OpenRewrite, Maven)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"   # Mondays 06:00 UTC
+  push:
+    branches: [ main, master ]
+    paths:
+      - "rewrite.yml"
+      - "**/*.java"
+      - "pom.xml"
+  pull_request:
+    paths:
+      - "rewrite.yml"
+      - "**/*.java"
+      - "pom.xml"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    env:
+      DEFAULT_RECIPES: org.openrewrite.java.cleanup.CommonStaticAnalysis,org.openrewrite.java.format.AutoFormat
+      REWRITE_PLUGIN_VER: 5.30.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Temurin JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Verify Maven project
+        run: |
+          test -f pom.xml || { echo "::error::No pom.xml found at repo root"; exit 1; }
+
+      - name: Determine OpenRewrite args (use rewrite.yml if present)
+        id: rwargs
+        shell: bash
+        run: |
+          if [ -f rewrite.yml ]; then
+            # Try to read the first 'name:' as the root recipe id (common pattern).
+            ROOT_RECIPE="$(awk '/^name:/{print $2; exit}' rewrite.yml || true)"
+            if [ -n "$ROOT_RECIPE" ]; then
+              echo "REWRITE_ARGS=-Drewrite.configLocation=rewrite.yml -Drewrite.activeRecipes=${ROOT_RECIPE}" >> "$GITHUB_ENV"
+              echo "mode=config+root-recipe" >> "$GITHUB_OUTPUT"
+            else
+              # If no root recipe is found, still honor the config file but fall back to safe defaults.
+              echo "REWRITE_ARGS=-Drewrite.configLocation=rewrite.yml -Drewrite.activeRecipes=${DEFAULT_RECIPES}" >> "$GITHUB_ENV"
+              echo "mode=config+defaults" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "REWRITE_ARGS=-Drewrite.activeRecipes=${DEFAULT_RECIPES}" >> "$GITHUB_ENV"
+            echo "mode=defaults" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run OpenRewrite (Maven)
+        run: |
+          mvn -U -B -q \
+            ${REWRITE_ARGS} \
+            org.openrewrite.maven:rewrite-maven-plugin:${REWRITE_PLUGIN_VER}:run
+
+      - name: Compile after refactor (safety net)
+        run: mvn -q -DskipTests package
+
+      - name: Create Pull Request with changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: ci/openrewrite-refactors
+          delete-branch: true
+          commit-message: "chore(rewrite): apply automated Java refactors"
+          title: "Automated Java refactors (OpenRewrite)"
+          body: |
+            This PR applies automated Java refactors using OpenRewrite.
+
+            Detected mode: ${{ steps.rwargs.outputs.mode }}
+            - If `rewrite.yml` exists, it was used.
+            - Otherwise, ran safe defaults: `${{ env.DEFAULT_RECIPES }}`
+
+            Tweak `rewrite.yml` or recipes as needed.
+          labels: |
+            automated
+            refactoring
