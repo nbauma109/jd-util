@@ -41,11 +41,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
+      OXYGEN_REPO: https://download.eclipse.org/releases/oxygen
       ECLIPSE_CMD: eclipse-oxygen-vanilla
-      TIMEOUT_WARMUP: "120"
       TIMEOUT_LIST: "180"
       TIMEOUT_APPLY: "900"
-      SWT_GTK3: "0"
+      SWT_GTK3: "0"   # prefer GTK2 to avoid SWT quirks on CI
 
     steps:
       - name: Checkout target repository
@@ -92,104 +92,84 @@ jobs:
           set -euo pipefail
           chmod +x ./build-cli
           ./build-cli
+          echo "Built reactor; listing repository/target/repository:"
+          ls -la repository/target/repository || true
 
-      - name: Ensure plugin.ui is present in packaged dropins
-        working-directory: tools/AutoRefactorCli
+      - name: Install AutoRefactor feature into Eclipse via p2 director
+        id: p2
         shell: bash
         run: |
           set -euo pipefail
-          UI_JAR="plugin.ui/target/org.autorefactor.plugin.ui-1.2.0-SNAPSHOT.jar"
-          DEST="cli/target/autorefactor/dropins/plugins"
-          mkdir -p "$DEST"
-          if [[ ! -f "$UI_JAR" ]]; then
-            echo "plugin.ui jar missing, listing module target:"; ls -la plugin.ui/target || true
-            exit 1
-          fi
-          cp -f "$UI_JAR" "$DEST"/
+          ECLIPSE_BIN="${{ env.ECLIPSE_CMD }}"
+          ECLIPSE_HOME="${{ steps.dl.outputs.home }}"
+          LOCAL_REPO="$(cd tools/AutoRefactorCli/repository/target/repository && pwd)"
+          WS="/home/runner/work/_temp/eclipse-ws-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
 
-      - name: Verify dropins content (print and fail if jars missing)
-        working-directory: tools/AutoRefactorCli
-        shell: bash
-        run: |
-          set -euo pipefail
-          DEST="cli/target/autorefactor/dropins/plugins"
-          echo "== dropins/plugins =="
-          ls -la "$DEST" || true
+          echo "Installing from:"
+          echo "  local: $LOCAL_REPO"
+          echo "  oxy:   ${{ env.OXYGEN_REPO }}"
+          echo "Destination Eclipse: $ECLIPSE_HOME"
 
-          NEED=("org.autorefactor.plugin-1.2.0-SNAPSHOT.jar" \
-                "org.autorefactor.plugin.ui-1.2.0-SNAPSHOT.jar" \
-                "org.autorefactor.cli-1.2.0-SNAPSHOT.jar")
-
-          MISSING=0
-          for f in "${NEED[@]}"; do
-            if [[ ! -f "$DEST/$f" ]]; then
-              echo "MISSING: $f"
-              MISSING=1
-            fi
-          done
-
-          if [[ $MISSING -ne 0 ]]; then
-            echo "At least one required jar is missing. Showing module targets for diagnostics:"
-            echo "== plugin/target =="
-            ls -la plugin/target || true
-            echo "== plugin.ui/target =="
-            ls -la plugin.ui/target || true
-            echo "== cli/target =="
-            ls -la cli/target || true
-            exit 1
-          fi
-
-      - name: Warm up dropins (reconcile once)
-        shell: bash
-        run: |
-          set -euo pipefail
-          ECLIPSE="${{ env.ECLIPSE_CMD }}"
-          DROPINS="$(cd tools/AutoRefactorCli/cli/target/autorefactor/dropins && pwd)"
-          WS="/tmp/workspace-warmup-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
-
-          dump_logs() {
-            echo "::group::Warm-up Eclipse logs"
-            shopt -s nullglob
-            for f in "$WS"/configuration/*.log; do
-              [[ -f "$f" ]] || continue
-              echo "----- $f -----"; cat "$f" || true
-            done
-            echo "::endgroup::"
-          }
-
+          # Do a clean director run installing ONLY the feature group.
+          # We do NOT attempt to install the 'org.autorefactor.cli' IU by id;
+          # the feature pulls all needed bundles (plugin, plugin.ui, cli).
           set +e
-          timeout "${TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE}" -nosplash -consoleLog -initialize \
-            -data "$WS" \
-            -configuration "$WS/configuration" \
-            -application org.eclipse.equinox.p2.reconciler.application \
-            -product org.eclipse.platform.ide \
-            -vmargs -Xmx2000m \
-            -Dorg.eclipse.equinox.p2.reconciler.dropins=true \
-            -Dorg.eclipse.equinox.simpleconfigurator.exclusiveInstallation=false \
-            -Dorg.eclipse.equinox.p2.reconciler.dropins.directory="$DROPINS" > /tmp/_warmup.out 2>&1
+          timeout 240s xvfb-run -a "$ECLIPSE_BIN" -nosplash -consoleLog \
+            -application org.eclipse.equinox.p2.director \
+            -repository "file:$LOCAL_REPO,${{ env.OXYGEN_REPO }}" \
+            -installIU org.autorefactor.feature.feature.group \
+            -destination "$ECLIPSE_HOME" \
+            -profile SDKProfile \
+            -profileProperties org.eclipse.update.install.features=true \
+            -roaming > /tmp/_p2.out 2>&1
           status=$?
           set -e
 
           if [[ $status -ne 0 ]]; then
-            echo "Error: dropins warm-up failed (status=$status)."
-            echo "::group::warm-up stdout/stderr"; cat /tmp/_warmup.out || true; echo "::endgroup::"
-            dump_logs
+            echo "Error: P2 installation failed (status=$status)."
+            echo "::group::p2 stdout/stderr"; cat /tmp/_p2.out || true; echo "::endgroup::"
+            echo "::group::Eclipse config logs (destination)"
+            shopt -s nullglob
+            for f in "$ECLIPSE_HOME"/configuration/*.log; do
+              echo "----- $f -----"; cat "$f" || true
+            done
+            echo "::endgroup::"
             exit 1
           fi
 
-      - name: Collect all refactorings (direct Eclipse; full logs on failure)
+          echo "::group::p2 stdout/stderr"; cat /tmp/_p2.out || true; echo "::endgroup::"
+
+          # Verify bundles are now registered in bundles.info
+          BUNDLES_INFO="$ECLIPSE_HOME/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info"
+          if [[ ! -f "$BUNDLES_INFO" ]]; then
+            echo "bundles.info not found at $BUNDLES_INFO"
+            exit 1
+          fi
+          echo "::group::bundles.info (grep autorefactor)"
+          grep -i "org.autorefactor" "$BUNDLES_INFO" || true
+          echo "::endgroup::"
+
+          # Must see three entries
+          HAVE=$(grep -ci "org.autorefactor" "$BUNDLES_INFO" || true)
+          if [[ "$HAVE" -lt 3 ]]; then
+            echo "AutoRefactor bundles not registered (found $HAVE entries)."
+            cat "$BUNDLES_INFO" | sed -n '1,200p'
+            exit 1
+          fi
+
+      - name: Collect all refactorings (run Eclipse application; full logs)
         id: collect
         shell: bash
         run: |
           set -euo pipefail
           ECLIPSE="${{ env.ECLIPSE_CMD }}"
-          DROPINS="$(cd tools/AutoRefactorCli/cli/target/autorefactor/dropins && pwd)"
+          ECLIPSE_HOME="${{ steps.dl.outputs.home }}"
           WS="/tmp/workspace-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
 
           dump_logs() {
             echo "::group::Eclipse logs"
             shopt -s nullglob
-            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
+            for f in "$WS"/configuration/*.log "$ECLIPSE_HOME"/configuration/*.log; do
               [[ -f "$f" ]] || continue
               echo "----- $f -----"; cat "$f" || true
             done
@@ -204,10 +184,7 @@ jobs:
             -application org.autorefactor.cli.AutoRefactor \
             -product org.eclipse.platform.ide \
             --consolelog list \
-            -vmargs -Xmx2000m \
-            -Dorg.eclipse.equinox.p2.reconciler.dropins=true \
-            -Dorg.eclipse.equinox.simpleconfigurator.exclusiveInstallation=false \
-            -Dorg.eclipse.equinox.p2.reconciler.dropins.directory="$DROPINS" > /tmp/_list.out 2>&1
+            -vmargs -Xmx2000m > /tmp/_list.out 2>&1
           status=$?
           set -e
 
@@ -215,8 +192,6 @@ jobs:
             echo "Error: 'list' failed or timed out (status=$status)."
             echo "::group::'list' stdout/stderr"; cat /tmp/_list.out || true; echo "::endgroup::"
             dump_logs
-            pkill -9 -f 'org.eclipse.equinox.launcher' || true
-            pkill -9 -f 'Xvfb' || true
             exit 1
           fi
 
@@ -264,19 +239,18 @@ jobs:
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
           echo "workspace=${{ steps.collect.outputs.workspace }}" >> "$GITHUB_OUTPUT"
 
-      - name: Apply refactorings (direct Eclipse; full logs on failure)
+      - name: Apply refactorings (run Eclipse application; full logs)
         id: apply
         shell: bash
         run: |
           set -euo pipefail
           ECLIPSE="${{ env.ECLIPSE_CMD }}"
-          DROPINS="$(cd tools/AutoRefactorCli/cli/target/autorefactor/dropins && pwd)"
           WS="${{ steps.args.outputs.workspace }}"
 
           dump_logs() {
             echo "::group::Eclipse logs"
             shopt -s nullglob
-            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
+            for f in "$WS"/configuration/*.log; do
               [[ -f "$f" ]] || continue
               echo "----- $f -----"; cat "$f" || true
             done
@@ -293,10 +267,7 @@ jobs:
             -application org.autorefactor.cli.AutoRefactor \
             -product org.eclipse.platform.ide \
             --consolelog "${ARGS[@]}" \
-            -vmargs -Xmx2000m \
-            -Dorg.eclipse.equinox.p2.reconciler.dropins=true \
-            -Dorg.eclipse.equinox.simpleconfigurator.exclusiveInstallation=false \
-            -Dorg.eclipse.equinox.p2.reconciler.dropins.directory="$DROPINS" > /tmp/_apply.out 2>&1
+            -vmargs -Xmx2000m > /tmp/_apply.out 2>&1
           status=$?
           set -e
 
@@ -304,8 +275,6 @@ jobs:
             echo "Error: 'apply' failed or timed out (status=$status)."
             echo "::group::'apply' stdout/stderr"; cat /tmp/_apply.out || true; echo "::endgroup::"
             dump_logs
-            pkill -9 -f 'org.eclipse.equinox.launcher' || true
-            pkill -9 -f 'Xvfb' || true
             exit 1
           fi
 
@@ -328,7 +297,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli (1.2.0) and ran headlessly on Eclipse Oxygen. Dropins reconciled once up-front; subsequent runs avoid -clean. Full logs are printed on failure; a PR is created only when apply succeeds and changes exist.
+            Built AutoRefactorCli (1.2.0) and installed it into Eclipse Oxygen via p2 director (no dropins at runtime). Verified registration in bundles.info, then ran the CLI application headlessly to list and apply all refactorings. Full logs printed on failure; PR only when apply succeeds and changes exist.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
