@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       project_file:
-        description: "Path to Eclipse .project file (e.g., ./.project or ./eclipse/.project)"
+        description: "Path to Eclipse .project file (e.g., ./.project)"
         required: true
         default: ".project"
       exclude_refactorings:
@@ -41,11 +41,15 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      # Eclipse Oxygen Java package (contains JDT)
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
-      AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla
+      ECLIPSE_CMD: eclipse-oxygen-vanilla
+      OXYGEN_REPO: https://download.eclipse.org/releases/oxygen
       # Tight timeouts (seconds)
-      TIMEOUT_LIST: "120"
-      TIMEOUT_APPLY: "900"
+      ECLIPSE_TIMEOUT_P2: "180"
+      ECLIPSE_TIMEOUT_LIST: "180"
+      ECLIPSE_TIMEOUT_APPLY: "900"
+      # Reduce GTK quirks on CI
       SWT_GTK3: "0"
 
     steps:
@@ -54,73 +58,97 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Checkout AutoRefactorCli
+      - name: Checkout AutoRefactorCli sources
         uses: actions/checkout@v4
         with:
           repository: cal101/AutoRefactorCli
           path: tools/AutoRefactorCli
           fetch-depth: 0
 
-      - name: Set up JDK 8
+      - name: Set up JDK 8 (build/runtime)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 8
           cache: maven
 
-      - name: Install Xvfb
+      - name: Install Xvfb (headless display)
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb
 
       - name: Download Eclipse Oxygen
+        id: dl
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
           curl -fL -o eclipse.tar.gz "$ECLIPSE_TAR"
           tar -xzf eclipse.tar.gz
-          ECLIPSE_DIR="$(find . -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
+          ECLIPSE_DIR="$(find "$PWD" -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
-          sudo ln -sf "$PWD/$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
-          which "${AUTOREFACTOR_ECLIPSE}"
+          echo "home=$ECLIPSE_DIR" >> "$GITHUB_OUTPUT"
+          sudo ln -sf "$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
+          which "${ECLIPSE_CMD}"
 
       - name: Patch versions (align to 1.2.0)
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
+          # Ensure Tycho and OSGi versions are consistent with 1.2.0
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
-          # ensure build-cli copies 1.2.0 jars for plugin + cli
-          sed -i 's|org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.plugin-1.2.0-SNAPSHOT.jar|g' build-cli
-          sed -i 's|org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar|org.autorefactor.cli-1.2.0-SNAPSHOT.jar|g' build-cli
           chmod +x ./build-cli
 
-      - name: Build AutoRefactorCli
+      - name: Build AutoRefactorCli (Tycho reactor)
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
-      - name: Add missing plugin.ui jar to dropins
-        working-directory: tools/AutoRefactorCli
+      # Install into Eclipse via p2 director (no dropins reliance)
+      - name: Install AutoRefactor into Eclipse (p2 director)
+        id: p2
         shell: bash
         run: |
           set -euo pipefail
-          UI_JAR="$(ls -1 plugin.ui/target/org.autorefactor.plugin.ui-1.2.0-SNAPSHOT.jar 2>/dev/null || true)"
-          if [[ -z "$UI_JAR" ]]; then
-            echo "plugin.ui jar not found; listing targets for debug:"
-            ls -la plugin.ui/target || true
+          REPO="$(cd tools/AutoRefactorCli/repository/target/repository && pwd)"
+          DEST="${{ steps.dl.outputs.home }}"
+          REPOS="file:${REPO},${OXYGEN_REPO}"
+
+          dump_logs() {
+            echo "::group::P2/Eclipse logs"
+            shopt -s nullglob
+            for f in "${DEST}"/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
+              [[ -f "$f" ]] || continue
+              echo "----- $f -----"; cat "$f" || true
+            done
+            echo "::endgroup::"
+          }
+
+          # Install the feature group and the CLI bundle IU (defensive: some repos split them)
+          IUS="org.autorefactor.feature.feature.group,org.autorefactor.cli"
+
+          if ! timeout "${ECLIPSE_TIMEOUT_P2}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
+                -application org.eclipse.equinox.p2.director \
+                -repository "${REPOS}" \
+                -installIU "${IUS}" \
+                -destination "${DEST}" \
+                -profile SDKProfile \
+                -profileProperties org.eclipse.update.install.features=true \
+                -roaming; then
+            echo "Error: P2 installation failed from ${REPO} into ${DEST}"
+            dump_logs
             exit 1
           fi
-          mkdir -p cli/target/autorefactor/dropins/plugins
-          cp "$UI_JAR" cli/target/autorefactor/dropins/plugins
-          echo "Copied $(basename "$UI_JAR") into dropins/plugins."
 
-      - name: Collect all refactorings (xvfb, full logs, hard timeout)
+          # Show installed roots for diagnostics
+          xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
+            -application org.eclipse.equinox.p2.director -listInstalledRoots || true
+
+      - name: Collect all refactorings (hard timeout + full logs)
         id: collect
         shell: bash
         run: |
           set -euo pipefail
-          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
           WS="/tmp/workspace-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
 
           dump_logs() {
@@ -133,13 +161,18 @@ jobs:
             echo "::endgroup::"
           }
 
-          echo "Starting 'list' (timeout=${TIMEOUT_LIST}s)"
+          echo "Starting 'list' (timeout=${ECLIPSE_TIMEOUT_LIST}s)"
           set +e
-          timeout "${TIMEOUT_LIST}"s xvfb-run -a "$BIN" --consolelog list > /tmp/_list.out 2>&1
+          timeout "${ECLIPSE_TIMEOUT_LIST}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog -clean \
+            -data "$WS" \
+            -configuration "$WS/configuration" \
+            -application org.autorefactor.cli.AutoRefactor \
+            --consolelog list > /tmp/_list.out 2>&1
           status=$?
           set -e
+
           if [[ $status -ne 0 ]]; then
-            echo "Error: 'autorefactor list' failed or timed out (status=$status)."
+            echo "Error: 'list' failed or timed out (status=$status)."
             echo "::group::'list' stdout/stderr"; cat /tmp/_list.out || true; echo "::endgroup::"
             dump_logs
             pkill -9 -f 'org.eclipse.equinox.launcher' || true
@@ -189,14 +222,12 @@ jobs:
             while IFS= read -r kv; do [[ -n "$kv" ]] && ARGS+=(--classpath-variable "$kv"); done <<< "$CLASSPATH_VARS_RAW"
           fi
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
-          echo "rendered=$(printf '%q ' autorefactor --consolelog "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
 
-      - name: Apply refactorings (xvfb, full logs, hard timeout)
+      - name: Apply refactorings (hard timeout + full logs)
         id: apply
         shell: bash
         run: |
           set -euo pipefail
-          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
           WS="${{ steps.collect.outputs.workspace }}"
 
           dump_logs() {
@@ -210,13 +241,19 @@ jobs:
           }
 
           mapfile -d '' ARGS < /tmp/autorefactor.args
-          echo "Starting 'apply' (timeout=${TIMEOUT_APPLY}s)"
+
+          echo "Starting 'apply' (timeout=${ECLIPSE_TIMEOUT_APPLY}s)"
           set +e
-          timeout "${TIMEOUT_APPLY}"s xvfb-run -a "$BIN" --consolelog "${ARGS[@]}" > /tmp/_apply.out 2>&1
+          timeout "${ECLIPSE_TIMEOUT_APPLY}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog -clean \
+            -data "$WS" \
+            -configuration "$WS/configuration" \
+            -application org.autorefactor.cli.AutoRefactor \
+            --consolelog "${ARGS[@]}" > /tmp/_apply.out 2>&1
           status=$?
           set -e
+
           if [[ $status -ne 0 ]]; then
-            echo "Error: 'autorefactor apply' failed or timed out (status=$status)."
+            echo "Error: 'apply' failed or timed out (status=$status)."
             echo "::group::'apply' stdout/stderr"; cat /tmp/_apply.out || true; echo "::endgroup::"
             dump_logs
             pkill -9 -f 'org.eclipse.equinox.launcher' || true
@@ -243,7 +280,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli (1.2.0) and ran under Eclipse Oxygen headlessly. Included missing plugin.ui bundle in dropins. Applied all refactorings; logs printed on failure; PR only on success with changes.
+            Built AutoRefactorCli with JDK 8, installed into Eclipse Oxygen via p2 director (feature + CLI IU), then applied all available refactorings under a headless display. Timeouts guard against stalls; logs printed on failure.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
