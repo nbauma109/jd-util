@@ -22,7 +22,7 @@ public class ZipLoader implements Loader {
 
     protected static final Pattern CLASS_SUFFIX_PATTERN = Pattern.compile("\\.class$");
 
-    private HashMap<String, byte[]> map = new HashMap<>();
+    private final HashMap<String, byte[]> map = new HashMap<>();
 
     public  ZipLoader(InputStream in) throws IOException {
         byte[] buffer = new byte[1024 * 2];
