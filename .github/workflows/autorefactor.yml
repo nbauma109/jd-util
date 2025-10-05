@@ -93,23 +93,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Ensure Tycho/OSGi versions are 1.2.0
+          # Align Tycho/OSGi to 1.2.0
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
-          # *** Fix ./build-cli copy lines ***
-          # cp ...plugin-2.0.0-SNAPSHOT.jar -> 1.2.0-SNAPSHOT
-          # cp ...cli-2.0.0-SNAPSHOT.jar    -> 1.2.0-SNAPSHOT
+          # Fix build-cli copy targets to 1.2.0 jars
           sed -i 's/org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar/org.autorefactor.plugin-1.2.0-SNAPSHOT.jar/' build-cli
           sed -i 's/org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar/org.autorefactor.cli-1.2.0-SNAPSHOT.jar/' build-cli
           chmod +x ./build-cli
-          echo "Patched build-cli:"
-          grep -n 'cp ./plugin/target' -n build-cli || true
 
       - name: Build AutoRefactorCli (Tycho reactor)
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
-      - name: Install AutoRefactor into Eclipse (p2 director)
+      - name: Install AutoRefactor feature into Eclipse (p2 director)
         id: p2
         shell: bash
         run: |
@@ -128,11 +124,11 @@ jobs:
             echo "::endgroup::"
           }
 
-          IUS="org.autorefactor.feature.feature.group,org.autorefactor.cli"
+          # Only install the feature group; the repo does NOT expose an IU named org.autorefactor.cli
           if ! timeout "${ECLIPSE_TIMEOUT_P2}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
                 -application org.eclipse.equinox.p2.director \
                 -repository "${REPOS}" \
-                -installIU "${IUS}" \
+                -installIU org.autorefactor.feature.feature.group \
                 -destination "${DEST}" \
                 -profile SDKProfile \
                 -profileProperties org.eclipse.update.install.features=true \
@@ -142,8 +138,24 @@ jobs:
             exit 1
           fi
 
+          # Show installed roots
           xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
             -application org.eclipse.equinox.p2.director -listInstalledRoots || true
+
+      - name: Drop CLI bundle into Eclipse dropins
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST="${{ steps.dl.outputs.home }}"
+          mkdir -p "${DEST}/dropins/plugins"
+          CLI_JAR="tools/AutoRefactorCli/cli/target/org.autorefactor.cli-1.2.0-SNAPSHOT.jar"
+          if [[ ! -f "$CLI_JAR" ]]; then
+            echo "Error: CLI jar not found at $CLI_JAR"
+            ls -la tools/AutoRefactorCli/cli/target || true
+            exit 1
+          fi
+          cp "$CLI_JAR" "${DEST}/dropins/plugins/"
+          echo "CLI bundle copied to ${DEST}/dropins/plugins/"
 
       - name: Collect all refactorings (hard timeout + full logs)
         id: collect
@@ -281,7 +293,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with JDK 8, installed into Eclipse Oxygen via p2 director (feature + CLI IU), then applied all available refactorings under a headless display. Timeouts guard against stalls; logs printed on failure.
+            Built AutoRefactorCli with JDK 8, installed the feature into Eclipse Oxygen via p2, then added the CLI bundle to Eclipse dropins. Listed all refactorings and applied them headlessly. Timeouts guard against stalls; logs printed on failure.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
