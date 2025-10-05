@@ -42,6 +42,7 @@ jobs:
     env:
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
       ECLIPSE_CMD: eclipse-oxygen-vanilla
+      TIMEOUT_WARMUP: "120"
       TIMEOUT_LIST: "180"
       TIMEOUT_APPLY: "900"
       SWT_GTK3: "0"
@@ -52,7 +53,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Checkout AutoRefactorCli (your fork)
+      - name: Checkout AutoRefactorCli (fork with version fix)
         uses: actions/checkout@v4
         with:
           repository: nbauma109/AutoRefactorCli
@@ -138,6 +139,44 @@ jobs:
             exit 1
           fi
 
+      - name: Warm up dropins (reconcile once)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ECLIPSE="${{ env.ECLIPSE_CMD }}"
+          DROPINS="$(cd tools/AutoRefactorCli/cli/target/autorefactor/dropins && pwd)"
+          WS="/tmp/workspace-warmup-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
+
+          dump_logs() {
+            echo "::group::Warm-up Eclipse logs"
+            shopt -s nullglob
+            for f in "$WS"/configuration/*.log; do
+              [[ -f "$f" ]] || continue
+              echo "----- $f -----"; cat "$f" || true
+            done
+            echo "::endgroup::"
+          }
+
+          set +e
+          timeout "${TIMEOUT_WARMUP}"s xvfb-run -a "${ECLIPSE}" -nosplash -consoleLog -initialize \
+            -data "$WS" \
+            -configuration "$WS/configuration" \
+            -application org.eclipse.equinox.p2.reconciler.application \
+            -product org.eclipse.platform.ide \
+            -vmargs -Xmx2000m \
+            -Dorg.eclipse.equinox.p2.reconciler.dropins=true \
+            -Dorg.eclipse.equinox.simpleconfigurator.exclusiveInstallation=false \
+            -Dorg.eclipse.equinox.p2.reconciler.dropins.directory="$DROPINS" > /tmp/_warmup.out 2>&1
+          status=$?
+          set -e
+
+          if [[ $status -ne 0 ]]; then
+            echo "Error: dropins warm-up failed (status=$status)."
+            echo "::group::warm-up stdout/stderr"; cat /tmp/_warmup.out || true; echo "::endgroup::"
+            dump_logs
+            exit 1
+          fi
+
       - name: Collect all refactorings (direct Eclipse; full logs on failure)
         id: collect
         shell: bash
@@ -159,10 +198,11 @@ jobs:
 
           echo "Starting 'list' (timeout=${TIMEOUT_LIST}s)"
           set +e
-          timeout "${TIMEOUT_LIST}"s xvfb-run -a "${ECLIPSE}" -nosplash -consoleLog -clean \
+          timeout "${TIMEOUT_LIST}"s xvfb-run -a "${ECLIPSE}" -nosplash -consoleLog \
             -data "$WS" \
             -configuration "$WS/configuration" \
             -application org.autorefactor.cli.AutoRefactor \
+            -product org.eclipse.platform.ide \
             --consolelog list \
             -vmargs -Xmx2000m \
             -Dorg.eclipse.equinox.p2.reconciler.dropins=true \
@@ -247,10 +287,11 @@ jobs:
 
           echo "Starting 'apply' (timeout=${TIMEOUT_APPLY}s)"
           set +e
-          timeout "${TIMEOUT_APPLY}"s xvfb-run -a "${ECLIPSE}" -nosplash -consoleLog -clean \
+          timeout "${TIMEOUT_APPLY}"s xvfb-run -a "${ECLIPSE}" -nosplash -consoleLog \
             -data "$WS" \
             -configuration "$WS/configuration" \
             -application org.autorefactor.cli.AutoRefactor \
+            -product org.eclipse.platform.ide \
             --consolelog "${ARGS[@]}" \
             -vmargs -Xmx2000m \
             -Dorg.eclipse.equinox.p2.reconciler.dropins=true \
@@ -287,7 +328,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli (1.2.0) from nbauma109/AutoRefactorCli and ran it headlessly on Eclipse Oxygen, wiring its packaged dropins via -vmargs. The workflow prints the contents of dropins/plugins and fails early if any required jars are missing. Full logs on failure; PR only when apply succeeds and changes exist.
+            Built AutoRefactorCli (1.2.0) and ran headlessly on Eclipse Oxygen. Dropins reconciled once up-front; subsequent runs avoid -clean. Full logs are printed on failure; a PR is created only when apply succeeds and changes exist.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
