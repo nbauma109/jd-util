@@ -4,17 +4,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * 1"   # Mondays 06:00 UTC
-  push:
-    branches: [ main, master ]
-    paths:
-      - "rewrite.yml"
-      - "**/*.java"
-      - "pom.xml"
-  pull_request:
-    paths:
-      - "rewrite.yml"
-      - "**/*.java"
-      - "pom.xml"
 
 permissions:
   contents: write
