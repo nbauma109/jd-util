@@ -64,8 +64,7 @@ public class AnnotationReference implements BaseAnnotationReference {
     public int hashCode() {
         int result = 970_748_295 + type.hashCode();
         result = 31 * result + Objects.hash(elementValue);
-        result = 31 * result + Objects.hash(elementValuePairs);
-        return result;
+        return 31 * result + Objects.hash(elementValuePairs);
     }
 
     @Override
