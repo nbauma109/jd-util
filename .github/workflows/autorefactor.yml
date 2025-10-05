@@ -173,4 +173,91 @@ jobs:
           PATH_FILTER="${{ inputs.path_filter }}"
           PATH_RE="${{ inputs.path_re }}"
           SOURCE_DIRS_RAW="${{ inputs.source_dirs }}"
-          SOURCE_LEVEL="${{_
+          SOURCE_LEVEL="${{ inputs.source_level }}"
+          CLASSPATH_VARS_RAW="${{ inputs.classpath_vars }}"
+          REFACTORINGS="$(cat /tmp/all_refactorings.txt)"
+          [[ -f "$PROJECT_FILE" ]]
+
+          declare -a ARGS
+          ARGS+=(apply --project "$PROJECT_FILE" --refactorings "$REFACTORINGS")
+          [[ -n "$EXCLUDE" ]] && ARGS+=(--exclude-refactorings "$EXCLUDE")
+          [[ -n "$PATH_FILTER" ]] && ARGS+=(--path-filter "$PATH_FILTER")
+          [[ -n "$PATH_RE" ]] && ARGS+=(--path-re "$PATH_RE")
+          [[ -n "$SOURCE_LEVEL" ]] && ARGS+=(--source-level "$SOURCE_LEVEL")
+          if [[ -n "$SOURCE_DIRS_RAW" ]]; then
+            while IFS= read -r line; do [[ -n "$line" ]] && ARGS+=(--source "$line"); done <<< "$SOURCE_DIRS_RAW"
+          fi
+          if [[ -n "$CLASSPATH_VARS_RAW" ]]; then
+            while IFS= read -r kv; do [[ -n "$kv" ]] && ARGS+=(--classpath-variable "$kv"); done <<< "$CLASSPATH_VARS_RAW"
+          fi
+          printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
+          echo "workspace=${{ steps.collect.outputs.workspace }}" >> "$GITHUB_OUTPUT"
+
+      - name: Apply refactorings (direct Eclipse; full logs on failure)
+        id: apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          ECLIPSE="${{ env.ECLIPSE_CMD }}"
+          DROPINS="$(cd tools/AutoRefactorCli/cli/target/autorefactor/dropins && pwd)"
+          WS="${{ steps.args.outputs.workspace }}"
+
+          dump_logs() {
+            echo "::group::Eclipse logs"
+            shopt -s nullglob
+            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
+              [[ -f "$f" ]] || continue
+              echo "----- $f -----"; cat "$f" || true
+            done
+            echo "::endgroup::"
+          }
+
+          mapfile -d '' ARGS < /tmp/autorefactor.args
+
+          echo "Starting 'apply' (timeout=${TIMEOUT_APPLY}s)"
+          set +e
+          timeout "${TIMEOUT_APPLY}"s xvfb-run -a "${ECLIPSE}" -nosplash -consoleLog -clean \
+            -data "$WS" \
+            -configuration "$WS/configuration" \
+            -application org.autorefactor.cli.AutoRefactor \
+            --consolelog "${ARGS[@]}" \
+            -vmargs -Xmx2000m \
+            -Dorg.eclipse.equinox.p2.reconciler.dropins=true \
+            -Dorg.eclipse.equinox.simpleconfigurator.exclusiveInstallation=false \
+            -Dorg.eclipse.equinox.p2.reconciler.dropins.directory="$DROPINS" > /tmp/_apply.out 2>&1
+          status=$?
+          set -e
+
+          if [[ $status -ne 0 ]]; then
+            echo "Error: 'apply' failed or timed out (status=$status)."
+            echo "::group::'apply' stdout/stderr"; cat /tmp/_apply.out || true; echo "::endgroup::"
+            dump_logs
+            pkill -9 -f 'org.eclipse.equinox.launcher' || true
+            pkill -9 -f 'Xvfb' || true
+            exit 1
+          fi
+
+      - name: Check for changes
+        id: gitdiff
+        run: |
+          git update-index -q --refresh
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR with changes
+        if: steps.apply.outcome == 'success' && steps.gitdiff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            chore(refactor): apply AutoRefactorCli (ALL refactorings)
+          title: "Apply AutoRefactorCli (ALL)"
+          body: |
+            Built AutoRefactorCli (1.2.0) from nbauma109/AutoRefactorCli and ran it headlessly on Eclipse Oxygen, wiring its packaged dropins via -vmargs (no runtime p2). Full logs printed on failure; PR only when apply succeeds and changes exist.
+          branch: "autorefactor/cli-all-${{ github.run_id }}"
+          delete-branch: true
+          add-paths: |
+            **/*
