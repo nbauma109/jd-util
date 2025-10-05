@@ -44,7 +44,7 @@ jobs:
       ECLIPSE_CMD: eclipse-oxygen-vanilla
       TIMEOUT_LIST: "180"
       TIMEOUT_APPLY: "900"
-      SWT_GTK3: "0"  # prefer GTK2 on CI
+      SWT_GTK3: "0"
 
     steps:
       - name: Checkout target repository
@@ -52,7 +52,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Checkout AutoRefactorCli (your fork with version fix)
+      - name: Checkout AutoRefactorCli (your fork)
         uses: actions/checkout@v4
         with:
           repository: nbauma109/AutoRefactorCli
@@ -92,7 +92,7 @@ jobs:
           chmod +x ./build-cli
           ./build-cli
 
-      - name: Ensure plugin.ui is present in dropins/plugins
+      - name: Ensure plugin.ui is present in packaged dropins
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
@@ -101,11 +101,42 @@ jobs:
           DEST="cli/target/autorefactor/dropins/plugins"
           mkdir -p "$DEST"
           if [[ ! -f "$UI_JAR" ]]; then
-            echo "plugin.ui jar missing, listing target:"; ls -la plugin.ui/target || true
+            echo "plugin.ui jar missing, listing module target:"; ls -la plugin.ui/target || true
             exit 1
           fi
           cp -f "$UI_JAR" "$DEST"/
-          echo "Dropins content:"; ls -la "$DEST"
+
+      - name: Verify dropins content (print and fail if jars missing)
+        working-directory: tools/AutoRefactorCli
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST="cli/target/autorefactor/dropins/plugins"
+          echo "== dropins/plugins =="
+          ls -la "$DEST" || true
+
+          NEED=("org.autorefactor.plugin-1.2.0-SNAPSHOT.jar" \
+                "org.autorefactor.plugin.ui-1.2.0-SNAPSHOT.jar" \
+                "org.autorefactor.cli-1.2.0-SNAPSHOT.jar")
+
+          MISSING=0
+          for f in "${NEED[@]}"; do
+            if [[ ! -f "$DEST/$f" ]]; then
+              echo "MISSING: $f"
+              MISSING=1
+            fi
+          done
+
+          if [[ $MISSING -ne 0 ]]; then
+            echo "At least one required jar is missing. Showing module targets for diagnostics:"
+            echo "== plugin/target =="
+            ls -la plugin/target || true
+            echo "== plugin.ui/target =="
+            ls -la plugin.ui/target || true
+            echo "== cli/target =="
+            ls -la cli/target || true
+            exit 1
+          fi
 
       - name: Collect all refactorings (direct Eclipse; full logs on failure)
         id: collect
@@ -256,7 +287,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli (1.2.0) from nbauma109/AutoRefactorCli and ran it headlessly on Eclipse Oxygen, wiring its packaged dropins via -vmargs (no runtime p2). Full logs printed on failure; PR only when apply succeeds and changes exist.
+            Built AutoRefactorCli (1.2.0) from nbauma109/AutoRefactorCli and ran it headlessly on Eclipse Oxygen, wiring its packaged dropins via -vmargs. The workflow prints the contents of dropins/plugins and fails early if any required jars are missing. Full logs on failure; PR only when apply succeeds and changes exist.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
