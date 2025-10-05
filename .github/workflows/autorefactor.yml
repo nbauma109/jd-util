@@ -12,11 +12,11 @@ on:
         required: false
         default: ""
       path_filter:
-        description: "Only refactor files whose path contains this string (optional)"
+        description: "Only refactor files whose path contains this (optional)"
         required: false
         default: ""
       path_re:
-        description: "Java regex to select files (optional; defaults to '.*' if empty)"
+        description: "Java regex to select files (optional; defaults to '.*')"
         required: false
         default: ""
       source_dirs:
@@ -24,7 +24,7 @@ on:
         required: false
         default: ""
       source_level:
-        description: "Java source level (e.g., 8, 11, 17)"
+        description: "Java source level"
         required: false
         default: "8"
       classpath_vars:
@@ -39,15 +39,12 @@ permissions:
 jobs:
   autorefactor:
     runs-on: ubuntu-latest
-
     env:
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
-      ECLIPSE_CMD: eclipse-oxygen-vanilla
-      OXYGEN_REPO: https://download.eclipse.org/releases/oxygen
-      ECLIPSE_TIMEOUT_P2: "180"
-      ECLIPSE_TIMEOUT_LIST: "180"
-      ECLIPSE_TIMEOUT_APPLY: "900"
-      SWT_GTK3: "0"
+      AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla     # used by the wrapper
+      TIMEOUT_LIST: "180"
+      TIMEOUT_APPLY: "900"
+      SWT_GTK3: "0"  # make SWT prefer GTK2 on CI to avoid quirks
 
     steps:
       - name: Checkout repository
@@ -62,20 +59,19 @@ jobs:
           path: tools/AutoRefactorCli
           fetch-depth: 0
 
-      - name: Set up JDK 8 (build/runtime)
+      - name: Set up JDK 8 (build & runtime)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 8
           cache: maven
 
-      - name: Install Xvfb (headless display)
+      - name: Install Xvfb (headless)
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb
 
       - name: Download Eclipse Oxygen
-        id: dl
         shell: bash
         run: |
           set -euo pipefail
@@ -84,9 +80,8 @@ jobs:
           tar -xzf eclipse.tar.gz
           ECLIPSE_DIR="$(find "$PWD" -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
-          echo "home=$ECLIPSE_DIR" >> "$GITHUB_OUTPUT"
-          sudo ln -sf "$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
-          which "${ECLIPSE_CMD}"
+          sudo ln -sf "$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
+          which "${AUTOREFACTOR_ECLIPSE}"
 
       - name: Patch versions + build script to 1.2.0
         working-directory: tools/AutoRefactorCli
@@ -105,82 +100,43 @@ jobs:
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
-      - name: Install AutoRefactor feature into Eclipse (p2 director)
-        id: p2
+      - name: Ensure plugin.ui is present in dropins/plugins
+        working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
           set -euo pipefail
-          REPO="$(cd tools/AutoRefactorCli/repository/target/repository && pwd)"
-          DEST="${{ steps.dl.outputs.home }}"
-          REPOS="file:${REPO},${OXYGEN_REPO}"
-
-          dump_logs() {
-            echo "::group::P2/Eclipse logs"
-            shopt -s nullglob
-            for f in "${DEST}"/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
-              [[ -f "$f" ]] || continue
-              echo "----- $f -----"; cat "$f" || true
-            done
-            echo "::endgroup::"
-          }
-
-          # Only install the feature group; the repo does NOT expose an IU named org.autorefactor.cli
-          if ! timeout "${ECLIPSE_TIMEOUT_P2}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
-                -application org.eclipse.equinox.p2.director \
-                -repository "${REPOS}" \
-                -installIU org.autorefactor.feature.feature.group \
-                -destination "${DEST}" \
-                -profile SDKProfile \
-                -profileProperties org.eclipse.update.install.features=true \
-                -roaming; then
-            echo "Error: P2 installation failed from ${REPO} into ${DEST}"
-            dump_logs
+          UI_JAR="plugin.ui/target/org.autorefactor.plugin.ui-1.2.0-SNAPSHOT.jar"
+          DEST="cli/target/autorefactor/dropins/plugins"
+          mkdir -p "$DEST"
+          if [[ ! -f "$UI_JAR" ]]; then
+            echo "plugin.ui jar missing, listing target:"; ls -la plugin.ui/target || true
             exit 1
           fi
+          cp -f "$UI_JAR" "$DEST"/
+          echo "Dropins content:"; ls -la "$DEST"
 
-          # Show installed roots
-          xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
-            -application org.eclipse.equinox.p2.director -listInstalledRoots || true
-
-      - name: Drop CLI bundle into Eclipse dropins
-        shell: bash
-        run: |
-          set -euo pipefail
-          DEST="${{ steps.dl.outputs.home }}"
-          mkdir -p "${DEST}/dropins/plugins"
-          CLI_JAR="tools/AutoRefactorCli/cli/target/org.autorefactor.cli-1.2.0-SNAPSHOT.jar"
-          if [[ ! -f "$CLI_JAR" ]]; then
-            echo "Error: CLI jar not found at $CLI_JAR"
-            ls -la tools/AutoRefactorCli/cli/target || true
-            exit 1
-          fi
-          cp "$CLI_JAR" "${DEST}/dropins/plugins/"
-          echo "CLI bundle copied to ${DEST}/dropins/plugins/"
-
-      - name: Collect all refactorings (hard timeout + full logs)
+      - name: Warm up & list refactorings (via wrapper; dump logs on failure)
         id: collect
         shell: bash
+        env:
+          AUTOREFACTOR_ECLIPSE: ${{ env.AUTOREFACTOR_ECLIPSE }}
         run: |
           set -euo pipefail
-          WS="/tmp/workspace-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
+          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
 
           dump_logs() {
             echo "::group::Eclipse/AutoRefactor logs"
             shopt -s nullglob
-            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
+            for f in /tmp/workspace*/configuration/*.log; do
               [[ -f "$f" ]] || continue
               echo "----- $f -----"; cat "$f" || true
             done
             echo "::endgroup::"
           }
 
-          echo "Starting 'list' (timeout=${ECLIPSE_TIMEOUT_LIST}s)"
+          echo "Starting 'list' (timeout=${TIMEOUT_LIST}s)"
           set +e
-          timeout "${ECLIPSE_TIMEOUT_LIST}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog -clean \
-            -data "$WS" \
-            -configuration "$WS/configuration" \
-            -application org.autorefactor.cli.AutoRefactor \
-            --consolelog list > /tmp/_list.out 2>&1
+          timeout "${TIMEOUT_LIST}"s xvfb-run -a "$BIN" --consolelog list > /tmp/_list.out 2>&1
           status=$?
           set -e
 
@@ -204,7 +160,6 @@ jobs:
 
           REFS=$(IFS=, ; echo "${NAMES[*]}")
           echo "refactorings=$REFS" >> "$GITHUB_OUTPUT"
-          echo "workspace=$WS" >> "$GITHUB_OUTPUT"
           printf '%s' "$REFS" > /tmp/all_refactorings.txt
 
       - name: Prepare arguments
@@ -235,18 +190,21 @@ jobs:
             while IFS= read -r kv; do [[ -n "$kv" ]] && ARGS+=(--classpath-variable "$kv"); done <<< "$CLASSPATH_VARS_RAW"
           fi
           printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
+          echo "rendered=$(printf '%q ' autorefactor --consolelog "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
 
-      - name: Apply refactorings (hard timeout + full logs)
+      - name: Apply refactorings (via wrapper; dump logs on failure)
         id: apply
         shell: bash
+        env:
+          AUTOREFACTOR_ECLIPSE: ${{ env.AUTOREFACTOR_ECLIPSE }}
         run: |
           set -euo pipefail
-          WS="${{ steps.collect.outputs.workspace }}"
+          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
 
           dump_logs() {
             echo "::group::Eclipse/AutoRefactor logs"
             shopt -s nullglob
-            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log /home/runner/work/_temp/eclipse/configuration/*.log; do
+            for f in /tmp/workspace*/configuration/*.log; do
               [[ -f "$f" ]] || continue
               echo "----- $f -----"; cat "$f" || true
             done
@@ -255,13 +213,9 @@ jobs:
 
           mapfile -d '' ARGS < /tmp/autorefactor.args
 
-          echo "Starting 'apply' (timeout=${ECLIPSE_TIMEOUT_APPLY}s)"
+          echo "Starting 'apply' (timeout=${TIMEOUT_APPLY}s)"
           set +e
-          timeout "${ECLIPSE_TIMEOUT_APPLY}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash -consoleLog -clean \
-            -data "$WS" \
-            -configuration "$WS/configuration" \
-            -application org.autorefactor.cli.AutoRefactor \
-            --consolelog "${ARGS[@]}" > /tmp/_apply.out 2>&1
+          timeout "${TIMEOUT_APPLY}"s xvfb-run -a "$BIN" --consolelog "${ARGS[@]}" > /tmp/_apply.out 2>&1
           status=$?
           set -e
 
@@ -293,7 +247,7 @@ jobs:
             chore(refactor): apply AutoRefactorCli (ALL refactorings)
           title: "Apply AutoRefactorCli (ALL)"
           body: |
-            Built AutoRefactorCli with JDK 8, installed the feature into Eclipse Oxygen via p2, then added the CLI bundle to Eclipse dropins. Listed all refactorings and applied them headlessly. Timeouts guard against stalls; logs printed on failure.
+            Built AutoRefactorCli (1.2.0), ensured plugin.ui is present in the packaged dropins, and ran the CLI under Eclipse Oxygen headlessly (no p2 install). Full logs printed on failures; PR only when apply succeeds and changes are present.
           branch: "autorefactor/cli-all-${{ github.run_id }}"
           delete-branch: true
           add-paths: |
