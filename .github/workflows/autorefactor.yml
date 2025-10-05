@@ -41,15 +41,12 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Eclipse Oxygen Java package (contains JDT)
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
       ECLIPSE_CMD: eclipse-oxygen-vanilla
       OXYGEN_REPO: https://download.eclipse.org/releases/oxygen
-      # Tight timeouts (seconds)
       ECLIPSE_TIMEOUT_P2: "180"
       ECLIPSE_TIMEOUT_LIST: "180"
       ECLIPSE_TIMEOUT_APPLY: "900"
-      # Reduce GTK quirks on CI
       SWT_GTK3: "0"
 
     steps:
@@ -91,20 +88,27 @@ jobs:
           sudo ln -sf "$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
           which "${ECLIPSE_CMD}"
 
-      - name: Patch versions (align to 1.2.0)
+      - name: Patch versions + build script to 1.2.0
         working-directory: tools/AutoRefactorCli
         shell: bash
         run: |
-          # Ensure Tycho and OSGi versions are consistent with 1.2.0
+          set -euo pipefail
+          # Ensure Tycho/OSGi versions are 1.2.0
           sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
           sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
+          # *** Fix ./build-cli copy lines ***
+          # cp ...plugin-2.0.0-SNAPSHOT.jar -> 1.2.0-SNAPSHOT
+          # cp ...cli-2.0.0-SNAPSHOT.jar    -> 1.2.0-SNAPSHOT
+          sed -i 's/org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar/org.autorefactor.plugin-1.2.0-SNAPSHOT.jar/' build-cli
+          sed -i 's/org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar/org.autorefactor.cli-1.2.0-SNAPSHOT.jar/' build-cli
           chmod +x ./build-cli
+          echo "Patched build-cli:"
+          grep -n 'cp ./plugin/target' -n build-cli || true
 
       - name: Build AutoRefactorCli (Tycho reactor)
         working-directory: tools/AutoRefactorCli
         run: ./build-cli
 
-      # Install into Eclipse via p2 director (no dropins reliance)
       - name: Install AutoRefactor into Eclipse (p2 director)
         id: p2
         shell: bash
@@ -124,9 +128,7 @@ jobs:
             echo "::endgroup::"
           }
 
-          # Install the feature group and the CLI bundle IU (defensive: some repos split them)
           IUS="org.autorefactor.feature.feature.group,org.autorefactor.cli"
-
           if ! timeout "${ECLIPSE_TIMEOUT_P2}"s xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
                 -application org.eclipse.equinox.p2.director \
                 -repository "${REPOS}" \
@@ -140,7 +142,6 @@ jobs:
             exit 1
           fi
 
-          # Show installed roots for diagnostics
           xvfb-run -a "${ECLIPSE_CMD}" -nosplash \
             -application org.eclipse.equinox.p2.director -listInstalledRoots || true
 
