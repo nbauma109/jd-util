@@ -41,21 +41,21 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ECLIPSE_TAR: https://archive.eclipse.org/technology/epp/downloads/release/oxygen/R/eclipse-java-oxygen-R-linux-gtk-x86_64.tar.gz
-      AUTOREFACTOR_ECLIPSE: eclipse-oxygen-vanilla     # used by the wrapper
+      ECLIPSE_CMD: eclipse-oxygen-vanilla
       TIMEOUT_LIST: "180"
       TIMEOUT_APPLY: "900"
-      SWT_GTK3: "0"  # make SWT prefer GTK2 on CI to avoid quirks
+      SWT_GTK3: "0"  # prefer GTK2 on CI
 
     steps:
-      - name: Checkout repository
+      - name: Checkout target repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Checkout AutoRefactorCli sources
+      - name: Checkout AutoRefactorCli (your fork with version fix)
         uses: actions/checkout@v4
         with:
-          repository: cal101/AutoRefactorCli
+          repository: nbauma109/AutoRefactorCli
           path: tools/AutoRefactorCli
           fetch-depth: 0
 
@@ -66,12 +66,13 @@ jobs:
           java-version: 8
           cache: maven
 
-      - name: Install Xvfb (headless)
+      - name: Install Xvfb
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb
 
       - name: Download Eclipse Oxygen
+        id: dl
         shell: bash
         run: |
           set -euo pipefail
@@ -80,25 +81,16 @@ jobs:
           tar -xzf eclipse.tar.gz
           ECLIPSE_DIR="$(find "$PWD" -maxdepth 1 -type d -name 'eclipse*' | head -n1)"
           [[ -x "$ECLIPSE_DIR/eclipse" ]]
-          sudo ln -sf "$ECLIPSE_DIR/eclipse" "/usr/local/bin/${AUTOREFACTOR_ECLIPSE}"
-          which "${AUTOREFACTOR_ECLIPSE}"
-
-      - name: Patch versions + build script to 1.2.0
-        working-directory: tools/AutoRefactorCli
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Align Tycho/OSGi to 1.2.0
-          sed -i 's|<version>2\.0\.0-SNAPSHOT</version>|<version>1.2.0-SNAPSHOT</version>|g' cli/pom.xml
-          sed -i 's|^Bundle-Version:\s*2\.0\.0\.qualifier$|Bundle-Version: 1.2.0.qualifier|g' cli/META-INF/MANIFEST.MF
-          # Fix build-cli copy targets to 1.2.0 jars
-          sed -i 's/org\.autorefactor\.plugin-2\.0\.0-SNAPSHOT\.jar/org.autorefactor.plugin-1.2.0-SNAPSHOT.jar/' build-cli
-          sed -i 's/org\.autorefactor\.cli-2\.0\.0-SNAPSHOT\.jar/org.autorefactor.cli-1.2.0-SNAPSHOT.jar/' build-cli
-          chmod +x ./build-cli
+          echo "home=$ECLIPSE_DIR" >> "$GITHUB_OUTPUT"
+          sudo ln -sf "$ECLIPSE_DIR/eclipse" "/usr/local/bin/${ECLIPSE_CMD}"
+          which "${ECLIPSE_CMD}"
 
       - name: Build AutoRefactorCli (Tycho reactor)
         working-directory: tools/AutoRefactorCli
-        run: ./build-cli
+        run: |
+          set -euo pipefail
+          chmod +x ./build-cli
+          ./build-cli
 
       - name: Ensure plugin.ui is present in dropins/plugins
         working-directory: tools/AutoRefactorCli
@@ -115,19 +107,19 @@ jobs:
           cp -f "$UI_JAR" "$DEST"/
           echo "Dropins content:"; ls -la "$DEST"
 
-      - name: Warm up & list refactorings (via wrapper; dump logs on failure)
+      - name: Collect all refactorings (direct Eclipse; full logs on failure)
         id: collect
         shell: bash
-        env:
-          AUTOREFACTOR_ECLIPSE: ${{ env.AUTOREFACTOR_ECLIPSE }}
         run: |
           set -euo pipefail
-          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
+          ECLIPSE="${{ env.ECLIPSE_CMD }}"
+          DROPINS="$(cd tools/AutoRefactorCli/cli/target/autorefactor/dropins && pwd)"
+          WS="/tmp/workspace-$(head -c6 /dev/urandom | tr -dc 'a-z0-9')"
 
           dump_logs() {
-            echo "::group::Eclipse/AutoRefactor logs"
+            echo "::group::Eclipse logs"
             shopt -s nullglob
-            for f in /tmp/workspace*/configuration/*.log; do
+            for f in "$WS"/configuration/*.log /tmp/workspace*/configuration/*.log; do
               [[ -f "$f" ]] || continue
               echo "----- $f -----"; cat "$f" || true
             done
@@ -136,7 +128,15 @@ jobs:
 
           echo "Starting 'list' (timeout=${TIMEOUT_LIST}s)"
           set +e
-          timeout "${TIMEOUT_LIST}"s xvfb-run -a "$BIN" --consolelog list > /tmp/_list.out 2>&1
+          timeout "${TIMEOUT_LIST}"s xvfb-run -a "${ECLIPSE}" -nosplash -consoleLog -clean \
+            -data "$WS" \
+            -configuration "$WS/configuration" \
+            -application org.autorefactor.cli.AutoRefactor \
+            --consolelog list \
+            -vmargs -Xmx2000m \
+            -Dorg.eclipse.equinox.p2.reconciler.dropins=true \
+            -Dorg.eclipse.equinox.simpleconfigurator.exclusiveInstallation=false \
+            -Dorg.eclipse.equinox.p2.reconciler.dropins.directory="$DROPINS" > /tmp/_list.out 2>&1
           status=$?
           set -e
 
@@ -160,6 +160,7 @@ jobs:
 
           REFS=$(IFS=, ; echo "${NAMES[*]}")
           echo "refactorings=$REFS" >> "$GITHUB_OUTPUT"
+          echo "workspace=$WS" >> "$GITHUB_OUTPUT"
           printf '%s' "$REFS" > /tmp/all_refactorings.txt
 
       - name: Prepare arguments
@@ -172,83 +173,4 @@ jobs:
           PATH_FILTER="${{ inputs.path_filter }}"
           PATH_RE="${{ inputs.path_re }}"
           SOURCE_DIRS_RAW="${{ inputs.source_dirs }}"
-          SOURCE_LEVEL="${{ inputs.source_level }}"
-          CLASSPATH_VARS_RAW="${{ inputs.classpath_vars }}"
-          REFACTORINGS="$(cat /tmp/all_refactorings.txt)"
-          [[ -f "$PROJECT_FILE" ]]
-
-          declare -a ARGS
-          ARGS+=(apply --project "$PROJECT_FILE" --refactorings "$REFACTORINGS")
-          [[ -n "$EXCLUDE" ]] && ARGS+=(--exclude-refactorings "$EXCLUDE")
-          [[ -n "$PATH_FILTER" ]] && ARGS+=(--path-filter "$PATH_FILTER")
-          [[ -n "$PATH_RE" ]] && ARGS+=(--path-re "$PATH_RE")
-          [[ -n "$SOURCE_LEVEL" ]] && ARGS+=(--source-level "$SOURCE_LEVEL")
-          if [[ -n "$SOURCE_DIRS_RAW" ]]; then
-            while IFS= read -r line; do [[ -n "$line" ]] && ARGS+=(--source "$line"); done <<< "$SOURCE_DIRS_RAW"
-          fi
-          if [[ -n "$CLASSPATH_VARS_RAW" ]]; then
-            while IFS= read -r kv; do [[ -n "$kv" ]] && ARGS+=(--classpath-variable "$kv"); done <<< "$CLASSPATH_VARS_RAW"
-          fi
-          printf '%s\0' "${ARGS[@]}" > /tmp/autorefactor.args
-          echo "rendered=$(printf '%q ' autorefactor --consolelog "${ARGS[@]}")" >> "$GITHUB_OUTPUT"
-
-      - name: Apply refactorings (via wrapper; dump logs on failure)
-        id: apply
-        shell: bash
-        env:
-          AUTOREFACTOR_ECLIPSE: ${{ env.AUTOREFACTOR_ECLIPSE }}
-        run: |
-          set -euo pipefail
-          BIN="tools/AutoRefactorCli/cli/target/autorefactor/bin/autorefactor"
-
-          dump_logs() {
-            echo "::group::Eclipse/AutoRefactor logs"
-            shopt -s nullglob
-            for f in /tmp/workspace*/configuration/*.log; do
-              [[ -f "$f" ]] || continue
-              echo "----- $f -----"; cat "$f" || true
-            done
-            echo "::endgroup::"
-          }
-
-          mapfile -d '' ARGS < /tmp/autorefactor.args
-
-          echo "Starting 'apply' (timeout=${TIMEOUT_APPLY}s)"
-          set +e
-          timeout "${TIMEOUT_APPLY}"s xvfb-run -a "$BIN" --consolelog "${ARGS[@]}" > /tmp/_apply.out 2>&1
-          status=$?
-          set -e
-
-          if [[ $status -ne 0 ]]; then
-            echo "Error: 'apply' failed or timed out (status=$status)."
-            echo "::group::'apply' stdout/stderr"; cat /tmp/_apply.out || true; echo "::endgroup::"
-            dump_logs
-            pkill -9 -f 'org.eclipse.equinox.launcher' || true
-            pkill -9 -f 'Xvfb' || true
-            exit 1
-          fi
-
-      - name: Check for changes
-        id: gitdiff
-        run: |
-          git update-index -q --refresh
-          if git diff --quiet; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create PR with changes
-        if: steps.apply.outcome == 'success' && steps.gitdiff.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: |
-            chore(refactor): apply AutoRefactorCli (ALL refactorings)
-          title: "Apply AutoRefactorCli (ALL)"
-          body: |
-            Built AutoRefactorCli (1.2.0), ensured plugin.ui is present in the packaged dropins, and ran the CLI under Eclipse Oxygen headlessly (no p2 install). Full logs printed on failures; PR only when apply succeeds and changes are present.
-          branch: "autorefactor/cli-all-${{ github.run_id }}"
-          delete-branch: true
-          add-paths: |
-            **/*
+          SOURCE_LEVEL="${{_
