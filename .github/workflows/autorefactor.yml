@@ -290,7 +290,7 @@ jobs:
 
       - name: Create PR with changes
         if: steps.apply.outcome == 'success' && steps.gitdiff.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: |

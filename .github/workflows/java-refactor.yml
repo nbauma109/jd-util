@@ -62,7 +62,7 @@ jobs:
         run: mvn -q -DskipTests package
 
       - name: Create Pull Request with changes
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           branch: ci/openrewrite-refactors
           token: ${{ secrets.PAT_TOKEN }}
