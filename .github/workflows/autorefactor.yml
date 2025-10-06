@@ -49,12 +49,12 @@ jobs:
 
     steps:
       - name: Checkout target repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Checkout AutoRefactorCli (fork with version fix)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: nbauma109/AutoRefactorCli
           path: tools/AutoRefactorCli
