@@ -11,10 +11,8 @@ MAX_FILE_KB="${MAX_FILE_KB:-120}"
 if [[ -n "$USER_PROMPT" ]]; then
   printf "%s" "$USER_PROMPT" > .llm_prompt.txt
 elif [[ -f ".github/llm_prompt.md" ]]; then
-  # use repo prompt file
   cat .github/llm_prompt.md > .llm_prompt.txt
 else
-  # safe default via heredoc (no chance of being “run”)
   cat > .llm_prompt.txt <<'PROMPT'
 You are an expert engineer acting as a careful, minimal-change code improver.
 - Make small, safe improvements: correctness fixes, clearer names, missing edge checks, micro-perf wins, docstrings.
@@ -27,17 +25,20 @@ fi
 IGNORE_FILE=".github/llm_ignore.txt"
 ignore=()
 if [[ -f "$IGNORE_FILE" ]]; then
+  # ignore blank lines and comments
   mapfile -t ignore < <(grep -v '^\s*$' "$IGNORE_FILE" | grep -v '^\s*#' || true)
 fi
 
-# 3) Candidate files (text-y) minus common build/vendor dirs
+# 3) Candidate files (tolerate 0 matches)
+# NOTE: the final '|| true' prevents pipefail from killing the script when grep finds no matches
 mapfile -t candidates < <(
   git ls-files \
     | grep -E '\.(py|js|ts|tsx|jsx|json|yml|yaml|md|go|rs|java|kt|kts|cs|cpp|cxx|cc|c|h|hpp|m|mm|rb|php|sh|bash|zsh|toml|ini|cfg|txt|sql|css|scss|vue|svelte|swift)$' \
-    | grep -Ev '^(vendor/|dist/|build/|out/|\.next/|node_modules/|target/|\.venv/|venv/|\.git/|coverage/|\.tox/|__pycache__/|\.pytest_cache/)'
+    | grep -Ev '^(vendor/|dist/|build/|out/|\.next/|node_modules/|target/|\.venv/|venv/|\.git/|coverage/|\.tox/|__pycache__/|\.pytest_cache/)' \
+    || true
 )
 
-# 4) Apply ignore list
+# 4) Apply ignore list (still fine if 'candidates' is empty)
 if (( ${#ignore[@]} > 0 )); then
   filtered=()
   for f in "${candidates[@]}"; do
@@ -50,7 +51,7 @@ if (( ${#ignore[@]} > 0 )); then
   candidates=("${filtered[@]}")
 fi
 
-# 5) Save bounded file list
+# 5) Save bounded file list (always create the file)
 : > .llm_files.txt
 count=0
 for f in "${candidates[@]}"; do
@@ -59,9 +60,10 @@ for f in "${candidates[@]}"; do
   [[ "$count" -ge "$MAX_FILES" ]] && break
 done
 
-# 6) Build truncated context
+# 6) Build truncated context (always create the file)
 cap_per=$(( MAX_FILE_KB * 1024 ))
 : > .llm_context.txt
+
 while IFS= read -r f; do
   [[ -f "$f" ]] || continue
   {
@@ -75,7 +77,9 @@ while IFS= read -r f; do
   else
     cat "$f" >> .llm_context.txt
   fi
-  # stop if context grows beyond MAX_TOTAL_KB
   current=$(wc -c < .llm_context.txt)
   (( current >= MAX_TOTAL_KB * 1024 )) && break
 done < .llm_files.txt
+
+# 7) Friendly log (does not affect exit status)
+echo "Prepared prompt (.llm_prompt.txt), file list ($(wc -l < .llm_files.txt) files), and context ($(wc -c < .llm_context.txt) bytes)."
