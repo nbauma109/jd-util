@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       user_prompt:
-        description: "Prompt/instructions for the local LLM (e.g., tighten types, small perf fixes, docstrings)."
+        description: "Prompt for the LLM (e.g., add docstrings, improve TS types, small perf fixes)"
         required: false
         type: string
       model:
@@ -13,7 +13,7 @@ on:
         default: "llama3.2:3b"
         type: string
       base_branch:
-        description: "Target base branch for the suggestions PR (defaults to repo default branch)"
+        description: "Base branch for the suggestions PR (defaults to repo default branch)"
         required: false
         type: string
       max_files:
@@ -32,8 +32,8 @@ on:
         default: "800"
         type: string
   schedule:
-    # NOTE: GitHub cron is UTC. Adjust as needed.
-    - cron: "30 5 * * *"  # daily at 05:30 UTC
+    # Runs daily at 05:30 UTC
+    - cron: "30 5 * * *"
 
 permissions:
   contents: write
@@ -43,10 +43,11 @@ jobs:
   suggest:
     runs-on: ubuntu-latest
     env:
-      LLM_MODEL: ${{ inputs.model || 'llama3.2:3b' }}
-      MAX_FILES: ${{ inputs.max_files || '50' }}
-      MAX_FILE_KB: ${{ inputs.max_file_kb || '120' }}
-      MAX_TOTAL_KB: ${{ inputs.max_total_kb || '800' }}
+      # Inputs have defaults above; no need for "||" expressions that can confuse YAML.
+      LLM_MODEL: ${{ inputs.model }}
+      MAX_FILES: ${{ inputs.max_files }}
+      MAX_FILE_KB: ${{ inputs.max_file_kb }}
+      MAX_TOTAL_KB: ${{ inputs.max_total_kb }}
       COMMIT_MESSAGE: "chore(llm): apply local LLM suggestions"
       PR_TITLE_PREFIX: "LLM suggestions"
     steps:
@@ -66,7 +67,7 @@ jobs:
             base="$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')"
             base="${base:-main}"
           fi
-          echo "base=${base}" >> $GITHUB_OUTPUT
+          echo "base=${base}" >> "$GITHUB_OUTPUT"
           echo "Using base branch: ${base}"
 
       - name: Install tools
@@ -84,198 +85,36 @@ jobs:
           echo "Pulling model: ${LLM_MODEL}"
           ollama pull "${LLM_MODEL}"
 
-      - name: Build prompt and file list
+      - name: Prepare prompt and file list
         id: prep
-        shell: bash
+        env:
+          USER_PROMPT: ${{ inputs.user_prompt }}
+          BASE_BRANCH: ${{ steps.base.outputs.base }}
+          MAX_FILES: ${{ env.MAX_FILES }}
+          MAX_FILE_KB: ${{ env.MAX_FILE_KB }}
+          MAX_TOTAL_KB: ${{ env.MAX_TOTAL_KB }}
         run: |
-          set -euo pipefail
+          bash .github/scripts/llm_prep.sh
+          echo "files_count=$(wc -l < .llm_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
 
-          # Determine prompt: input -> repo file -> default
-          PROMPT_INPUT="${{ inputs.user_prompt || '' }}"
-          if [ -n "$PROMPT_INPUT" ]; then
-            PROMPT="$PROMPT_INPUT"
-          elif [ -f ".github/llm_prompt.md" ]; then
-            PROMPT="$(cat .github/llm_prompt.md)"
-          else
-            PROMPT=$'You are an expert engineer acting as a careful, minimal-change code improver.\n'\
-                   $'- Make small, safe improvements: correctness fixes, clearer names, missing edge checks, micro-perf wins, docstrings.\n'\
-                   $'- Preserve style and public APIs. Do not reformat entire files or introduce deps.\n'\
-                   $'- Keep changes incremental and self-contained.\n'
-          fi
-          printf "%s" "$PROMPT" > .llm_prompt.txt
-
-          # Ignore patterns (optional)
-          IGNORE_FILE=".github/llm_ignore.txt"
-          if [ -f "$IGNORE_FILE" ]; then
-            mapfile -t ignore < <(grep -v '^\s*$' "$IGNORE_FILE" | grep -v '^\s*#' || true)
-          else
-            ignore=()
-          fi
-
-          # Candidate source files (texty), ignoring common vendor/build dirs
-          mapfile -t candidates < <(
-            git ls-files \
-              | grep -E '\.(py|js|ts|tsx|jsx|json|yml|yaml|md|go|rs|java|kt|kts|cs|cpp|cxx|cc|c|h|hpp|m|mm|rb|php|sh|bash|zsh|toml|ini|cfg|txt|sql|css|scss|vue|svelte|swift)$' \
-              | grep -Ev '^(vendor/|dist/|build/|out/|.next/|node_modules/|target/|.venv/|venv/|.git/|coverage/|.tox/|__pycache__/|.pytest_cache/)' \
-          )
-
-          # Apply ignore patterns
-          if [ ${#ignore[@]} -gt 0 ]; then
-            filtered=()
-            for f in "${candidates[@]}"; do
-              skip=0
-              for pat in "${ignore[@]}"; do
-                if [[ "$f" == $pat ]]; then skip=1; break; fi
-              done
-              [ $skip -eq 0 ] && filtered+=("$f")
-            done
-            candidates=("${filtered[@]}")
-          fi
-
-          # Keep it deterministic but bounded
-          MAX_FILES=${MAX_FILES}
-          files=("${candidates[@]:0:$MAX_FILES}")
-
-          # Save list
-          printf "%s\n" "${files[@]}" > .llm_files.txt
-          echo "files_count=${#files[@]}" >> $GITHUB_OUTPUT
-          echo "Prepared ${#files[@]} files for consideration."
-
-      - name: Generate unified diff with local LLM
+      - name: Generate diff with local LLM
         id: gen
         env:
           LLM_MODEL: ${{ env.LLM_MODEL }}
-          MAX_FILE_KB: ${{ env.MAX_FILE_KB }}
-          MAX_TOTAL_KB: ${{ env.MAX_TOTAL_KB }}
-        shell: bash
         run: |
-          set -euo pipefail
+          python .github/scripts/llm_generate.py
 
-          bytes_left=$(( ${MAX_TOTAL_KB} * 1024 ))
-          cap_per=$(( ${MAX_FILE_KB} * 1024 ))
-
-          build_slice () {
-            local f="$1"
-            local size
-            size=$(wc -c <"$f" || echo 0)
-            if [ "$size" -gt "$cap_per" ]; then
-              head -c "$cap_per" "$f"
-            else
-              cat "$f"
-            fi
-          }
-
-          # Compose context packet
-          : > .llm_context.txt
-          while IFS= read -r f; do
-            [ -f "$f" ] || continue
-            echo -e "\n===== FILE: $f =====\n" >> .llm_context.txt
-            build_slice "$f" >> .llm_context.txt || true
-            sz=$(wc -c < .llm_context.txt)
-            if [ "$sz" -ge $(( ${MAX_TOTAL_KB} * 1024 )) ]; then
-              break
-            fi
-          done < .llm_files.txt
-
-          echo "Context bytes:"
-          wc -c .llm_context.txt || true
-
-          python - <<'PY'
-import os, json, requests, sys, pathlib
-prompt = pathlib.Path(".llm_prompt.txt").read_text(encoding="utf-8")
-ctx = pathlib.Path(".llm_context.txt").read_text(encoding="utf-8", errors="ignore")
-model = os.environ.get("LLM_MODEL","llama3.2:3b")
-payload = {
-  "model": model,
-  "system": (
-    "Return ONLY a single valid unified diff that applies with `patch -p0`.\n"
-    "Keep edits minimal and safe. If no changes are warranted, output NO_CHANGES."
-  ),
-  "prompt": f"{prompt}\n\nPROJECT SNAPSHOT (truncated files):\n{ctx}\n\nNow output the unified diff:",
-  "options": {"temperature": 0.1}
-}
-r = requests.post("http://localhost:11434/api/generate", json=payload, stream=True, timeout=900)
-r.raise_for_status()
-out=[]
-for line in r.iter_lines():
-    if not line: continue
-    obj=json.loads(line.decode())
-    if "response" in obj: out.append(obj["response"])
-    if obj.get("done"): break
-txt="".join(out).strip()
-open(".llm_raw.txt","w",encoding="utf-8").write(txt)
-PY
-
-          if grep -qx 'NO_CHANGES' .llm_raw.txt; then
-            echo "no_changes=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Extract only the diff region
-          awk '/^---\s+a\//,0' .llm_raw.txt > .llm_patch.diff || true
-
-          if ! grep -q '^--- a/' .llm_patch.diff; then
-            echo "Model did not return a valid unified diff. Marking as no changes."
-            echo "no_changes=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Dry-run apply
-          if ! patch -p0 --dry-run < .llm_patch.diff ; then
-            echo "Patch fails to apply cleanly. Marking as no changes."
-            echo "no_changes=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          echo "no_changes=false" >> $GITHUB_OUTPUT
-
-      - name: Apply patch, commit, push, and open PR
-        if: steps.gen.outputs.no_changes == 'false'
+      - name: Validate, apply, commit, and open PR
+        id: apply
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
+          LLM_MODEL: ${{ env.LLM_MODEL }}
+          BASE_BRANCH: ${{ steps.base.outputs.base }}
+          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
+          PR_TITLE_PREFIX: ${{ env.PR_TITLE_PREFIX }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-
-          # Apply for real
-          patch -p0 < .llm_patch.diff
-
-          # Branch name
-          base='${{ steps.base.outputs.base }}'
-          SHORTSHA=$(git rev-parse --short HEAD)
-          DATESTR=$(date -u +%Y%m%d-%H%M%S)
-          BOT_BRANCH="llm/suggest-${DATESTR}-${SHORTSHA}"
-
-          git checkout -b "${BOT_BRANCH}"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "Nothing to commit after applying patch."; exit 0
-          fi
-
-          git -c user.name="github-actions[bot]" \
-              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-              commit -m "${COMMIT_MESSAGE}"
-          git push -u origin "${BOT_BRANCH}"
-
-          # PR title/body
-          TITLE="${PR_TITLE_PREFIX}: ${base}"
-          {
-            echo "Automated suggestions generated by a **fully local LLM** via Ollama (\`${LLM_MODEL}\`)."
-            echo
-            echo "<details><summary>Unified diff applied</summary>"
-            echo
-            echo '```diff'
-            sed -n '1,400p' .llm_patch.diff
-            echo '```'
-            echo "</details>"
-          } > .llm_body.md
-
-          gh pr create \
-            --title "${TITLE}" \
-            --body-file .llm_body.md \
-            --base "${base}" \
-            --head "${BOT_BRANCH}"
+          bash .github/scripts/llm_validate_apply.sh
 
       - name: No-op note
-        if: steps.gen.outputs.no_changes == 'true'
+        if: steps.apply.outputs.no_changes == 'true'
         run: echo "No changes suggested by the model this run."
