@@ -7,30 +7,37 @@ MAX_FILES="${MAX_FILES:-50}"
 MAX_TOTAL_KB="${MAX_TOTAL_KB:-800}"
 MAX_FILE_KB="${MAX_FILE_KB:-120}"
 
+# 1) Build effective prompt -> write straight to file (avoid multi-line bash strings)
 if [[ -n "$USER_PROMPT" ]]; then
-  PROMPT="$USER_PROMPT"
+  printf "%s" "$USER_PROMPT" > .llm_prompt.txt
 elif [[ -f ".github/llm_prompt.md" ]]; then
-  PROMPT="$(cat .github/llm_prompt.md)"
+  # use repo prompt file
+  cat .github/llm_prompt.md > .llm_prompt.txt
 else
-  PROMPT=$'You are an expert engineer acting as a careful, minimal-change code improver.\n'\
-         $'- Make small, safe improvements: correctness fixes, clearer names, missing edge checks, micro-perf wins, docstrings.\n'\
-         $'- Preserve style and public APIs. Do not reformat entire files or introduce deps.\n'\
-         $'- Keep changes incremental and self-contained.\n'
+  # safe default via heredoc (no chance of being “run”)
+  cat > .llm_prompt.txt <<'PROMPT'
+You are an expert engineer acting as a careful, minimal-change code improver.
+- Make small, safe improvements: correctness fixes, clearer names, missing edge checks, micro-perf wins, docstrings.
+- Preserve style and public APIs. Do not reformat entire files or introduce new dependencies.
+- Keep changes incremental and self-contained.
+PROMPT
 fi
-printf "%s" "$PROMPT" > .llm_prompt.txt
 
+# 2) Optional ignore patterns
 IGNORE_FILE=".github/llm_ignore.txt"
 ignore=()
 if [[ -f "$IGNORE_FILE" ]]; then
   mapfile -t ignore < <(grep -v '^\s*$' "$IGNORE_FILE" | grep -v '^\s*#' || true)
 fi
 
+# 3) Candidate files (text-y) minus common build/vendor dirs
 mapfile -t candidates < <(
   git ls-files \
     | grep -E '\.(py|js|ts|tsx|jsx|json|yml|yaml|md|go|rs|java|kt|kts|cs|cpp|cxx|cc|c|h|hpp|m|mm|rb|php|sh|bash|zsh|toml|ini|cfg|txt|sql|css|scss|vue|svelte|swift)$' \
-    | grep -Ev '^(vendor/|dist/|build/|out/|.next/|node_modules/|target/|.venv/|venv/|.git/|coverage/|.tox/|__pycache__/|.pytest_cache/)'
+    | grep -Ev '^(vendor/|dist/|build/|out/|\.next/|node_modules/|target/|\.venv/|venv/|\.git/|coverage/|\.tox/|__pycache__/|\.pytest_cache/)'
 )
 
+# 4) Apply ignore list
 if (( ${#ignore[@]} > 0 )); then
   filtered=()
   for f in "${candidates[@]}"; do
@@ -43,6 +50,7 @@ if (( ${#ignore[@]} > 0 )); then
   candidates=("${filtered[@]}")
 fi
 
+# 5) Save bounded file list
 : > .llm_files.txt
 count=0
 for f in "${candidates[@]}"; do
@@ -51,21 +59,23 @@ for f in "${candidates[@]}"; do
   [[ "$count" -ge "$MAX_FILES" ]] && break
 done
 
-bytes_left=$(( MAX_TOTAL_KB * 1024 ))
+# 6) Build truncated context
 cap_per=$(( MAX_FILE_KB * 1024 ))
 : > .llm_context.txt
-
 while IFS= read -r f; do
   [[ -f "$f" ]] || continue
-  echo -e "\n===== FILE: $f =====\n" >> .llm_context.txt
+  {
+    echo
+    echo "===== FILE: $f ====="
+    echo
+  } >> .llm_context.txt
   size=$(wc -c <"$f" || echo 0)
   if (( size > cap_per )); then
     head -c "$cap_per" "$f" >> .llm_context.txt
   else
     cat "$f" >> .llm_context.txt
   fi
-  sz=$(wc -c < .llm_context.txt)
-  if (( sz >= MAX_TOTAL_KB * 1024 )); then
-    break
-  fi
+  # stop if context grows beyond MAX_TOTAL_KB
+  current=$(wc -c < .llm_context.txt)
+  (( current >= MAX_TOTAL_KB * 1024 )) && break
 done < .llm_files.txt
