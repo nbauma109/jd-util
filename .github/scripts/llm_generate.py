@@ -2,120 +2,89 @@
 import os, json, requests, pathlib, re, sys
 
 OLLAMA_URL = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-MODEL = os.environ.get("LLM_MODEL", "llama3.2:3b")
+MODEL = os.environ.get("LLM_MODEL", "qwen2.5-coder:3b")
 
-prompt_path = pathlib.Path(".llm_prompt.txt")
-ctx_path = pathlib.Path(".llm_context.txt")
+prompt = pathlib.Path(".llm_prompt.txt").read_text(encoding="utf-8") if pathlib.Path(".llm_prompt.txt").exists() else ""
+ctx = pathlib.Path(".llm_context.txt").read_text(encoding="utf-8", errors="ignore") if pathlib.Path(".llm_context.txt").exists() else ""
 raw_path = pathlib.Path(".llm_raw.txt")
 
-prompt = prompt_path.read_text(encoding="utf-8") if prompt_path.exists() else ""
-ctx = ctx_path.read_text(encoding="utf-8", errors="ignore") if ctx_path.exists() else ""
-
-# Stricter guardrails: absolutely no prose or fences
 SYSTEM = (
-    "You must output ONLY a valid git unified diff that applies with `patch -p0`.\n"
-    "No explanations. No Markdown code fences. No headings. No extra text.\n"
-    "If you have no changes, output exactly: NO_CHANGES"
+    "You must output ONLY a patch.\n"
+    "- Prefer a git-style unified diff starting with lines like '--- a/path' then '+++ b/path'.\n"
+    "- It's also acceptable to output a 'diff --git a/... b/...' patch.\n"
+    "- No prose. No markdown fences. No headings. No explanations.\n"
+    "If absolutely no changes are warranted, output exactly: NO_CHANGES"
 )
 
 USER = (
     f"{prompt}\n\n"
     f"PROJECT SNAPSHOT (truncated files):\n{ctx}\n\n"
-    "Now output ONLY the unified diff (or NO_CHANGES):"
+    "Now output ONLY the patch (unified diff or 'diff --git'), or NO_CHANGES:"
 )
 
 payload = {
     "model": MODEL,
     "system": SYSTEM,
     "prompt": USER,
-    "options": {"temperature": 0.1},
+    "options": {
+        "temperature": 0.0,       # be deterministic & conservative
+        "num_ctx": 8192
+    },
 }
 
 def call_ollama():
-    with requests.post(f"{OLLAMA_URL}/api/generate", json=payload, stream=True, timeout=900) as r:
+    with requests.post(f"{OLLAMA_URL}/api/generate", json=payload, stream=True, timeout=1200) as r:
         r.raise_for_status()
-        chunks = []
+        chunks=[]
         for line in r.iter_lines():
-            if not line:
-                continue
-            obj = json.loads(line.decode("utf-8"))
-            if "response" in obj:
-                chunks.append(obj["response"])
-            if obj.get("done"):
-                break
+            if not line: continue
+            obj=json.loads(line.decode("utf-8"))
+            if "response" in obj: chunks.append(obj["response"])
+            if obj.get("done"): break
     return "".join(chunks).strip()
 
-def strip_fences(text: str) -> str:
-    # remove common markdown fences (```diff, ```patch, ``` etc.)
-    text = re.sub(r"^```(?:diff|patch)?\s*", "", text, flags=re.IGNORECASE | re.MULTILINE)
-    text = re.sub(r"\s*```$", "", text, flags=re.MULTILINE)
-    return text
+def strip_fences(s: str) -> str:
+    s = re.sub(r"^```(?:diff|patch)?\s*", "", s, flags=re.IGNORECASE|re.MULTILINE)
+    s = re.sub(r"\s*```$", "", s, flags=re.MULTILINE)
+    return s
 
-def extract_unified_diff(text: str) -> str | None:
-    """
-    Try hard to find a unified diff.
-    Preferred anchors:
-      1) lines beginning with '--- a/...'
-      2) generic '--- ' followed by '+++ '
-      3) 'diff --git a/... b/...' blocks -> convert to unified snippet if model emitted that format
-    We return everything from the first '--- ' (or 'diff --git') to the end.
-    """
-    # quick NO_CHANGES detection
-    if re.search(r"^\s*NO_CHANGES\s*$", text, flags=re.IGNORECASE | re.MULTILINE):
+def extract_patch(s: str) -> str|None:
+    if re.search(r"^\s*NO_CHANGES\s*$", s, re.IGNORECASE|re.MULTILINE):
         return "NO_CHANGES"
-
-    # 1) best: --- a/...
-    m = re.search(r"^---\s+a/.*$", text, flags=re.MULTILINE)
-    if m:
-        return text[m.start():].strip()
-
-    # 2) fallback: first '--- ' anywhere that is part of a hunk header
-    m = re.search(r"^---\s+.+$", text, flags=re.MULTILINE)
-    if m:
-        # ensure there's a matching '+++' after
-        rest = text[m.start():]
-        if re.search(r"^\+\+\+\s+.+$", rest, flags=re.MULTILINE):
-            return rest.strip()
-
-    # 3) diff --git blocks (sometimes models start with that)
-    m = re.search(r"^diff --git a/.* b/.*$", text, flags=re.MULTILINE)
-    if m:
-        return text[m.start():].strip()
-
+    m = re.search(r"^---\s+a/.*$", s, re.MULTILINE)
+    if m: return s[m.start():].strip()
+    m = re.search(r"^diff --git a/.* b/.*$", s, re.MULTILINE)
+    if m: return s[m.start():].strip()
+    m = re.search(r"^---\s+.+$", s, re.MULTILINE)
+    if m and re.search(r"^\+\+\+\s+.+$", s[m.start():], re.MULTILINE):
+        return s[m.start():].strip()
     return None
 
 def main():
     raw = call_ollama()
-    # keep a pristine copy for debugging
     raw_path.write_text(raw, encoding="utf-8")
 
     cleaned = strip_fences(raw)
-    diff = extract_unified_diff(cleaned)
+    patch = extract_patch(cleaned)
 
-    # To keep the rest of the pipeline unchanged, write the final choice back to .llm_raw.txt
-    if diff is None:
-        # leave the original in .llm_raw.txt (already written), but exit 0
-        print(f"[llm_generate] No diff anchors found. raw_len={len(raw)}")
+    if patch is None:
+        # keep the raw for debugging; validator will print a snippet
+        print(f"[llm_generate] No patch anchors found. raw_len={len(raw)}")
         return
 
-    # Normalize NO_CHANGES token exactly
-    if re.fullmatch(r"\s*NO_CHANGES\s*", diff, flags=re.IGNORECASE):
+    if re.fullmatch(r"\s*NO_CHANGES\s*", patch, re.IGNORECASE):
         raw_path.write_text("NO_CHANGES", encoding="utf-8")
-        print("[llm_generate] Model returned NO_CHANGES")
+        print("[llm_generate] NO_CHANGES")
         return
 
-    raw_path.write_text(diff, encoding="utf-8")
-    print(f"[llm_generate] Extracted unified diff. bytes={len(diff)}")
+    raw_path.write_text(patch, encoding="utf-8")
+    print(f"[llm_generate] Patch extracted: {len(patch)} bytes")
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        # never crash the job without a clue
         sys.stderr.write(f"[llm_generate] ERROR: {e}\n")
-        # still write something for the validator to inspect
-        try:
-            raw_path.write_text(f"ERROR: {e}", encoding="utf-8")
-        except Exception:
-            pass
+        try: raw_path.write_text(f"ERROR: {e}", encoding="utf-8")
+        except Exception: pass
         sys.exit(0)
