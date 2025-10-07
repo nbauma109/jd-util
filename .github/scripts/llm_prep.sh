@@ -103,7 +103,7 @@ fi
 count=0
 for f in "${candidates[@]:-}"; do
   echo "$f" >> .llm_files.txt
-  count=$((count + 1))   # portable increment
+  count=$((count + 1))
   if (( count >= MAX_FILES )); then
     break
   fi

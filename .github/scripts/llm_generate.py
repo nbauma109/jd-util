@@ -4,15 +4,18 @@ import os, json, requests, pathlib, re, sys
 OLLAMA_URL = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 MODEL = os.environ.get("LLM_MODEL", "qwen2.5-coder:3b")
 
-prompt = pathlib.Path(".llm_prompt.txt").read_text(encoding="utf-8") if pathlib.Path(".llm_prompt.txt").exists() else ""
-ctx = pathlib.Path(".llm_context.txt").read_text(encoding="utf-8", errors="ignore") if pathlib.Path(".llm_context.txt").exists() else ""
+prompt_path = pathlib.Path(".llm_prompt.txt")
+ctx_path = pathlib.Path(".llm_context.txt")
 raw_path = pathlib.Path(".llm_raw.txt")
+
+prompt = prompt_path.read_text(encoding="utf-8") if prompt_path.exists() else ""
+ctx = ctx_path.read_text(encoding="utf-8", errors="ignore") if ctx_path.exists() else ""
 
 SYSTEM = (
     "You must output ONLY a patch.\n"
     "- Prefer a git-style unified diff starting with lines like '--- a/path' then '+++ b/path'.\n"
-    "- It's also acceptable to output a 'diff --git a/... b/...' patch.\n"
-    "- No prose. No markdown fences. No headings. No explanations.\n"
+    "- It's also acceptable to output a 'diff --git a/... b/...'.\n"
+    "- No prose. No Markdown code fences. No headings. No explanations.\n"
     "If absolutely no changes are warranted, output exactly: NO_CHANGES"
 )
 
@@ -26,14 +29,17 @@ payload = {
     "model": MODEL,
     "system": SYSTEM,
     "prompt": USER,
-    "options": {
-        "temperature": 0.0,       # be deterministic & conservative
-        "num_ctx": 8192
-    },
+    "options": {"temperature": 0.0, "num_ctx": 8192},
 }
 
 def call_ollama():
-    with requests.post(f"{OLLAMA_URL}/api/generate", json=payload, stream=True, timeout=1200) as r:
+    print(f"[llm_generate] Starting request to {OLLAMA_URL} with model={MODEL}")
+    with requests.post(
+        f"{OLLAMA_URL}/api/generate",
+        json=payload,
+        stream=True,
+        timeout=(30, 5400)  # 30s connect, 90 min read
+    ) as r:
         r.raise_for_status()
         chunks=[]
         for line in r.iter_lines():
@@ -48,7 +54,7 @@ def strip_fences(s: str) -> str:
     s = re.sub(r"\s*```$", "", s, flags=re.MULTILINE)
     return s
 
-def extract_patch(s: str) -> str|None:
+def extract_patch(s: str):
     if re.search(r"^\s*NO_CHANGES\s*$", s, re.IGNORECASE|re.MULTILINE):
         return "NO_CHANGES"
     m = re.search(r"^---\s+a/.*$", s, re.MULTILINE)
@@ -68,7 +74,6 @@ def main():
     patch = extract_patch(cleaned)
 
     if patch is None:
-        # keep the raw for debugging; validator will print a snippet
         print(f"[llm_generate] No patch anchors found. raw_len={len(raw)}")
         return
 

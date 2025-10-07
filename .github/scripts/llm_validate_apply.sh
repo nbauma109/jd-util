@@ -9,7 +9,7 @@ BASE_BRANCH="${BASE_BRANCH:-main}"
 touch "$GITHUB_OUTPUT"
 
 echo "----- RAW MODEL OUTPUT (first 80 lines) -----"
-nl -ba .llm_raw.txt | sed -n '1,80p'
+nl -ba .llm_raw.txt | sed -n '1,80p' || true
 echo "---------------------------------------------"
 
 if grep -qx 'NO_CHANGES' .llm_raw.txt; then
@@ -27,7 +27,7 @@ if grep -qE '^---\s+a/' .llm_raw.txt; then
 
   echo "[validator] Dry-run patch -p0"
   if ! patch -p0 --dry-run < .llm_patch.diff ; then
-    echo "[validator] patch -p0 failed; will try git apply as fallback"
+    echo "[validator] patch -p0 failed; trying git apply"
     if ! git apply --check .llm_patch.diff ; then
       echo "no_changes=true" >> "$GITHUB_OUTPUT"
       echo "[validator] Could not apply patch; skipping."
@@ -74,7 +74,7 @@ if git diff --cached --quiet; then
   exit 0
 fi
 
-# Generate metadata (title, commit message, body)
+# Model-authored metadata
 python .github/scripts/llm_metadata.py || true
 
 PR_TITLE="LLM suggestions: ${BASE_BRANCH}"
