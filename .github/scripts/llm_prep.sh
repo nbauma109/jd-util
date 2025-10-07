@@ -44,20 +44,15 @@ IGNORE_FILE=".github/llm_ignore.txt"
 ignore_raw=()
 if [[ -f "$IGNORE_FILE" ]]; then
   log "Reading ignore patterns from $IGNORE_FILE"
-  # drop blank lines & comments; tolerate no matches
   mapfile -t ignore_raw < <(grep -v '^\s*$' "$IGNORE_FILE" | grep -v '^\s*#' || true)
 else
   log "No $IGNORE_FILE found (this is fine)"
 fi
 
-# normalize ignore patterns:
-# - If pattern ends with "/" -> treat as prefix: "path/**"
-# - If pattern has no wildcard at all -> also treat as prefix: "path/**"
-# - Otherwise leave as-is (supports globbing like "docs/**/*.md" or "*.lock")
+# Normalize ignores to glob prefixes (e.g., "target/" -> "target/**")
 ignore=()
 for pat in "${ignore_raw[@]:-}"; do
   norm="$pat"
-  # contains any glob chars?
   if [[ "$norm" != *"*"* && "$norm" != *"?"* && "$norm" != *"["* ]]; then
     norm="${norm%/}/**"
   elif [[ "$norm" == */ ]]; then
@@ -75,7 +70,6 @@ fi
 
 # ---------- Candidate files ----------
 log "Scanning repo for candidate files…"
-# tolerate 0 matches (|| true)
 mapfile -t candidates < <(
   git ls-files \
     | grep -E '\.(py|js|ts|tsx|jsx|json|yml|yaml|md|go|rs|java|kt|kts|cs|cpp|cxx|cc|c|h|hpp|m|mm|rb|php|sh|bash|zsh|toml|ini|cfg|txt|sql|css|scss|vue|svelte|swift)$' \
@@ -96,7 +90,9 @@ if ((${#ignore[@]} > 0 && ${#candidates[@]} > 0)); then
         break
       fi
     done
-    (( skip == 0 )) && filtered+=("$f")
+    if (( skip == 0 )); then
+      filtered+=("$f")
+    fi
   done
   candidates=("${filtered[@]}")
   log "After ignores: ${#candidates[@]}"
@@ -107,8 +103,10 @@ fi
 count=0
 for f in "${candidates[@]:-}"; do
   echo "$f" >> .llm_files.txt
-  ((count++))
-  [[ "$count" -ge "$MAX_FILES" ]] && break
+  count=$((count + 1))   # portable increment
+  if (( count >= MAX_FILES )); then
+    break
+  fi
 done
 log "Selected files written to .llm_files.txt (count=$(wc -l < .llm_files.txt))"
 
@@ -135,7 +133,7 @@ while IFS= read -r f; do
     added=$size
   fi
 
-  total=$(( total + added + 16 )) # header overhead
+  total=$(( total + added + 16 ))
   if (( total >= max_total )); then
     log "Reached MAX_TOTAL_KB budget (${MAX_TOTAL_KB}KB); stopping context build"
     break
@@ -143,7 +141,5 @@ while IFS= read -r f; do
 done < .llm_files.txt
 
 log "Built .llm_context.txt (bytes=$(wc -c < .llm_context.txt))"
-
-# ---------- Summary ----------
 log "Prep complete."
 log "---- llm_prep.sh done ----"
