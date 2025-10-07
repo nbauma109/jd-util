@@ -108,6 +108,13 @@ jobs:
           bash .github/scripts/llm_prep.sh
           echo "files_count=$(wc -l < .llm_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
 
+      - name: Debug — show manifest & context snippet
+        run: |
+          echo "----- MANIFEST (first 40 lines) -----"
+          nl -ba .llm_manifest.json | sed -n '1,40p' || true
+          echo "----- CONTEXT (first 60 lines) -----"
+          nl -ba .llm_context.txt   | sed -n '1,60p' || true
+
       - name: Generate diff with local LLM
         id: gen
         env:
