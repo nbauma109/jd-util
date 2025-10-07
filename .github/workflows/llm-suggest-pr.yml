@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       user_prompt:
-        description: "Prompt for the LLM (e.g., add docstrings, improve TS types, small perf fixes)"
+        description: "Prompt for the LLM (e.g., add docstrings, improve types, small perf fixes)"
         required: false
         type: string
       model:
@@ -32,8 +32,7 @@ on:
         default: "800"
         type: string
   schedule:
-    # Runs daily at 05:30 UTC
-    - cron: "30 5 * * *"
+    - cron: "30 5 * * *"  # daily at 05:30 UTC
 
 permissions:
   contents: write
@@ -43,13 +42,10 @@ jobs:
   suggest:
     runs-on: ubuntu-latest
     env:
-      # Inputs have defaults above; no need for "||" expressions that can confuse YAML.
       LLM_MODEL: ${{ inputs.model }}
       MAX_FILES: ${{ inputs.max_files }}
       MAX_FILE_KB: ${{ inputs.max_file_kb }}
       MAX_TOTAL_KB: ${{ inputs.max_total_kb }}
-      COMMIT_MESSAGE: "chore(llm): apply local LLM suggestions"
-      PR_TITLE_PREFIX: "LLM suggestions"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,20 +66,34 @@ jobs:
           echo "base=${base}" >> "$GITHUB_OUTPUT"
           echo "Using base branch: ${base}"
 
-      - name: Install tools
+      - name: Cache Ollama models
+        uses: actions/cache@v4
+        with:
+          path: ~/.ollama
+          key: ${{ runner.os }}-ollama-cache
+
+      - name: Setup Ollama
+        uses: ai-action/setup-ollama@v1
+
+      - name: Start Ollama & pull model
+        env:
+          LLM_MODEL: ${{ env.LLM_MODEL }}
+        run: |
+          nohup ollama serve > /tmp/ollama.log 2>&1 &
+          # wait for daemon to be ready
+          for i in {1..30}; do
+            if curl -sSf http://localhost:11434/api/version >/dev/null; then break; fi
+            sleep 1
+          done
+          echo "Pulling model: $LLM_MODEL"
+          ollama pull "$LLM_MODEL"
+
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq patch
+          sudo apt-get install -y jq patch curl
           python -m pip install --upgrade pip
           pip install requests
-
-      - name: Start Ollama (local)
-        uses: ollama/ollama-action@v1
-
-      - name: Pull local model
-        run: |
-          echo "Pulling model: ${LLM_MODEL}"
-          ollama pull "${LLM_MODEL}"
 
       - name: Prepare prompt and file list
         id: prep
@@ -109,8 +119,6 @@ jobs:
         env:
           LLM_MODEL: ${{ env.LLM_MODEL }}
           BASE_BRANCH: ${{ steps.base.outputs.base }}
-          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
-          PR_TITLE_PREFIX: ${{ env.PR_TITLE_PREFIX }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bash .github/scripts/llm_validate_apply.sh
