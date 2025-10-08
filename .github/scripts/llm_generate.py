@@ -16,7 +16,7 @@ SYSTEM = (
     "- Prefer a git-style unified diff starting with lines like '--- a/path' then '+++ b/path'.\n"
     "- It's also acceptable to output a 'diff --git a/... b/...'.\n"
     "- No prose. No Markdown code fences. No headings. No explanations.\n"
-    "If absolutely no changes are warranted, output exactly: NO_CHANGES"
+    "If and only if absolutely no changes are warranted, and only as a last resort, because the code is deemed so perfect that any change would make it only worse, output exactly: NO_CHANGES"
 )
 
 USER = (
