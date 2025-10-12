@@ -87,20 +87,14 @@
   </repositories>
   <dependencies>
     <dependency>
-      <groupId>com.github.nbauma109</groupId>
-      <artifactId>bcel-shaded</artifactId>
-      <version>6.10.0.Shaded2</version>
+      <groupId>org.apache.bcel</groupId>
+      <artifactId>bcel</artifactId>
+      <version>6.10.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
       <version>4.5.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.19.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

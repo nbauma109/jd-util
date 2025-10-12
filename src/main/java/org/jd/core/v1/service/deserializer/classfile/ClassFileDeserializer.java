@@ -13,7 +13,7 @@ import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.InnerClass;
 import org.apache.bcel.classfile.InnerClasses;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.commons.lang3.Validate;
+import org.apache.commons.lang3.Validate;
 import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.model.classfile.ClassFile;
 import org.jd.core.v1.util.DefaultList;
