@@ -181,7 +181,7 @@ public class TypeMaker {
      *  SuperclassSignature: ClassTypeSignature
      *  SuperInterfaceSignature: ClassTypeSignature
      */
-    public TypeTypes parseClassFileSignature(ClassFile classFile) {
+    public synchronized TypeTypes parseClassFileSignature(ClassFile classFile) {
         TypeTypes typeTypes = new TypeTypes();
         String internalTypeName = classFile.getInternalTypeName();
 
@@ -244,7 +244,7 @@ public class TypeMaker {
         return typeTypes;
     }
 
-    public MethodTypes parseMethodSignature(ClassFile classFile, Method method) {
+    public synchronized MethodTypes parseMethodSignature(ClassFile classFile, Method method) {
         String key = classFile.getInternalTypeName() + ':' + method.getName() + method.getSignature();
         return parseMethodSignature(classFile.getInternalTypeName(), method, key);
     }
@@ -281,7 +281,7 @@ public class TypeMaker {
         return null;
     }
 
-    public Type parseFieldSignature(ClassFile classFile, Field field) {
+    public synchronized Type parseFieldSignature(ClassFile classFile, Field field) {
         String key = classFile.getInternalTypeName() + ':' + field.getName();
         Signature attributeSignature = getSignature(field);
         String signature = attributeSignature == null ? field.getSignature() : attributeSignature.getSignature();
@@ -296,11 +296,11 @@ public class TypeMaker {
         return (Signature) Stream.of(fm.getAttributes()).filter(Signature.class::isInstance).findAny().orElse(null);
     }
 
-    public Type makeFromSignature(String signature) {
+    public synchronized Type makeFromSignature(String signature) {
         return signatureToType.computeIfAbsent(signature, this::parseReferenceTypeSignature);
     }
 
-    public static int countDimension(String descriptor) {
+    public static synchronized int countDimension(String descriptor) {
         int count = 0;
 
         for (int i=0, len=descriptor.length(); i<len && descriptor.charAt(i)=='['; i++) {
@@ -838,11 +838,11 @@ public class TypeMaker {
         return name;
     }
 
-    public ObjectType makeFromDescriptorOrInternalTypeName(String descriptorOrInternalTypeName) {
+    public synchronized ObjectType makeFromDescriptorOrInternalTypeName(String descriptorOrInternalTypeName) {
         return descriptorOrInternalTypeName.charAt(0) == '[' ? makeFromDescriptor(descriptorOrInternalTypeName) : makeFromInternalTypeName(descriptorOrInternalTypeName);
     }
 
-    public Type makeFromSignatureOrInternalTypeName(String signatureOrInternalTypeName) {
+    public synchronized Type makeFromSignatureOrInternalTypeName(String signatureOrInternalTypeName) {
         if (signatureOrInternalTypeName == null) {
             throw new IllegalArgumentException("ObjectTypeMaker.makeFromSignatureOrInternalTypeName(signatureOrInternalTypeName) : invalid signatureOrInternalTypeName");
         }
@@ -852,7 +852,7 @@ public class TypeMaker {
         return makeFromInternalTypeName(signatureOrInternalTypeName);
     }
 
-    public ObjectType makeFromDescriptor(String descriptor) {
+    public synchronized ObjectType makeFromDescriptor(String descriptor) {
         ObjectType ot = descriptorToObjectType.get(descriptor);
 
         if (ot == null) {
@@ -884,7 +884,7 @@ public class TypeMaker {
         return ot;
     }
 
-    public ObjectType makeFromInternalTypeName(String internalTypeName) {
+    public synchronized ObjectType makeFromInternalTypeName(String internalTypeName) {
         if (internalTypeName == null || internalTypeName.endsWith(";")) {
             throw new IllegalArgumentException("ObjectTypeMaker.makeFromInternalTypeName(internalTypeName) : invalid internalTypeName");
         }
@@ -899,7 +899,7 @@ public class TypeMaker {
         return ot;
     }
 
-    public static ObjectType create(String internalTypeName) {
+    public static synchronized ObjectType create(String internalTypeName) {
 
         if (internalTypeName == null) {
             return null;
@@ -935,7 +935,7 @@ public class TypeMaker {
         return ot;
     }
 
-    public ObjectType searchSuperParameterizedType(ObjectType superObjectType, ObjectType objectType) {
+    public synchronized ObjectType searchSuperParameterizedType(ObjectType superObjectType, ObjectType objectType) {
         if (superObjectType == TYPE_UNDEFINED_OBJECT || superObjectType.equals(TYPE_OBJECT) || superObjectType.equals(objectType)) {
             return objectType;
         }
@@ -947,7 +947,7 @@ public class TypeMaker {
         return searchSuperParameterizedType(superHashCode, superInternalTypeName, objectType);
     }
 
-    public boolean isAssignable(Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, ObjectType left, Type leftUnbound, ObjectType right) {
+    public synchronized boolean isAssignable(Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, ObjectType left, Type leftUnbound, ObjectType right) {
         if (left == TYPE_UNDEFINED_OBJECT || right == TYPE_UNDEFINED_OBJECT || left.equals(TYPE_OBJECT) || left.equals(right)) {
             return true;
         }
@@ -981,19 +981,19 @@ public class TypeMaker {
         return false;
     }
 
-    public boolean isAssignable(Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, ObjectType left, ObjectType right) {
+    public synchronized boolean isAssignable(Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, ObjectType left, ObjectType right) {
         return isAssignable(typeBindings, typeBounds, left, null, right);
     }
 
-    public boolean isAssignable(Map<String, BaseType> typeBounds, ObjectType left, ObjectType right) {
+    public synchronized boolean isAssignable(Map<String, BaseType> typeBounds, ObjectType left, ObjectType right) {
         return isAssignable(Collections.emptyMap(), typeBounds, left, right);
     }
     
-    public boolean isAssignable(ObjectType left, ObjectType right) {
+    public synchronized boolean isAssignable(ObjectType left, ObjectType right) {
         return isAssignable(Collections.emptyMap(), left, right);
     }
     
-    public ObjectType searchSuperParameterizedType(long leftHashCode, String leftInternalTypeName, ObjectType right) {
+    public synchronized ObjectType searchSuperParameterizedType(long leftHashCode, String leftInternalTypeName, ObjectType right) {
         if (right.equals(TYPE_OBJECT)) {
             return null;
         }
@@ -1067,7 +1067,7 @@ public class TypeMaker {
         return null;
     }
 
-    public boolean isRawTypeAssignable(ObjectType left, ObjectType right) {
+    public synchronized boolean isRawTypeAssignable(ObjectType left, ObjectType right) {
         if (left == TYPE_UNDEFINED_OBJECT || left.equals(TYPE_OBJECT) || left.equals(right)) {
             return true;
         }
@@ -1117,7 +1117,7 @@ public class TypeMaker {
         return false;
     }
 
-    public TypeTypes makeTypeTypes(String internalTypeName) {
+    public synchronized TypeTypes makeTypeTypes(String internalTypeName) {
         if (internalTypeNameToTypeTypes.containsKey(internalTypeName)) {
             return internalTypeNameToTypeTypes.get(internalTypeName);
         }
@@ -1228,12 +1228,12 @@ public class TypeMaker {
         }
     }
 
-    public void setFieldType(String internalTypeName, String fieldName, Type type) {
+    public synchronized void setFieldType(String internalTypeName, String fieldName, Type type) {
         String key = internalTypeName + ':' + fieldName;
         putInternalTypeNameFieldNameToType(key, type);
     }
 
-    public Type makeFieldType(String internalTypeName, String fieldName, String descriptor) {
+    public synchronized Type makeFieldType(String internalTypeName, String fieldName, String descriptor) {
         Type type = loadFieldType(internalTypeName, fieldName, descriptor);
 
         if (type == null) {
@@ -1318,11 +1318,11 @@ public class TypeMaker {
         return type;
     }
 
-    public void setMethodReturnedType(String internalTypeName, String methodName, String descriptor, Type type) {
+    public synchronized void setMethodReturnedType(String internalTypeName, String methodName, String descriptor, Type type) {
         makeMethodTypes(internalTypeName, methodName, descriptor).setReturnedType(type);
     }
 
-    public MethodTypes makeMethodTypes(String internalTypeName, String methodName, String descriptor) {
+    public synchronized MethodTypes makeMethodTypes(String internalTypeName, String methodName, String descriptor) {
         MethodTypes methodTypes = loadMethodTypes(internalTypeName, methodName, descriptor);
 
         if (methodTypes == null) {
@@ -1535,7 +1535,7 @@ public class TypeMaker {
         }
     }
 
-    public boolean loadFieldsAndMethods(String internalTypeName) {
+    public synchronized boolean loadFieldsAndMethods(String internalTypeName) {
         try {
             if (loader.canLoad(internalTypeName)) {
                 loadFieldsAndMethods(internalTypeName, loader.load(internalTypeName));
@@ -1811,15 +1811,15 @@ public class TypeMaker {
             this.index = index;
         }
 
-        public char read() {
+        public synchronized char read() {
             return array[index++];
         }
 
-        public boolean nextEqualsTo(char c) {
+        public synchronized boolean nextEqualsTo(char c) {
             return index < length && array[index] == c;
         }
 
-        public boolean search(char c) {
+        public synchronized boolean search(char c) {
 
             for (int i=index; i<array.length; i++) {
                 if (array[i] == c) {
@@ -1831,7 +1831,7 @@ public class TypeMaker {
             return false;
         }
 
-        public char searchEndMarker() {
+        public synchronized char searchEndMarker() {
 
             char c;
             while (index < array.length) {
@@ -1847,26 +1847,26 @@ public class TypeMaker {
             return 0;
         }
 
-        public boolean available() {
+        public synchronized boolean available() {
             return index < length;
         }
 
-        public String substring(int beginIndex) {
+        public synchronized String substring(int beginIndex) {
             return new String(array, beginIndex, index-beginIndex);
         }
 
         @Override
-        public String toString() {
+        public synchronized String toString() {
             return "SignatureReader{index=" + index + ", nextChars=" + new String(array, index, length-index) + "}";
         }
     }
 
-    public int matchCount(String internalTypeName, String name, int parameterCount, boolean constructor) {
+    public synchronized int matchCount(String internalTypeName, String name, int parameterCount, boolean constructor) {
         String suffixKey = ":" + name + ':' + parameterCount;
         return getSetOfParameterTypes(internalTypeName, suffixKey, constructor).size();
     }
 
-    public int matchCount(Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, String internalTypeName, String name, BaseExpression parameters, boolean constructor) {
+    public synchronized int matchCount(Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, String internalTypeName, String name, BaseExpression parameters, boolean constructor) {
         int parameterCount = parameters.size();
 
         String suffixKey = ":" + name + ':' + parameterCount;
@@ -2009,7 +2009,6 @@ public class TypeMaker {
         public ObjectType getSuperType() {
             return superType;
         }
-
 
         private void setSuperType(ObjectType superType) {
             this.superType = superType;
