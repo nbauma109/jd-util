@@ -102,20 +102,20 @@ public class TypeMaker {
      */
     private static final Map<String, Boolean> loaded = new HashMap<>();
 
-    private static final Map<String, Type> signatureToType = new HashMap<>(1024);
-    private static final Map<String, Type> internalTypeNameFieldNameToType = new HashMap<>(1024);
-    private static final Map<String, ObjectType> descriptorToObjectType = new HashMap<>(1024);
-    private static final Map<String, ObjectType> internalTypeNameToObjectType = new HashMap<>(1024);
-    private static final Map<String, TypeTypes> internalTypeNameToTypeTypes = new HashMap<>(1024);
-    private static final Map<String, Set<BaseType>> internalTypeNameMethodNameParameterCountToDeclaredParameterTypes = new HashMap<>(1024);
-    private static final Map<String, Set<BaseType>> internalTypeNameMethodNameParameterCountToParameterTypes = new HashMap<>(1024);
-    private static final Map<String, MethodTypes> internalTypeNameMethodNameDescriptorToMethodTypes = new HashMap<>(1024);
+    private static final Map<String, Type> signatureToType = Collections.synchronizedMap(new HashMap<>(1024));
+    private static final Map<String, Type> internalTypeNameFieldNameToType = Collections.synchronizedMap(new HashMap<>(1024));
+    private static final Map<String, ObjectType> descriptorToObjectType = Collections.synchronizedMap(new HashMap<>(1024));
+    private static final Map<String, ObjectType> internalTypeNameToObjectType = Collections.synchronizedMap(new HashMap<>(1024));
+    private static final Map<String, TypeTypes> internalTypeNameToTypeTypes = Collections.synchronizedMap(new HashMap<>(1024));
+    private static final Map<String, Set<BaseType>> internalTypeNameMethodNameParameterCountToDeclaredParameterTypes = Collections.synchronizedMap(new HashMap<>(1024));
+    private static final Map<String, Set<BaseType>> internalTypeNameMethodNameParameterCountToParameterTypes = Collections.synchronizedMap(new HashMap<>(1024));
+    private static final Map<String, MethodTypes> internalTypeNameMethodNameDescriptorToMethodTypes = Collections.synchronizedMap(new HashMap<>(1024));
     private final Map<String, MethodTypes> signatureToMethodTypes = new HashMap<>(1024);
 
     private final Map<Long, Boolean> assignableRawTypes = new HashMap<>(1024);
     private final Map<Long, ObjectType> superParameterizedObjectTypes = new HashMap<>(1024);
 
-    private static final Map<String, String[]> hierarchy = new HashMap<>(1024);
+    private static final Map<String, String[]> hierarchy = Collections.synchronizedMap(new HashMap<>(1024));
     private static final ClassPathLoader classPathLoader = new ClassPathLoader();
     private final Loader loader;
 
