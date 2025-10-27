@@ -100,7 +100,7 @@ public class TypeMaker {
     /*
      * Internal type names for which we have already loaded fields and methods
      */
-    private static final Map<String, Boolean> loaded = new HashMap<>();
+    private static final Map<String, Boolean> loaded = Collections.synchronizedMap(new HashMap<>());
 
     private static final Map<String, Type> signatureToType = Collections.synchronizedMap(new HashMap<>(1024));
     private static final Map<String, Type> internalTypeNameFieldNameToType = Collections.synchronizedMap(new HashMap<>(1024));
