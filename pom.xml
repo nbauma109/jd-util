@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.nbauma109</groupId>
   <artifactId>jd-util</artifactId>
-  <version>1.2.3-SNAPSHOT</version>
+  <version>1.2.3</version>
 
   <name>JD Util</name>
   <description>Utilities for Java decompilation and bytecode manipulation.</description>
@@ -35,7 +35,7 @@
     <connection>scm:git:https://github.com/nbauma109/jd-util.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/nbauma109/jd-util.git</developerConnection>
     <url>https://github.com/nbauma109/jd-util</url>
-    <tag>HEAD</tag>
+    <tag>1.2.3</tag>
   </scm>
 
   <build>
