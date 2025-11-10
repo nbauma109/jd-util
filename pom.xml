@@ -5,7 +5,7 @@
   <version>1.2.4-SNAPSHOT</version>
 
   <name>JD Util</name>
-  <description>Utilities for Java decompilation and bytecode manipulation.</description>
+  <description>Common utilities for Java bytecode analysis and type bindings used by jd-core projects</description>
   <url>https://github.com/nbauma109/jd-util</url>
 
   <licenses>
