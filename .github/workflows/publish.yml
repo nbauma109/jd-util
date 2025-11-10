@@ -1,3 +1,4 @@
+# .github/workflows/publish.yml
 name: Publish to Maven Central
 
 on:
@@ -5,9 +6,13 @@ on:
     tags:
       - "*"
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    name: Build and Publish
 
     steps:
       - name: Checkout
@@ -41,11 +46,13 @@ jobs:
           test -n "$PGP_PASSPHRASE" || { echo "Missing PGP_PASSPHRASE"; exit 1; }
 
       - name: Build and verify
-        run: mvn -B clean verify
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+        run: mvn --no-transfer-progress -B clean verify
 
       - name: Deploy to Sonatype Central
         env:
           CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
           CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
-          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-        run: mvn -B -Dgpg.skip=false deploy
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+        run: mvn --no-transfer-progress -B -Dgpg.skip=false deploy
