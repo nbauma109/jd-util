@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.nbauma109</groupId>
   <artifactId>jd-util</artifactId>
-  <version>1.2.2-SNAPSHOT</version>
+  <version>1.2.2</version>
 
   <name>JD Util</name>
   <description>Utilities for Java decompilation and bytecode manipulation.</description>
@@ -36,7 +35,7 @@
     <connection>scm:git:https://github.com/nbauma109/jd-util.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/nbauma109/jd-util.git</developerConnection>
     <url>https://github.com/nbauma109/jd-util</url>
-    <tag>HEAD</tag>
+    <tag>1.2.2</tag>
   </scm>
 
   <build>
