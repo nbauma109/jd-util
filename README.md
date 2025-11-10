@@ -5,4 +5,4 @@
 [![Coverage Status](https://codecov.io/gh/nbauma109/jd-util/branch/master/graph/badge.svg)](https://app.codecov.io/gh/nbauma109/jd-util)
 
 # jd-util
-Common utilities for the jd-core projects
+Common utilities for Java decompilation and type analysis for jd-core projects
