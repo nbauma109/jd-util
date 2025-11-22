@@ -43,7 +43,7 @@ import org.jd.core.v1.model.javasyntax.type.Type;
  * 14        ||         Boolean (logical) OR                   Left to Right
  * 15        ? :        Conditional                            Right to Left
  * 16        =          Assignment                             Right to Left
- *           *= /= +=   Combinated assignment
+ *           *= /= +=   Combined assignment
  *           -= %=      (operation and assignment)
  *           <<= >>=
  *           >>>=
