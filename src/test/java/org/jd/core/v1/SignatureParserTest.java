@@ -348,28 +348,28 @@ public class SignatureParserTest extends TestCase {
         assertEquals("Lorg/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator;", type.getDescriptor());
         assertEquals("Lorg/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator;", type.getDescriptor());
 
-        ObjectType ot = (ObjectType)type;
+        ObjectType to = (ObjectType)type;
 
-        assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator", ot.getInternalName());
-        assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap.AsMap.AsMapEntrySetIterator", ot.getQualifiedName());
-        assertEquals("AsMapEntrySetIterator", ot.getName());
-        assertNull(ot.getTypeArguments());
+        assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap$AsMapEntrySetIterator", to.getInternalName());
+        assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap.AsMap.AsMapEntrySetIterator", to.getQualifiedName());
+        assertEquals("AsMapEntrySetIterator", to.getName());
+        assertNull(to.getTypeArguments());
 
-        ot = ((InnerObjectType)ot).getOuterType();
+        to = ((InnerObjectType)to).getOuterType();
 
-        assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap", ot.getInternalName());
-        assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap.AsMap", ot.getQualifiedName());
-        assertEquals("AsMap", ot.getName());
-        assertNull(ot.getTypeArguments());
+        assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap$AsMap", to.getInternalName());
+        assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap.AsMap", to.getQualifiedName());
+        assertEquals("AsMap", to.getName());
+        assertNull(to.getTypeArguments());
 
-        ot = ((InnerObjectType)ot).getOuterType();
+        to = ((InnerObjectType)to).getOuterType();
 
-        assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap", ot.getInternalName());
-        assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap", ot.getQualifiedName());
-        assertEquals("AbstractMultiValuedMap", ot.getName());
-        assertNotNull(ot.getTypeArguments());
+        assertEquals("org/apache/commons/collections4/multimap/AbstractMultiValuedMap", to.getInternalName());
+        assertEquals("org.apache.commons.collections4.multimap.AbstractMultiValuedMap", to.getQualifiedName());
+        assertEquals("AbstractMultiValuedMap", to.getName());
+        assertNotNull(to.getTypeArguments());
 
-        TypeArguments typeArguments = (TypeArguments)ot.getTypeArguments();
+        TypeArguments typeArguments = (TypeArguments)to.getTypeArguments();
 
         assertEquals(2, typeArguments.size());
         assertEquals("GenericType{K}", typeArguments.getFirst().toString());

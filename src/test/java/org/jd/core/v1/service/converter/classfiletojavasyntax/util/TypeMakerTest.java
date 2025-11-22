@@ -61,13 +61,13 @@ import junit.framework.TestCase;
 public class TypeMakerTest extends TestCase {
     protected TypeMaker typeMaker = new TypeMaker();
 
-    protected ObjectType otAbstractUntypedIteratorDecorator = makeObjectType(AbstractUntypedIteratorDecorator.class);
-    protected ObjectType otArrayList = makeObjectType(ArrayList.class);
-    protected ObjectType otInteger = makeObjectType(Integer.class);
-    protected ObjectType otIterator = makeObjectType(Iterator.class);
-    protected ObjectType otList = makeObjectType(List.class);
-    protected ObjectType otNumber = makeObjectType(Number.class);
-    protected ObjectType otPrimitiveIterator = makeObjectType(PrimitiveIterator.class);
+    protected ObjectType toAbstractUntypedIteratorDecorator = makeObjectType(AbstractUntypedIteratorDecorator.class);
+    protected ObjectType toArrayList = makeObjectType(ArrayList.class);
+    protected ObjectType toInteger = makeObjectType(Integer.class);
+    protected ObjectType toIterator = makeObjectType(Iterator.class);
+    protected ObjectType toList = makeObjectType(List.class);
+    protected ObjectType toNumber = makeObjectType(Number.class);
+    protected ObjectType toPrimitiveIterator = makeObjectType(PrimitiveIterator.class);
 
     protected ObjectType makeObjectType(Class<?> clazz) {
         return typeMaker.makeFromInternalTypeName(clazz.getName().replace('.', '/'));
@@ -77,91 +77,91 @@ public class TypeMakerTest extends TestCase {
     public void testOuterClass() throws Exception {
         InputStream is = this.getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip");
         TypeMaker typeMaker = new TypeMaker(new ZipLoader(is));
-        ObjectType ot = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass");
+        ObjectType to = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass");
 
-        assertEquals("org/jd/core/test/OuterClass", ot.getInternalName());
-        assertEquals("org.jd.core.test.OuterClass", ot.getQualifiedName());
-        assertEquals("OuterClass", ot.getName());
+        assertEquals("org/jd/core/test/OuterClass", to.getInternalName());
+        assertEquals("org.jd.core.test.OuterClass", to.getQualifiedName());
+        assertEquals("OuterClass", to.getName());
     }
 
     @Test
     public void testOuterClass$InnerClass() throws Exception {
         InputStream is = this.getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip");
         TypeMaker typeMaker = new TypeMaker(new ZipLoader(is));
-        ObjectType ot = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass$InnerClass");
+        ObjectType to = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass$InnerClass");
 
-        assertEquals("org/jd/core/test/OuterClass$InnerClass", ot.getInternalName());
-        assertEquals("org.jd.core.test.OuterClass.InnerClass", ot.getQualifiedName());
-        assertEquals("InnerClass", ot.getName());
+        assertEquals("org/jd/core/test/OuterClass$InnerClass", to.getInternalName());
+        assertEquals("org.jd.core.test.OuterClass.InnerClass", to.getQualifiedName());
+        assertEquals("InnerClass", to.getName());
     }
 
     @Test
     public void testOuterClass$StaticInnerClass() throws Exception {
         InputStream is = this.getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip");
         TypeMaker typeMaker = new TypeMaker(new ZipLoader(is));
-        ObjectType ot = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass$StaticInnerClass");
+        ObjectType to = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass$StaticInnerClass");
 
-        assertEquals("org/jd/core/test/OuterClass$StaticInnerClass", ot.getInternalName());
-        assertEquals("org.jd.core.test.OuterClass.StaticInnerClass", ot.getQualifiedName());
-        assertEquals("StaticInnerClass", ot.getName());
+        assertEquals("org/jd/core/test/OuterClass$StaticInnerClass", to.getInternalName());
+        assertEquals("org.jd.core.test.OuterClass.StaticInnerClass", to.getQualifiedName());
+        assertEquals("StaticInnerClass", to.getName());
     }
 
     @Test
     public void testOuterClass$1() throws Exception {
         InputStream is = this.getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip");
         TypeMaker typeMaker = new TypeMaker(new ZipLoader(is));
-        ObjectType ot = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass$1");
+        ObjectType to = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass$1");
 
-        assertEquals("org/jd/core/test/OuterClass$1", ot.getInternalName());
-        assertNull(ot.getQualifiedName());
-        assertNull(ot.getName());
+        assertEquals("org/jd/core/test/OuterClass$1", to.getInternalName());
+        assertNull(to.getQualifiedName());
+        assertNull(to.getName());
     }
 
     @Test
     public void testOuterClass$1LocalClass() throws Exception {
         InputStream is = this.getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip");
         TypeMaker typeMaker = new TypeMaker(new ZipLoader(is));
-        ObjectType ot = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass$1LocalClass");
+        ObjectType to = typeMaker.makeFromInternalTypeName("org/jd/core/test/OuterClass$1LocalClass");
 
-        assertEquals("org/jd/core/test/OuterClass$1LocalClass", ot.getInternalName());
-        assertNull(ot.getQualifiedName());
-        assertEquals("LocalClass", ot.getName());
+        assertEquals("org/jd/core/test/OuterClass$1LocalClass", to.getInternalName());
+        assertNull(to.getQualifiedName());
+        assertEquals("LocalClass", to.getName());
     }
 
     @Test
     public void testThread() throws Exception {
-        ObjectType ot = typeMaker.makeFromInternalTypeName(StringConstants.JAVA_LANG_THREAD);
+        ObjectType to = typeMaker.makeFromInternalTypeName(StringConstants.JAVA_LANG_THREAD);
 
-        assertEquals(StringConstants.JAVA_LANG_THREAD, ot.getInternalName());
-        assertEquals("java.lang.Thread", ot.getQualifiedName());
-        assertEquals("Thread", ot.getName());
+        assertEquals(StringConstants.JAVA_LANG_THREAD, to.getInternalName());
+        assertEquals("java.lang.Thread", to.getQualifiedName());
+        assertEquals("Thread", to.getName());
     }
 
     @Test
     public void testThreadState() throws Exception {
-        ObjectType ot = typeMaker.makeFromInternalTypeName("java/lang/Thread$State");
+        ObjectType to = typeMaker.makeFromInternalTypeName("java/lang/Thread$State");
 
-        assertEquals("java/lang/Thread$State", ot.getInternalName());
-        assertEquals("java.lang.Thread.State", ot.getQualifiedName());
-        assertEquals("State", ot.getName());
+        assertEquals("java/lang/Thread$State", to.getInternalName());
+        assertEquals("java.lang.Thread.State", to.getQualifiedName());
+        assertEquals("State", to.getName());
     }
 
     @Test
     public void testUnknownClass() throws Exception {
-        ObjectType ot = typeMaker.makeFromInternalTypeName("org/unknown/Class");
+        ObjectType to = typeMaker.makeFromInternalTypeName("org/unknown/Class");
 
-        assertEquals("org/unknown/Class", ot.getInternalName());
-        assertEquals("org.unknown.Class", ot.getQualifiedName());
-        assertEquals("Class", ot.getName());
+        assertEquals("org/unknown/Class", to.getInternalName());
+        assertEquals("org.unknown.Class", to.getQualifiedName());
+        assertEquals("Class", to.getName());
     }
 
     @Test
     public void testUnknownInnerClass() throws Exception {
-        ObjectType ot = typeMaker.makeFromInternalTypeName("org/unknown/Class$InnerClass");
+        ObjectType to = typeMaker.makeFromInternalTypeName("org/unknown/Class$InnerClass");
 
-        assertEquals("org/unknown/Class$InnerClass", ot.getInternalName());
-        assertEquals("org.unknown.Class.InnerClass", ot.getQualifiedName());
-        assertEquals("InnerClass", ot.getName());
+        assertEquals("org/unknown/Class$InnerClass", to.getInternalName());
+        assertEquals("org.unknown.Class.InnerClass", to.getQualifiedName());
+        assertEquals("InnerClass", to.getName());
     }
 
     @Test
@@ -237,14 +237,14 @@ public class TypeMakerTest extends TestCase {
         List list1 = null;
         List list2 = null;
 
-        ObjectType ot1 = otList;
-        ObjectType ot2 = otList;
+        ObjectType to1 = toList;
+        ObjectType to2 = toList;
 
         // Valid:   list1 = list2;
-        assertTrue(typeMaker.isAssignable(ot1, ot2));
+        assertTrue(typeMaker.isAssignable(to1, to2));
 
         // Valid:   list2 = list1;
-        assertTrue(typeMaker.isAssignable(ot2, ot1));
+        assertTrue(typeMaker.isAssignable(to2, to1));
     }
 
     @Test
@@ -252,14 +252,14 @@ public class TypeMakerTest extends TestCase {
         List list1 = null;
         List list2 = null;
 
-        ObjectType ot1 = otList;
-        ObjectType ot2 = otArrayList;
+        ObjectType to1 = toList;
+        ObjectType to2 = toArrayList;
 
         // Valid:   list1 = list2;
-        assertTrue(typeMaker.isAssignable(ot1, ot2));
+        assertTrue(typeMaker.isAssignable(to1, to2));
 
         // Invalid: list2 = list1;
-        assertFalse(typeMaker.isAssignable(ot2, ot1));
+        assertFalse(typeMaker.isAssignable(to2, to1));
     }
 
     @Test
@@ -267,14 +267,14 @@ public class TypeMakerTest extends TestCase {
         List<Number> list1 = null;
         List<Number> list2 = null;
 
-        ObjectType ot1 = otList.createType(otNumber);
-        ObjectType ot2 = otArrayList.createType(otNumber);
+        ObjectType to1 = toList.createType(toNumber);
+        ObjectType to2 = toArrayList.createType(toNumber);
 
         // Valid:   list1 = list2;
-        assertTrue(typeMaker.isAssignable(ot1, ot2));
+        assertTrue(typeMaker.isAssignable(to1, to2));
 
         // Invalid: list2 = list1;
-        assertFalse(typeMaker.isAssignable(ot2, ot1));
+        assertFalse(typeMaker.isAssignable(to2, to1));
     }
 
     @Test
@@ -282,14 +282,14 @@ public class TypeMakerTest extends TestCase {
         List<Number> list1 = null;
         List<Integer> list2 = null;
 
-        ObjectType ot1 = otList.createType(otNumber);
-        ObjectType ot2 = otList.createType(otInteger);
+        ObjectType to1 = toList.createType(toNumber);
+        ObjectType to2 = toList.createType(toInteger);
 
         // Invalid:   list1 = list2;
-        assertFalse(typeMaker.isAssignable(ot1, ot2));
+        assertFalse(typeMaker.isAssignable(to1, to2));
 
         // Invalid: list2 = list1;
-        assertFalse(typeMaker.isAssignable(ot2, ot1));
+        assertFalse(typeMaker.isAssignable(to2, to1));
     }
 
     @Test
@@ -297,14 +297,14 @@ public class TypeMakerTest extends TestCase {
         List<Number> list1 = null;
         List<? extends Number> list2 = null;
 
-        ObjectType ot1 = otList.createType(otNumber);
-        ObjectType ot2 = otList.createType(new WildcardExtendsTypeArgument(otNumber));
+        ObjectType to1 = toList.createType(toNumber);
+        ObjectType to2 = toList.createType(new WildcardExtendsTypeArgument(toNumber));
 
         // Invalid:   list1 = list2;
-        assertFalse(typeMaker.isAssignable(ot1, ot2));
+        assertFalse(typeMaker.isAssignable(to1, to2));
 
         // Valid: list2 = list1;
-        assertTrue(typeMaker.isAssignable(ot2, ot1));
+        assertTrue(typeMaker.isAssignable(to2, to1));
     }
 
     @Test
@@ -312,14 +312,14 @@ public class TypeMakerTest extends TestCase {
         List<Number> list1 = null;
         List<? super Number> list2 = null;
 
-        ObjectType ot1 = otList.createType(otNumber);
-        ObjectType ot2 = otList.createType(new WildcardSuperTypeArgument(otNumber));
+        ObjectType to1 = toList.createType(toNumber);
+        ObjectType to2 = toList.createType(new WildcardSuperTypeArgument(toNumber));
 
         // Invalid:   list1 = list2;
-        assertFalse(typeMaker.isAssignable(ot1, ot2));
+        assertFalse(typeMaker.isAssignable(to1, to2));
 
         // Valid: list2 = list1;
-        assertTrue(typeMaker.isAssignable(ot2, ot1));
+        assertTrue(typeMaker.isAssignable(to2, to1));
     }
 
     @Test
@@ -327,14 +327,14 @@ public class TypeMakerTest extends TestCase {
         List<Number> list1 = null;
         List<Integer> list2 = null;
 
-        ObjectType ot1 = otList.createType(otNumber);
-        ObjectType ot2 = otArrayList.createType(otInteger);
+        ObjectType to1 = toList.createType(toNumber);
+        ObjectType to2 = toArrayList.createType(toInteger);
 
         // Invalid:   list1 = list2;
-        assertFalse(typeMaker.isAssignable(ot1, ot2));
+        assertFalse(typeMaker.isAssignable(to1, to2));
 
         // Invalid: list2 = list1;
-        assertFalse(typeMaker.isAssignable(ot2, ot1));
+        assertFalse(typeMaker.isAssignable(to2, to1));
     }
 
     @Test
@@ -342,14 +342,14 @@ public class TypeMakerTest extends TestCase {
         Number[] arr1 = null;
         Integer[] arr2 = null;
         
-        ObjectType ot1 = (ObjectType) otNumber.createType(1);
-        ObjectType ot2 = (ObjectType) otInteger.createType(1);
+        ObjectType to1 = (ObjectType) toNumber.createType(1);
+        ObjectType to2 = (ObjectType) toInteger.createType(1);
         
         // Valid:   arr1 = arr2;
-        assertTrue(typeMaker.isAssignable(ot1, ot2));
+        assertTrue(typeMaker.isAssignable(to1, to2));
         
         // Invalid: arr2 = arr1;
-        assertFalse(typeMaker.isAssignable(ot2, ot1));
+        assertFalse(typeMaker.isAssignable(to2, to1));
     }
     
     @Test
@@ -358,14 +358,14 @@ public class TypeMakerTest extends TestCase {
         PrimitiveIterator<Number, List> iterator2 = null;
 
         TypeArguments tas = new TypeArguments();
-        tas.add(otNumber);
-        tas.add(otList);
+        tas.add(toNumber);
+        tas.add(toList);
 
-        ObjectType ot1 = otIterator.createType(otNumber);
-        ObjectType ot2 = otPrimitiveIterator.createType(tas);
+        ObjectType to1 = toIterator.createType(toNumber);
+        ObjectType to2 = toPrimitiveIterator.createType(tas);
 
         // Valid:   iterator1 = iterator2;
-        assertTrue(typeMaker.isAssignable(ot1, ot2));
+        assertTrue(typeMaker.isAssignable(to1, to2));
     }
 
     @Test
@@ -374,14 +374,14 @@ public class TypeMakerTest extends TestCase {
         AbstractUntypedIteratorDecorator<List, Number> iterator2 = null;
 
         TypeArguments tas = new TypeArguments();
-        tas.add(otList);
-        tas.add(otNumber);
+        tas.add(toList);
+        tas.add(toNumber);
 
-        ObjectType ot1 = otIterator.createType(otNumber);
-        ObjectType ot2 = otAbstractUntypedIteratorDecorator.createType(tas);
+        ObjectType to1 = toIterator.createType(toNumber);
+        ObjectType to2 = toAbstractUntypedIteratorDecorator.createType(tas);
 
         // Valid:   iterator1 = iterator2;
-        assertTrue(typeMaker.isAssignable(ot1, ot2));
+        assertTrue(typeMaker.isAssignable(to1, to2));
     }
 
     @Test

@@ -554,12 +554,12 @@ public class TypeMaker {
             char endMarker = ensureNonZeroEndMarker(reader);
 
             String internalTypeName = reader.substring(index);
-            ObjectType ot = makeFromInternalTypeName(internalTypeName);
+            ObjectType to = makeFromInternalTypeName(internalTypeName);
 
             if (endMarker == '<') {
                 // Skip '<'
                 reader.index++;
-                ot = ot.createType(parseTypeArguments(reader));
+                to = to.createType(parseTypeArguments(reader));
                 ensureReadCharacter(reader, '>');
             }
 
@@ -577,7 +577,7 @@ public class TypeMaker {
                     name = extractLocalClassName(name);
                     qualifiedName = null;
                 } else {
-                    qualifiedName = ot.getQualifiedName() + '.' + name;
+                    qualifiedName = to.getQualifiedName() + '.' + name;
                 }
 
                 if (endMarker == '<') {
@@ -587,16 +587,16 @@ public class TypeMaker {
                     BaseTypeArgument typeArguments = parseTypeArguments(reader);
                     ensureReadCharacter(reader, '>');
 
-                    ot = new InnerObjectType(internalTypeName, qualifiedName, name, typeArguments, ot);
+                    to = new InnerObjectType(internalTypeName, qualifiedName, name, typeArguments, to);
                 } else {
-                    ot = new InnerObjectType(internalTypeName, qualifiedName, name, ot);
+                    to = new InnerObjectType(internalTypeName, qualifiedName, name, to);
                 }
             }
 
             // Skip ';'
             reader.index++;
 
-            return dimension==0 ? ot : (ObjectType)ot.createType(dimension);
+            return dimension==0 ? to : (ObjectType)to.createType(dimension);
         }
         return null;
     }
@@ -853,9 +853,9 @@ public class TypeMaker {
     }
 
     public synchronized ObjectType makeFromDescriptor(String descriptor) {
-        ObjectType ot = descriptorToObjectType.get(descriptor);
+        ObjectType to = descriptorToObjectType.get(descriptor);
 
-        if (ot == null) {
+        if (to == null) {
             if (descriptor.charAt(0) == '[') {
                 int dimension = 1;
 
@@ -863,25 +863,25 @@ public class TypeMaker {
                     dimension++;
                 }
 
-                ot = (ObjectType)makeFromDescriptorWithoutBracket(descriptor.substring(dimension)).createType(dimension);
+                to = (ObjectType)makeFromDescriptorWithoutBracket(descriptor.substring(dimension)).createType(dimension);
             } else {
-                ot = makeFromDescriptorWithoutBracket(descriptor);
+                to = makeFromDescriptorWithoutBracket(descriptor);
             }
 
-            descriptorToObjectType.put(descriptor, ot);
+            descriptorToObjectType.put(descriptor, to);
         }
 
-        return ot;
+        return to;
     }
 
     private ObjectType makeFromDescriptorWithoutBracket(String descriptor) {
-        ObjectType ot = INTERNALNAME_TO_OBJECTPRIMITIVETYPE.get(descriptor);
+        ObjectType to = INTERNALNAME_TO_OBJECTPRIMITIVETYPE.get(descriptor);
 
-        if (ot == null) {
-            ot = makeFromInternalTypeName(descriptor.substring(1, descriptor.length()-1));
+        if (to == null) {
+            to = makeFromInternalTypeName(descriptor.substring(1, descriptor.length()-1));
         }
 
-        return ot;
+        return to;
     }
 
     public synchronized ObjectType makeFromInternalTypeName(String internalTypeName) {
@@ -889,14 +889,14 @@ public class TypeMaker {
             throw new IllegalArgumentException("ObjectTypeMaker.makeFromInternalTypeName(internalTypeName) : invalid internalTypeName");
         }
 
-        ObjectType ot = loadType(internalTypeName);
+        ObjectType to = loadType(internalTypeName);
 
-        if (ot == null) {
+        if (to == null) {
             // File not found with the system class loader -> Create type from 'internalTypeName'
-            ot = create(internalTypeName);
+            to = create(internalTypeName);
         }
 
-        return ot;
+        return to;
     }
 
     public static synchronized ObjectType create(String internalTypeName) {
@@ -907,7 +907,7 @@ public class TypeMaker {
 
         int lastSlash = internalTypeName.lastIndexOf('/');
         int lastDollar = internalTypeName.lastIndexOf('$');
-        ObjectType ot;
+        ObjectType to;
 
         if (lastSlash < lastDollar) {
             String outerTypeName = internalTypeName.substring(0, lastDollar);
@@ -917,22 +917,22 @@ public class TypeMaker {
             if (innerName.isEmpty()) {
                 String qualifiedName = internalTypeName.replace('/', '.');
                 String name = qualifiedName.substring(lastSlash + 1);
-                ot = new ObjectType(internalTypeName, qualifiedName, name);
+                to = new ObjectType(internalTypeName, qualifiedName, name);
             } else if (Character.isDigit(innerName.charAt(0))) {
-                ot = new InnerObjectType(internalTypeName, null, extractLocalClassName(innerName), outerSot);
+                to = new InnerObjectType(internalTypeName, null, extractLocalClassName(innerName), outerSot);
             } else {
                 String qualifiedName = outerSot.getQualifiedName() + '.' + innerName;
-                ot = new InnerObjectType(internalTypeName, qualifiedName, innerName, outerSot);
+                to = new InnerObjectType(internalTypeName, qualifiedName, innerName, outerSot);
             }
         } else {
             String qualifiedName = internalTypeName.replace('/', '.');
             String name = qualifiedName.substring(lastSlash + 1);
-            ot = new ObjectType(internalTypeName, qualifiedName, name);
+            to = new ObjectType(internalTypeName, qualifiedName, name);
         }
 
-        internalTypeNameToObjectType.put(internalTypeName, ot);
+        internalTypeNameToObjectType.put(internalTypeName, to);
 
-        return ot;
+        return to;
     }
 
     public synchronized ObjectType searchSuperParameterizedType(ObjectType superObjectType, ObjectType objectType) {
@@ -956,11 +956,11 @@ public class TypeMaker {
         if (leftDim <= 0 && rightDim <= 0) {
             String leftInternalTypeName = left.getInternalName();
             long leftHashCode = leftInternalTypeName.hashCode() * 31L;
-            ObjectType ot = searchSuperParameterizedType(leftHashCode, leftInternalTypeName, right);
+            ObjectType to = searchSuperParameterizedType(leftHashCode, leftInternalTypeName, right);
 
-            if (ot != null && leftInternalTypeName.equals(ot.getInternalName())) {
-                return left.getTypeArguments() == null || ot.getTypeArguments() == null
-                        || left.getTypeArguments().isTypeArgumentAssignableFrom(this, typeBindings, typeBounds, ot.getTypeArguments())
+            if (to != null && leftInternalTypeName.equals(to.getInternalName())) {
+                return left.getTypeArguments() == null || to.getTypeArguments() == null
+                        || left.getTypeArguments().isTypeArgumentAssignableFrom(this, typeBindings, typeBounds, to.getTypeArguments())
                         || (leftUnbound instanceof ObjectType lt
                                 && isAssignable(typeBindings, typeBounds, lt, right));
             }
@@ -1039,25 +1039,25 @@ public class TypeMaker {
             if (rightTypeTypes.getSuperType() != null) {
                 bindTypesToTypesVisitor.init();
                 rightTypeTypes.getSuperType().accept(bindTypesToTypesVisitor);
-                ObjectType ot = (ObjectType) bindTypesToTypesVisitor.getType();
-                ot = searchSuperParameterizedType(leftHashCode, leftInternalTypeName, ot);
+                ObjectType to = (ObjectType) bindTypesToTypesVisitor.getType();
+                to = searchSuperParameterizedType(leftHashCode, leftInternalTypeName, to);
 
-                if (ot != null) {
-                    superParameterizedObjectTypes.put(key, ot);
-                    return ot;
+                if (to != null) {
+                    superParameterizedObjectTypes.put(key, to);
+                    return to;
                 }
             }
             if (rightTypeTypes.getInterfaces() != null) {
-                ObjectType ot;
+                ObjectType to;
                 for (Type interfaze : rightTypeTypes.getInterfaces()) {
                     bindTypesToTypesVisitor.init();
                     interfaze.accept(bindTypesToTypesVisitor);
-                    ot = (ObjectType) bindTypesToTypesVisitor.getType();
-                    ot = searchSuperParameterizedType(leftHashCode, leftInternalTypeName, ot);
+                    to = (ObjectType) bindTypesToTypesVisitor.getType();
+                    to = searchSuperParameterizedType(leftHashCode, leftInternalTypeName, to);
 
-                    if (ot != null) {
-                        superParameterizedObjectTypes.put(key, ot);
-                        return ot;
+                    if (to != null) {
+                        superParameterizedObjectTypes.put(key, to);
+                        return to;
                     }
                 }
             }
@@ -1428,22 +1428,22 @@ public class TypeMaker {
     }
 
     private ObjectType loadType(String internalTypeName) {
-        ObjectType ot = internalTypeNameToObjectType.get(internalTypeName);
+        ObjectType to = internalTypeNameToObjectType.get(internalTypeName);
 
-        if (ot == null) {
+        if (to == null) {
             try {
                 if (loader.canLoad(internalTypeName)) {
-                    ot = loadType(internalTypeName, loader.load(internalTypeName));
+                    to = loadType(internalTypeName, loader.load(internalTypeName));
                 } else if (classPathLoader.canLoad(internalTypeName)) {
-                    ot = loadType(internalTypeName, classPathLoader.load(internalTypeName));
+                    to = loadType(internalTypeName, classPathLoader.load(internalTypeName));
                 }
-                internalTypeNameToObjectType.put(internalTypeName, Optional.ofNullable(ot).orElse(TYPE_UNDEFINED_OBJECT));
+                internalTypeNameToObjectType.put(internalTypeName, Optional.ofNullable(to).orElse(TYPE_UNDEFINED_OBJECT));
             } catch (Exception e) {
                 assert ExceptionUtil.printStackTrace(e);
             }
         }
 
-        return ot;
+        return to;
     }
 
     private ObjectType loadType(String internalTypeName, byte[] data) throws IOException {
@@ -1958,14 +1958,14 @@ public class TypeMaker {
             return flags != 0;
         }
 
-        if (rightType instanceof ObjectType otRight) {
-            if (leftType  instanceof ObjectType otLeft) {
-                return isAssignable(typeBindings, typeBounds, otLeft, otRight);
+        if (rightType instanceof ObjectType toRight) {
+            if (leftType  instanceof ObjectType toLeft) {
+                return isAssignable(typeBindings, typeBounds, toLeft, toRight);
             }
     
             if (leftType instanceof GenericType gt) {
                 BaseType boundType = typeBounds.get(gt.getName());
-                if (boundType instanceof ObjectType ot && isAssignable(ot, otRight)) {
+                if (boundType instanceof ObjectType to && isAssignable(to, toRight)) {
                     return true;
                 }
             }

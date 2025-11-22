@@ -243,19 +243,19 @@ public class ObjectType implements Type {
     @Override
     public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
         if (typeArgument instanceof ObjectType || typeArgument instanceof InnerObjectType) {
-            ObjectType ot = (ObjectType)typeArgument;
+            ObjectType to = (ObjectType)typeArgument;
 
-            if (dimension != ot.getDimension() || !internalName.equals(ot.getInternalName())) {
+            if (dimension != to.getDimension() || !internalName.equals(to.getInternalName())) {
                 return false;
             }
 
-            if (ot.getTypeArguments() == null) {
+            if (to.getTypeArguments() == null) {
                 return typeArguments == null;
             }
             if (typeArguments == null) {
-                return ot.getTypeArguments() == null;
+                return to.getTypeArguments() == null;
             }
-            return typeArguments.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, ot.getTypeArguments());
+            return typeArguments.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, to.getTypeArguments());
         }
 
         if (typeArgument instanceof GenericType gt) {
@@ -263,9 +263,9 @@ public class ObjectType implements Type {
             if (bt != null) {
                 for (Type type : bt) {
                     if (dimension == type.getDimension() && (type instanceof ObjectType || type instanceof InnerObjectType)) {
-                        ObjectType ot = (ObjectType) type;
+                        ObjectType to = (ObjectType) type;
 
-                        if (internalName.equals(ot.getInternalName())) {
+                        if (internalName.equals(to.getInternalName())) {
                             return true;
                         }
                     }

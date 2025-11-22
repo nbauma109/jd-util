@@ -100,11 +100,11 @@ public class TypeMakerConcurrencyTest {
             final String name = internalNames.get(i % internalNames.size());
             tasks.add(() -> {
                 await(start);
-                ObjectType ot = typeMaker.makeFromInternalTypeName(name);
+                ObjectType to = typeMaker.makeFromInternalTypeName(name);
                 // We assert some basic invariants to touch the resulting objects.
-                assertTrue("Expected ObjectType", ot instanceof ObjectType);
+                assertTrue("Expected ObjectType", to instanceof ObjectType);
                 // Accessing the qualified name forces name computation paths too.
-                final String qn = ot.getQualifiedName();
+                final String qn = to.getQualifiedName();
                 assertTrue(qn != null && !qn.isEmpty());
                 return null;
             });
