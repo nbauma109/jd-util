@@ -37,7 +37,7 @@ jobs:
           cleanup_format_source_code_changes_only: false
           cleanup_remove_redundant_semicolons: true
           cleanup_useless_continue: true
-          cleanup_qualify_static_member_accesses_through_subtypes_with_declaring_class: true
+          cleanup_qualify_static_member_accesses_through_subtypes_with_declaring_class: false
           cleanup_remove_redundant_type_arguments: true
           cleanup_remove_unused_imports: true
           cleanup_break_loop: true
@@ -78,7 +78,7 @@ jobs:
           cleanup_reduce_indentation: true
           cleanup_primitive_parsing: true
           cleanup_make_local_variable_final: false
-          cleanup_qualify_static_member_accesses_with_declaring_class: true
+          cleanup_qualify_static_member_accesses_with_declaring_class: false
           cleanup_add_missing_override_annotations: true
           cleanup_use_blocks: true
           cleanup_multi_catch: true
@@ -89,14 +89,14 @@ jobs:
           cleanup_redundant_comparator: true
           cleanup_remove_unused_private_types: false
           cleanup_system_property_boolean: true
-          cleanup_qualify_static_method_accesses_with_declaring_class: true
+          cleanup_qualify_static_method_accesses_with_declaring_class: false
           cleanup_lazy_logical_operator: false
           cleanup_bitwise_conditional_expression: false
           cleanup_simplify_boolean_if_else: true
           cleanup_add_all: true
           cleanup_use_directly_map_method: true
           cleanup_system_property_file_separator: true
-          cleanup_qualify_static_field_accesses_with_declaring_class: true
+          cleanup_qualify_static_field_accesses_with_declaring_class: false
           cleanup_add_generated_serial_version_id: false
           cleanup_stringbuilder_for_local_vars: true
           cleanup_controlflow_merge: true
@@ -142,8 +142,8 @@ jobs:
           cleanup_use_this_for_non_static_field_access: false
           cleanup_use_string_is_blank: true
           cleanup_static_inner_class: true
-          cleanup_qualify_static_member_accesses_through_instances_with_declaring_class: true
-          cleanup_add_missing_nls_tags: true
+          cleanup_qualify_static_member_accesses_through_instances_with_declaring_class: false
+          cleanup_add_missing_nls_tags: false
           cleanup_remove_unnecessary_casts: true
           cleanup_objects_equals: true
           cleanup_convert_functional_interfaces: true
