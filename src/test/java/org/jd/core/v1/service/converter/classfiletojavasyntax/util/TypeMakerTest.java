@@ -341,17 +341,17 @@ public class TypeMakerTest extends TestCase {
     public void testArrayNumberAndArrayIntegerAssignment() throws Exception {
         Number[] arr1 = null;
         Integer[] arr2 = null;
-        
+
         ObjectType ot1 = (ObjectType) otNumber.createType(1);
         ObjectType ot2 = (ObjectType) otInteger.createType(1);
-        
+
         // Valid:   arr1 = arr2;
         assertTrue(typeMaker.isAssignable(ot1, ot2));
-        
+
         // Invalid: arr2 = arr1;
         assertFalse(typeMaker.isAssignable(ot2, ot1));
     }
-    
+
     @Test
     public void testIteratorNumberAndPrimitiveIteratorNumberAssignment() throws Exception {
         Iterator<Number> iterator1 = null;
@@ -747,7 +747,7 @@ public class TypeMakerTest extends TestCase {
         assertEquals(mapEntrySet, typeMaker.searchSuperParameterizedType(set, unmodifiableEntrySet));
         assertEquals(set, typeMaker.searchSuperParameterizedType(genericSet, valueView));
     }
-    
+
     @Test
     public void testMakeFromDescriptorOrInternalTypeName() throws Exception {
         ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/HashMap;");

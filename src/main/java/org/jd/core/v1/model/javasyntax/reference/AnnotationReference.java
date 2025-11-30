@@ -55,7 +55,7 @@ public class AnnotationReference implements BaseAnnotationReference {
             return false;
         }
         AnnotationReference that = (AnnotationReference) o;
-        return Objects.equals(type, that.type) 
+        return Objects.equals(type, that.type)
             && Objects.equals(elementValue, that.elementValue)
             && Objects.equals(elementValuePairs, that.elementValuePairs);
     }
@@ -64,8 +64,7 @@ public class AnnotationReference implements BaseAnnotationReference {
     public int hashCode() {
         int result = 970_748_295 + type.hashCode();
         result = 31 * result + Objects.hash(elementValue);
-        result = 31 * result + Objects.hash(elementValuePairs);
-        return result;
+        return 31 * result + Objects.hash(elementValuePairs);
     }
 
     @Override

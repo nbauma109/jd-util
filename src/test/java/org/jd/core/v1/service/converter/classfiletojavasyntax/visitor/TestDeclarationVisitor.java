@@ -50,112 +50,134 @@ public class TestDeclarationVisitor extends AbstractNopDeclarationVisitor {
     private int typeDeclarationsCount;
 
 
-    public void visit(AnnotationDeclaration declaration) {
+    @Override
+	public void visit(AnnotationDeclaration declaration) {
         super.visit(declaration);
         annotationDeclarationCount++;
     }
 
-    public void visit(ArrayVariableInitializer declaration) {
+    @Override
+	public void visit(ArrayVariableInitializer declaration) {
         super.visit(declaration);
         arrayVariableInitializerCount++;
     }
 
-    public void visit(BodyDeclaration declaration) {
+    @Override
+	public void visit(BodyDeclaration declaration) {
         super.visit(declaration);
         bodyDeclarationCount++;
     }
 
-    public void visit(ClassDeclaration declaration) {
+    @Override
+	public void visit(ClassDeclaration declaration) {
         super.visit(declaration);
         classDeclarationCount++;
     }
 
-    public void visit(ConstructorDeclaration declaration) {
+    @Override
+	public void visit(ConstructorDeclaration declaration) {
         super.visit(declaration);
         constructorDeclarationCount++;
     }
 
-    public void visit(EnumDeclaration declaration) {
+    @Override
+	public void visit(EnumDeclaration declaration) {
         super.visit(declaration);
         enumDeclarationCount++;
     }
 
-    public void visit(Constant declaration) {
+    @Override
+	public void visit(Constant declaration) {
         super.visit(declaration);
         constantCount++;
     }
 
-    public void visit(ExpressionVariableInitializer declaration) {
+    @Override
+	public void visit(ExpressionVariableInitializer declaration) {
         super.visit(declaration);
         expressionVariableInitializerCount++;
     }
 
-    public void visit(FieldDeclaration declaration) {
+    @Override
+	public void visit(FieldDeclaration declaration) {
         super.visit(declaration);
         fieldDeclarationCount++;
     }
 
-    public void visit(FieldDeclarator declaration) {
+    @Override
+	public void visit(FieldDeclarator declaration) {
         super.visit(declaration);
         fieldDeclaratorCount++;
     }
 
-    public void visit(FieldDeclarators declarations) {
+    @Override
+	public void visit(FieldDeclarators declarations) {
         super.visit(declarations);
         fieldDeclaratorsCount++;
     }
 
-    public void visit(FormalParameter declaration) {
+    @Override
+	public void visit(FormalParameter declaration) {
         super.visit(declaration);
         formalParameterCount++;
     }
 
-    public void visit(FormalParameters declarations) {
+    @Override
+	public void visit(FormalParameters declarations) {
         super.visit(declarations);
         formalParametersCount++;
     }
 
-    public void visit(InterfaceDeclaration declaration) {
+    @Override
+	public void visit(InterfaceDeclaration declaration) {
         super.visit(declaration);
         interfaceDeclarationCount++;
     }
 
-    public void visit(LocalVariableDeclaration declaration) {
+    @Override
+	public void visit(LocalVariableDeclaration declaration) {
         super.visit(declaration);
         localVariableDeclarationCount++;
     }
 
-    public void visit(LocalVariableDeclarator declarator) {
+    @Override
+	public void visit(LocalVariableDeclarator declarator) {
         super.visit(declarator);
         localVariableDeclaratorCount++;
     }
 
-    public void visit(LocalVariableDeclarators declarators) {
+    @Override
+	public void visit(LocalVariableDeclarators declarators) {
         super.visit(declarators);
         localVariableDeclaratorsCount++;
     }
 
-    public void visit(MethodDeclaration declaration) {
+    @Override
+	public void visit(MethodDeclaration declaration) {
         super.visit(declaration);
         methodDeclarationCount++;
     }
 
-    public void visit(MemberDeclarations declarations) {
+    @Override
+	public void visit(MemberDeclarations declarations) {
         super.visit(declarations);
         memberDeclarationsCount++;
     }
 
-    public void visit(ModuleDeclaration declaration) {
+    @Override
+	public void visit(ModuleDeclaration declaration) {
         super.visit(declaration);
         moduleDeclarationCount++;
     }
 
-    public void visit(StaticInitializerDeclaration declaration) {
+    @Override
+	public void visit(StaticInitializerDeclaration declaration) {
         super.visit(declaration);
         staticInitializerDeclarationCount++;
     }
 
-    public void visit(TypeDeclarations declarations) {
+    @Override
+	public void visit(TypeDeclarations declarations) {
         super.visit(declarations);
         typeDeclarationsCount++;
     }
