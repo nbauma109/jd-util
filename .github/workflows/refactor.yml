@@ -106,7 +106,7 @@ jobs:
           cleanup_stringbuffer_to_stringbuilder: true
           cleanup_extract_increment: true
           cleanup_comparison_statement: true
-          cleanup_insert_inferred_type_arguments: true
+          cleanup_insert_inferred_type_arguments: false
           cleanup_make_private_fields_final: false
           cleanup_remove_unnecessary_suppress_warnings: true
           cleanup_useless_return: true
