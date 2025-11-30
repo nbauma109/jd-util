@@ -29,7 +29,7 @@ jobs:
           cleanup_array_with_curly: true
           cleanup_use_autoboxing: true
           cleanup_overridden_assignment_move_decl: true
-          cleanup_always_use_this_for_non_static_method_access: true
+          cleanup_always_use_this_for_non_static_method_access: false
           cleanup_remove_trailing_whitespaces_ignore_empty: false
           cleanup_system_property_javaspecversion: false
           cleanup_primitive_comparison: true
@@ -55,7 +55,7 @@ jobs:
           cleanup_instanceof: true
           cleanup_precompile_regex: true
           cleanup_add_missing_annotations: true
-          cleanup_always_use_this_for_non_static_field_access: true
+          cleanup_always_use_this_for_non_static_field_access: false
           cleanup_boolean_literal: true
           cleanup_sort_members: false
           cleanup_always_use_parentheses_in_expressions: false
@@ -72,7 +72,7 @@ jobs:
           cleanup_map_cloning: true
           cleanup_add_serial_version_id: true
           cleanup_try_with_resource: true
-          cleanup_use_this_for_non_static_method_access: true
+          cleanup_use_this_for_non_static_method_access: false
           cleanup_use_this_for_non_static_method_access_only_if_necessary: true
           cleanup_single_used_field: false
           cleanup_reduce_indentation: true
@@ -170,7 +170,7 @@ jobs:
           cleanup_double_negation: true
           cleanup_overridden_assignment: true
           cleanup_primitive_rather_than_wrapper: true
-          cleanup_correct_indentation: true
+          cleanup_correct_indentation: false
           cleanup_use_var: false
 
       - name: Open pull request
