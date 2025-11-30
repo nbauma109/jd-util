@@ -8,13 +8,12 @@
 package org.jd.core.v1.model.javasyntax.declaration;
 
 import org.jd.core.v1.model.javasyntax.expression.Expression;
-
-import static org.jd.core.v1.model.javasyntax.expression.NoExpression.NO_EXPRESSION;
+import org.jd.core.v1.model.javasyntax.expression.NoExpression;
 
 public interface VariableInitializer extends Declaration {
-    int getLineNumber();
+	int getLineNumber();
 
-    default boolean isExpressionVariableInitializer() { return false; }
+	default boolean isExpressionVariableInitializer() { return false; }
 
-    default Expression getExpression() { return NO_EXPRESSION; }
+	default Expression getExpression() { return NoExpression.NO_EXPRESSION; }
 }

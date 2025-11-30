@@ -14,81 +14,81 @@ import org.jd.core.v1.model.javasyntax.type.BaseType;
 import java.util.List;
 
 public class EnumDeclaration extends TypeDeclaration {
-    private final BaseType interfaces;
-    protected List<Constant> constants;
+	private final BaseType interfaces;
+	protected List<Constant> constants;
 
-    public EnumDeclaration(int flags, String internalName, String name, List<Constant> constants, BodyDeclaration bodyDeclaration) {
-        this(null, flags, internalName, name, null, constants, bodyDeclaration);
-    }
+	public EnumDeclaration(int flags, String internalName, String name, List<Constant> constants, BodyDeclaration bodyDeclaration) {
+		this(null, flags, internalName, name, null, constants, bodyDeclaration);
+	}
 
-    public EnumDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseType interfaces, List<Constant> constants, BodyDeclaration bodyDeclaration) {
-        super(annotationReferences, flags, internalName, name, bodyDeclaration);
-        this.interfaces = interfaces;
-        this.constants = constants;
-    }
+	public EnumDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseType interfaces, List<Constant> constants, BodyDeclaration bodyDeclaration) {
+		super(annotationReferences, flags, internalName, name, bodyDeclaration);
+		this.interfaces = interfaces;
+		this.constants = constants;
+	}
 
-    public BaseType getInterfaces() {
-        return interfaces;
-    }
+	public BaseType getInterfaces() {
+		return interfaces;
+	}
 
-    public List<Constant> getConstants() {
-        return constants;
-    }
+	public List<Constant> getConstants() {
+		return constants;
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "EnumDeclaration{" + internalTypeName + "}";
-    }
+	@Override
+	public String toString() {
+		return "EnumDeclaration{" + internalTypeName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 
-    public static class Constant implements Declaration {
-        private final int lineNumber;
-        protected final String name;
-        private BaseExpression arguments;
-        private final BodyDeclaration bodyDeclaration;
+	public static class Constant implements Declaration {
+		private final int lineNumber;
+		protected final String name;
+		private BaseExpression arguments;
+		private final BodyDeclaration bodyDeclaration;
 
-        public Constant(String name) {
-            this(name, null);
-        }
+		public Constant(String name) {
+			this(name, null);
+		}
 
-        public Constant(String name, BaseExpression arguments) {
-            this(0, name, arguments, null);
-        }
+		public Constant(String name, BaseExpression arguments) {
+			this(0, name, arguments, null);
+		}
 
-        public Constant(int lineNumber, String name, BaseExpression arguments, BodyDeclaration bodyDeclaration) {
-            this.lineNumber = lineNumber;
-            this.name = name;
-            this.setArguments(arguments);
-            this.bodyDeclaration = bodyDeclaration;
-        }
+		public Constant(int lineNumber, String name, BaseExpression arguments, BodyDeclaration bodyDeclaration) {
+			this.lineNumber = lineNumber;
+			this.name = name;
+			setArguments(arguments);
+			this.bodyDeclaration = bodyDeclaration;
+		}
 
-        public int getLineNumber() {
-            return lineNumber;
-        }
+		public int getLineNumber() {
+			return lineNumber;
+		}
 
-        public String getName() {
-            return name;
-        }
+		public String getName() {
+			return name;
+		}
 
-        public BaseExpression getArguments() {
-            return arguments;
-        }
+		public BaseExpression getArguments() {
+			return arguments;
+		}
 
-        public void setArguments(BaseExpression arguments) {
-            this.arguments = arguments;
-        }
+		public void setArguments(BaseExpression arguments) {
+			this.arguments = arguments;
+		}
 
-        public BodyDeclaration getBodyDeclaration() {
-            return bodyDeclaration;
-        }
+		public BodyDeclaration getBodyDeclaration() {
+			return bodyDeclaration;
+		}
 
-        @Override
-        public void accept(DeclarationVisitor visitor) {
-            visitor.visit(this);
-        }
-    }
+		@Override
+		public void accept(DeclarationVisitor visitor) {
+			visitor.visit(this);
+		}
+	}
 }

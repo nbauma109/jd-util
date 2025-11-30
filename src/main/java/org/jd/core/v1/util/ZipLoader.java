@@ -20,51 +20,51 @@ import java.util.zip.ZipInputStream;
 
 public class ZipLoader implements Loader {
 
-    protected static final Pattern CLASS_SUFFIX_PATTERN = Pattern.compile("\\.class$");
+	protected static final Pattern CLASS_SUFFIX_PATTERN = Pattern.compile("\\.class$"); //$NON-NLS-1$
 
-    private HashMap<String, byte[]> map = new HashMap<>();
+	private HashMap<String, byte[]> map = new HashMap<String, byte[]>();
 
-    public  ZipLoader(InputStream in) throws IOException {
-        byte[] buffer = new byte[1024 * 2];
+	public  ZipLoader(InputStream in) throws IOException {
+		byte[] buffer = new byte[1024 * 2];
 
-            try (ZipInputStream zis = new ZipInputStream(in)) {
-                ZipEntry ze = zis.getNextEntry();
+		try (ZipInputStream zis = new ZipInputStream(in)) {
+			ZipEntry ze = zis.getNextEntry();
 
-                while (ze != null) {
-                    if (!ze.isDirectory()) {
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-                        int read = zis.read(buffer);
+			while (ze != null) {
+				if (!ze.isDirectory()) {
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					int read = zis.read(buffer);
 
-                        while (read > 0) {
-                            out.write(buffer, 0, read);
-                            read = zis.read(buffer);
-                        }
+					while (read > 0) {
+						out.write(buffer, 0, read);
+						read = zis.read(buffer);
+					}
 
-                        map.put(makeEntryName(ze.getName()), out.toByteArray());
-                    }
+					map.put(this.makeEntryName(ze.getName()), out.toByteArray());
+				}
 
-                    ze = zis.getNextEntry();
-                }
+				ze = zis.getNextEntry();
+			}
 
-                zis.closeEntry();
-            }
-    }
+			zis.closeEntry();
+		}
+	}
 
-    protected String makeEntryName(String entryName) {
-        return CLASS_SUFFIX_PATTERN.matcher(entryName).replaceFirst("");
-    }
+	protected String makeEntryName(String entryName) {
+		return ZipLoader.CLASS_SUFFIX_PATTERN.matcher(entryName).replaceFirst(""); //$NON-NLS-1$
+	}
 
-    @Override
-    public byte[] load(String internalName) throws IOException {
-        return map.get(makeEntryName(internalName));
-    }
+	@Override
+	public byte[] load(String internalName) throws IOException {
+		return map.get(this.makeEntryName(internalName));
+	}
 
-    @Override
-    public boolean canLoad(String internalName) {
-        return map.containsKey(makeEntryName(internalName));
-    }
+	@Override
+	public boolean canLoad(String internalName) {
+		return map.containsKey(this.makeEntryName(internalName));
+	}
 
-    public Map<String, byte[]> getMap() {
-        return map;
-    }
+	public Map<String, byte[]> getMap() {
+		return map;
+	}
 }

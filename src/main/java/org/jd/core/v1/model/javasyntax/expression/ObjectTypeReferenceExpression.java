@@ -11,67 +11,67 @@ import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class ObjectTypeReferenceExpression implements Expression {
-    private final int lineNumber;
-    private final ObjectType type;
-    private boolean explicit;
+	private final int lineNumber;
+	private final ObjectType type;
+	private boolean explicit;
 
-    public ObjectTypeReferenceExpression(ObjectType type) {
-        this(0, type);
-    }
+	public ObjectTypeReferenceExpression(ObjectType type) {
+		this(0, type);
+	}
 
-    public ObjectTypeReferenceExpression(int lineNumber, ObjectType type) {
-        this(lineNumber, type, true);
-    }
+	public ObjectTypeReferenceExpression(int lineNumber, ObjectType type) {
+		this(lineNumber, type, true);
+	}
 
-    public ObjectTypeReferenceExpression(int lineNumber, ObjectType type, boolean explicit) {
-        this.lineNumber = lineNumber;
-        this.type = type;
-        this.explicit = explicit;
-    }
+	public ObjectTypeReferenceExpression(int lineNumber, ObjectType type, boolean explicit) {
+		this.lineNumber = lineNumber;
+		this.type = type;
+		this.explicit = explicit;
+	}
 
-    @Override
-    public int getLineNumber() {
-        return lineNumber;
-    }
+	@Override
+	public int getLineNumber() {
+		return lineNumber;
+	}
 
-    @Override
-    public ObjectType getObjectType() {
-        return type;
-    }
+	@Override
+	public ObjectType getObjectType() {
+		return type;
+	}
 
-    @Override
-    public Type getType() {
-        return type;
-    }
+	@Override
+	public Type getType() {
+		return type;
+	}
 
-    public boolean isExplicit() {
-        return explicit;
-    }
+	public boolean isExplicit() {
+		return explicit;
+	}
 
-    public void setExplicit(boolean explicit) {
-        this.explicit = explicit;
-    }
+	public void setExplicit(boolean explicit) {
+		this.explicit = explicit;
+	}
 
-    @Override
-    public int getPriority() {
-        return 0;
-    }
+	@Override
+	public int getPriority() {
+		return 0;
+	}
 
-    @Override
-    public boolean isObjectTypeReferenceExpression() { return true; }
+	@Override
+	public boolean isObjectTypeReferenceExpression() { return true; }
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ObjectTypeReferenceExpression{" + type + "}";
-    }
+	@Override
+	public String toString() {
+		return "ObjectTypeReferenceExpression{" + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new ObjectTypeReferenceExpression(lineNumber, type, explicit);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new ObjectTypeReferenceExpression(lineNumber, type, explicit);
+	}
 }

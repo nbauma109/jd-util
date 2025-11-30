@@ -14,56 +14,56 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class TypeArgumentToTypeVisitorTest {
-    
-    @Test
-    public void testTypeArgumentToTypeVisitor() {
-        // Arrange
-        TypeArgumentToTypeVisitor visitor = new TypeArgumentToTypeVisitor();
-        visitor.init();
-        
-        // Act & Assert - PrimitiveType
-        PrimitiveType primitiveType = PrimitiveType.TYPE_INT;
-        primitiveType.accept(visitor);
-        assertEquals(primitiveType, visitor.getType());
 
-        // Act & Assert - ObjectType
-        ObjectType objectType = ObjectType.TYPE_STRING;
-        objectType.accept(visitor);
-        assertEquals(objectType, visitor.getType());
+	@Test
+	public void testTypeArgumentToTypeVisitor() {
+		// Arrange
+		TypeArgumentToTypeVisitor visitor = new TypeArgumentToTypeVisitor();
+		visitor.init();
 
-        // Act & Assert - InnerObjectType
-        ObjectType innerObjectType = new TypeMaker().makeFromInternalTypeName("java/util/Map$Entry");
-        innerObjectType.accept(visitor);
-        assertEquals(innerObjectType, visitor.getType());
+		// Act & Assert - PrimitiveType
+		PrimitiveType primitiveType = PrimitiveType.TYPE_INT;
+		primitiveType.accept(visitor);
+		assertEquals(primitiveType, visitor.getType());
 
-        // Act & Assert - GenericType
-        GenericType genericType = new GenericType("T");
-        genericType.accept(visitor);
-        assertEquals(genericType, visitor.getType());
+		// Act & Assert - ObjectType
+		ObjectType objectType = ObjectType.TYPE_STRING;
+		objectType.accept(visitor);
+		assertEquals(objectType, visitor.getType());
 
-        // Act & Assert - WildcardExtendsTypeArgument
-        WildcardExtendsTypeArgument wildcardExtendsTypeArgument = new WildcardExtendsTypeArgument(ObjectType.TYPE_OBJECT);
-        wildcardExtendsTypeArgument.accept(visitor);
-        assertEquals(ObjectType.TYPE_OBJECT, visitor.getType());
+		// Act & Assert - InnerObjectType
+		ObjectType innerObjectType = new TypeMaker().makeFromInternalTypeName("java/util/Map$Entry"); //$NON-NLS-1$
+		innerObjectType.accept(visitor);
+		assertEquals(innerObjectType, visitor.getType());
 
-        // Act & Assert - WildcardSuperTypeArgument
-        WildcardSuperTypeArgument wildcardSuperTypeArgument = new WildcardSuperTypeArgument(ObjectType.TYPE_OBJECT);
-        wildcardSuperTypeArgument.accept(visitor);
-        assertEquals(ObjectType.TYPE_OBJECT, visitor.getType());
+		// Act & Assert - GenericType
+		GenericType genericType = new GenericType("T"); //$NON-NLS-1$
+		genericType.accept(visitor);
+		assertEquals(genericType, visitor.getType());
 
-        // Act & Assert - DiamondTypeArgument
-        DiamondTypeArgument diamondTypeArgument = DiamondTypeArgument.DIAMOND;
-        diamondTypeArgument.accept(visitor);
-        assertEquals(ObjectType.TYPE_OBJECT, visitor.getType());
+		// Act & Assert - WildcardExtendsTypeArgument
+		WildcardExtendsTypeArgument wildcardExtendsTypeArgument = new WildcardExtendsTypeArgument(ObjectType.TYPE_OBJECT);
+		wildcardExtendsTypeArgument.accept(visitor);
+		assertEquals(ObjectType.TYPE_OBJECT, visitor.getType());
 
-        // Act & Assert - WildcardTypeArgument
-        WildcardTypeArgument wildcardTypeArgument = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
-        wildcardTypeArgument.accept(visitor);
-        assertEquals(ObjectType.TYPE_OBJECT, visitor.getType());
+		// Act & Assert - WildcardSuperTypeArgument
+		WildcardSuperTypeArgument wildcardSuperTypeArgument = new WildcardSuperTypeArgument(ObjectType.TYPE_OBJECT);
+		wildcardSuperTypeArgument.accept(visitor);
+		assertEquals(ObjectType.TYPE_OBJECT, visitor.getType());
 
-        // Act & Assert - TypeArguments
-        TypeArguments typeArguments = new TypeArguments();
-        typeArguments.accept(visitor);
-        assertEquals(ObjectType.TYPE_UNDEFINED_OBJECT, visitor.getType());
-    }
+		// Act & Assert - DiamondTypeArgument
+		DiamondTypeArgument diamondTypeArgument = DiamondTypeArgument.DIAMOND;
+		diamondTypeArgument.accept(visitor);
+		assertEquals(ObjectType.TYPE_OBJECT, visitor.getType());
+
+		// Act & Assert - WildcardTypeArgument
+		WildcardTypeArgument wildcardTypeArgument = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
+		wildcardTypeArgument.accept(visitor);
+		assertEquals(ObjectType.TYPE_OBJECT, visitor.getType());
+
+		// Act & Assert - TypeArguments
+		TypeArguments typeArguments = new TypeArguments();
+		typeArguments.accept(visitor);
+		assertEquals(ObjectType.TYPE_UNDEFINED_OBJECT, visitor.getType());
+	}
 }

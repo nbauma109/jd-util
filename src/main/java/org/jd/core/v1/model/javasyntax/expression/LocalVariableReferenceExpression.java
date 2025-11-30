@@ -10,41 +10,41 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class LocalVariableReferenceExpression extends AbstractLineNumberTypeExpression {
-    private String name;
+	private String name;
 
-    public LocalVariableReferenceExpression(Type type, String name) {
-        this(UNKNOWN_LINE_NUMBER, type, name);
-    }
+	public LocalVariableReferenceExpression(Type type, String name) {
+		this(Expression.UNKNOWN_LINE_NUMBER, type, name);
+	}
 
-    public LocalVariableReferenceExpression(int lineNumber, Type type, String name) {
-        super(lineNumber, type);
-        this.name = name;
-    }
+	public LocalVariableReferenceExpression(int lineNumber, Type type, String name) {
+		super(lineNumber, type);
+		this.name = name;
+	}
 
-    @Override
-    public String getName() {
-        return name;
-    }
+	@Override
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    @Override
-    public boolean isLocalVariableReferenceExpression() { return true; }
+	@Override
+	public boolean isLocalVariableReferenceExpression() { return true; }
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "LocalVariableReferenceExpression{type=" + getType() + ", name=" + name + "}";
-    }
+	@Override
+	public String toString() {
+		return "LocalVariableReferenceExpression{type=" + this.getType() + ", name=" + name + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new LocalVariableReferenceExpression(lineNumber, getType(), name);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new LocalVariableReferenceExpression(lineNumber, this.getType(), name);
+	}
 }

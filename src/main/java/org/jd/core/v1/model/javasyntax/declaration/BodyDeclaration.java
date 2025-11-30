@@ -8,33 +8,33 @@
 package org.jd.core.v1.model.javasyntax.declaration;
 
 public class BodyDeclaration implements Declaration {
-    private final String internalTypeName;
-    protected BaseMemberDeclaration memberDeclarations;
-    private boolean anonymous;
+	private final String internalTypeName;
+	protected BaseMemberDeclaration memberDeclarations;
+	private boolean anonymous;
 
-    public BodyDeclaration(String internalTypeName, BaseMemberDeclaration memberDeclarations) {
-        this.internalTypeName = internalTypeName;
-        this.memberDeclarations = memberDeclarations;
-    }
+	public BodyDeclaration(String internalTypeName, BaseMemberDeclaration memberDeclarations) {
+		this.internalTypeName = internalTypeName;
+		this.memberDeclarations = memberDeclarations;
+	}
 
-    public String getInternalTypeName() {
-        return internalTypeName;
-    }
+	public String getInternalTypeName() {
+		return internalTypeName;
+	}
 
-    public BaseMemberDeclaration getMemberDeclarations() {
-        return memberDeclarations;
-    }
+	public BaseMemberDeclaration getMemberDeclarations() {
+		return memberDeclarations;
+	}
 
-    public boolean isAnonymous() {
-        return anonymous;
-    }
+	public boolean isAnonymous() {
+		return anonymous;
+	}
 
-    public void setAnonymous(boolean anonymous) {
-        this.anonymous = anonymous;
-    }
+	public void setAnonymous(boolean anonymous) {
+		this.anonymous = anonymous;
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 }

@@ -12,69 +12,68 @@ import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import java.util.Objects;
 
 public class AnnotationReference implements BaseAnnotationReference {
-    protected final ObjectType type;
-    protected final BaseElementValue elementValue;
-    protected final BaseElementValuePair elementValuePairs;
+	protected final ObjectType type;
+	protected final BaseElementValue elementValue;
+	protected final BaseElementValuePair elementValuePairs;
 
-    public AnnotationReference(ObjectType type) {
-        this(type, null, null);
-    }
+	public AnnotationReference(ObjectType type) {
+		this(type, null, null);
+	}
 
-    public AnnotationReference(ObjectType type, BaseElementValue elementValue) {
-        this(type, elementValue, null);
-    }
+	public AnnotationReference(ObjectType type, BaseElementValue elementValue) {
+		this(type, elementValue, null);
+	}
 
-    public AnnotationReference(ObjectType type, BaseElementValuePair elementValuePairs) {
-        this(type, null, elementValuePairs);
-    }
+	public AnnotationReference(ObjectType type, BaseElementValuePair elementValuePairs) {
+		this(type, null, elementValuePairs);
+	}
 
-    protected AnnotationReference(ObjectType type, BaseElementValue elementValue, BaseElementValuePair elementValuePairs) {
-        this.type = type;
-        this.elementValue = elementValue;
-        this.elementValuePairs = elementValuePairs;
-    }
+	protected AnnotationReference(ObjectType type, BaseElementValue elementValue, BaseElementValuePair elementValuePairs) {
+		this.type = type;
+		this.elementValue = elementValue;
+		this.elementValuePairs = elementValuePairs;
+	}
 
-    public ObjectType getType() {
-        return type;
-    }
+	public ObjectType getType() {
+		return type;
+	}
 
-    public BaseElementValue getElementValue() {
-        return elementValue;
-    }
+	public BaseElementValue getElementValue() {
+		return elementValue;
+	}
 
-    public BaseElementValuePair getElementValuePairs() {
-        return elementValuePairs;
-    }
+	public BaseElementValuePair getElementValuePairs() {
+		return elementValuePairs;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || o.getClass() != getClass()) {
-            return false;
-        }
-        AnnotationReference that = (AnnotationReference) o;
-        return Objects.equals(type, that.type) 
-            && Objects.equals(elementValue, that.elementValue)
-            && Objects.equals(elementValuePairs, that.elementValuePairs);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || o.getClass() != this.getClass()) {
+			return false;
+		}
+		AnnotationReference that = (AnnotationReference) o;
+		return Objects.equals(type, that.type)
+				&& Objects.equals(elementValue, that.elementValue)
+				&& Objects.equals(elementValuePairs, that.elementValuePairs);
+	}
 
-    @Override
-    public int hashCode() {
-        int result = 970_748_295 + type.hashCode();
-        result = 31 * result + Objects.hash(elementValue);
-        result = 31 * result + Objects.hash(elementValuePairs);
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		int result = 970_748_295 + type.hashCode();
+		result = 31 * result + Objects.hash(elementValue);
+		return 31 * result + Objects.hash(elementValuePairs);
+	}
 
-    @Override
-    public void accept(ReferenceVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ReferenceVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public boolean isEmpty() {
-        return false;
-    }
+	@Override
+	public boolean isEmpty() {
+		return false;
+	}
 }

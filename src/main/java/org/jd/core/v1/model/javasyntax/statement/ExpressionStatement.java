@@ -10,36 +10,36 @@ package org.jd.core.v1.model.javasyntax.statement;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 
 public class ExpressionStatement implements Statement {
-    private Expression expression;
+	private Expression expression;
 
-    public ExpressionStatement(Expression expression) {
-        this.expression = expression;
-    }
+	public ExpressionStatement(Expression expression) {
+		this.expression = expression;
+	}
 
-    @Override
-    public Expression getExpression() {
-        return expression;
-    }
+	@Override
+	public Expression getExpression() {
+		return expression;
+	}
 
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
+	public void setExpression(Expression expression) {
+		this.expression = expression;
+	}
 
-    @Override
-    public int getLineNumber() {
-        return expression.getLineNumber();
-    }
+	@Override
+	public int getLineNumber() {
+		return expression.getLineNumber();
+	}
 
-    @Override
-    public boolean isExpressionStatement() { return true; }
+	@Override
+	public boolean isExpressionStatement() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ExpressionStatement{" + expression.toString() + "}";
-    }
+	@Override
+	public String toString() {
+		return "ExpressionStatement{" + expression.toString() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

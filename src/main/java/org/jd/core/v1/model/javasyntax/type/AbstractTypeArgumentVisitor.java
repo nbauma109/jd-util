@@ -8,48 +8,48 @@
 package org.jd.core.v1.model.javasyntax.type;
 
 public abstract class AbstractTypeArgumentVisitor implements TypeArgumentVisitor {
-    @Override
-    public void visit(TypeArguments arguments) {
-        for (TypeArgument typeArgument : arguments) {
-            typeArgument.accept(this);
-        }
-    }
+	@Override
+	public void visit(TypeArguments arguments) {
+		for (TypeArgument typeArgument : arguments) {
+			typeArgument.accept(this);
+		}
+	}
 
-    @Override
-    public void visit(DiamondTypeArgument argument) {}
+	@Override
+	public void visit(DiamondTypeArgument argument) {}
 
-    @Override
-    public void visit(WildcardExtendsTypeArgument argument) {
-        argument.type().accept(this);
-    }
+	@Override
+	public void visit(WildcardExtendsTypeArgument argument) {
+		argument.type().accept(this);
+	}
 
-    @Override public void visit(PrimitiveType type) {}
+	@Override public void visit(PrimitiveType type) {}
 
-    @Override
-    public void visit(ObjectType type) {
-        safeAccept(type.getTypeArguments());
-    }
+	@Override
+	public void visit(ObjectType type) {
+		this.safeAccept(type.getTypeArguments());
+	}
 
-    @Override
-    public void visit(InnerObjectType type) {
-        safeAccept(type.getOuterType());
-        safeAccept(type.getTypeArguments());
-    }
+	@Override
+	public void visit(InnerObjectType type) {
+		this.safeAccept(type.getOuterType());
+		this.safeAccept(type.getTypeArguments());
+	}
 
-    @Override
-    public void visit(WildcardSuperTypeArgument argument) {
-        argument.type().accept(this);
-    }
+	@Override
+	public void visit(WildcardSuperTypeArgument argument) {
+		argument.type().accept(this);
+	}
 
-    @Override
-    public void visit(GenericType type) {}
+	@Override
+	public void visit(GenericType type) {}
 
-    @Override
-    public void visit(WildcardTypeArgument argument) {}
+	@Override
+	public void visit(WildcardTypeArgument argument) {}
 
-    protected void safeAccept(TypeArgumentVisitable visitable) {
-        if (visitable != null) {
-            visitable.accept(this);
-        }
-    }
+	protected void safeAccept(TypeArgumentVisitable visitable) {
+		if (visitable != null) {
+			visitable.accept(this);
+		}
+	}
 }

@@ -12,28 +12,28 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class LocalVariableDeclarationStatementTest {
-    private LocalVariableDeclarationStatement localVariableDeclarationStatement;
-    private TestVisitor visitor;
+	private LocalVariableDeclarationStatement localVariableDeclarationStatement;
+	private TestVisitor visitor;
 
-    @Before
-    public void setUp() {
-        visitor = new TestVisitor();
+	@Before
+	public void setUp() {
+		visitor = new TestVisitor();
 
-        Type type = PrimitiveType.TYPE_INT;
-        BaseLocalVariableDeclarator localVariableDeclarators = new LocalVariableDeclarators(1);
-        ((LocalVariableDeclarators)localVariableDeclarators).add(new LocalVariableDeclarator("a"));
+		Type type = PrimitiveType.TYPE_INT;
+		BaseLocalVariableDeclarator localVariableDeclarators = new LocalVariableDeclarators(1);
+		((LocalVariableDeclarators)localVariableDeclarators).add(new LocalVariableDeclarator("a")); //$NON-NLS-1$
 
-        localVariableDeclarationStatement = new LocalVariableDeclarationStatement(type, localVariableDeclarators);
-    }
+		localVariableDeclarationStatement = new LocalVariableDeclarationStatement(type, localVariableDeclarators);
+	}
 
-    @Test
-    public void testLocalVariableDeclarationStatement() {
-        // Act
-        localVariableDeclarationStatement.accept(visitor);
+	@Test
+	public void testLocalVariableDeclarationStatement() {
+		// Act
+		localVariableDeclarationStatement.accept(visitor);
 
-        // Assert
-        assertEquals(1, visitor.getLocalVariableDeclarationStatementCount());
-        assertTrue(localVariableDeclarationStatement.isLocalVariableDeclarationStatement());
-        assertEquals("LocalVariableDeclarationStatement{PrimitiveType{primitive=int} [LocalVariableDeclarator{name=a, dimension0, variableInitializer=null}]}", localVariableDeclarationStatement.toString());
-    }
+		// Assert
+		assertEquals(1, visitor.getLocalVariableDeclarationStatementCount());
+		assertTrue(localVariableDeclarationStatement.isLocalVariableDeclarationStatement());
+		assertEquals("LocalVariableDeclarationStatement{PrimitiveType{primitive=int} [LocalVariableDeclarator{name=a, dimension0, variableInitializer=null}]}", localVariableDeclarationStatement.toString()); //$NON-NLS-1$
+	}
 }

@@ -10,54 +10,54 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class PreOperatorExpression extends AbstractLineNumberExpression {
-    private final String operator;
-    private Expression expression;
+	private final String operator;
+	private Expression expression;
 
-    public PreOperatorExpression(int lineNumber, String operator, Expression expression) {
-        super(lineNumber);
-        this.operator = operator;
-        this.setExpression(expression);
-    }
+	public PreOperatorExpression(int lineNumber, String operator, Expression expression) {
+		super(lineNumber);
+		this.operator = operator;
+		setExpression(expression);
+	}
 
-    @Override
-    public String getOperator() {
-        return operator;
-    }
+	@Override
+	public String getOperator() {
+		return operator;
+	}
 
-    @Override
-    public Expression getExpression() {
-        return expression;
-    }
+	@Override
+	public Expression getExpression() {
+		return expression;
+	}
 
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
+	public void setExpression(Expression expression) {
+		this.expression = expression;
+	}
 
-    @Override
-    public Type getType() {
-        return expression.getType();
-    }
+	@Override
+	public Type getType() {
+		return expression.getType();
+	}
 
-    @Override
-    public int getPriority() {
-        return 2;
-    }
+	@Override
+	public int getPriority() {
+		return 2;
+	}
 
-    @Override
-    public boolean isPreOperatorExpression() { return true; }
+	@Override
+	public boolean isPreOperatorExpression() { return true; }
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "PreOperatorExpression{" + operator + " " + expression + "}";
-    }
+	@Override
+	public String toString() {
+		return "PreOperatorExpression{" + operator + " " + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new PreOperatorExpression(lineNumber, operator, expression);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new PreOperatorExpression(lineNumber, operator, expression);
+	}
 }

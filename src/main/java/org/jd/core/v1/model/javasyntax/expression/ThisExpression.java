@@ -10,43 +10,43 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class ThisExpression extends AbstractLineNumberExpression {
-    private final Type type;
-    private final boolean explicit;
+	private final Type type;
+	private final boolean explicit;
 
-    public ThisExpression(Type type) {
-        this(UNKNOWN_LINE_NUMBER, type);
-    }
+	public ThisExpression(Type type) {
+		this(Expression.UNKNOWN_LINE_NUMBER, type);
+	}
 
-    public ThisExpression(int lineNumber, Type type) {
-        super(lineNumber);
-        this.type = type;
-        this.explicit = true;
-    }
+	public ThisExpression(int lineNumber, Type type) {
+		super(lineNumber);
+		this.type = type;
+		this.explicit = true;
+	}
 
-    @Override
-    public Type getType() {
-        return type;
-    }
+	@Override
+	public Type getType() {
+		return type;
+	}
 
-    public boolean isExplicit() {
-        return explicit;
-    }
+	public boolean isExplicit() {
+		return explicit;
+	}
 
-    @Override
-    public boolean isThisExpression() { return true; }
+	@Override
+	public boolean isThisExpression() { return true; }
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ThisExpression{" + type + "}";
-    }
+	@Override
+	public String toString() {
+		return "ThisExpression{" + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new ThisExpression(lineNumber, type);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new ThisExpression(lineNumber, type);
+	}
 }

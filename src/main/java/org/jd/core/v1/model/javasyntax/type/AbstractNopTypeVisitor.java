@@ -8,9 +8,9 @@
 package org.jd.core.v1.model.javasyntax.type;
 
 public abstract class AbstractNopTypeVisitor implements TypeVisitor {
-    @Override public void visit(PrimitiveType type) {}
-    @Override public void visit(ObjectType type) {}
-    @Override public void visit(InnerObjectType type) {}
-    @Override public void visit(Types types) {}
-    @Override public void visit(GenericType type) {}
+	@Override public void visit(PrimitiveType type) {}
+	@Override public void visit(ObjectType type) {}
+	@Override public void visit(InnerObjectType type) {}
+	@Override public void visit(Types types) {}
+	@Override public void visit(GenericType type) {}
 }

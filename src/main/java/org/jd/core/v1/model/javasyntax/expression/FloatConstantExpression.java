@@ -10,38 +10,38 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 
 public class FloatConstantExpression extends AbstractLineNumberTypeExpression {
-    private final float value;
+	private final float value;
 
-    public FloatConstantExpression(float value) {
-        super(PrimitiveType.TYPE_FLOAT);
-        this.value = value;
-    }
+	public FloatConstantExpression(float value) {
+		super(PrimitiveType.TYPE_FLOAT);
+		this.value = value;
+	}
 
-    public FloatConstantExpression(int lineNumber, float value) {
-        super(lineNumber, PrimitiveType.TYPE_FLOAT);
-        this.value = value;
-    }
+	public FloatConstantExpression(int lineNumber, float value) {
+		super(lineNumber, PrimitiveType.TYPE_FLOAT);
+		this.value = value;
+	}
 
-    @Override
-    public float getFloatValue() {
-        return value;
-    }
+	@Override
+	public float getFloatValue() {
+		return value;
+	}
 
-    @Override
-    public boolean isFloatConstantExpression() { return true; }
+	@Override
+	public boolean isFloatConstantExpression() { return true; }
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "FloatConstantExpression{" + value + "}";
-    }
+	@Override
+	public String toString() {
+		return "FloatConstantExpression{" + value + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new FloatConstantExpression(lineNumber, value);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new FloatConstantExpression(lineNumber, value);
+	}
 }

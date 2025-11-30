@@ -8,5 +8,5 @@
 package org.jd.core.v1.model.javasyntax.reference;
 
 public interface Reference {
-    void accept(ReferenceVisitor visitor);
+	void accept(ReferenceVisitor visitor);
 }

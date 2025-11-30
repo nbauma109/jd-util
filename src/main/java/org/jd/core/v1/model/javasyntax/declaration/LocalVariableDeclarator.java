@@ -8,53 +8,53 @@
 package org.jd.core.v1.model.javasyntax.declaration;
 
 public class LocalVariableDeclarator implements BaseLocalVariableDeclarator {
-    private final int lineNumber;
-    private String name;
-    protected int dimension;
-    protected final VariableInitializer variableInitializer;
+	private final int lineNumber;
+	private String name;
+	protected int dimension;
+	protected final VariableInitializer variableInitializer;
 
-    public LocalVariableDeclarator(String name) {
-        this(0, name, null);
-    }
+	public LocalVariableDeclarator(String name) {
+		this(0, name, null);
+	}
 
-    public LocalVariableDeclarator(int lineNumber, String name, VariableInitializer variableInitializer) {
-        this.lineNumber = lineNumber;
-        this.name = name;
-        this.variableInitializer = variableInitializer;
-    }
+	public LocalVariableDeclarator(int lineNumber, String name, VariableInitializer variableInitializer) {
+		this.lineNumber = lineNumber;
+		this.name = name;
+		this.variableInitializer = variableInitializer;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public int getDimension() {
-        return dimension;
-    }
+	public int getDimension() {
+		return dimension;
+	}
 
-    public void setDimension(int dimension) {
-        this.dimension = dimension;
-    }
+	public void setDimension(int dimension) {
+		this.dimension = dimension;
+	}
 
-    @Override
-    public int getLineNumber() {
-        return lineNumber;
-    }
+	@Override
+	public int getLineNumber() {
+		return lineNumber;
+	}
 
-    public VariableInitializer getVariableInitializer() {
-        return variableInitializer;
-    }
+	public VariableInitializer getVariableInitializer() {
+		return variableInitializer;
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "LocalVariableDeclarator{name=" + name + ", dimension" + dimension + ", variableInitializer=" + variableInitializer + "}";
-    }
+	@Override
+	public String toString() {
+		return "LocalVariableDeclarator{name=" + name + ", dimension" + dimension + ", variableInitializer=" + variableInitializer + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+	}
 }

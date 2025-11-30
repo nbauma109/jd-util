@@ -10,29 +10,29 @@ package org.jd.core.v1.model.javasyntax.statement;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 
 public class AssertStatement implements Statement {
-    private Expression condition;
-    private final Expression message;
+	private Expression condition;
+	private final Expression message;
 
-    public AssertStatement(Expression condition, Expression message) {
-        this.condition = condition;
-        this.message = message;
-    }
+	public AssertStatement(Expression condition, Expression message) {
+		this.condition = condition;
+		this.message = message;
+	}
 
-    @Override
-    public Expression getCondition() {
-        return condition;
-    }
+	@Override
+	public Expression getCondition() {
+		return condition;
+	}
 
-    public void setCondition(Expression condition) {
-        this.condition = condition;
-    }
+	public void setCondition(Expression condition) {
+		this.condition = condition;
+	}
 
-    public Expression getMessage() {
-        return message;
-    }
+	public Expression getMessage() {
+		return message;
+	}
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 }

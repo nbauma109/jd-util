@@ -9,26 +9,26 @@ package org.jd.core.v1.model.javasyntax.type;
 import org.jd.core.v1.util.DefaultList;
 
 public class TypeParameters extends DefaultList<TypeParameter> implements BaseTypeParameter {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public TypeParameters() {}
+	public TypeParameters() {}
 
-    @Override
-    public void accept(TypeParameterVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(TypeParameterVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
 
-        sb.append(get(0));
+		sb.append(this.get(0));
 
-        for (int i=1; i<size(); i++) {
-            sb.append(" & ");
-            sb.append(get(i));
-        }
+		for (int i=1; i<this.size(); i++) {
+			sb.append(" & "); //$NON-NLS-1$
+			sb.append(this.get(i));
+		}
 
-        return sb.toString();
-    }
+		return sb.toString();
+	}
 }

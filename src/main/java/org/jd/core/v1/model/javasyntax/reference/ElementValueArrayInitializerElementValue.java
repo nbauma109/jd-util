@@ -8,27 +8,27 @@
 package org.jd.core.v1.model.javasyntax.reference;
 
 public class ElementValueArrayInitializerElementValue implements BaseElementValue {
-    private final BaseElementValue elementValueArrayInitializer;
+	private final BaseElementValue elementValueArrayInitializer;
 
-    public ElementValueArrayInitializerElementValue() {
-        this(null);
-    }
+	public ElementValueArrayInitializerElementValue() {
+		this(null);
+	}
 
-    public ElementValueArrayInitializerElementValue(BaseElementValue elementValueArrayInitializer) {
-        this.elementValueArrayInitializer = elementValueArrayInitializer;
-    }
+	public ElementValueArrayInitializerElementValue(BaseElementValue elementValueArrayInitializer) {
+		this.elementValueArrayInitializer = elementValueArrayInitializer;
+	}
 
-    public BaseElementValue getElementValueArrayInitializer() {
-        return elementValueArrayInitializer;
-    }
+	public BaseElementValue getElementValueArrayInitializer() {
+		return elementValueArrayInitializer;
+	}
 
-    @Override
-    public void accept(ReferenceVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ReferenceVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ElementValueArrayInitializerElementValue{" + elementValueArrayInitializer + "}";
-    }
+	@Override
+	public String toString() {
+		return "ElementValueArrayInitializerElementValue{" + elementValueArrayInitializer + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

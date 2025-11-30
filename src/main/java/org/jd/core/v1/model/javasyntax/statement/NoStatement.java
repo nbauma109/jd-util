@@ -8,17 +8,17 @@
 package org.jd.core.v1.model.javasyntax.statement;
 
 public class NoStatement implements Statement {
-    public static final NoStatement NO_STATEMENT = new NoStatement();
+	public static final NoStatement NO_STATEMENT = new NoStatement();
 
-    protected NoStatement() {}
+	protected NoStatement() {}
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "NoStatement";
-    }
+	@Override
+	public String toString() {
+		return "NoStatement"; //$NON-NLS-1$
+	}
 }

@@ -10,29 +10,29 @@ package org.jd.core.v1.model.javasyntax.statement;
 import java.util.Objects;
 
 public class BreakStatement implements Statement {
-    public static final BreakStatement BREAK = new BreakStatement();
+	public static final BreakStatement BREAK = new BreakStatement();
 
-    private final String label;
+	private final String label;
 
-    protected BreakStatement() {
-        this.label = null;
-    }
+	protected BreakStatement() {
+		this.label = null;
+	}
 
-    public BreakStatement(String label) {
-        Objects.requireNonNull(label);
+	public BreakStatement(String label) {
+		Objects.requireNonNull(label);
 
-        this.label = label;
-    }
+		this.label = label;
+	}
 
-    public String getLabel() {
-        return label;
-    }
+	public String getLabel() {
+		return label;
+	}
 
-    @Override
-    public boolean isBreakStatement() { return true; }
+	@Override
+	public boolean isBreakStatement() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 }

@@ -8,24 +8,24 @@
 package org.jd.core.v1.model.javasyntax.type;
 
 public class TypeParameterWithTypeBounds extends TypeParameter {
-    private final BaseType typeBounds;
+	private final BaseType typeBounds;
 
-    public TypeParameterWithTypeBounds(String identifier, BaseType typeBounds) {
-        super(identifier);
-        this.typeBounds = typeBounds;
-    }
+	public TypeParameterWithTypeBounds(String identifier, BaseType typeBounds) {
+		super(identifier);
+		this.typeBounds = typeBounds;
+	}
 
-    public BaseType getTypeBounds() {
-        return typeBounds;
-    }
+	public BaseType getTypeBounds() {
+		return typeBounds;
+	}
 
-    @Override
-    public void accept(TypeParameterVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(TypeParameterVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "TypeParameter{identifier=" + identifier + ", typeBounds=" + typeBounds + "}";
-    }
+	@Override
+	public String toString() {
+		return "TypeParameter{identifier=" + identifier + ", typeBounds=" + typeBounds + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 }

@@ -11,30 +11,30 @@ import org.jd.core.v1.util.DefaultList;
 import java.util.Collection;
 
 public class Expressions extends DefaultList<Expression> implements BaseExpression {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public Expressions() {}
+	public Expressions() {}
 
-    public Expressions(int capacity) {
-        super(capacity);
-    }
+	public Expressions(int capacity) {
+		super(capacity);
+	}
 
-    public Expressions(Collection<Expression> collection) {
-        super(collection);
-        if (collection.size() <= 1) {
-            throw new IllegalArgumentException("Use 'Expression' or sub class instead");
-        }
-    }
+	public Expressions(Collection<Expression> collection) {
+		super(collection);
+		if (collection.size() <= 1) {
+			throw new IllegalArgumentException("Use 'Expression' or sub class instead"); //$NON-NLS-1$
+		}
+	}
 
-    public Expressions(Expression expression, Expression... expressions) {
-        super(expression, expressions);
-        if (expressions.length <= 0) {
-            throw new IllegalArgumentException("Use 'Expression' or sub class instead");
-        }
-    }
+	public Expressions(Expression expression, Expression... expressions) {
+		super(expression, expressions);
+		if (expressions.length <= 0) {
+			throw new IllegalArgumentException("Use 'Expression' or sub class instead"); //$NON-NLS-1$
+		}
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 }

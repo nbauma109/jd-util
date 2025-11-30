@@ -12,74 +12,74 @@ import org.jd.core.v1.model.javasyntax.type.Type;
 import java.util.Objects;
 
 public class FieldDeclaration implements MemberDeclaration {
-    private final BaseAnnotationReference annotationReferences;
-    private int flags;
-    protected final Type type;
-    protected BaseFieldDeclarator fieldDeclarators;
+	private final BaseAnnotationReference annotationReferences;
+	private int flags;
+	protected final Type type;
+	protected BaseFieldDeclarator fieldDeclarators;
 
-    public FieldDeclaration(int flags, Type type, BaseFieldDeclarator fieldDeclarators) {
-        this(null, flags, type, fieldDeclarators);
-    }
+	public FieldDeclaration(int flags, Type type, BaseFieldDeclarator fieldDeclarators) {
+		this(null, flags, type, fieldDeclarators);
+	}
 
-    public FieldDeclaration(BaseAnnotationReference annotationReferences, int flags, Type type, BaseFieldDeclarator fieldDeclarators) {
-        this.flags = flags;
-        this.annotationReferences = annotationReferences;
-        this.type = type;
-        this.setFieldDeclarators(fieldDeclarators);
-        fieldDeclarators.setFieldDeclaration(this);
-    }
+	public FieldDeclaration(BaseAnnotationReference annotationReferences, int flags, Type type, BaseFieldDeclarator fieldDeclarators) {
+		this.flags = flags;
+		this.annotationReferences = annotationReferences;
+		this.type = type;
+		setFieldDeclarators(fieldDeclarators);
+		fieldDeclarators.setFieldDeclaration(this);
+	}
 
-    public int getFlags() {
-        return flags;
-    }
+	public int getFlags() {
+		return flags;
+	}
 
-    public void setFlags(int flags) {
-        this.flags = flags;
-    }
+	public void setFlags(int flags) {
+		this.flags = flags;
+	}
 
-    public BaseAnnotationReference getAnnotationReferences() {
-        return annotationReferences;
-    }
+	public BaseAnnotationReference getAnnotationReferences() {
+		return annotationReferences;
+	}
 
-    public Type getType() {
-        return type;
-    }
+	public Type getType() {
+		return type;
+	}
 
-    public BaseFieldDeclarator getFieldDeclarators() {
-        return fieldDeclarators;
-    }
+	public BaseFieldDeclarator getFieldDeclarators() {
+		return fieldDeclarators;
+	}
 
-    public void setFieldDeclarators(BaseFieldDeclarator fieldDeclarators) {
-        this.fieldDeclarators = fieldDeclarators;
-    }
+	public void setFieldDeclarators(BaseFieldDeclarator fieldDeclarators) {
+		this.fieldDeclarators = fieldDeclarators;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        FieldDeclaration that = (FieldDeclaration) o;
-        return flags == that.flags && Objects.equals(annotationReferences, that.annotationReferences) && fieldDeclarators.equals(that.fieldDeclarators) && type.equals(that.type);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || this.getClass() != o.getClass()) {
+			return false;
+		}
+		FieldDeclaration that = (FieldDeclaration) o;
+		return flags == that.flags && Objects.equals(annotationReferences, that.annotationReferences) && fieldDeclarators.equals(that.fieldDeclarators) && type.equals(that.type);
+	}
 
-    @Override
-    public int hashCode() {
-        int result = 327_494_460 + flags;
-        result = 31 * result + Objects.hash(annotationReferences);
-        result = 31 * result + type.hashCode();
-        return 31 * result + fieldDeclarators.hashCode();
-    }
+	@Override
+	public int hashCode() {
+		int result = 327_494_460 + flags;
+		result = 31 * result + Objects.hash(annotationReferences);
+		result = 31 * result + type.hashCode();
+		return 31 * result + fieldDeclarators.hashCode();
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "FieldDeclaration{" + type + " " + fieldDeclarators + "}";
-    }
+	@Override
+	public String toString() {
+		return "FieldDeclaration{" + type + " " + fieldDeclarators + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 }

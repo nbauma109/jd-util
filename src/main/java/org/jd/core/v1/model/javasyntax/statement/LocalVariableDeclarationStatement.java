@@ -13,20 +13,20 @@ import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class LocalVariableDeclarationStatement extends LocalVariableDeclaration implements Statement {
 
-    public LocalVariableDeclarationStatement(Type type, BaseLocalVariableDeclarator localVariableDeclarators) {
-        super(type, localVariableDeclarators);
-    }
+	public LocalVariableDeclarationStatement(Type type, BaseLocalVariableDeclarator localVariableDeclarators) {
+		super(type, localVariableDeclarators);
+	}
 
-    @Override
-    public boolean isLocalVariableDeclarationStatement() { return true; }
+	@Override
+	public boolean isLocalVariableDeclarationStatement() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "LocalVariableDeclarationStatement{" + type + " " + localVariableDeclarators + "}";
-    }
+	@Override
+	public String toString() {
+		return "LocalVariableDeclarationStatement{" + type + " " + localVariableDeclarators + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 }

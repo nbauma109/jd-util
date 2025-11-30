@@ -9,37 +9,37 @@ import static org.junit.Assert.assertEquals;
 
 public class TypeReferenceDotClassExpressionTest {
 
-    @Test
-    public void testTypeReferenceDotClassExpression() {
-        Type typeDotClass = ObjectType.TYPE_STRING;
-        int lineNumber = 0;
+	@Test
+	public void testTypeReferenceDotClassExpression() {
+		Type typeDotClass = ObjectType.TYPE_STRING;
+		int lineNumber = 0;
 
-        TypeReferenceDotClassExpression typeReferenceDotClassExpression = new TypeReferenceDotClassExpression(typeDotClass);
+		TypeReferenceDotClassExpression typeReferenceDotClassExpression = new TypeReferenceDotClassExpression(typeDotClass);
 
-        // Test getLineNumber
-        assertEquals(lineNumber, typeReferenceDotClassExpression.getLineNumber());
+		// Test getLineNumber
+		assertEquals(lineNumber, typeReferenceDotClassExpression.getLineNumber());
 
-        // Test getTypeDotClass
-        assertEquals(typeDotClass, typeReferenceDotClassExpression.getTypeDotClass());
+		// Test getTypeDotClass
+		assertEquals(typeDotClass, typeReferenceDotClassExpression.getTypeDotClass());
 
-        // Test getType
-        Type expectedType = ObjectType.TYPE_CLASS.createType(typeDotClass);
-        assertEquals(expectedType, typeReferenceDotClassExpression.getType());
+		// Test getType
+		Type expectedType = ObjectType.TYPE_CLASS.createType(typeDotClass);
+		assertEquals(expectedType, typeReferenceDotClassExpression.getType());
 
-        // Test getPriority
-        assertEquals(0, typeReferenceDotClassExpression.getPriority());
+		// Test getPriority
+		assertEquals(0, typeReferenceDotClassExpression.getPriority());
 
-        // Test toString
-        assertEquals("TypeReferenceDotClassExpression{" + typeDotClass + "}", typeReferenceDotClassExpression.toString());
+		// Test toString
+		assertEquals("TypeReferenceDotClassExpression{" + typeDotClass + "}", typeReferenceDotClassExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$
 
-        // Test copyTo
-        TypeReferenceDotClassExpression copiedExpression = (TypeReferenceDotClassExpression) typeReferenceDotClassExpression.copyTo(20);
-        assertEquals(20, copiedExpression.getLineNumber());
-        assertEquals(typeDotClass, copiedExpression.getTypeDotClass());
+		// Test copyTo
+		TypeReferenceDotClassExpression copiedExpression = (TypeReferenceDotClassExpression) typeReferenceDotClassExpression.copyTo(20);
+		assertEquals(20, copiedExpression.getLineNumber());
+		assertEquals(typeDotClass, copiedExpression.getTypeDotClass());
 
-        // Test the accept method with a simple visitor
-        TestVisitor visitor = new TestVisitor();
-        copiedExpression.accept(visitor);
-        assertEquals(1, visitor.getTypeReferenceDotClassExpressionCount());
-    }
+		// Test the accept method with a simple visitor
+		TestVisitor visitor = new TestVisitor();
+		copiedExpression.accept(visitor);
+		assertEquals(1, visitor.getTypeReferenceDotClassExpressionCount());
+	}
 }

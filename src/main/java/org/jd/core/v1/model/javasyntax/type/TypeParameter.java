@@ -8,23 +8,23 @@
 package org.jd.core.v1.model.javasyntax.type;
 
 public class TypeParameter implements BaseTypeParameter {
-    protected final String identifier;
+	protected final String identifier;
 
-    public TypeParameter(String identifier) {
-        this.identifier = identifier;
-    }
+	public TypeParameter(String identifier) {
+		this.identifier = identifier;
+	}
 
-    public String getIdentifier() {
-        return identifier;
-    }
+	public String getIdentifier() {
+		return identifier;
+	}
 
-    @Override
-    public void accept(TypeParameterVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(TypeParameterVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "TypeParameter{identifier=" + identifier + "}";
-    }
+	@Override
+	public String toString() {
+		return "TypeParameter{identifier=" + identifier + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

@@ -24,174 +24,172 @@ import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 
 import java.util.Map;
 
-import static org.jd.core.v1.model.javasyntax.type.ObjectType.TYPE_OBJECT;
-
 public class BindTypeArgumentsToTypeArgumentsVisitor extends AbstractTypeArgumentVisitor {
-    private final TypeArgumentToTypeVisitor typeArgumentToTypeVisitor = new TypeArgumentToTypeVisitor();
-    private Map<String, TypeArgument> bindings;
-    private BaseTypeArgument result;
+	private final TypeArgumentToTypeVisitor typeArgumentToTypeVisitor = new TypeArgumentToTypeVisitor();
+	private Map<String, TypeArgument> bindings;
+	private BaseTypeArgument result;
 
-    void setBindings(Map<String, TypeArgument> bindings) {
-        this.bindings = bindings;
-    }
+	void setBindings(Map<String, TypeArgument> bindings) {
+		this.bindings = bindings;
+	}
 
-    public void init() {
-        this.result = null;
-    }
+	public void init() {
+		this.result = null;
+	}
 
-    public BaseTypeArgument getTypeArgument() {
-        if (result == null || TYPE_OBJECT.equals(result)) {
-            return null;
-        }
-        return result;
-    }
+	public BaseTypeArgument getTypeArgument() {
+		if (result == null || ObjectType.TYPE_OBJECT.equals(result)) {
+			return null;
+		}
+		return result;
+	}
 
-    @Override
-    public void visit(TypeArguments arguments) {
-        int size = arguments.size();
-        int i;
+	@Override
+	public void visit(TypeArguments arguments) {
+		int size = arguments.size();
+		int i;
 
-        for (i=0; i<size; i++) {
-            TypeArgument ta = arguments.get(i);
-            ta.accept(this);
-            if (result != ta) {
-                break;
-            }
-        }
+		for (i=0; i<size; i++) {
+			TypeArgument ta = arguments.get(i);
+			ta.accept(this);
+			if (result != ta) {
+				break;
+			}
+		}
 
-        if (result != null) {
-            if (i == size) {
-                result = arguments;
-            } else {
-                TypeArguments newTypes = new TypeArguments(size);
+		if (result != null) {
+			if (i == size) {
+				result = arguments;
+			} else {
+				TypeArguments newTypes = new TypeArguments(size);
 
-                newTypes.addAll(arguments.subList(0, i));
-                newTypes.add((TypeArgument) result);
+				newTypes.addAll(arguments.subList(0, i));
+				newTypes.add((TypeArgument) result);
 
-                for (i++; i < size; i++) {
-                    TypeArgument ta = arguments.get(i);
-                    ta.accept(this);
-                    if (result == null) {
-                        return;
-                    }
-                    newTypes.add((TypeArgument) result);
-                }
+				for (i++; i < size; i++) {
+					TypeArgument ta = arguments.get(i);
+					ta.accept(this);
+					if (result == null) {
+						return;
+					}
+					newTypes.add((TypeArgument) result);
+				}
 
-                result = newTypes;
-            }
-        }
-    }
+				result = newTypes;
+			}
+		}
+	}
 
-    @Override
-    public void visit(DiamondTypeArgument argument) {
-        result = argument;
-    }
+	@Override
+	public void visit(DiamondTypeArgument argument) {
+		result = argument;
+	}
 
-    @Override
-    public void visit(WildcardExtendsTypeArgument argument) {
-        argument.type().accept(this);
+	@Override
+	public void visit(WildcardExtendsTypeArgument argument) {
+		argument.type().accept(this);
 
-        if (result == WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT) {
-            result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
-        } else if (result == argument.type()) {
-            result = argument;
-        } else if (TYPE_OBJECT.equals(result)) {
-            result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
-        } else if (result != null) {
-            typeArgumentToTypeVisitor.init();
-            result.accept(typeArgumentToTypeVisitor);
-            BaseType bt = typeArgumentToTypeVisitor.getType();
+		if (result == WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT) {
+			result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
+		} else if (result == argument.type()) {
+			result = argument;
+		} else if (ObjectType.TYPE_OBJECT.equals(result)) {
+			result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
+		} else if (result != null) {
+			typeArgumentToTypeVisitor.init();
+			result.accept(typeArgumentToTypeVisitor);
+			BaseType bt = typeArgumentToTypeVisitor.getType();
 
-            if (TYPE_OBJECT.equals(bt)) {
-                result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
-            } else {
-                result = new WildcardExtendsTypeArgument((Type)bt);
-            }
-        }
-    }
+			if (ObjectType.TYPE_OBJECT.equals(bt)) {
+				result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
+			} else {
+				result = new WildcardExtendsTypeArgument((Type)bt);
+			}
+		}
+	}
 
-    @Override
-    public void visit(PrimitiveType type) {
-        result = type;
-    }
+	@Override
+	public void visit(PrimitiveType type) {
+		result = type;
+	}
 
-    @Override
-    public void visit(ObjectType type) {
-        BaseTypeArgument typeArguments = type.getTypeArguments();
+	@Override
+	public void visit(ObjectType type) {
+		BaseTypeArgument typeArguments = type.getTypeArguments();
 
-        if (typeArguments == null) {
-            result = type;
-        } else {
-            typeArguments.accept(this);
+		if (typeArguments == null) {
+			result = type;
+		} else {
+			typeArguments.accept(this);
 
-            if (typeArguments == result) {
-                result = type;
-            } else if (result != null) {
-                result = type.createType(result);
-            }
-        }
-    }
+			if (typeArguments == result) {
+				result = type;
+			} else if (result != null) {
+				result = type.createType(result);
+			}
+		}
+	}
 
-    @Override
-    public void visit(InnerObjectType type) {
-        safeAccept(type.getOuterType());
+	@Override
+	public void visit(InnerObjectType type) {
+		this.safeAccept(type.getOuterType());
 
-        BaseTypeArgument typeArguments = type.getTypeArguments();
+		BaseTypeArgument typeArguments = type.getTypeArguments();
 
-        if (type.getOuterType() == result) {
-            if (typeArguments == null) {
-                result = type;
-            } else {
-                typeArguments.accept(this);
+		if (type.getOuterType() == result) {
+			if (typeArguments == null) {
+				result = type;
+			} else {
+				typeArguments.accept(this);
 
-                if (typeArguments == result) {
-                    result = type;
-                } else if (result != null) {
-                    result = type.createType(result);
-                }
-            }
-        } else {
-            ObjectType outerObjectType = (ObjectType) result;
+				if (typeArguments == result) {
+					result = type;
+				} else if (result != null) {
+					result = type.createType(result);
+				}
+			}
+		} else {
+			ObjectType outerObjectType = (ObjectType) result;
 
-            if (typeArguments != null) {
-                typeArguments.accept(this);
-                typeArguments = result;
-            }
+			if (typeArguments != null) {
+				typeArguments.accept(this);
+				typeArguments = result;
+			}
 
-            result = new InnerObjectType(type.getInternalName(), type.getQualifiedName(), type.getName(), typeArguments, type.getDimension(), outerObjectType);
-        }
-    }
+			result = new InnerObjectType(type.getInternalName(), type.getQualifiedName(), type.getName(), typeArguments, type.getDimension(), outerObjectType);
+		}
+	}
 
-    @Override
-    public void visit(WildcardSuperTypeArgument argument) {
-        argument.type().accept(this);
+	@Override
+	public void visit(WildcardSuperTypeArgument argument) {
+		argument.type().accept(this);
 
-        if (result == WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT) {
-            result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
-        } else if (result == argument.type()) {
-            result = argument;
-        } else if (result != null) {
-            typeArgumentToTypeVisitor.init();
-            result.accept(typeArgumentToTypeVisitor);
-            result = new WildcardSuperTypeArgument(typeArgumentToTypeVisitor.getType());
-        }
-    }
+		if (result == WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT) {
+			result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
+		} else if (result == argument.type()) {
+			result = argument;
+		} else if (result != null) {
+			typeArgumentToTypeVisitor.init();
+			result.accept(typeArgumentToTypeVisitor);
+			result = new WildcardSuperTypeArgument(typeArgumentToTypeVisitor.getType());
+		}
+	}
 
-    @Override
-    public void visit(GenericType type) {
-        TypeArgument ta = bindings.get(type.getName());
+	@Override
+	public void visit(GenericType type) {
+		TypeArgument ta = bindings.get(type.getName());
 
-        if (ta == null) {
-            result = null;
-        } else if (ta instanceof Type t) {
-            result = t.createType(Math.max(t.getDimension(), type.getDimension()));
-        } else {
-            result = ta;
-        }
-    }
+		if (ta == null) {
+			result = null;
+		} else if (ta instanceof Type t) {
+			result = t.createType(Math.max(t.getDimension(), type.getDimension()));
+		} else {
+			result = ta;
+		}
+	}
 
-    @Override
-    public void visit(WildcardTypeArgument argument) {
-        result = argument;
-    }
+	@Override
+	public void visit(WildcardTypeArgument argument) {
+		result = argument;
+	}
 }

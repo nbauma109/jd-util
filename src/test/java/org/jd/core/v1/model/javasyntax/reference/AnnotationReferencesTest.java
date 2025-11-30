@@ -7,33 +7,33 @@ import static org.junit.Assert.assertEquals;
 
 public class AnnotationReferencesTest {
 
-    private AnnotationReferences<AnnotationReference> annotationReferences;
-    private AnnotationReferences<AnnotationReference> annotationReferencesWithCapacity;
-    private TestReferenceVisitor visitor;
+	private AnnotationReferences<AnnotationReference> annotationReferences;
+	private AnnotationReferences<AnnotationReference> annotationReferencesWithCapacity;
+	private TestReferenceVisitor visitor;
 
-    @Before
-    public void setUp() {
-        annotationReferences = new AnnotationReferences<>();
-        annotationReferencesWithCapacity = new AnnotationReferences<>(10);
-        visitor = new TestReferenceVisitor();
-    }
+	@Before
+	public void setUp() {
+		annotationReferences = new AnnotationReferences<AnnotationReference>();
+		annotationReferencesWithCapacity = new AnnotationReferences<AnnotationReference>(10);
+		visitor = new TestReferenceVisitor();
+	}
 
-    @Test
-    public void testAnnotationReferences() {
-        // Act
-        annotationReferences.accept(visitor);
+	@Test
+	public void testAnnotationReferences() {
+		// Act
+		annotationReferences.accept(visitor);
 
-        // Assert
-        assertEquals(1, visitor.getVisitAnnotationReferencesCount());
-    }
+		// Assert
+		assertEquals(1, visitor.getVisitAnnotationReferencesCount());
+	}
 
-    @Test
-    public void testAnnotationReferencesWithCapacity() {
-        // Act
-        annotationReferencesWithCapacity.accept(visitor);
+	@Test
+	public void testAnnotationReferencesWithCapacity() {
+		// Act
+		annotationReferencesWithCapacity.accept(visitor);
 
-        // Assert
-        assertEquals(1, visitor.getVisitAnnotationReferencesCount());
-        assertEquals(0, annotationReferencesWithCapacity.size());
-    }
+		// Assert
+		assertEquals(1, visitor.getVisitAnnotationReferencesCount());
+		assertEquals(0, annotationReferencesWithCapacity.size());
+	}
 }

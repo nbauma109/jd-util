@@ -12,17 +12,17 @@ import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import java.util.Map;
 
 public class DiamondTypeArgument implements TypeArgument {
-    public static final DiamondTypeArgument DIAMOND = new DiamondTypeArgument();
+	public static final DiamondTypeArgument DIAMOND = new DiamondTypeArgument();
 
-    protected DiamondTypeArgument() {}
+	protected DiamondTypeArgument() {}
 
-    @Override
-    public void accept(TypeArgumentVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(TypeArgumentVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
-        return true;
-    }
+	@Override
+	public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+		return true;
+	}
 }

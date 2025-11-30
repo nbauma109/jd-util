@@ -11,51 +11,51 @@ import org.jd.core.v1.model.javasyntax.expression.Expression;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class ForEachStatement implements Statement {
-    protected final Type type;
-    private final String name;
-    private boolean fina1;
-    protected Expression expression;
-    private final BaseStatement statements;
+	protected final Type type;
+	private final String name;
+	private boolean fina1;
+	protected Expression expression;
+	private final BaseStatement statements;
 
-    public ForEachStatement(Type type, String name, Expression expression, BaseStatement statements) {
-        this.type = type;
-        this.name = name;
-        this.setExpression(expression);
-        this.statements = statements;
-    }
+	public ForEachStatement(Type type, String name, Expression expression, BaseStatement statements) {
+		this.type = type;
+		this.name = name;
+		setExpression(expression);
+		this.statements = statements;
+	}
 
-    public boolean isFinal() {
-        return fina1;
-    }
+	public boolean isFinal() {
+		return fina1;
+	}
 
-    public void setFinal(boolean fina1) {
-        this.fina1 = fina1;
-    }
+	public void setFinal(boolean fina1) {
+		this.fina1 = fina1;
+	}
 
-    public Type getType() {
-        return type;
-    }
+	public Type getType() {
+		return type;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    @Override
-    public Expression getExpression() {
-        return expression;
-    }
+	@Override
+	public Expression getExpression() {
+		return expression;
+	}
 
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
+	public void setExpression(Expression expression) {
+		this.expression = expression;
+	}
 
-    @Override
-    public BaseStatement getStatements() {
-        return statements;
-    }
+	@Override
+	public BaseStatement getStatements() {
+		return statements;
+	}
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 }

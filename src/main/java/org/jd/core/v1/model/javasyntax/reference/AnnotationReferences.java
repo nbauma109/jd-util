@@ -11,17 +11,17 @@ import org.jd.core.v1.util.DefaultList;
 
 public class AnnotationReferences<T extends AnnotationReference> extends DefaultList<T> implements BaseAnnotationReference {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public AnnotationReferences() {
-    }
+	public AnnotationReferences() {
+	}
 
-    public AnnotationReferences(int capacity) {
-        super(capacity);
-    }
+	public AnnotationReferences(int capacity) {
+		super(capacity);
+	}
 
-    @Override
-    public void accept(ReferenceVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ReferenceVisitor visitor) {
+		visitor.visit(this);
+	}
 }

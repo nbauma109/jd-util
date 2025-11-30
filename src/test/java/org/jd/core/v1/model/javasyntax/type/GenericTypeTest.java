@@ -8,11 +8,11 @@ import static org.junit.Assert.assertTrue;
 
 public class GenericTypeTest {
 
-    @Test
-    public void test() throws Exception {
-        GenericType genericType = new GenericType("T");
-        assertTrue(genericType.isGenericTypeArgument());
-        assertThrows(IllegalArgumentException.class, () -> genericType.createType(-1));
-        assertEquals("GenericType{T, dimension=1}", genericType.createType(1).toString());
-    }
+	@Test
+	public void test() throws Exception {
+		GenericType genericType = new GenericType("T"); //$NON-NLS-1$
+		assertTrue(genericType.isGenericTypeArgument());
+		assertThrows(IllegalArgumentException.class, () -> genericType.createType(-1));
+		assertEquals("GenericType{T, dimension=1}", genericType.createType(1).toString()); //$NON-NLS-1$
+	}
 }

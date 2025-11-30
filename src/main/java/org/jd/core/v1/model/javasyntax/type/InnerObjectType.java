@@ -11,109 +11,109 @@ import java.util.Objects;
 import java.util.Set;
 
 public class InnerObjectType extends ObjectType {
-    private ObjectType outerType;
+	private ObjectType outerType;
 
-    public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, ObjectType outerType) {
-        super(internalName, qualifiedName, name, innerTypeNames);
-        this.setOuterType(outerType);
-        checkArguments(qualifiedName, name);
-    }
+	public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, ObjectType outerType) {
+		super(internalName, qualifiedName, name, innerTypeNames);
+		setOuterType(outerType);
+		this.checkArguments(qualifiedName, name);
+	}
 
-    public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, int dimension, ObjectType outerType) {
-        super(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension);
-        this.setOuterType(outerType);
-        checkArguments(qualifiedName, name);
-    }
+	public InnerObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, int dimension, ObjectType outerType) {
+		super(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension);
+		setOuterType(outerType);
+		this.checkArguments(qualifiedName, name);
+	}
 
-    public InnerObjectType(String internalName, String qualifiedName, String name, ObjectType outerType) {
-        super(internalName, qualifiedName, name, Collections.emptySet());
-        this.setOuterType(outerType);
-        checkArguments(qualifiedName, name);
-    }
-    
-    public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, ObjectType outerType) {
-        super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments);
-        this.setOuterType(outerType);
-        checkArguments(qualifiedName, name);
-    }
-    
-    public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension, ObjectType outerType) {
-        super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
-        this.outerType = outerType;
-        checkArguments(qualifiedName, name);
-    }
-    
-    protected void checkArguments(String qualifiedName, String name) {
-        if (name != null && Character.isDigit(name.charAt(0)) && qualifiedName != null) {
-            throw new IllegalArgumentException();
-        }
-    }
+	public InnerObjectType(String internalName, String qualifiedName, String name, ObjectType outerType) {
+		super(internalName, qualifiedName, name, Collections.emptySet());
+		setOuterType(outerType);
+		this.checkArguments(qualifiedName, name);
+	}
 
-    @Override
-    public ObjectType getOuterType() {
-        return outerType;
-    }
+	public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, ObjectType outerType) {
+		super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments);
+		setOuterType(outerType);
+		this.checkArguments(qualifiedName, name);
+	}
 
-    public void setOuterType(ObjectType outerType) {
-        this.outerType = outerType;
-    }
+	public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension, ObjectType outerType) {
+		super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
+		this.outerType = outerType;
+		this.checkArguments(qualifiedName, name);
+	}
 
-    @Override
-    public Type createType(int dimension) {
-        if (dimension < 0) {
-            throw new IllegalArgumentException("InnerObjectType.createType(dim) : create type with negative dimension");
-        }
-        return new InnerObjectType(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension, outerType);
-    }
+	protected void checkArguments(String qualifiedName, String name) {
+		if (name != null && Character.isDigit(name.charAt(0)) && qualifiedName != null) {
+			throw new IllegalArgumentException();
+		}
+	}
 
-    @Override
-    public ObjectType createType(BaseTypeArgument typeArguments) {
-        return new InnerObjectType(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension, outerType);
-    }
+	@Override
+	public ObjectType getOuterType() {
+		return outerType;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-        InnerObjectType that = (InnerObjectType) o;
-        return Objects.equals(outerType, that.outerType);
-    }
+	public void setOuterType(ObjectType outerType) {
+		this.outerType = outerType;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = 111_476_860 + super.hashCode();
-        return 31 * result + Objects.hashCode(outerType);
-    }
+	@Override
+	public Type createType(int dimension) {
+		if (dimension < 0) {
+			throw new IllegalArgumentException("InnerObjectType.createType(dim) : create type with negative dimension"); //$NON-NLS-1$
+		}
+		return new InnerObjectType(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension, outerType);
+	}
 
-    @Override
-    public boolean isInnerObjectType() {
-        return true;
-    }
+	@Override
+	public ObjectType createType(BaseTypeArgument typeArguments) {
+		return new InnerObjectType(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension, outerType);
+	}
 
-    @Override
-    public boolean isInnerObjectTypeArgument() {
-        return true;
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!super.equals(o)) {
+			return false;
+		}
+		InnerObjectType that = (InnerObjectType) o;
+		return Objects.equals(outerType, that.outerType);
+	}
 
-    @Override
-    public void accept(TypeVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public int hashCode() {
+		int result = 111_476_860 + super.hashCode();
+		return 31 * result + Objects.hashCode(outerType);
+	}
 
-    @Override
-    public void accept(TypeArgumentVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public boolean isInnerObjectType() {
+		return true;
+	}
 
-    @Override
-    public String toString() {
-        if (typeArguments == null) {
-            return "InnerObjectType{" + outerType + "." + descriptor + "}";
-        }
-        return "InnerObjectType{" + outerType + "." + descriptor + "<" + typeArguments + ">}";
-    }
+	@Override
+	public boolean isInnerObjectTypeArgument() {
+		return true;
+	}
+
+	@Override
+	public void accept(TypeVisitor visitor) {
+		visitor.visit(this);
+	}
+
+	@Override
+	public void accept(TypeArgumentVisitor visitor) {
+		visitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		if (typeArguments == null) {
+			return "InnerObjectType{" + outerType + "." + descriptor + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		}
+		return "InnerObjectType{" + outerType + "." + descriptor + "<" + typeArguments + ">}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+	}
 }

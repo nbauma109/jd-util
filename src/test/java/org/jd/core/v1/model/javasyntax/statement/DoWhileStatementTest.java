@@ -10,26 +10,26 @@ import static org.junit.Assert.assertTrue;
 
 public class DoWhileStatementTest {
 
-    @Test
-    public void testDoWhileStatement() {
-        // Test constructor
-        Expression condition = new IntegerConstantExpression(1, 10);
-        BaseStatement statements = new Statements();
-        DoWhileStatement doWhileStatement = new DoWhileStatement(condition, statements);
+	@Test
+	public void testDoWhileStatement() {
+		// Test constructor
+		Expression condition = new IntegerConstantExpression(1, 10);
+		BaseStatement statements = new Statements();
+		DoWhileStatement doWhileStatement = new DoWhileStatement(condition, statements);
 
-        assertTrue(doWhileStatement.getCondition() instanceof IntegerConstantExpression);
-        assertEquals(10, doWhileStatement.getCondition().getIntegerValue());
-        assertTrue(doWhileStatement.getStatements() instanceof Statements);
-        assertTrue(doWhileStatement.isDoWhileStatement());
+		assertTrue(doWhileStatement.getCondition() instanceof IntegerConstantExpression);
+		assertEquals(10, doWhileStatement.getCondition().getIntegerValue());
+		assertTrue(doWhileStatement.getStatements() instanceof Statements);
+		assertTrue(doWhileStatement.isDoWhileStatement());
 
-        // Test the setCondition method
-        Expression newCondition = new IntegerConstantExpression(1, 20);
-        doWhileStatement.setCondition(newCondition);
-        assertEquals(20, doWhileStatement.getCondition().getIntegerValue());
+		// Test the setCondition method
+		Expression newCondition = new IntegerConstantExpression(1, 20);
+		doWhileStatement.setCondition(newCondition);
+		assertEquals(20, doWhileStatement.getCondition().getIntegerValue());
 
-        // Test the accept method with a simple visitor
-        TestVisitor visitor = new TestVisitor();
-        doWhileStatement.accept(visitor);
-        assertEquals(1, visitor.getDoWhileStatementCount());
-    }
+		// Test the accept method with a simple visitor
+		TestVisitor visitor = new TestVisitor();
+		doWhileStatement.accept(visitor);
+		assertEquals(1, visitor.getDoWhileStatementCount());
+	}
 }

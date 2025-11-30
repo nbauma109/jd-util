@@ -10,33 +10,33 @@ package org.jd.core.v1.model.javasyntax.statement;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 
 public class IfStatement implements Statement {
-    private Expression condition;
-    private final BaseStatement statements;
+	private Expression condition;
+	private final BaseStatement statements;
 
-    public IfStatement(Expression condition, BaseStatement statements) {
-        this.condition = condition;
-        this.statements = statements;
-    }
+	public IfStatement(Expression condition, BaseStatement statements) {
+		this.condition = condition;
+		this.statements = statements;
+	}
 
-    @Override
-    public Expression getCondition() {
-        return condition;
-    }
+	@Override
+	public Expression getCondition() {
+		return condition;
+	}
 
-    public void setCondition(Expression condition) {
-        this.condition = condition;
-    }
+	public void setCondition(Expression condition) {
+		this.condition = condition;
+	}
 
-    @Override
-    public BaseStatement getStatements() {
-        return statements;
-    }
+	@Override
+	public BaseStatement getStatements() {
+		return statements;
+	}
 
-    @Override
-    public boolean isIfStatement() { return true; }
+	@Override
+	public boolean isIfStatement() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 }

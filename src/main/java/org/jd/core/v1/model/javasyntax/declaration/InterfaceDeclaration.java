@@ -14,36 +14,36 @@ import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 import static org.apache.bcel.Const.ACC_STATIC;
 
 public class InterfaceDeclaration extends TypeDeclaration {
-    private final BaseTypeParameter typeParameters;
-    private final BaseType interfaces;
+	private final BaseTypeParameter typeParameters;
+	private final BaseType interfaces;
 
-    public InterfaceDeclaration(int flags, String internalName, String name, BaseType interfaces) {
-        this(null, flags, internalName, name, null, interfaces, null);
-    }
+	public InterfaceDeclaration(int flags, String internalName, String name, BaseType interfaces) {
+		this(null, flags, internalName, name, null, interfaces, null);
+	}
 
-    public InterfaceDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, BaseType interfaces, BodyDeclaration bodyDeclaration) {
-        super(annotationReferences, flags, internalName, name, bodyDeclaration);
-        this.typeParameters = typeParameters;
-        this.interfaces = interfaces;
-    }
+	public InterfaceDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, BaseType interfaces, BodyDeclaration bodyDeclaration) {
+		super(annotationReferences, flags, internalName, name, bodyDeclaration);
+		this.typeParameters = typeParameters;
+		this.interfaces = interfaces;
+	}
 
-    public BaseTypeParameter getTypeParameters() {
-        return typeParameters;
-    }
+	public BaseTypeParameter getTypeParameters() {
+		return typeParameters;
+	}
 
-    public BaseType getInterfaces() {
-        return interfaces;
-    }
+	public BaseType getInterfaces() {
+		return interfaces;
+	}
 
-    public boolean isStatic() { return (flags & ACC_STATIC) != 0; }
+	public boolean isStatic() { return (flags & ACC_STATIC) != 0; }
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "InterfaceDeclaration{" + internalTypeName + "}";
-    }
+	@Override
+	public String toString() {
+		return "InterfaceDeclaration{" + internalTypeName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

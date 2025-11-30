@@ -12,42 +12,42 @@ import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class EnumConstantReferenceExpression extends AbstractLineNumberExpression {
-    private final ObjectType type;
-    private final String name;
+	private final ObjectType type;
+	private final String name;
 
-    public EnumConstantReferenceExpression(int lineNumber, ObjectType type, String name) {
-        super(lineNumber);
-        this.type = type;
-        this.name = name;
-    }
+	public EnumConstantReferenceExpression(int lineNumber, ObjectType type, String name) {
+		super(lineNumber);
+		this.type = type;
+		this.name = name;
+	}
 
-    @Override
-    public Type getType() {
-        return type;
-    }
+	@Override
+	public Type getType() {
+		return type;
+	}
 
-    @Override
-    public ObjectType getObjectType() {
-        return type;
-    }
+	@Override
+	public ObjectType getObjectType() {
+		return type;
+	}
 
-    @Override
-    public String getName() {
-        return name;
-    }
+	@Override
+	public String getName() {
+		return name;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "EnumConstantReferenceExpression{type=" + type + ", name=" + name + "}";
-    }
+	@Override
+	public String toString() {
+		return "EnumConstantReferenceExpression{type=" + type + ", name=" + name + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new EnumConstantReferenceExpression(lineNumber, type, name);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new EnumConstantReferenceExpression(lineNumber, type, name);
+	}
 }

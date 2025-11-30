@@ -11,43 +11,43 @@ import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 
 public class ConstructorInvocationExpression extends ConstructorReferenceExpression {
-    private BaseExpression parameters;
-    private final boolean varArgs;
+	private BaseExpression parameters;
+	private final boolean varArgs;
 
-    public ConstructorInvocationExpression(int lineNumber, ObjectType type, String descriptor, BaseExpression parameters, boolean varArgs) {
-        super(lineNumber, PrimitiveType.TYPE_VOID, type, descriptor);
-        this.setParameters(parameters);
-        this.varArgs = varArgs;
-    }
+	public ConstructorInvocationExpression(int lineNumber, ObjectType type, String descriptor, BaseExpression parameters, boolean varArgs) {
+		super(lineNumber, PrimitiveType.TYPE_VOID, type, descriptor);
+		setParameters(parameters);
+		this.varArgs = varArgs;
+	}
 
-    public boolean isVarArgs() {
-        return varArgs;
-    }
-    
-    @Override
-    public BaseExpression getParameters() {
-        return parameters;
-    }
+	public boolean isVarArgs() {
+		return varArgs;
+	}
 
-    public void setParameters(BaseExpression parameters) {
-        this.parameters = parameters;
-    }
+	@Override
+	public BaseExpression getParameters() {
+		return parameters;
+	}
 
-    @Override
-    public int getPriority() {
-        return 1;
-    }
+	public void setParameters(BaseExpression parameters) {
+		this.parameters = parameters;
+	}
 
-    @Override
-    public boolean isConstructorInvocationExpression() { return true; }
+	@Override
+	public int getPriority() {
+		return 1;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public boolean isConstructorInvocationExpression() { return true; }
 
-    @Override
-    public String toString() {
-        return "ConstructorInvocationExpression{call this(" + descriptor + ")}";
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		return "ConstructorInvocationExpression{call this(" + descriptor + ")}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

@@ -55,13 +55,13 @@ import org.jd.core.v1.model.javasyntax.type.Type;
  * - The Java® Language Specification Java SE 8 Edition, 15.2 Forms of Expressions
  */
 public interface Expression extends BaseExpression {
-    int UNKNOWN_LINE_NUMBER = 0;
+	int UNKNOWN_LINE_NUMBER = 0;
 
-    int getLineNumber();
+	int getLineNumber();
 
-    Type getType();
+	Type getType();
 
-    int getPriority();
+	int getPriority();
 
-    Expression copyTo(int lineNumber);
+	Expression copyTo(int lineNumber);
 }

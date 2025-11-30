@@ -10,29 +10,29 @@ import static org.junit.Assert.assertTrue;
 
 public class EnumConstantReferenceExpressionTest {
 
-    @Test
-    public void testEnumConstantReferenceExpression() {
-        // Test constructor
-        ObjectType objectType = new ObjectType("MyEnum", "MyEnum", "MyEnum");
-        EnumConstantReferenceExpression enumConstantReferenceExpression = new EnumConstantReferenceExpression(1, objectType, "ENUM_CONSTANT");
+	@Test
+	public void testEnumConstantReferenceExpression() {
+		// Test constructor
+		ObjectType objectType = new ObjectType("MyEnum", "MyEnum", "MyEnum"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		EnumConstantReferenceExpression enumConstantReferenceExpression = new EnumConstantReferenceExpression(1, objectType, "ENUM_CONSTANT"); //$NON-NLS-1$
 
-        assertEquals(1, enumConstantReferenceExpression.getLineNumber());
-        assertEquals("ENUM_CONSTANT", enumConstantReferenceExpression.getName());
-        assertNotNull(enumConstantReferenceExpression.getObjectType());
-        assertEquals(enumConstantReferenceExpression.getObjectType(), enumConstantReferenceExpression.getType());
-        assertEquals("MyEnum", enumConstantReferenceExpression.getObjectType().getName());
+		assertEquals(1, enumConstantReferenceExpression.getLineNumber());
+		assertEquals("ENUM_CONSTANT", enumConstantReferenceExpression.getName()); //$NON-NLS-1$
+		assertNotNull(enumConstantReferenceExpression.getObjectType());
+		assertEquals(enumConstantReferenceExpression.getObjectType(), enumConstantReferenceExpression.getType());
+		assertEquals("MyEnum", enumConstantReferenceExpression.getObjectType().getName()); //$NON-NLS-1$
 
-        // Test the copyTo method
-        Expression copiedExpression = enumConstantReferenceExpression.copyTo(2);
-        assertTrue(copiedExpression instanceof EnumConstantReferenceExpression);
-        assertEquals(2, copiedExpression.getLineNumber());
+		// Test the copyTo method
+		Expression copiedExpression = enumConstantReferenceExpression.copyTo(2);
+		assertTrue(copiedExpression instanceof EnumConstantReferenceExpression);
+		assertEquals(2, copiedExpression.getLineNumber());
 
-        // Test toString method
-        assertEquals("EnumConstantReferenceExpression{type=ObjectType{MyEnum}, name=ENUM_CONSTANT}", copiedExpression.toString());
+		// Test toString method
+		assertEquals("EnumConstantReferenceExpression{type=ObjectType{MyEnum}, name=ENUM_CONSTANT}", copiedExpression.toString()); //$NON-NLS-1$
 
-        // Test the accept method with a simple visitor
-        TestVisitor visitor = new TestVisitor();
-        enumConstantReferenceExpression.accept(visitor);
-        assertEquals(1, visitor.getEnumConstantReferenceExpressionCount());
-    }
+		// Test the accept method with a simple visitor
+		TestVisitor visitor = new TestVisitor();
+		enumConstantReferenceExpression.accept(visitor);
+		assertEquals(1, visitor.getEnumConstantReferenceExpressionCount());
+	}
 }

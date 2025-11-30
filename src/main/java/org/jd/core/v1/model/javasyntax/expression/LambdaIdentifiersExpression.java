@@ -13,35 +13,35 @@ import org.jd.core.v1.model.javasyntax.type.Type;
 import java.util.List;
 
 public class LambdaIdentifiersExpression extends AbstractLambdaExpression {
-    private final Type returnedType;
-    private final List<String> parameterNames;
+	private final Type returnedType;
+	private final List<String> parameterNames;
 
-    public LambdaIdentifiersExpression(int lineNumber, Type type, Type returnedType, List<String> parameterNames, BaseStatement statements) {
-        super(lineNumber, type, statements);
-        this.returnedType = returnedType;
-        this.parameterNames = parameterNames;
-    }
+	public LambdaIdentifiersExpression(int lineNumber, Type type, Type returnedType, List<String> parameterNames, BaseStatement statements) {
+		super(lineNumber, type, statements);
+		this.returnedType = returnedType;
+		this.parameterNames = parameterNames;
+	}
 
-    public Type getReturnedType() {
-        return returnedType;
-    }
+	public Type getReturnedType() {
+		return returnedType;
+	}
 
-    public List<String> getParameterNames() {
-        return parameterNames;
-    }
+	public List<String> getParameterNames() {
+		return parameterNames;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "LambdaIdentifiersExpression{" + parameterNames + " -> " + statements + "}";
-    }
+	@Override
+	public String toString() {
+		return "LambdaIdentifiersExpression{" + parameterNames + " -> " + statements + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new LambdaIdentifiersExpression(lineNumber, getType(), returnedType, parameterNames, statements);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new LambdaIdentifiersExpression(lineNumber, this.getType(), returnedType, parameterNames, statements);
+	}
 }

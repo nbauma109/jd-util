@@ -16,103 +16,103 @@ import static org.junit.Assert.assertTrue;
 
 public class FormalParameterTest {
 
-    @Test
-    public void testFormalParameter() {
-        Type type = ObjectType.TYPE_STRING;
-        boolean varargs = false;
-        String name = "param";
+	@Test
+	public void testFormalParameter() {
+		Type type = ObjectType.TYPE_STRING;
+		boolean varargs = false;
+		String name = "param"; //$NON-NLS-1$
 
-        FormalParameter formalParameter = new FormalParameter(type, varargs, name);
+		FormalParameter formalParameter = new FormalParameter(type, varargs, name);
 
-        // Getters
-        assertNull(formalParameter.getAnnotationReferences());
-        assertFalse(formalParameter.isFinal());
-        assertEquals(type, formalParameter.getType());
-        assertFalse(formalParameter.isVarargs());
-        assertEquals(name, formalParameter.getName());
+		// Getters
+		assertNull(formalParameter.getAnnotationReferences());
+		assertFalse(formalParameter.isFinal());
+		assertEquals(type, formalParameter.getType());
+		assertFalse(formalParameter.isVarargs());
+		assertEquals(name, formalParameter.getName());
 
-        // Setters
-        formalParameter.setFinal(true);
-        formalParameter.setName("newParam");
+		// Setters
+		formalParameter.setFinal(true);
+		formalParameter.setName("newParam"); //$NON-NLS-1$
 
-        assertTrue(formalParameter.isFinal());
-        assertEquals("newParam", formalParameter.getName());
+		assertTrue(formalParameter.isFinal());
+		assertEquals("newParam", formalParameter.getName()); //$NON-NLS-1$
 
-        // Accept method
-        TestDeclarationVisitor testVisitor = new TestDeclarationVisitor();
-        formalParameter.accept(testVisitor);
+		// Accept method
+		TestDeclarationVisitor testVisitor = new TestDeclarationVisitor();
+		formalParameter.accept(testVisitor);
 
-        assertEquals(1, testVisitor.getFormalParameterCount());
+		assertEquals(1, testVisitor.getFormalParameterCount());
 
-        // toString method
-        String expectedToString = "FormalParameter{ObjectType{java/lang/String} newParam}";
-        assertEquals(expectedToString, formalParameter.toString());
-    }
+		// toString method
+		String expectedToString = "FormalParameter{ObjectType{java/lang/String} newParam}"; //$NON-NLS-1$
+		assertEquals(expectedToString, formalParameter.toString());
+	}
 
-    @Test
-    public void testFormalParameterConstructor() {
-        Type type = ObjectType.TYPE_INTEGER;
-        String name = "param";
+	@Test
+	public void testFormalParameterConstructor() {
+		Type type = ObjectType.TYPE_INTEGER;
+		String name = "param"; //$NON-NLS-1$
 
-        FormalParameter formalParameter = new FormalParameter(type, name);
+		FormalParameter formalParameter = new FormalParameter(type, name);
 
-        // Getters
-        assertNull(formalParameter.getAnnotationReferences());
-        assertFalse(formalParameter.isFinal());
-        assertEquals(type, formalParameter.getType());
-        assertFalse(formalParameter.isVarargs());
-        assertEquals(name, formalParameter.getName());
+		// Getters
+		assertNull(formalParameter.getAnnotationReferences());
+		assertFalse(formalParameter.isFinal());
+		assertEquals(type, formalParameter.getType());
+		assertFalse(formalParameter.isVarargs());
+		assertEquals(name, formalParameter.getName());
 
-        // Setters
-        formalParameter.setFinal(true);
-        formalParameter.setName("newParam");
+		// Setters
+		formalParameter.setFinal(true);
+		formalParameter.setName("newParam"); //$NON-NLS-1$
 
-        assertTrue(formalParameter.isFinal());
-        assertEquals("newParam", formalParameter.getName());
+		assertTrue(formalParameter.isFinal());
+		assertEquals("newParam", formalParameter.getName()); //$NON-NLS-1$
 
-        // Accept method
-        TestDeclarationVisitor testVisitor = new TestDeclarationVisitor();
-        formalParameter.accept(testVisitor);
+		// Accept method
+		TestDeclarationVisitor testVisitor = new TestDeclarationVisitor();
+		formalParameter.accept(testVisitor);
 
-        assertEquals(1, testVisitor.getFormalParameterCount());
+		assertEquals(1, testVisitor.getFormalParameterCount());
 
-        // toString method
-        String expectedToString = "FormalParameter{ObjectType{java/lang/Integer} newParam}";
-        assertEquals(expectedToString, formalParameter.toString());
-    }
+		// toString method
+		String expectedToString = "FormalParameter{ObjectType{java/lang/Integer} newParam}"; //$NON-NLS-1$
+		assertEquals(expectedToString, formalParameter.toString());
+	}
 
-    @Test
-    public void testFormalParameterConstructor2() {
-        Type type = ObjectType.TYPE_INTEGER.createType(1);
-        String name = "param";
-        TypeMaker typeMaker = new TypeMaker();
-        ObjectType annoType = typeMaker.makeFromInternalTypeName("java/lang/SuppressWarnings");
-        AnnotationReference annotationReference = new AnnotationReference(annoType);
-        AnnotationElementValue annotationElementValue = new AnnotationElementValue(annotationReference);
-        FormalParameter formalParameter = new FormalParameter(annotationElementValue, type, true, name);
+	@Test
+	public void testFormalParameterConstructor2() {
+		Type type = ObjectType.TYPE_INTEGER.createType(1);
+		String name = "param"; //$NON-NLS-1$
+		TypeMaker typeMaker = new TypeMaker();
+		ObjectType annoType = typeMaker.makeFromInternalTypeName("java/lang/SuppressWarnings"); //$NON-NLS-1$
+		AnnotationReference annotationReference = new AnnotationReference(annoType);
+		AnnotationElementValue annotationElementValue = new AnnotationElementValue(annotationReference);
+		FormalParameter formalParameter = new FormalParameter(annotationElementValue, type, true, name);
 
-        // Getters
-        assertNotNull(formalParameter.getAnnotationReferences());
-        assertFalse(formalParameter.isFinal());
-        assertEquals(type, formalParameter.getType());
-        assertTrue(formalParameter.isVarargs());
-        assertEquals(name, formalParameter.getName());
+		// Getters
+		assertNotNull(formalParameter.getAnnotationReferences());
+		assertFalse(formalParameter.isFinal());
+		assertEquals(type, formalParameter.getType());
+		assertTrue(formalParameter.isVarargs());
+		assertEquals(name, formalParameter.getName());
 
-        // Setters
-        formalParameter.setFinal(true);
-        formalParameter.setName("newParam");
+		// Setters
+		formalParameter.setFinal(true);
+		formalParameter.setName("newParam"); //$NON-NLS-1$
 
-        assertTrue(formalParameter.isFinal());
-        assertEquals("newParam", formalParameter.getName());
+		assertTrue(formalParameter.isFinal());
+		assertEquals("newParam", formalParameter.getName()); //$NON-NLS-1$
 
-        // Accept method
-        TestDeclarationVisitor testVisitor = new TestDeclarationVisitor();
-        formalParameter.accept(testVisitor);
+		// Accept method
+		TestDeclarationVisitor testVisitor = new TestDeclarationVisitor();
+		formalParameter.accept(testVisitor);
 
-        assertEquals(1, testVisitor.getFormalParameterCount());
+		assertEquals(1, testVisitor.getFormalParameterCount());
 
-        // toString method
-        String expectedToString = "FormalParameter{AnnotationElementValue{type=ObjectType{java/lang/SuppressWarnings}, elementValue=null, elementValuePairs=null} ObjectType{java/lang/Integer}... newParam}";
-        assertEquals(expectedToString, formalParameter.toString());
-    }
+		// toString method
+		String expectedToString = "FormalParameter{AnnotationElementValue{type=ObjectType{java/lang/SuppressWarnings}, elementValue=null, elementValuePairs=null} ObjectType{java/lang/Integer}... newParam}"; //$NON-NLS-1$
+		assertEquals(expectedToString, formalParameter.toString());
+	}
 }

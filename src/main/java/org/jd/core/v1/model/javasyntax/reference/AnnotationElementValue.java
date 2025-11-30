@@ -9,19 +9,19 @@ package org.jd.core.v1.model.javasyntax.reference;
 
 public class AnnotationElementValue extends AnnotationReference implements BaseElementValue {
 
-    public AnnotationElementValue(AnnotationReference annotationReference) {
-        super(annotationReference.getType(),
-              annotationReference.getElementValue(),
-              annotationReference.getElementValuePairs());
-    }
+	public AnnotationElementValue(AnnotationReference annotationReference) {
+		super(annotationReference.getType(),
+				annotationReference.getElementValue(),
+				annotationReference.getElementValuePairs());
+	}
 
-    @Override
-    public void accept(ReferenceVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ReferenceVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "AnnotationElementValue{type=" + type + ", elementValue=" + elementValue + ", elementValuePairs=" + elementValuePairs + "}";
-    }
+	@Override
+	public String toString() {
+		return "AnnotationElementValue{type=" + type + ", elementValue=" + elementValue + ", elementValuePairs=" + elementValuePairs + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+	}
 }

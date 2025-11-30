@@ -8,5 +8,5 @@
 package org.jd.core.v1.model.javasyntax.type;
 
 public interface TypeArgumentVisitable {
-    void accept(TypeArgumentVisitor visitor);
+	void accept(TypeArgumentVisitor visitor);
 }

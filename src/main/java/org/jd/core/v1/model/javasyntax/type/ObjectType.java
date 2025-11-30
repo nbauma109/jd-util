@@ -15,295 +15,295 @@ import java.util.Objects;
 import java.util.Set;
 
 public class ObjectType implements Type {
-    public static final ObjectType TYPE_BOOLEAN           = new ObjectType(StringConstants.JAVA_LANG_BOOLEAN, "java.lang.Boolean", "Boolean");
-    public static final ObjectType TYPE_BYTE              = new ObjectType(StringConstants.JAVA_LANG_BYTE, "java.lang.Byte", "Byte");
-    public static final ObjectType TYPE_CHARACTER         = new ObjectType(StringConstants.JAVA_LANG_CHARACTER, "java.lang.Character", "Character");
-    public static final ObjectType TYPE_CLASS             = new ObjectType(StringConstants.JAVA_LANG_CLASS, "java.lang.Class", "Class");
-    public static final ObjectType TYPE_CLASS_WILDCARD    = TYPE_CLASS.createType(WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT);
-    public static final ObjectType TYPE_DATE              = new ObjectType(StringConstants.JAVA_UTIL_DATE, "java.util.Date", "Date");
-    public static final ObjectType TYPE_DOUBLE            = new ObjectType(StringConstants.JAVA_LANG_DOUBLE, "java.lang.Double", "Double");
-    public static final ObjectType TYPE_ENUM              = new ObjectType(StringConstants.JAVA_LANG_ENUM, "java.lang.Enum", "Enum");
-    public static final ObjectType TYPE_EXCEPTION         = new ObjectType(StringConstants.JAVA_LANG_EXCEPTION, "java.lang.Exception", "Exception");
-    public static final ObjectType TYPE_FLOAT             = new ObjectType(StringConstants.JAVA_LANG_FLOAT, "java.lang.Float", "Float");
-    public static final ObjectType TYPE_INTEGER           = new ObjectType(StringConstants.JAVA_LANG_INTEGER, "java.lang.Integer", "Integer");
-    public static final ObjectType TYPE_ITERABLE          = new ObjectType(StringConstants.JAVA_LANG_ITERABLE, "java.lang.Iterable", "Iterable");
-    public static final ObjectType TYPE_LONG              = new ObjectType(StringConstants.JAVA_LANG_LONG, "java.lang.Long", "Long");
-    public static final ObjectType TYPE_MATH              = new ObjectType(StringConstants.JAVA_LANG_MATH, "java.lang.Math", "Math");
-    public static final ObjectType TYPE_NUMBER            = new ObjectType(StringConstants.JAVA_LANG_NUMBER, "java.lang.Number", "Number");
-    public static final ObjectType TYPE_OBJECT            = new ObjectType(StringConstants.JAVA_LANG_OBJECT, "java.lang.Object", "Object");
-    public static final ObjectType TYPE_RUNTIME_EXCEPTION = new ObjectType(StringConstants.JAVA_LANG_RUNTIME_EXCEPTION, "java.lang.RuntimeException", "RuntimeException");
-    public static final ObjectType TYPE_SHORT             = new ObjectType(StringConstants.JAVA_LANG_SHORT, "java.lang.Short", "Short");
-    public static final ObjectType TYPE_STRING            = new ObjectType(StringConstants.JAVA_LANG_STRING, "java.lang.String", "String");
-    public static final ObjectType TYPE_STRING_BUFFER     = new ObjectType(StringConstants.JAVA_LANG_STRING_BUFFER, "java.lang.StringBuffer", "StringBuffer");
-    public static final ObjectType TYPE_STRING_BUILDER    = new ObjectType(StringConstants.JAVA_LANG_STRING_BUILDER, "java.lang.StringBuilder", "StringBuilder");
-    public static final ObjectType TYPE_SYSTEM            = new ObjectType(StringConstants.JAVA_LANG_SYSTEM, "java.lang.System", "System");
-    public static final ObjectType TYPE_THREAD            = new ObjectType(StringConstants.JAVA_LANG_THREAD, "java.lang.Thread", "Thread");
-    public static final ObjectType TYPE_THROWABLE         = new ObjectType(StringConstants.JAVA_LANG_THROWABLE, "java.lang.Throwable", "Throwable");
+	public static final ObjectType TYPE_BOOLEAN           = new ObjectType(StringConstants.JAVA_LANG_BOOLEAN, "java.lang.Boolean", "Boolean"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_BYTE              = new ObjectType(StringConstants.JAVA_LANG_BYTE, "java.lang.Byte", "Byte"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_CHARACTER         = new ObjectType(StringConstants.JAVA_LANG_CHARACTER, "java.lang.Character", "Character"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_CLASS             = new ObjectType(StringConstants.JAVA_LANG_CLASS, "java.lang.Class", "Class"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_CLASS_WILDCARD    = ObjectType.TYPE_CLASS.createType(WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT);
+	public static final ObjectType TYPE_DATE              = new ObjectType(StringConstants.JAVA_UTIL_DATE, "java.util.Date", "Date"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_DOUBLE            = new ObjectType(StringConstants.JAVA_LANG_DOUBLE, "java.lang.Double", "Double"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_ENUM              = new ObjectType(StringConstants.JAVA_LANG_ENUM, "java.lang.Enum", "Enum"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_EXCEPTION         = new ObjectType(StringConstants.JAVA_LANG_EXCEPTION, "java.lang.Exception", "Exception"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_FLOAT             = new ObjectType(StringConstants.JAVA_LANG_FLOAT, "java.lang.Float", "Float"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_INTEGER           = new ObjectType(StringConstants.JAVA_LANG_INTEGER, "java.lang.Integer", "Integer"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_ITERABLE          = new ObjectType(StringConstants.JAVA_LANG_ITERABLE, "java.lang.Iterable", "Iterable"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_LONG              = new ObjectType(StringConstants.JAVA_LANG_LONG, "java.lang.Long", "Long"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_MATH              = new ObjectType(StringConstants.JAVA_LANG_MATH, "java.lang.Math", "Math"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_NUMBER            = new ObjectType(StringConstants.JAVA_LANG_NUMBER, "java.lang.Number", "Number"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_OBJECT            = new ObjectType(StringConstants.JAVA_LANG_OBJECT, "java.lang.Object", "Object"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_RUNTIME_EXCEPTION = new ObjectType(StringConstants.JAVA_LANG_RUNTIME_EXCEPTION, "java.lang.RuntimeException", "RuntimeException"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_SHORT             = new ObjectType(StringConstants.JAVA_LANG_SHORT, "java.lang.Short", "Short"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_STRING            = new ObjectType(StringConstants.JAVA_LANG_STRING, "java.lang.String", "String"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_STRING_BUFFER     = new ObjectType(StringConstants.JAVA_LANG_STRING_BUFFER, "java.lang.StringBuffer", "StringBuffer"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_STRING_BUILDER    = new ObjectType(StringConstants.JAVA_LANG_STRING_BUILDER, "java.lang.StringBuilder", "StringBuilder"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_SYSTEM            = new ObjectType(StringConstants.JAVA_LANG_SYSTEM, "java.lang.System", "System"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_THREAD            = new ObjectType(StringConstants.JAVA_LANG_THREAD, "java.lang.Thread", "Thread"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final ObjectType TYPE_THROWABLE         = new ObjectType(StringConstants.JAVA_LANG_THROWABLE, "java.lang.Throwable", "Throwable"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final ObjectType TYPE_PRIMITIVE_BOOLEAN = new ObjectType("Z");
-    public static final ObjectType TYPE_PRIMITIVE_BYTE    = new ObjectType("B");
-    public static final ObjectType TYPE_PRIMITIVE_CHAR    = new ObjectType("C");
-    public static final ObjectType TYPE_PRIMITIVE_DOUBLE  = new ObjectType("D");
-    public static final ObjectType TYPE_PRIMITIVE_FLOAT   = new ObjectType("F");
-    public static final ObjectType TYPE_PRIMITIVE_INT     = new ObjectType("I");
-    public static final ObjectType TYPE_PRIMITIVE_LONG    = new ObjectType("J");
-    public static final ObjectType TYPE_PRIMITIVE_SHORT   = new ObjectType("S");
-    public static final ObjectType TYPE_PRIMITIVE_VOID    = new ObjectType("V");
+	public static final ObjectType TYPE_PRIMITIVE_BOOLEAN = new ObjectType("Z"); //$NON-NLS-1$
+	public static final ObjectType TYPE_PRIMITIVE_BYTE    = new ObjectType("B"); //$NON-NLS-1$
+	public static final ObjectType TYPE_PRIMITIVE_CHAR    = new ObjectType("C"); //$NON-NLS-1$
+	public static final ObjectType TYPE_PRIMITIVE_DOUBLE  = new ObjectType("D"); //$NON-NLS-1$
+	public static final ObjectType TYPE_PRIMITIVE_FLOAT   = new ObjectType("F"); //$NON-NLS-1$
+	public static final ObjectType TYPE_PRIMITIVE_INT     = new ObjectType("I"); //$NON-NLS-1$
+	public static final ObjectType TYPE_PRIMITIVE_LONG    = new ObjectType("J"); //$NON-NLS-1$
+	public static final ObjectType TYPE_PRIMITIVE_SHORT   = new ObjectType("S"); //$NON-NLS-1$
+	public static final ObjectType TYPE_PRIMITIVE_VOID    = new ObjectType("V"); //$NON-NLS-1$
 
-    public static final ObjectType TYPE_UNDEFINED_OBJECT = new ObjectType(StringConstants.JAVA_LANG_OBJECT, "java.lang.Object", "Object") {
-        @Override
-        public String toString() { return "UndefinedObjectType"; }
-    };
+	public static final ObjectType TYPE_UNDEFINED_OBJECT = new ObjectType(StringConstants.JAVA_LANG_OBJECT, "java.lang.Object", "Object") { //$NON-NLS-1$ //$NON-NLS-2$
+		@Override
+		public String toString() { return "UndefinedObjectType"; } //$NON-NLS-1$
+	};
 
-    protected final String internalName;
-    protected final String qualifiedName;
-    protected final String name;
+	protected final String internalName;
+	protected final String qualifiedName;
+	protected final String name;
 
-    protected final BaseTypeArgument typeArguments;
-    protected final int dimension;
-    protected final String descriptor;
-    protected final Set<String> innerTypeNames;
+	protected final BaseTypeArgument typeArguments;
+	protected final int dimension;
+	protected final String descriptor;
+	protected final Set<String> innerTypeNames;
 
-    public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames) {
-        this(internalName, qualifiedName, name, innerTypeNames, null, 0);
-    }
+	public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames) {
+		this(internalName, qualifiedName, name, innerTypeNames, null, 0);
+	}
 
-    public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, int dimension) {
-        this(internalName, qualifiedName, name, innerTypeNames, null, dimension);
-    }
+	public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, int dimension) {
+		this(internalName, qualifiedName, name, innerTypeNames, null, dimension);
+	}
 
-    public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments) {
-        this(internalName, qualifiedName, name, innerTypeNames, typeArguments, 0);
-    }
+	public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments) {
+		this(internalName, qualifiedName, name, innerTypeNames, typeArguments, 0);
+	}
 
-    public ObjectType(String internalName, String qualifiedName, String name) {
-        this(internalName, qualifiedName, name, Collections.emptySet(), null, 0);
-    }
-    
-    public ObjectType(String internalName, String qualifiedName, String name, int dimension) {
-        this(internalName, qualifiedName, name, Collections.emptySet(), null, dimension);
-    }
-    
-    public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments) {
-        this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, 0);
-    }
-    
-    public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension) {
-        this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
-    }
-    
-    public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, int dimension) {
-        this.internalName = internalName;
-        this.qualifiedName = qualifiedName;
-        this.name = name;
-        this.typeArguments = typeArguments;
-        this.dimension = dimension;
-        this.descriptor = createDescriptor("L" + internalName + ';', dimension);
-        this.innerTypeNames = innerTypeNames;
+	public ObjectType(String internalName, String qualifiedName, String name) {
+		this(internalName, qualifiedName, name, Collections.emptySet(), null, 0);
+	}
 
-        if (internalName == null || internalName.endsWith(";")) {
-            throw new IllegalArgumentException("internal name is null or ends with ;");
-        }
-    }
+	public ObjectType(String internalName, String qualifiedName, String name, int dimension) {
+		this(internalName, qualifiedName, name, Collections.emptySet(), null, dimension);
+	}
 
-    public ObjectType(String primitiveDescriptor) {
-        this(primitiveDescriptor, 0);
-    }
+	public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments) {
+		this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, 0);
+	}
 
-    public ObjectType(String primitiveDescriptor, int dimension) {
-        this.internalName = primitiveDescriptor;
-        this.qualifiedName = this.name = PrimitiveType.getPrimitiveType(primitiveDescriptor.charAt(0)).getName();
-        this.dimension = dimension;
-        this.descriptor = createDescriptor(primitiveDescriptor, dimension);
-        this.typeArguments = null;
-        this.innerTypeNames = Collections.emptySet();
-    }
+	public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension) {
+		this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
+	}
 
-    protected static String createDescriptor(String descriptor, int dimension) {
-        return switch (dimension) {
-            case 0  -> descriptor;
-            case 1  -> "[" + descriptor;
-            case 2  -> "[[" + descriptor;
-            default -> new String(new char[dimension]).replace('\0', '[') + descriptor;
-        };
-    }
+	public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, int dimension) {
+		this.internalName = internalName;
+		this.qualifiedName = qualifiedName;
+		this.name = name;
+		this.typeArguments = typeArguments;
+		this.dimension = dimension;
+		this.descriptor = ObjectType.createDescriptor("L" + internalName + ';', dimension); //$NON-NLS-1$
+		this.innerTypeNames = innerTypeNames;
 
-    @Override
-    public String getInternalName() {
-        return internalName;
-    }
+		if (internalName == null || internalName.endsWith(";")) { //$NON-NLS-1$
+			throw new IllegalArgumentException("internal name is null or ends with ;"); //$NON-NLS-1$
+		}
+	}
 
-    public String getQualifiedName() {
-        return qualifiedName;
-    }
+	public ObjectType(String primitiveDescriptor) {
+		this(primitiveDescriptor, 0);
+	}
 
-    @Override
-    public String getName() {
-        return name;
-    }
+	public ObjectType(String primitiveDescriptor, int dimension) {
+		this.internalName = primitiveDescriptor;
+		this.qualifiedName = this.name = PrimitiveType.getPrimitiveType(primitiveDescriptor.charAt(0)).getName();
+		this.dimension = dimension;
+		this.descriptor = ObjectType.createDescriptor(primitiveDescriptor, dimension);
+		this.typeArguments = null;
+		this.innerTypeNames = Collections.emptySet();
+	}
 
-    public BaseTypeArgument getTypeArguments() {
-        return typeArguments;
-    }
+	protected static String createDescriptor(String descriptor, int dimension) {
+		return switch (dimension) {
+		case 0  -> descriptor;
+		case 1  -> "[" + descriptor; //$NON-NLS-1$
+		case 2  -> "[[" + descriptor; //$NON-NLS-1$
+		default -> new String(new char[dimension]).replace('\0', '[') + descriptor;
+		};
+	}
 
-    @Override
-    public String getDescriptor() {
-        return descriptor;
-    }
+	@Override
+	public String getInternalName() {
+		return internalName;
+	}
 
-    @Override
-    public int getDimension() {
-        return dimension;
-    }
+	public String getQualifiedName() {
+		return qualifiedName;
+	}
 
-    @Override
-    public Type createType(int dimension) {
-        if (dimension < 0) {
-            throw new IllegalArgumentException("ObjectType.createType(dim) : create type with negative dimension");
-        }
+	@Override
+	public String getName() {
+		return name;
+	}
 
-        if (this.dimension == dimension) {
-            return this;
-        }
-        if (descriptor.charAt(descriptor.length()-1) == ';') {
-            // Object type or array of object types
-            return new ObjectType(internalName, qualifiedName, name, typeArguments, dimension);
-        }
-        // Array of primitive types
-        if (dimension == 0) {
-            return PrimitiveType.getPrimitiveType(descriptor.charAt(this.dimension));
-        }
-        return new ObjectType(internalName, dimension);
-    }
+	public BaseTypeArgument getTypeArguments() {
+		return typeArguments;
+	}
 
-    public ObjectType createType(BaseTypeArgument typeArguments) {
-        if (this.typeArguments == typeArguments) {
-            return this;
-        }
-        return new ObjectType(internalName, qualifiedName, name, typeArguments, dimension);
-    }
+	@Override
+	public String getDescriptor() {
+		return descriptor;
+	}
 
-    public boolean rawEquals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+	@Override
+	public int getDimension() {
+		return dimension;
+	}
 
-        ObjectType that = (ObjectType) o;
+	@Override
+	public Type createType(int dimension) {
+		if (dimension < 0) {
+			throw new IllegalArgumentException("ObjectType.createType(dim) : create type with negative dimension"); //$NON-NLS-1$
+		}
 
-        return dimension == that.dimension && internalName.equals(that.internalName);
-    }
+		if (this.dimension == dimension) {
+			return this;
+		}
+		if (descriptor.charAt(descriptor.length()-1) == ';') {
+			// Object type or array of object types
+			return new ObjectType(internalName, qualifiedName, name, typeArguments, dimension);
+		}
+		// Array of primitive types
+		if (dimension == 0) {
+			return PrimitiveType.getPrimitiveType(descriptor.charAt(this.dimension));
+		}
+		return new ObjectType(internalName, dimension);
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+	public ObjectType createType(BaseTypeArgument typeArguments) {
+		if (this.typeArguments == typeArguments) {
+			return this;
+		}
+		return new ObjectType(internalName, qualifiedName, name, typeArguments, dimension);
+	}
 
-        ObjectType that = (ObjectType) o;
+	public boolean rawEquals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || this.getClass() != o.getClass()) {
+			return false;
+		}
 
-        if (dimension != that.dimension || !internalName.equals(that.internalName)) {
-            return false;
-        }
+		ObjectType that = (ObjectType) o;
 
-        if (StringConstants.JAVA_LANG_CLASS.equals(internalName)) {
-            boolean wildcard1 = typeArguments == null || typeArguments.isWildcardTypeArgument();
-            boolean wildcard2 = that.typeArguments == null || that.typeArguments.isWildcardTypeArgument();
+		return dimension == that.dimension && internalName.equals(that.internalName);
+	}
 
-            if (wildcard1 && wildcard2) {
-                return true;
-            }
-        }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || this.getClass() != o.getClass()) {
+			return false;
+		}
 
-        return Objects.equals(typeArguments, that.typeArguments);
-    }
+		ObjectType that = (ObjectType) o;
 
-    @Override
-    public int hashCode() {
-        int result = 735_485_092 + internalName.hashCode();
-        result = 31 * result + Objects.hash(typeArguments);
-        return 31 * result + dimension;
-    }
+		if (dimension != that.dimension || !internalName.equals(that.internalName)) {
+			return false;
+		}
 
-    @Override
-    public void accept(TypeVisitor visitor) {
-        visitor.visit(this);
-    }
+		if (StringConstants.JAVA_LANG_CLASS.equals(internalName)) {
+			boolean wildcard1 = typeArguments == null || typeArguments.isWildcardTypeArgument();
+			boolean wildcard2 = that.typeArguments == null || that.typeArguments.isWildcardTypeArgument();
 
-    @Override
-    public void accept(TypeArgumentVisitor visitor) {
-        visitor.visit(this);
-    }
+			if (wildcard1 && wildcard2) {
+				return true;
+			}
+		}
 
-    @Override
-    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
-        if (typeArgument instanceof ObjectType || typeArgument instanceof InnerObjectType) {
-            ObjectType ot = (ObjectType)typeArgument;
+		return Objects.equals(typeArguments, that.typeArguments);
+	}
 
-            if (dimension != ot.getDimension() || !internalName.equals(ot.getInternalName())) {
-                return false;
-            }
+	@Override
+	public int hashCode() {
+		int result = 735_485_092 + internalName.hashCode();
+		result = 31 * result + Objects.hash(typeArguments);
+		return 31 * result + dimension;
+	}
 
-            if (ot.getTypeArguments() == null) {
-                return typeArguments == null;
-            }
-            if (typeArguments == null) {
-                return ot.getTypeArguments() == null;
-            }
-            return typeArguments.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, ot.getTypeArguments());
-        }
+	@Override
+	public void accept(TypeVisitor visitor) {
+		visitor.visit(this);
+	}
 
-        if (typeArgument instanceof GenericType gt) {
-            BaseType bt = typeBounds.get(gt.getName());
-            if (bt != null) {
-                for (Type type : bt) {
-                    if (dimension == type.getDimension() && (type instanceof ObjectType || type instanceof InnerObjectType)) {
-                        ObjectType ot = (ObjectType) type;
+	@Override
+	public void accept(TypeArgumentVisitor visitor) {
+		visitor.visit(this);
+	}
 
-                        if (internalName.equals(ot.getInternalName())) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
+	@Override
+	public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+		if (typeArgument instanceof ObjectType || typeArgument instanceof InnerObjectType) {
+			ObjectType ot = (ObjectType)typeArgument;
 
-        return false;
-    }
+			if (dimension != ot.getDimension() || !internalName.equals(ot.getInternalName())) {
+				return false;
+			}
 
-    @Override
-    public boolean isObjectType() {
-        return true;
-    }
+			if (ot.getTypeArguments() == null) {
+				return typeArguments == null;
+			}
+			if (typeArguments == null) {
+				return ot.getTypeArguments() == null;
+			}
+			return typeArguments.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, ot.getTypeArguments());
+		}
 
-    @Override
-    public boolean isObjectTypeArgument() {
-        return true;
-    }
-    
-    public Set<String> getInnerTypeNames() {
-        return innerTypeNames;
-    }
+		if (typeArgument instanceof GenericType gt) {
+			BaseType bt = typeBounds.get(gt.getName());
+			if (bt != null) {
+				for (Type type : bt) {
+					if (dimension == type.getDimension() && (type instanceof ObjectType || type instanceof InnerObjectType)) {
+						ObjectType ot = (ObjectType) type;
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("ObjectType{");
+						if (internalName.equals(ot.getInternalName())) {
+							return true;
+						}
+					}
+				}
+			}
+		}
 
-        sb.append(internalName);
+		return false;
+	}
 
-        if (typeArguments != null) {
-            sb.append('<').append(typeArguments).append('>');
-        }
+	@Override
+	public boolean isObjectType() {
+		return true;
+	}
 
-        if (dimension > 0) {
-            sb.append(", dimension=").append(dimension);
-        }
+	@Override
+	public boolean isObjectTypeArgument() {
+		return true;
+	}
 
-        return sb.append('}').toString();
-    }
+	public Set<String> getInnerTypeNames() {
+		return innerTypeNames;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("ObjectType{"); //$NON-NLS-1$
+
+		sb.append(internalName);
+
+		if (typeArguments != null) {
+			sb.append('<').append(typeArguments).append('>');
+		}
+
+		if (dimension > 0) {
+			sb.append(", dimension=").append(dimension); //$NON-NLS-1$
+		}
+
+		return sb.append('}').toString();
+	}
 }

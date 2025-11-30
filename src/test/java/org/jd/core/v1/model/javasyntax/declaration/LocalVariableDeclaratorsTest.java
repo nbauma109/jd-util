@@ -9,30 +9,30 @@ import static org.junit.Assert.assertFalse;
 
 public class LocalVariableDeclaratorsTest {
 
-    private LocalVariableDeclarators localVariableDeclarators;
-    private TestDeclarationVisitor visitor;
+	private LocalVariableDeclarators localVariableDeclarators;
+	private TestDeclarationVisitor visitor;
 
-    @Before
-    public void setUp() {
-        localVariableDeclarators = new LocalVariableDeclarators(10);
-        visitor = new TestDeclarationVisitor();
-    }
+	@Before
+	public void setUp() {
+		localVariableDeclarators = new LocalVariableDeclarators(10);
+		visitor = new TestDeclarationVisitor();
+	}
 
-    @Test
-    public void testLocalVariableDeclarators() {
-        // Arrange
-        LocalVariableDeclarator declarator = new LocalVariableDeclarator(1, "test", null);
-        localVariableDeclarators.add(declarator);
+	@Test
+	public void testLocalVariableDeclarators() {
+		// Arrange
+		LocalVariableDeclarator declarator = new LocalVariableDeclarator(1, "test", null); //$NON-NLS-1$
+		localVariableDeclarators.add(declarator);
 
-        // Act
-        localVariableDeclarators.accept(visitor);
+		// Act
+		localVariableDeclarators.accept(visitor);
 
-        // Assert
-        assertEquals(1, visitor.getLocalVariableDeclaratorsCount());
-        assertEquals(1, localVariableDeclarators.size());
-        assertEquals(1, localVariableDeclarators.getLineNumber());
-        assertFalse(localVariableDeclarators.isEmpty());
-        localVariableDeclarators.clear();
-        assertEquals(0, localVariableDeclarators.getLineNumber());
-    }
+		// Assert
+		assertEquals(1, visitor.getLocalVariableDeclaratorsCount());
+		assertEquals(1, localVariableDeclarators.size());
+		assertEquals(1, localVariableDeclarators.getLineNumber());
+		assertFalse(localVariableDeclarators.isEmpty());
+		localVariableDeclarators.clear();
+		assertEquals(0, localVariableDeclarators.getLineNumber());
+	}
 }

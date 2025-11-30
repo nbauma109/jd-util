@@ -10,29 +10,29 @@ package org.jd.core.v1.model.javasyntax.statement;
 import java.util.Objects;
 
 public class ContinueStatement implements Statement {
-    public static final ContinueStatement CONTINUE = new ContinueStatement();
+	public static final ContinueStatement CONTINUE = new ContinueStatement();
 
-    private final String label;
+	private final String label;
 
-    protected ContinueStatement() {
-        this.label = null;
-    }
+	protected ContinueStatement() {
+		this.label = null;
+	}
 
-    public ContinueStatement(String label) {
-        Objects.requireNonNull(label);
+	public ContinueStatement(String label) {
+		Objects.requireNonNull(label);
 
-        this.label = label;
-    }
+		this.label = label;
+	}
 
-    public String getLabel() {
-        return label;
-    }
+	public String getLabel() {
+		return label;
+	}
 
-    @Override
-    public boolean isContinueStatement() { return true; }
+	@Override
+	public boolean isContinueStatement() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 }

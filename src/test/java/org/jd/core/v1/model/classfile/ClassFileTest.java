@@ -14,83 +14,83 @@ import static org.junit.Assert.assertTrue;
 
 public class ClassFileTest {
 
-    @Test
-    public void testClassFile() throws Exception {
-        JavaClass outerJavaClass = Repository.lookupClass("java.util.Map");
-        JavaClass innerJavaClass = Repository.lookupClass("java.util.Map$Entry");
-        
-        ClassFile outerClassFile = new ClassFile(outerJavaClass);
-        ClassFile innerClassFile = new ClassFile(innerJavaClass);
+	@Test
+	public void testClassFile() throws Exception {
+		JavaClass outerJavaClass = Repository.lookupClass("java.util.Map"); //$NON-NLS-1$
+		JavaClass innerJavaClass = Repository.lookupClass("java.util.Map$Entry"); //$NON-NLS-1$
 
-        // set outer class for inner class
-        innerClassFile.setOuterClassFile(outerClassFile);
+		ClassFile outerClassFile = new ClassFile(outerJavaClass);
+		ClassFile innerClassFile = new ClassFile(innerJavaClass);
 
-        // set inner classes for outer class
-        outerClassFile.setInnerClassFiles(Collections.singletonList(innerClassFile));
+		// set outer class for inner class
+		innerClassFile.setOuterClassFile(outerClassFile);
 
-        // Verify isModule, isAbstract, isInterface, and isPublic
-        assertFalse(outerClassFile.isModule());
-        assertTrue(outerClassFile.isAbstract());
-        assertTrue(outerClassFile.isInterface());
-        assertTrue(outerClassFile.isPublic());
+		// set inner classes for outer class
+		outerClassFile.setInnerClassFiles(Collections.singletonList(innerClassFile));
 
-        // Verify outer and inner class relationship
-        assertEquals(outerClassFile, innerClassFile.getOuterClassFile());
-        assertEquals(innerClassFile, outerClassFile.getInnerClassFiles().get(0));
-        assertTrue(innerClassFile.isAInnerClass());
-        assertFalse(outerClassFile.isAInnerClass());
+		// Verify isModule, isAbstract, isInterface, and isPublic
+		assertFalse(outerClassFile.isModule());
+		assertTrue(outerClassFile.isAbstract());
+		assertTrue(outerClassFile.isInterface());
+		assertTrue(outerClassFile.isPublic());
 
-        // Verify other properties of the classes
-        assertEquals("java/util/Map", outerClassFile.getInternalTypeName());
-        assertEquals("java/util/Map$Entry", innerClassFile.getInternalTypeName());
-        assertTrue(innerClassFile.isInterface());
-        assertFalse(innerClassFile.isEnum());
-        assertTrue(innerClassFile.isAbstract());
-        assertFalse(innerClassFile.isStatic());
+		// Verify outer and inner class relationship
+		assertEquals(outerClassFile, innerClassFile.getOuterClassFile());
+		assertEquals(innerClassFile, outerClassFile.getInnerClassFiles().get(0));
+		assertTrue(innerClassFile.isAInnerClass());
+		assertFalse(outerClassFile.isAInnerClass());
 
-        // Test major and minor version
-        assertEquals(outerJavaClass.getMajor(), outerClassFile.getMajorVersion());
-        assertEquals(outerJavaClass.getMinor(), outerClassFile.getMinorVersion());
+		// Verify other properties of the classes
+		assertEquals("java/util/Map", outerClassFile.getInternalTypeName()); //$NON-NLS-1$
+		assertEquals("java/util/Map$Entry", innerClassFile.getInternalTypeName()); //$NON-NLS-1$
+		assertTrue(innerClassFile.isInterface());
+		assertFalse(innerClassFile.isEnum());
+		assertTrue(innerClassFile.isAbstract());
+		assertFalse(innerClassFile.isStatic());
 
-        // Test class
-        assertFalse(outerClassFile.isClass());
+		// Test major and minor version
+		assertEquals(outerJavaClass.getMajor(), outerClassFile.getMajorVersion());
+		assertEquals(outerJavaClass.getMinor(), outerClassFile.getMinorVersion());
 
-        // Test access flags
-        assertEquals(outerJavaClass.getAccessFlags(), outerClassFile.getAccessFlags());
+		// Test class
+		assertFalse(outerClassFile.isClass());
 
-        // Test setAccessFlags
-        outerClassFile.setAccessFlags(0);
-        assertEquals(0, outerClassFile.getAccessFlags());
+		// Test access flags
+		assertEquals(outerJavaClass.getAccessFlags(), outerClassFile.getAccessFlags());
 
-        // Test annotation
-        assertFalse(outerClassFile.isAnnotation());
+		// Test setAccessFlags
+		outerClassFile.setAccessFlags(0);
+		assertEquals(0, outerClassFile.getAccessFlags());
 
-        // Test methods
-        assertNotNull(outerClassFile.getMethods());
-        assertEquals(outerJavaClass.getMethods().length, outerClassFile.getMethods().length);
+		// Test annotation
+		assertFalse(outerClassFile.isAnnotation());
 
-        // Test fields
-        assertNotNull(outerClassFile.getFields());
-        assertEquals(outerJavaClass.getFields().length, outerClassFile.getFields().length);
+		// Test methods
+		assertNotNull(outerClassFile.getMethods());
+		assertEquals(outerJavaClass.getMethods().length, outerClassFile.getMethods().length);
 
-        // Test getInterfaceTypeNames
-        assertNotNull(outerClassFile.getInterfaceTypeNames());
-        assertEquals(outerJavaClass.getInterfaces().length, outerClassFile.getInterfaceTypeNames().length);
+		// Test fields
+		assertNotNull(outerClassFile.getFields());
+		assertEquals(outerJavaClass.getFields().length, outerClassFile.getFields().length);
 
-        // Test getSuperTypeName
-        assertNotNull(outerClassFile.getSuperTypeName());
+		// Test getInterfaceTypeNames
+		assertNotNull(outerClassFile.getInterfaceTypeNames());
+		assertEquals(outerJavaClass.getInterfaces().length, outerClassFile.getInterfaceTypeNames().length);
 
-        // Test getAttributes
-        assertNotNull(outerClassFile.getAttributes());
+		// Test getSuperTypeName
+		assertNotNull(outerClassFile.getSuperTypeName());
 
-        // Test getAnnotationEntries
-        assertNotNull(outerClassFile.getAnnotationEntries());
+		// Test getAttributes
+		assertNotNull(outerClassFile.getAttributes());
 
-        // Test getAttribute
-        assertNotNull(outerClassFile.getAttribute(Const.ATTR_SOURCE_FILE));
+		// Test getAnnotationEntries
+		assertNotNull(outerClassFile.getAnnotationEntries());
 
-        // Verify the toString method
-        assertEquals("ClassFile{java/util/Map}", outerClassFile.toString());
-        assertEquals("ClassFile{java/util/Map$Entry}", innerClassFile.toString());
-    }
+		// Test getAttribute
+		assertNotNull(outerClassFile.getAttribute(Const.ATTR_SOURCE_FILE));
+
+		// Verify the toString method
+		assertEquals("ClassFile{java/util/Map}", outerClassFile.toString()); //$NON-NLS-1$
+		assertEquals("ClassFile{java/util/Map$Entry}", innerClassFile.toString()); //$NON-NLS-1$
+	}
 }

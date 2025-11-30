@@ -8,13 +8,13 @@ import static org.junit.Assert.assertTrue;
 
 public class LabelStatementTest {
 
-    @Test
-    public void test() throws Exception {
-        LabelStatement labelStatement = new LabelStatement("label", null);
-        assertTrue(labelStatement.isLabelStatement());
-        assertEquals("LabelStatement{label: null}", labelStatement.toString());
-        TestVisitor testVisitor = new TestVisitor();
-        labelStatement.accept(testVisitor);
-        assertEquals(1, testVisitor.getLabelStatementCount());
-    }
+	@Test
+	public void test() throws Exception {
+		LabelStatement labelStatement = new LabelStatement("label", null); //$NON-NLS-1$
+		assertTrue(labelStatement.isLabelStatement());
+		assertEquals("LabelStatement{label: null}", labelStatement.toString()); //$NON-NLS-1$
+		TestVisitor testVisitor = new TestVisitor();
+		labelStatement.accept(testVisitor);
+		assertEquals(1, testVisitor.getLabelStatementCount());
+	}
 }

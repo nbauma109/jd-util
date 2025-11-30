@@ -9,16 +9,16 @@ package org.jd.core.v1.model.javasyntax.statement;
 
 public record LabelStatement(String label, Statement statement) implements Statement {
 
-    @Override
-    public boolean isLabelStatement() { return true; }
+	@Override
+	public boolean isLabelStatement() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "LabelStatement{" + label + ": " + statement + "}";
-    }
+	@Override
+	public String toString() {
+		return "LabelStatement{" + label + ": " + statement + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 }

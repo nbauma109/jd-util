@@ -10,87 +10,87 @@ package org.jd.core.v1.model.javasyntax.declaration;
 import java.util.List;
 
 public class ModuleDeclaration extends TypeDeclaration {
-    private final String            version;
-    private final List<ModuleInfo>  requires;
-    private final List<PackageInfo> exports;
-    private final List<PackageInfo> opens;
-    private final List<String>      uses;
-    private final List<ServiceInfo> provides;
+	private final String            version;
+	private final List<ModuleInfo>  requires;
+	private final List<PackageInfo> exports;
+	private final List<PackageInfo> opens;
+	private final List<String>      uses;
+	private final List<ServiceInfo> provides;
 
-    public ModuleDeclaration(int flags, String internalName, String name, String version, List<ModuleInfo> requires, List<PackageInfo> exports, List<PackageInfo> opens, List<String> uses, List<ServiceInfo> provides) {
-        super(null, flags, internalName, name, null);
-        this.version = version;
-        this.requires = requires;
-        this.exports = exports;
-        this.opens = opens;
-        this.uses = uses;
-        this.provides = provides;
-    }
+	public ModuleDeclaration(int flags, String internalName, String name, String version, List<ModuleInfo> requires, List<PackageInfo> exports, List<PackageInfo> opens, List<String> uses, List<ServiceInfo> provides) {
+		super(null, flags, internalName, name, null);
+		this.version = version;
+		this.requires = requires;
+		this.exports = exports;
+		this.opens = opens;
+		this.uses = uses;
+		this.provides = provides;
+	}
 
-    public String getVersion() { return version; }
-    public List<ModuleInfo> getRequires() { return requires; }
-    public List<PackageInfo> getExports() { return exports; }
-    public List<PackageInfo> getOpens() { return opens; }
-    public List<String> getUses() { return uses; }
-    public List<ServiceInfo> getProvides() { return provides; }
+	public String getVersion() { return version; }
+	public List<ModuleInfo> getRequires() { return requires; }
+	public List<PackageInfo> getExports() { return exports; }
+	public List<PackageInfo> getOpens() { return opens; }
+	public List<String> getUses() { return uses; }
+	public List<ServiceInfo> getProvides() { return provides; }
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ModuleDeclaration{" + internalTypeName + "}";
-    }
+	@Override
+	public String toString() {
+		return "ModuleDeclaration{" + internalTypeName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 
-    public static record ModuleInfo(String name, int flags, String version) {
+	public static record ModuleInfo(String name, int flags, String version) {
 
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
 
-            sb.append("ModuleInfo{name=").append(name);
-            sb.append(", flags=").append(flags);
+			sb.append("ModuleInfo{name=").append(name); //$NON-NLS-1$
+			sb.append(", flags=").append(flags); //$NON-NLS-1$
 
-            if (version != null) {
-                sb.append(", version=").append(version);
-            }
+			if (version != null) {
+				sb.append(", version=").append(version); //$NON-NLS-1$
+			}
 
-            return sb.append("}").toString();
-        }
-    }
+			return sb.append("}").toString(); //$NON-NLS-1$
+		}
+	}
 
-    public static record PackageInfo(String internalName, int flags, List<String> moduleInfoNames) {
+	public static record PackageInfo(String internalName, int flags, List<String> moduleInfoNames) {
 
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
 
-            sb.append("PackageInfo{internalName=").append(internalName);
-            sb.append(", flags=").append(flags);
+			sb.append("PackageInfo{internalName=").append(internalName); //$NON-NLS-1$
+			sb.append(", flags=").append(flags); //$NON-NLS-1$
 
-            if (moduleInfoNames != null) {
-                sb.append(", moduleInfoNames=").append(moduleInfoNames);
-            }
+			if (moduleInfoNames != null) {
+				sb.append(", moduleInfoNames=").append(moduleInfoNames); //$NON-NLS-1$
+			}
 
-            return sb.append("}").toString();
-        }
-    }
+			return sb.append("}").toString(); //$NON-NLS-1$
+		}
+	}
 
-    public static record ServiceInfo(String interfaceTypeName, List<String> implementationTypeNames) {
+	public static record ServiceInfo(String interfaceTypeName, List<String> implementationTypeNames) {
 
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
 
-            sb.append("ServiceInfo{interfaceTypeName=").append(interfaceTypeName);
+			sb.append("ServiceInfo{interfaceTypeName=").append(interfaceTypeName); //$NON-NLS-1$
 
-            if (implementationTypeNames != null) {
-                sb.append(", implementationTypeNames=").append(implementationTypeNames);
-            }
+			if (implementationTypeNames != null) {
+				sb.append(", implementationTypeNames=").append(implementationTypeNames); //$NON-NLS-1$
+			}
 
-            return sb.append("}").toString();
-        }
-    }
+			return sb.append("}").toString(); //$NON-NLS-1$
+		}
+	}
 }

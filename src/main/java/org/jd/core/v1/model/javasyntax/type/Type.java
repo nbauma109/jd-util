@@ -8,11 +8,11 @@
 package org.jd.core.v1.model.javasyntax.type;
 
 public interface Type extends BaseType, TypeArgument {
-    String getName();
+	String getName();
 
-    String getDescriptor();
+	String getDescriptor();
 
-    int getDimension();
+	int getDimension();
 
-    Type createType(int dimension);
+	Type createType(int dimension);
 }

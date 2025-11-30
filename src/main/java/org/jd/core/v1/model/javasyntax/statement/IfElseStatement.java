@@ -10,23 +10,23 @@ package org.jd.core.v1.model.javasyntax.statement;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 
 public class IfElseStatement extends IfStatement {
-    private final BaseStatement elseStatements;
+	private final BaseStatement elseStatements;
 
-    public IfElseStatement(Expression condition, BaseStatement statement, BaseStatement elseStatements) {
-        super(condition, statement);
-        this.elseStatements = elseStatements;
-    }
+	public IfElseStatement(Expression condition, BaseStatement statement, BaseStatement elseStatements) {
+		super(condition, statement);
+		this.elseStatements = elseStatements;
+	}
 
-    @Override
-    public BaseStatement getElseStatements() {
-        return elseStatements;
-    }
+	@Override
+	public BaseStatement getElseStatements() {
+		return elseStatements;
+	}
 
-    @Override
-    public boolean isIfElseStatement() { return true; }
+	@Override
+	public boolean isIfElseStatement() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 }

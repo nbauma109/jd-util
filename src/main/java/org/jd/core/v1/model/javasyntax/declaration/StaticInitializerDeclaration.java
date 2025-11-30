@@ -10,29 +10,29 @@ package org.jd.core.v1.model.javasyntax.declaration;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
 
 public class StaticInitializerDeclaration implements MemberDeclaration {
-    protected final String descriptor;
-    protected BaseStatement statements;
+	protected final String descriptor;
+	protected BaseStatement statements;
 
-    public StaticInitializerDeclaration(String descriptor, BaseStatement statements) {
-        this.descriptor = descriptor;
-        this.statements = statements;
-    }
+	public StaticInitializerDeclaration(String descriptor, BaseStatement statements) {
+		this.descriptor = descriptor;
+		this.statements = statements;
+	}
 
-    public String getDescriptor() {
-        return descriptor;
-    }
+	public String getDescriptor() {
+		return descriptor;
+	}
 
-    public BaseStatement getStatements() {
-        return statements;
-    }
+	public BaseStatement getStatements() {
+		return statements;
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "StaticInitializerDeclaration{}";
-    }
+	@Override
+	public String toString() {
+		return "StaticInitializerDeclaration{}"; //$NON-NLS-1$
+	}
 }

@@ -10,84 +10,84 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class CastExpression extends AbstractLineNumberTypeExpression {
-    private Expression expression;
-    private boolean explicit;
-    private boolean byteCodeCheckCast;
-    private Type intersectType;
+	private Expression expression;
+	private boolean explicit;
+	private boolean byteCodeCheckCast;
+	private Type intersectType;
 
-    public CastExpression(Type type, Expression expression) {
-        this(UNKNOWN_LINE_NUMBER, type, expression);
-    }
+	public CastExpression(Type type, Expression expression) {
+		this(Expression.UNKNOWN_LINE_NUMBER, type, expression);
+	}
 
-    public CastExpression(int lineNumber, Type type, Expression expression) {
-        this(lineNumber, type, expression, true);
-    }
+	public CastExpression(int lineNumber, Type type, Expression expression) {
+		this(lineNumber, type, expression, true);
+	}
 
-    public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit) {
-        this(lineNumber, type, expression, explicit, false);
-    }
-    
-    public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit, boolean byteCodeCheckCast) {
-        super(lineNumber, type);
-        this.expression = expression;
-        this.explicit = explicit;
-        this.byteCodeCheckCast = byteCodeCheckCast;
-    }
+	public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit) {
+		this(lineNumber, type, expression, explicit, false);
+	}
 
-    public Type getIntersectType() {
-        return intersectType;
-    }
+	public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit, boolean byteCodeCheckCast) {
+		super(lineNumber, type);
+		this.expression = expression;
+		this.explicit = explicit;
+		this.byteCodeCheckCast = byteCodeCheckCast;
+	}
 
-    public void setIntersectType(Type type) {
-        this.intersectType = getType();
-        setType(type);
-    }
+	public Type getIntersectType() {
+		return intersectType;
+	}
 
-    @Override
-    public Expression getExpression() {
-        return expression;
-    }
+	public void setIntersectType(Type type) {
+		this.intersectType = this.getType();
+		this.setType(type);
+	}
 
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
+	@Override
+	public Expression getExpression() {
+		return expression;
+	}
 
-    public boolean isExplicit() {
-        return explicit;
-    }
+	public void setExpression(Expression expression) {
+		this.expression = expression;
+	}
 
-    public void setExplicit(boolean explicit) {
-        this.explicit = explicit;
-    }
+	public boolean isExplicit() {
+		return explicit;
+	}
 
-    public boolean isByteCodeCheckCast() {
-        return byteCodeCheckCast;
-    }
+	public void setExplicit(boolean explicit) {
+		this.explicit = explicit;
+	}
 
-    public void setByteCodeCheckCast(boolean byteCodeCheckCast) {
-        this.byteCodeCheckCast = byteCodeCheckCast;
-    }
+	public boolean isByteCodeCheckCast() {
+		return byteCodeCheckCast;
+	}
 
-    @Override
-    public int getPriority() {
-        return 3;
-    }
+	public void setByteCodeCheckCast(boolean byteCodeCheckCast) {
+		this.byteCodeCheckCast = byteCodeCheckCast;
+	}
 
-    @Override
-    public boolean isCastExpression() { return true; }
+	@Override
+	public int getPriority() {
+		return 3;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public boolean isCastExpression() { return true; }
 
-    @Override
-    public String toString() {
-        return "CastExpression{cast (" + getType() + ") " + expression + "}";
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new CastExpression(lineNumber, getType(), expression, explicit, byteCodeCheckCast);
-    }
+	@Override
+	public String toString() {
+		return "CastExpression{cast (" + this.getType() + ") " + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
+
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new CastExpression(lineNumber, this.getType(), expression, explicit, byteCodeCheckCast);
+	}
 }

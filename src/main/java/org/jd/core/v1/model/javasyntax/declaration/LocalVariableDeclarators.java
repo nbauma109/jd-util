@@ -9,19 +9,19 @@ package org.jd.core.v1.model.javasyntax.declaration;
 import org.jd.core.v1.util.DefaultList;
 
 public class LocalVariableDeclarators extends DefaultList<LocalVariableDeclarator> implements BaseLocalVariableDeclarator {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public LocalVariableDeclarators(int capacity) {
-        super(capacity);
-    }
+	public LocalVariableDeclarators(int capacity) {
+		super(capacity);
+	}
 
-    @Override
-    public int getLineNumber() {
-        return isEmpty() ? 0 : get(0).getLineNumber();
-    }
+	@Override
+	public int getLineNumber() {
+		return this.isEmpty() ? 0 : this.get(0).getLineNumber();
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 }

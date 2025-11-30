@@ -8,20 +8,20 @@
 package org.jd.core.v1.model.javasyntax.statement;
 
 public class ReturnStatement implements Statement {
-    public static final ReturnStatement RETURN = new ReturnStatement();
+	public static final ReturnStatement RETURN = new ReturnStatement();
 
-    protected ReturnStatement() {}
+	protected ReturnStatement() {}
 
-    @Override
-    public boolean isReturnStatement() { return true; }
+	@Override
+	public boolean isReturnStatement() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ReturnStatement{}";
-    }
+	@Override
+	public String toString() {
+		return "ReturnStatement{}"; //$NON-NLS-1$
+	}
 }

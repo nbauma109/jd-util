@@ -11,22 +11,22 @@ import org.jd.core.v1.util.DefaultList;
 
 public class ElementValuePairs extends DefaultList<ElementValuePair> implements BaseElementValuePair {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public ElementValuePairs() {
-    }
+	public ElementValuePairs() {
+	}
 
-    public ElementValuePairs(int capacity) {
-        super(capacity);
-    }
+	public ElementValuePairs(int capacity) {
+		super(capacity);
+	}
 
-    @Override
-    public void accept(ReferenceVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ReferenceVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ElementValuePairs{" + super.toString() + "}";
-    }
+	@Override
+	public String toString() {
+		return "ElementValuePairs{" + super.toString() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

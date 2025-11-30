@@ -12,29 +12,29 @@ import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class LambdaFormalParametersExpression extends AbstractLambdaExpression {
-    private final BaseFormalParameter formalParameters;
+	private final BaseFormalParameter formalParameters;
 
-    public LambdaFormalParametersExpression(int lineNumber, Type type, BaseFormalParameter formalParameters, BaseStatement statements) {
-        super(lineNumber, type, statements);
-        this.formalParameters = formalParameters;
-    }
+	public LambdaFormalParametersExpression(int lineNumber, Type type, BaseFormalParameter formalParameters, BaseStatement statements) {
+		super(lineNumber, type, statements);
+		this.formalParameters = formalParameters;
+	}
 
-    public BaseFormalParameter getFormalParameters() {
-        return formalParameters;
-    }
+	public BaseFormalParameter getFormalParameters() {
+		return formalParameters;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "LambdaFormalParametersExpression{" + formalParameters + " -> " + statements + "}";
-    }
+	@Override
+	public String toString() {
+		return "LambdaFormalParametersExpression{" + formalParameters + " -> " + statements + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new LambdaFormalParametersExpression(lineNumber, getType(), formalParameters, statements);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new LambdaFormalParametersExpression(lineNumber, this.getType(), formalParameters, statements);
+	}
 }

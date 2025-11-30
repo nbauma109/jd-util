@@ -9,19 +9,19 @@ package org.jd.core.v1.model.javasyntax.declaration;
 import org.jd.core.v1.util.DefaultList;
 
 public class FormalParameters extends DefaultList<FormalParameter> implements BaseFormalParameter {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public FormalParameters() {}
+	public FormalParameters() {}
 
-    public FormalParameters(FormalParameter parameter, FormalParameter... parameters) {
-        super(parameter, parameters);
-        if (parameters.length <= 0) {
-            throw new IllegalArgumentException("Use 'FormalParameter' instead");
-        }
-    }
+	public FormalParameters(FormalParameter parameter, FormalParameter... parameters) {
+		super(parameter, parameters);
+		if (parameters.length <= 0) {
+			throw new IllegalArgumentException("Use 'FormalParameter' instead"); //$NON-NLS-1$
+		}
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 }

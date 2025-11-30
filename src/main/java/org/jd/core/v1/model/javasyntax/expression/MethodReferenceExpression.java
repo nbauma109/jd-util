@@ -10,59 +10,59 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class MethodReferenceExpression extends AbstractLineNumberTypeExpression {
-    protected Expression expression;
-    private final String internalTypeName;
-    protected final String name;
-    protected final String descriptor;
+	protected Expression expression;
+	private final String internalTypeName;
+	protected final String name;
+	protected final String descriptor;
 
-    public MethodReferenceExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor) {
-        this(UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor);
-    }
+	public MethodReferenceExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor) {
+		this(Expression.UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor);
+	}
 
-    public MethodReferenceExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor) {
-        super(lineNumber, type);
-        this.setExpression(expression);
-        this.internalTypeName = internalTypeName;
-        this.name = name;
-        this.descriptor = descriptor;
-    }
+	public MethodReferenceExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor) {
+		super(lineNumber, type);
+		setExpression(expression);
+		this.internalTypeName = internalTypeName;
+		this.name = name;
+		this.descriptor = descriptor;
+	}
 
-    @Override
-    public Expression getExpression() {
-        return expression;
-    }
+	@Override
+	public Expression getExpression() {
+		return expression;
+	}
 
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
+	public void setExpression(Expression expression) {
+		this.expression = expression;
+	}
 
-    @Override
-    public String getInternalTypeName() {
-        return internalTypeName;
-    }
+	@Override
+	public String getInternalTypeName() {
+		return internalTypeName;
+	}
 
-    @Override
-    public String getName() {
-        return name;
-    }
+	@Override
+	public String getName() {
+		return name;
+	}
 
-    @Override
-    public String getDescriptor() {
-        return descriptor;
-    }
+	@Override
+	public String getDescriptor() {
+		return descriptor;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new MethodReferenceExpression(lineNumber, getType(), expression, internalTypeName, name, descriptor);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new MethodReferenceExpression(lineNumber, this.getType(), expression, internalTypeName, name, descriptor);
+	}
 
-    @Override
-    public String toString() {
-        return "MethodReferenceExpression{call " + expression + " :: " + name + "(" + descriptor + ")}";
-    }
+	@Override
+	public String toString() {
+		return "MethodReferenceExpression{call " + expression + " :: " + name + "(" + descriptor + ")}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+	}
 }

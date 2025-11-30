@@ -10,31 +10,31 @@ package org.jd.core.v1.model.javasyntax.statement;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 
 public class ThrowStatement implements Statement {
-    private Expression expression;
+	private Expression expression;
 
-    public ThrowStatement(Expression expression) {
-        this.expression = expression;
-    }
+	public ThrowStatement(Expression expression) {
+		this.expression = expression;
+	}
 
-    @Override
-    public Expression getExpression() {
-        return expression;
-    }
+	@Override
+	public Expression getExpression() {
+		return expression;
+	}
 
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
+	public void setExpression(Expression expression) {
+		this.expression = expression;
+	}
 
-    @Override
-    public boolean isThrowStatement() { return true; }
+	@Override
+	public boolean isThrowStatement() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ThrowStatement{throw " + expression + "}";
-    }
+	@Override
+	public String toString() {
+		return "ThrowStatement{throw " + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

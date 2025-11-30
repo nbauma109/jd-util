@@ -10,30 +10,30 @@ package org.jd.core.v1.model.javasyntax.statement;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 
 public class SynchronizedStatement implements Statement {
-    private Expression monitor;
-    private final BaseStatement statements;
+	private Expression monitor;
+	private final BaseStatement statements;
 
-    public SynchronizedStatement(Expression monitor, BaseStatement statements) {
-        this.monitor = monitor;
-        this.statements = statements;
-    }
+	public SynchronizedStatement(Expression monitor, BaseStatement statements) {
+		this.monitor = monitor;
+		this.statements = statements;
+	}
 
-    @Override
-    public Expression getMonitor() {
-        return monitor;
-    }
+	@Override
+	public Expression getMonitor() {
+		return monitor;
+	}
 
-    public void setMonitor(Expression monitor) {
-        this.monitor = monitor;
-    }
+	public void setMonitor(Expression monitor) {
+		this.monitor = monitor;
+	}
 
-    @Override
-    public BaseStatement getStatements() {
-        return statements;
-    }
+	@Override
+	public BaseStatement getStatements() {
+		return statements;
+	}
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 }

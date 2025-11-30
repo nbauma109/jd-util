@@ -18,9 +18,8 @@ package jd.core;
 
 public final class CoreConstants
 {
-    public static final int JAVA_MAGIC_NUMBER = 0xCafeBabe;
+	public static final int JAVA_MAGIC_NUMBER = 0xCafeBabe;
 
-    private CoreConstants() {
-        super();
-    }
+	private CoreConstants() {
+	}
 }

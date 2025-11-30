@@ -9,21 +9,21 @@ package org.jd.core.v1.model.javasyntax.declaration;
 import org.jd.core.v1.util.DefaultList;
 
 public class MemberDeclarations extends DefaultList<MemberDeclaration> implements BaseMemberDeclaration {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public MemberDeclarations(int capacity) {
-        super(capacity);
-    }
+	public MemberDeclarations(int capacity) {
+		super(capacity);
+	}
 
-    public MemberDeclarations(MemberDeclaration declaration, MemberDeclaration... declarations) {
-        super(declaration, declarations);
-        if (declarations.length <= 0) {
-            throw new IllegalArgumentException("Use 'MemberDeclaration' implementation instead");
-        }
-    }
+	public MemberDeclarations(MemberDeclaration declaration, MemberDeclaration... declarations) {
+		super(declaration, declarations);
+		if (declarations.length <= 0) {
+			throw new IllegalArgumentException("Use 'MemberDeclaration' implementation instead"); //$NON-NLS-1$
+		}
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 }

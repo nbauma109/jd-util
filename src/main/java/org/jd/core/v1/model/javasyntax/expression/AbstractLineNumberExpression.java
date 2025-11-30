@@ -8,23 +8,23 @@
 package org.jd.core.v1.model.javasyntax.expression;
 
 public abstract class AbstractLineNumberExpression implements Expression {
-    private final int lineNumber;
+	private final int lineNumber;
 
-    protected AbstractLineNumberExpression() {
-        this.lineNumber = UNKNOWN_LINE_NUMBER;
-    }
+	protected AbstractLineNumberExpression() {
+		this.lineNumber = Expression.UNKNOWN_LINE_NUMBER;
+	}
 
-    protected AbstractLineNumberExpression(int lineNumber) {
-        this.lineNumber = lineNumber;
-    }
+	protected AbstractLineNumberExpression(int lineNumber) {
+		this.lineNumber = lineNumber;
+	}
 
-    @Override
-    public int getLineNumber() {
-        return lineNumber;
-    }
+	@Override
+	public int getLineNumber() {
+		return lineNumber;
+	}
 
-    @Override
-    public int getPriority() {
-        return 0;
-    }
+	@Override
+	public int getPriority() {
+		return 0;
+	}
 }

@@ -9,9 +9,9 @@ package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
 public class SignatureFormatException extends RuntimeException {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public SignatureFormatException(String s) {
-        super(s);
-    }
+	public SignatureFormatException(String s) {
+		super(s);
+	}
 }

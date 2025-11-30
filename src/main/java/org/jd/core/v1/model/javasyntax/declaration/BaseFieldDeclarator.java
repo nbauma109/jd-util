@@ -10,5 +10,5 @@ package org.jd.core.v1.model.javasyntax.declaration;
 import org.jd.core.v1.util.Base;
 
 public interface BaseFieldDeclarator extends Declaration, Base<FieldDeclarator> {
-    void setFieldDeclaration(FieldDeclaration fieldDeclaration);
+	void setFieldDeclaration(FieldDeclaration fieldDeclaration);
 }

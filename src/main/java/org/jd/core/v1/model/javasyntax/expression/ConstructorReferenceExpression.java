@@ -11,32 +11,32 @@ import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class ConstructorReferenceExpression extends AbstractLineNumberTypeExpression {
-    private final ObjectType objectType;
-    protected final String descriptor;
+	private final ObjectType objectType;
+	protected final String descriptor;
 
-    public ConstructorReferenceExpression(int lineNumber, Type type, ObjectType objectType, String descriptor) {
-        super(lineNumber, type);
-        this.objectType = objectType;
-        this.descriptor = descriptor;
-    }
+	public ConstructorReferenceExpression(int lineNumber, Type type, ObjectType objectType, String descriptor) {
+		super(lineNumber, type);
+		this.objectType = objectType;
+		this.descriptor = descriptor;
+	}
 
-    @Override
-    public ObjectType getObjectType() {
-        return objectType;
-    }
+	@Override
+	public ObjectType getObjectType() {
+		return objectType;
+	}
 
-    @Override
-    public String getDescriptor() {
-        return descriptor;
-    }
+	@Override
+	public String getDescriptor() {
+		return descriptor;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new ConstructorReferenceExpression(lineNumber, getType(), objectType, descriptor);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new ConstructorReferenceExpression(lineNumber, this.getType(), objectType, descriptor);
+	}
 }

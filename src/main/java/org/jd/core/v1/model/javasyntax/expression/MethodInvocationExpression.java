@@ -17,87 +17,87 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MethodInvocationExpression extends MethodReferenceExpression {
-    private BaseTypeArgument nonWildcardTypeArguments;
-    private BaseExpression parameters;
-    private final MethodTypes methodTypes;
-    private Map<String, BaseType> typeBounds;
-    private Map<String, TypeArgument> typeBindings;
+	private BaseTypeArgument nonWildcardTypeArguments;
+	private BaseExpression parameters;
+	private final MethodTypes methodTypes;
+	private Map<String, BaseType> typeBounds;
+	private Map<String, TypeArgument> typeBindings;
 
-    public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, MethodTypes methodTypes) {
-        this(type, expression, internalTypeName, name, descriptor, null, methodTypes);
-    }
+	public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, MethodTypes methodTypes) {
+		this(type, expression, internalTypeName, name, descriptor, null, methodTypes);
+	}
 
-    public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
-        this(UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor, parameters, methodTypes);
-    }
+	public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
+		this(Expression.UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor, parameters, methodTypes);
+	}
 
-    public MethodInvocationExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
-        super(lineNumber, type, expression, internalTypeName, name, descriptor);
-        this.parameters = parameters;
-        this.methodTypes = methodTypes;
-    }
+	public MethodInvocationExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
+		super(lineNumber, type, expression, internalTypeName, name, descriptor);
+		this.parameters = parameters;
+		this.methodTypes = methodTypes;
+	}
 
-    public boolean isVarArgs() {
-        return Optional.ofNullable(methodTypes).map(MethodTypes::isVarArgs).orElse(false);
-    }
+	public boolean isVarArgs() {
+		return Optional.ofNullable(methodTypes).map(MethodTypes::isVarArgs).orElse(false);
+	}
 
-    public BaseType getExceptionTypes() {
-        return Optional.ofNullable(methodTypes).map(MethodTypes::getExceptionTypes).orElse(null);
-    }
-    
-    public BaseTypeArgument getNonWildcardTypeArguments() {
-        return nonWildcardTypeArguments;
-    }
+	public BaseType getExceptionTypes() {
+		return Optional.ofNullable(methodTypes).map(MethodTypes::getExceptionTypes).orElse(null);
+	}
 
-    public void setNonWildcardTypeArguments(BaseTypeArgument nonWildcardTypeArguments) {
-        this.nonWildcardTypeArguments = nonWildcardTypeArguments;
-    }
+	public BaseTypeArgument getNonWildcardTypeArguments() {
+		return nonWildcardTypeArguments;
+	}
 
-    @Override
-    public BaseExpression getParameters() {
-        return parameters;
-    }
+	public void setNonWildcardTypeArguments(BaseTypeArgument nonWildcardTypeArguments) {
+		this.nonWildcardTypeArguments = nonWildcardTypeArguments;
+	}
 
-    public void setParameters(BaseExpression parameters) {
-        this.parameters = parameters;
-    }
+	@Override
+	public BaseExpression getParameters() {
+		return parameters;
+	}
 
-    @Override
-    public int getPriority() {
-        return 1;
-    }
+	public void setParameters(BaseExpression parameters) {
+		this.parameters = parameters;
+	}
 
-    public Map<String, BaseType> getTypeBounds() {
-        return typeBounds;
-    }
-    
-    public void setTypeBounds(Map<String, BaseType> typeBounds) {
-        this.typeBounds = typeBounds;
-    }
+	@Override
+	public int getPriority() {
+		return 1;
+	}
 
-    public Map<String, TypeArgument> getTypeBindings() {
-        return typeBindings;
-    }
+	public Map<String, BaseType> getTypeBounds() {
+		return typeBounds;
+	}
 
-    public void setTypeBindings(Map<String, TypeArgument> typeBindings) {
-        this.typeBindings = typeBindings;
-    }
+	public void setTypeBounds(Map<String, BaseType> typeBounds) {
+		this.typeBounds = typeBounds;
+	}
 
-    @Override
-    public boolean isMethodInvocationExpression() { return true; }
+	public Map<String, TypeArgument> getTypeBindings() {
+		return typeBindings;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	public void setTypeBindings(Map<String, TypeArgument> typeBindings) {
+		this.typeBindings = typeBindings;
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new MethodInvocationExpression(lineNumber, getType(), expression, getInternalTypeName(), name, descriptor, parameters, methodTypes);
-    }
+	@Override
+	public boolean isMethodInvocationExpression() { return true; }
 
-    @Override
-    public String toString() {
-        return "MethodInvocationExpression{call " + expression + " . " + name + "(" + descriptor + ")}";
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
+
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new MethodInvocationExpression(lineNumber, this.getType(), expression, this.getInternalTypeName(), name, descriptor, parameters, methodTypes);
+	}
+
+	@Override
+	public String toString() {
+		return "MethodInvocationExpression{call " + expression + " . " + name + "(" + descriptor + ")}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+	}
 }

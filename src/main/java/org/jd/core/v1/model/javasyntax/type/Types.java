@@ -11,30 +11,30 @@ import org.jd.core.v1.util.DefaultList;
 import java.util.Collection;
 
 public class Types extends DefaultList<Type> implements BaseType {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public Types() {}
+	public Types() {}
 
-    public Types(int capacity) {
-        super(capacity);
-    }
+	public Types(int capacity) {
+		super(capacity);
+	}
 
-    public Types(Collection<Type> collection) {
-        super(collection);
-    }
+	public Types(Collection<Type> collection) {
+		super(collection);
+	}
 
-    public Types(Type type, Type... types) {
-        super(type, types);
-        if (types.length <= 0) {
-            throw new IllegalArgumentException("Use 'Type' implementation instead");
-        }
-    }
+	public Types(Type type, Type... types) {
+		super(type, types);
+		if (types.length <= 0) {
+			throw new IllegalArgumentException("Use 'Type' implementation instead"); //$NON-NLS-1$
+		}
+	}
 
-    @Override
-    public boolean isTypes() { return true; }
+	@Override
+	public boolean isTypes() { return true; }
 
-    @Override
-    public void accept(TypeVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(TypeVisitor visitor) {
+		visitor.visit(this);
+	}
 }

@@ -11,37 +11,37 @@ import org.jd.core.v1.model.javasyntax.declaration.ArrayVariableInitializer;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class NewInitializedArray extends AbstractLineNumberTypeExpression {
-    private final ArrayVariableInitializer arrayInitializer;
+	private final ArrayVariableInitializer arrayInitializer;
 
-    public NewInitializedArray(int lineNumber, Type type, ArrayVariableInitializer arrayInitializer) {
-        super(lineNumber, type);
-        this.arrayInitializer = arrayInitializer;
-    }
+	public NewInitializedArray(int lineNumber, Type type, ArrayVariableInitializer arrayInitializer) {
+		super(lineNumber, type);
+		this.arrayInitializer = arrayInitializer;
+	}
 
-    public ArrayVariableInitializer getArrayInitializer() {
-        return arrayInitializer;
-    }
+	public ArrayVariableInitializer getArrayInitializer() {
+		return arrayInitializer;
+	}
 
-    @Override
-    public int getPriority() {
-        return 0;
-    }
+	@Override
+	public int getPriority() {
+		return 0;
+	}
 
-    @Override
-    public boolean isNewInitializedArray() { return true; }
+	@Override
+	public boolean isNewInitializedArray() { return true; }
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "NewInitializedArray{new " + getType() + " [" + arrayInitializer + "]}";
-    }
+	@Override
+	public String toString() {
+		return "NewInitializedArray{new " + this.getType() + " [" + arrayInitializer + "]}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new NewInitializedArray(lineNumber, getType(), arrayInitializer);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new NewInitializedArray(lineNumber, this.getType(), arrayInitializer);
+	}
 }

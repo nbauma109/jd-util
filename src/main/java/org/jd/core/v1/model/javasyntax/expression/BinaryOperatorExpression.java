@@ -10,70 +10,70 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class BinaryOperatorExpression extends AbstractLineNumberTypeExpression {
-    private Expression leftExpression;
-    private String operator;
-    private Expression rightExpression;
-    private int priority;
+	private Expression leftExpression;
+	private String operator;
+	private Expression rightExpression;
+	private int priority;
 
-    public BinaryOperatorExpression(int lineNumber, Type type, Expression leftExpression, String operator, Expression rightExpression, int priority) {
-        super(lineNumber, type);
-        this.operator = operator;
-        this.leftExpression = leftExpression;
-        this.rightExpression = rightExpression;
-        this.priority = priority;
-    }
+	public BinaryOperatorExpression(int lineNumber, Type type, Expression leftExpression, String operator, Expression rightExpression, int priority) {
+		super(lineNumber, type);
+		this.operator = operator;
+		this.leftExpression = leftExpression;
+		this.rightExpression = rightExpression;
+		this.priority = priority;
+	}
 
-    @Override
-    public Expression getLeftExpression() {
-        return leftExpression;
-    }
+	@Override
+	public Expression getLeftExpression() {
+		return leftExpression;
+	}
 
-    public void setLeftExpression(Expression leftExpression) {
-        this.leftExpression = leftExpression;
-    }
+	public void setLeftExpression(Expression leftExpression) {
+		this.leftExpression = leftExpression;
+	}
 
-    @Override
-    public String getOperator() {
-        return operator;
-    }
+	@Override
+	public String getOperator() {
+		return operator;
+	}
 
-    public void setOperator(String operator) {
-        this.operator = operator;
-    }
+	public void setOperator(String operator) {
+		this.operator = operator;
+	}
 
-    @Override
-    public Expression getRightExpression() {
-        return rightExpression;
-    }
+	@Override
+	public Expression getRightExpression() {
+		return rightExpression;
+	}
 
-    public void setRightExpression(Expression rightExpression) {
-        this.rightExpression = rightExpression;
-    }
+	public void setRightExpression(Expression rightExpression) {
+		this.rightExpression = rightExpression;
+	}
 
-    @Override
-    public int getPriority() {
-        return priority;
-    }
+	@Override
+	public int getPriority() {
+		return priority;
+	}
 
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
 
-    @Override
-    public boolean isBinaryOperatorExpression() { return true; }
+	@Override
+	public boolean isBinaryOperatorExpression() { return true; }
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "BinaryOperatorExpression{" + leftExpression.toString() + ' ' + operator + ' ' + rightExpression.toString() + "}";
-    }
+	@Override
+	public String toString() {
+		return "BinaryOperatorExpression{" + leftExpression.toString() + ' ' + operator + ' ' + rightExpression.toString() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new BinaryOperatorExpression(lineNumber, getType(), leftExpression, operator, rightExpression, priority);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new BinaryOperatorExpression(lineNumber, this.getType(), leftExpression, operator, rightExpression, priority);
+	}
 }

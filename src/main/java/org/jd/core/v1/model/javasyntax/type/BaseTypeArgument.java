@@ -15,48 +15,48 @@ import java.util.Map;
 import java.util.Set;
 
 public interface BaseTypeArgument extends TypeArgumentVisitable {
-    @SuppressWarnings("unused")
-    default boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
-        return false;
-    }
+	@SuppressWarnings("unused")
+	default boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+		return false;
+	}
 
-    default boolean isTypeArgumentList() {
-        return false;
-    }
+	default boolean isTypeArgumentList() {
+		return false;
+	}
 
-    default TypeArgument getTypeArgumentFirst() {
-        return (TypeArgument)this;
-    }
+	default TypeArgument getTypeArgumentFirst() {
+		return (TypeArgument)this;
+	}
 
-    @SuppressWarnings("unchecked")
-    default DefaultList<TypeArgument> getTypeArgumentList() {
-        return (DefaultList<TypeArgument>)this;
-    }
+	@SuppressWarnings("unchecked")
+	default DefaultList<TypeArgument> getTypeArgumentList() {
+		return (DefaultList<TypeArgument>)this;
+	}
 
-    default int typeArgumentSize() {
-        return 1;
-    }
+	default int typeArgumentSize() {
+		return 1;
+	}
 
-    default boolean isGenericTypeArgument() { return false; }
-    default boolean isInnerObjectTypeArgument() { return false; }
-    default boolean isObjectTypeArgument() { return false; }
-    default boolean isPrimitiveTypeArgument() { return false; }
-    default boolean isWildcardExtendsTypeArgument() { return false; }
-    default boolean isWildcardSuperTypeArgument() { return false; }
-    default boolean isWildcardTypeArgument() { return false; }
+	default boolean isGenericTypeArgument() { return false; }
+	default boolean isInnerObjectTypeArgument() { return false; }
+	default boolean isObjectTypeArgument() { return false; }
+	default boolean isPrimitiveTypeArgument() { return false; }
+	default boolean isWildcardExtendsTypeArgument() { return false; }
+	default boolean isWildcardSuperTypeArgument() { return false; }
+	default boolean isWildcardTypeArgument() { return false; }
 
-    default Type type() { return ObjectType.TYPE_UNDEFINED_OBJECT; }
+	default Type type() { return ObjectType.TYPE_UNDEFINED_OBJECT; }
 
-    default Set<String> findTypeParametersInType() {
-        Set<String> genericIdentifiers = new HashSet<>();
-        AbstractTypeArgumentVisitor typeArgumentVisitor = new AbstractTypeArgumentVisitor() {
-            @Override
-            public void visit(GenericType genericType) {
-                genericIdentifiers.add(genericType.getName());
-                super.visit(genericType);
-            }
-        };
-        accept(typeArgumentVisitor);
-        return genericIdentifiers;
-    }
+	default Set<String> findTypeParametersInType() {
+		Set<String> genericIdentifiers = new HashSet<String>();
+		AbstractTypeArgumentVisitor typeArgumentVisitor = new AbstractTypeArgumentVisitor() {
+			@Override
+			public void visit(GenericType genericType) {
+				genericIdentifiers.add(genericType.getName());
+				super.visit(genericType);
+			}
+		};
+		this.accept(typeArgumentVisitor);
+		return genericIdentifiers;
+	}
 }

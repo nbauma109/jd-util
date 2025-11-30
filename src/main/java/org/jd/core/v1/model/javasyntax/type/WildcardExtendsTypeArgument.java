@@ -14,50 +14,50 @@ import java.util.Objects;
 
 public record WildcardExtendsTypeArgument(Type type) implements TypeArgument {
 
-    @Override
-    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
-        if (typeArgument.isWildcardExtendsTypeArgument()) {
-            return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument.type());
-        }
-        if (type instanceof ObjectType ot && typeArgument instanceof ObjectType ta) {
-            return typeMaker.isAssignable(typeBindings, typeBounds, ot, ta);
-        }
-        if (typeArgument instanceof Type) {
-            return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
-        }
-        
-        return false;
-    }
+	@Override
+	public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+		if (typeArgument.isWildcardExtendsTypeArgument()) {
+			return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument.type());
+		}
+		if (type instanceof ObjectType ot && typeArgument instanceof ObjectType ta) {
+			return typeMaker.isAssignable(typeBindings, typeBounds, ot, ta);
+		}
+		if (typeArgument instanceof Type) {
+			return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
+		}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+		return false;
+	}
 
-        WildcardExtendsTypeArgument that = (WildcardExtendsTypeArgument) o;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || this.getClass() != o.getClass()) {
+			return false;
+		}
 
-        return Objects.equals(type, that.type);
-    }
+		WildcardExtendsTypeArgument that = (WildcardExtendsTypeArgument) o;
 
-    @Override
-    public int hashCode() {
-        return 957_014_778 + Objects.hash(type);
-    }
+		return Objects.equals(type, that.type);
+	}
 
-    @Override
-    public boolean isWildcardExtendsTypeArgument() { return true; }
+	@Override
+	public int hashCode() {
+		return 957_014_778 + Objects.hash(type);
+	}
 
-    @Override
-    public void accept(TypeArgumentVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public boolean isWildcardExtendsTypeArgument() { return true; }
 
-    @Override
-    public String toString() {
-        return "WildcardExtendsTypeArgument{? extends " + type + "}";
-    }
+	@Override
+	public void accept(TypeArgumentVisitor visitor) {
+		visitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		return "WildcardExtendsTypeArgument{? extends " + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

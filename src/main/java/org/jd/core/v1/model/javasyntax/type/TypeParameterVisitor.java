@@ -8,7 +8,7 @@
 package org.jd.core.v1.model.javasyntax.type;
 
 public interface TypeParameterVisitor {
-    void visit(TypeParameter parameter);
-    void visit(TypeParameterWithTypeBounds parameter);
-    void visit(TypeParameters parameters);
+	void visit(TypeParameter parameter);
+	void visit(TypeParameterWithTypeBounds parameter);
+	void visit(TypeParameters parameters);
 }

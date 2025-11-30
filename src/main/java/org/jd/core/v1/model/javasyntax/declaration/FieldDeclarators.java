@@ -9,28 +9,28 @@ package org.jd.core.v1.model.javasyntax.declaration;
 import org.jd.core.v1.util.DefaultList;
 
 public class FieldDeclarators extends DefaultList<FieldDeclarator> implements BaseFieldDeclarator {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public FieldDeclarators(int capacity) {
-        super(capacity);
-    }
+	public FieldDeclarators(int capacity) {
+		super(capacity);
+	}
 
-    public FieldDeclarators(FieldDeclarator declarator, FieldDeclarator... declarators) {
-        super(declarator, declarators);
-        if (declarators.length <= 0) {
-            throw new IllegalArgumentException("Use 'FieldDeclarator' instead");
-        }
-    }
+	public FieldDeclarators(FieldDeclarator declarator, FieldDeclarator... declarators) {
+		super(declarator, declarators);
+		if (declarators.length <= 0) {
+			throw new IllegalArgumentException("Use 'FieldDeclarator' instead"); //$NON-NLS-1$
+		}
+	}
 
-    @Override
-    public void setFieldDeclaration(FieldDeclaration fieldDeclaration) {
-        for (FieldDeclarator fieldDeclarator : this) {
-            fieldDeclarator.setFieldDeclaration(fieldDeclaration);
-        }
-    }
+	@Override
+	public void setFieldDeclaration(FieldDeclaration fieldDeclaration) {
+		for (FieldDeclarator fieldDeclarator : this) {
+			fieldDeclarator.setFieldDeclaration(fieldDeclaration);
+		}
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 }

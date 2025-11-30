@@ -9,37 +9,37 @@ import static org.junit.Assert.*;
 
 public class ConstructorInvocationExpressionTest {
 
-    @Test
-    public void testConstructorInvocationExpression() {
-        int lineNumber = 0;
-        ObjectType type = ObjectType.TYPE_ITERABLE;
-        String descriptor = "descriptor";
-        BaseExpression parameters = new Expressions();
-        boolean varArgs = true;
+	@Test
+	public void testConstructorInvocationExpression() {
+		int lineNumber = 0;
+		ObjectType type = ObjectType.TYPE_ITERABLE;
+		String descriptor = "descriptor"; //$NON-NLS-1$
+		BaseExpression parameters = new Expressions();
+		boolean varArgs = true;
 
-        ConstructorInvocationExpression constructorInvocationExpression = new ConstructorInvocationExpression(lineNumber, type, descriptor, parameters, varArgs);
+		ConstructorInvocationExpression constructorInvocationExpression = new ConstructorInvocationExpression(lineNumber, type, descriptor, parameters, varArgs);
 
-        // Test isVarArgs
-        assertTrue(constructorInvocationExpression.isVarArgs());
+		// Test isVarArgs
+		assertTrue(constructorInvocationExpression.isVarArgs());
 
-        // Test getParameters
-        assertEquals(parameters, constructorInvocationExpression.getParameters());
+		// Test getParameters
+		assertEquals(parameters, constructorInvocationExpression.getParameters());
 
-        // Test getType
-        assertEquals(PrimitiveType.TYPE_VOID, constructorInvocationExpression.getType());
+		// Test getType
+		assertEquals(PrimitiveType.TYPE_VOID, constructorInvocationExpression.getType());
 
-        // Test getPriority
-        assertEquals(1, constructorInvocationExpression.getPriority());
+		// Test getPriority
+		assertEquals(1, constructorInvocationExpression.getPriority());
 
-        // Test isConstructorInvocationExpression
-        assertTrue(constructorInvocationExpression.isConstructorInvocationExpression());
+		// Test isConstructorInvocationExpression
+		assertTrue(constructorInvocationExpression.isConstructorInvocationExpression());
 
-        // Test toString
-        assertEquals("ConstructorInvocationExpression{call this(" + descriptor + ")}", constructorInvocationExpression.toString());
+		// Test toString
+		assertEquals("ConstructorInvocationExpression{call this(" + descriptor + ")}", constructorInvocationExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$
 
-        // Test the accept method with a simple visitor
-        TestVisitor visitor = new TestVisitor();
-        constructorInvocationExpression.accept(visitor);
-        assertEquals(1, visitor.getConstructorInvocationExpressionCount());
-    }
+		// Test the accept method with a simple visitor
+		TestVisitor visitor = new TestVisitor();
+		constructorInvocationExpression.accept(visitor);
+		assertEquals(1, visitor.getConstructorInvocationExpressionCount());
+	}
 }

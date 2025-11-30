@@ -12,66 +12,66 @@ import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 
 public class ForStatement implements Statement {
-    protected LocalVariableDeclaration declaration;
-    protected BaseExpression init;
-    protected Expression condition;
-    protected BaseExpression update;
-    private final BaseStatement statements;
+	protected LocalVariableDeclaration declaration;
+	protected BaseExpression init;
+	protected Expression condition;
+	protected BaseExpression update;
+	private final BaseStatement statements;
 
-    public ForStatement(BaseExpression init, Expression condition, BaseExpression update, BaseStatement statements) {
-        this.init = init;
-        this.condition = condition;
-        this.update = update;
-        this.statements = statements;
-    }
+	public ForStatement(BaseExpression init, Expression condition, BaseExpression update, BaseStatement statements) {
+		this.init = init;
+		this.condition = condition;
+		this.update = update;
+		this.statements = statements;
+	}
 
-    public LocalVariableDeclaration getDeclaration() {
-        return declaration;
-    }
+	public LocalVariableDeclaration getDeclaration() {
+		return declaration;
+	}
 
-    public void setDeclaration(LocalVariableDeclaration declaration) {
-        this.declaration = declaration;
-    }
+	public void setDeclaration(LocalVariableDeclaration declaration) {
+		this.declaration = declaration;
+	}
 
-    @Override
-    public BaseExpression getInit() {
-        return init;
-    }
+	@Override
+	public BaseExpression getInit() {
+		return init;
+	}
 
-    public void setInit(BaseExpression init) {
-        this.init = init;
-    }
+	public void setInit(BaseExpression init) {
+		this.init = init;
+	}
 
-    @Override
-    public Expression getCondition() {
-        return condition;
-    }
+	@Override
+	public Expression getCondition() {
+		return condition;
+	}
 
-    public void setCondition(Expression condition) {
-        this.condition = condition;
-    }
+	public void setCondition(Expression condition) {
+		this.condition = condition;
+	}
 
-    @Override
-    public BaseExpression getUpdate() {
-        return update;
-    }
+	@Override
+	public BaseExpression getUpdate() {
+		return update;
+	}
 
-    public void setUpdate(BaseExpression update) {
-        this.update = update;
-    }
+	public void setUpdate(BaseExpression update) {
+		this.update = update;
+	}
 
-    @Override
-    public BaseStatement getStatements() {
-        return statements;
-    }
+	@Override
+	public BaseStatement getStatements() {
+		return statements;
+	}
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ForStatement{" + declaration + " or " + init + "; " + condition + "; " + update + "}";
-    }
+	@Override
+	public String toString() {
+		return "ForStatement{" + declaration + " or " + init + "; " + condition + "; " + update + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+	}
 }

@@ -14,9 +14,9 @@ import org.apache.bcel.classfile.EnumElementValue;
 import org.apache.bcel.classfile.SimpleElementValue;
 
 public interface ElementValueVisitor {
-    void visit(SimpleElementValue elementValue);
-    void visit(ClassElementValue elementValue);
-    void visit(AnnotationElementValue elementValue);
-    void visit(EnumElementValue elementValue);
-    void visit(ArrayElementValue elementValue);
+	void visit(SimpleElementValue elementValue);
+	void visit(ClassElementValue elementValue);
+	void visit(AnnotationElementValue elementValue);
+	void visit(EnumElementValue elementValue);
+	void visit(ArrayElementValue elementValue);
 }

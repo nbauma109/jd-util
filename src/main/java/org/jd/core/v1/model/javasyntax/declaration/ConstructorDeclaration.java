@@ -15,69 +15,69 @@ import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 import static org.apache.bcel.Const.ACC_STATIC;
 
 public class ConstructorDeclaration implements MemberDeclaration {
-    private final BaseAnnotationReference annotationReferences;
-    private int flags;
-    private final BaseTypeParameter typeParameters;
-    protected BaseFormalParameter formalParameters;
-    private final BaseType exceptionTypes;
-    protected final String descriptor;
-    protected BaseStatement statements;
+	private final BaseAnnotationReference annotationReferences;
+	private int flags;
+	private final BaseTypeParameter typeParameters;
+	protected BaseFormalParameter formalParameters;
+	private final BaseType exceptionTypes;
+	protected final String descriptor;
+	protected BaseStatement statements;
 
-    public ConstructorDeclaration(int flags, BaseFormalParameter formalParameters, String descriptor, BaseStatement statements) {
-        this(null, flags, null, formalParameters, null, descriptor, statements);
-    }
+	public ConstructorDeclaration(int flags, BaseFormalParameter formalParameters, String descriptor, BaseStatement statements) {
+		this(null, flags, null, formalParameters, null, descriptor, statements);
+	}
 
-    public ConstructorDeclaration(BaseAnnotationReference annotationReferences, int flags, BaseTypeParameter typeParameters, BaseFormalParameter formalParameters, BaseType exceptionTypes, String descriptor, BaseStatement statements) {
-        this.annotationReferences = annotationReferences;
-        this.flags = flags;
-        this.typeParameters = typeParameters;
-        this.formalParameters = formalParameters;
-        this.exceptionTypes = exceptionTypes;
-        this.descriptor = descriptor;
-        this.statements = statements;
-    }
+	public ConstructorDeclaration(BaseAnnotationReference annotationReferences, int flags, BaseTypeParameter typeParameters, BaseFormalParameter formalParameters, BaseType exceptionTypes, String descriptor, BaseStatement statements) {
+		this.annotationReferences = annotationReferences;
+		this.flags = flags;
+		this.typeParameters = typeParameters;
+		this.formalParameters = formalParameters;
+		this.exceptionTypes = exceptionTypes;
+		this.descriptor = descriptor;
+		this.statements = statements;
+	}
 
-    public int getFlags() {
-        return flags;
-    }
+	public int getFlags() {
+		return flags;
+	}
 
-    public void setFlags(int flags) {
-        this.flags = flags;
-    }
+	public void setFlags(int flags) {
+		this.flags = flags;
+	}
 
-    public boolean isStatic() { return (flags & ACC_STATIC) != 0; }
+	public boolean isStatic() { return (flags & ACC_STATIC) != 0; }
 
-    public BaseAnnotationReference getAnnotationReferences() {
-        return annotationReferences;
-    }
+	public BaseAnnotationReference getAnnotationReferences() {
+		return annotationReferences;
+	}
 
-    public BaseTypeParameter getTypeParameters() {
-        return typeParameters;
-    }
+	public BaseTypeParameter getTypeParameters() {
+		return typeParameters;
+	}
 
-    public BaseFormalParameter getFormalParameters() {
-        return formalParameters;
-    }
+	public BaseFormalParameter getFormalParameters() {
+		return formalParameters;
+	}
 
-    public BaseType getExceptionTypes() {
-        return exceptionTypes;
-    }
+	public BaseType getExceptionTypes() {
+		return exceptionTypes;
+	}
 
-    public String getDescriptor() {
-        return descriptor;
-    }
+	public String getDescriptor() {
+		return descriptor;
+	}
 
-    public BaseStatement getStatements() {
-        return statements;
-    }
+	public BaseStatement getStatements() {
+		return statements;
+	}
 
-    @Override
-    public void accept(DeclarationVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(DeclarationVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ConstructorDeclaration{" + descriptor + "}";
-    }
+	@Override
+	public String toString() {
+		return "ConstructorDeclaration{" + descriptor + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

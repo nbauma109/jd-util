@@ -8,13 +8,13 @@
 package org.jd.core.v1.model.javasyntax.type;
 
 public abstract class AbstractNopTypeArgumentVisitor implements TypeArgumentVisitor {
-    @Override public void visit(TypeArguments arguments) {}
-    @Override public void visit(DiamondTypeArgument argument) {}
-    @Override public void visit(WildcardExtendsTypeArgument argument) {}
-    @Override public void visit(PrimitiveType type) {}
-    @Override public void visit(ObjectType type) {}
-    @Override public void visit(InnerObjectType type) {}
-    @Override public void visit(WildcardSuperTypeArgument argument) {}
-    @Override public void visit(GenericType type) {}
-    @Override public void visit(WildcardTypeArgument argument) {}
+	@Override public void visit(TypeArguments arguments) {}
+	@Override public void visit(DiamondTypeArgument argument) {}
+	@Override public void visit(WildcardExtendsTypeArgument argument) {}
+	@Override public void visit(PrimitiveType type) {}
+	@Override public void visit(ObjectType type) {}
+	@Override public void visit(InnerObjectType type) {}
+	@Override public void visit(WildcardSuperTypeArgument argument) {}
+	@Override public void visit(GenericType type) {}
+	@Override public void visit(WildcardTypeArgument argument) {}
 }

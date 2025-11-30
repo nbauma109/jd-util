@@ -9,13 +9,13 @@ package org.jd.core.v1.model.javasyntax.reference;
 
 public record ElementValuePair(String name, BaseElementValue elementValue) implements BaseElementValuePair {
 
-    @Override
-    public void accept(ReferenceVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ReferenceVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "ElementValuePair{name=" + name + ", elementValue=" + elementValue + "}";
-    }
+	@Override
+	public String toString() {
+		return "ElementValuePair{name=" + name + ", elementValue=" + elementValue + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 }

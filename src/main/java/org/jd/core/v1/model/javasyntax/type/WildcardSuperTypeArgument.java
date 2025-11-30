@@ -14,47 +14,47 @@ import java.util.Objects;
 
 public record WildcardSuperTypeArgument(Type type) implements TypeArgument {
 
-    @Override
-    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
-        if (typeArgument.isWildcardSuperTypeArgument()) {
-            return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument.type());
-        }
-        if (typeArgument instanceof Type) {
-            return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
-        }
+	@Override
+	public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+		if (typeArgument.isWildcardSuperTypeArgument()) {
+			return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument.type());
+		}
+		if (typeArgument instanceof Type) {
+			return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || this.getClass() != o.getClass()) {
+			return false;
+		}
 
-        WildcardSuperTypeArgument that = (WildcardSuperTypeArgument) o;
+		WildcardSuperTypeArgument that = (WildcardSuperTypeArgument) o;
 
-        return Objects.equals(type, that.type);
-    }
+		return Objects.equals(type, that.type);
+	}
 
-    @Override
-    public int hashCode() {
-        return 979_510_081 + Objects.hash(type);
-    }
+	@Override
+	public int hashCode() {
+		return 979_510_081 + Objects.hash(type);
+	}
 
-    @Override
-    public boolean isWildcardSuperTypeArgument() { return true; }
+	@Override
+	public boolean isWildcardSuperTypeArgument() { return true; }
 
-    @Override
-    public void accept(TypeArgumentVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(TypeArgumentVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "WildcardSuperTypeArgument{? super " + type + "}";
-    }
+	@Override
+	public String toString() {
+		return "WildcardSuperTypeArgument{? super " + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 }

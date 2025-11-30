@@ -15,64 +15,63 @@ import java.util.Map;
 
 public class TypeArguments extends DefaultList<TypeArgument> implements BaseTypeArgument {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public TypeArguments() {}
+	public TypeArguments() {}
 
-    public TypeArguments(int capacity) {
-        super(capacity);
-    }
+	public TypeArguments(int capacity) {
+		super(capacity);
+	}
 
-    public TypeArguments(Collection<TypeArgument> list) {
-        super(list);
-    }
+	public TypeArguments(Collection<TypeArgument> list) {
+		super(list);
+	}
 
-    @Override
-    public boolean isList() {
-        return true;
-    }
+	@Override
+	public boolean isList() {
+		return true;
+	}
 
-    @Override
-    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
-        if (typeArgument instanceof TypeArguments ata) {
-            if (size() != ata.size()) {
-                return false;
-            }
-            Iterator<TypeArgument> iterator1 = iterator();
-            Iterator<TypeArgument> iterator2 = ata.iterator();
-    
-            while (iterator1.hasNext()) {
-                if (!iterator1.next().isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, iterator2.next())) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
+	@Override
+	public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+		if (typeArgument instanceof TypeArguments ata) {
+			if (this.size() != ata.size()) {
+				return false;
+			}
+			Iterator<TypeArgument> iterator2 = ata.iterator();
 
-    @Override
-    public boolean isTypeArgumentList() {
-        return true;
-    }
+			for (TypeArgument element : this) {
+				if (!element.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, iterator2.next())) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 
-    @Override
-    public TypeArgument getTypeArgumentFirst() {
-        return getFirst();
-    }
+	@Override
+	public boolean isTypeArgumentList() {
+		return true;
+	}
 
-    @Override
-    public DefaultList<TypeArgument> getTypeArgumentList() {
-        return this;
-    }
+	@Override
+	public TypeArgument getTypeArgumentFirst() {
+		return this.getFirst();
+	}
 
-    @Override
-    public int typeArgumentSize() {
-        return size();
-    }
+	@Override
+	public DefaultList<TypeArgument> getTypeArgumentList() {
+		return this;
+	}
 
-    @Override
-    public void accept(TypeArgumentVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public int typeArgumentSize() {
+		return this.size();
+	}
+
+	@Override
+	public void accept(TypeArgumentVisitor visitor) {
+		visitor.visit(this);
+	}
 }

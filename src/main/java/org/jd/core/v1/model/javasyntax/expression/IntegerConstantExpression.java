@@ -12,62 +12,62 @@ import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.PrimitiveTypeUtil;
 
 public class IntegerConstantExpression extends AbstractLineNumberTypeExpression {
-    private final int value;
+	private final int value;
 
-    public IntegerConstantExpression(Type type, int value) {
-        this(UNKNOWN_LINE_NUMBER, type, value);
-    }
+	public IntegerConstantExpression(Type type, int value) {
+		this(Expression.UNKNOWN_LINE_NUMBER, type, value);
+	}
 
-    public IntegerConstantExpression(int lineNumber, Type type, int value) {
-        super(lineNumber, type);
-        this.value = value;
-    }
+	public IntegerConstantExpression(int lineNumber, Type type, int value) {
+		super(lineNumber, type);
+		this.value = value;
+	}
 
-    public IntegerConstantExpression(int lineNumber, int value) {
-        this(lineNumber, PrimitiveTypeUtil.getPrimitiveTypeFromValue(value), value);
-    }
+	public IntegerConstantExpression(int lineNumber, int value) {
+		this(lineNumber, PrimitiveTypeUtil.getPrimitiveTypeFromValue(value), value);
+	}
 
-    public IntegerConstantExpression(int value) {
-        this(UNKNOWN_LINE_NUMBER, value);
-    }
+	public IntegerConstantExpression(int value) {
+		this(Expression.UNKNOWN_LINE_NUMBER, value);
+	}
 
-    @Override
-    public int getIntegerValue() {
-        return value;
-    }
+	@Override
+	public int getIntegerValue() {
+		return value;
+	}
 
-    @Override
-    public void setType(Type type) {
-        if (!checkType(type)) {
-            throw new IllegalArgumentException("IntegerConstantExpression.setType(type) : incompatible types");
-        }
-        super.setType(type);
-    }
+	@Override
+	public void setType(Type type) {
+		if (!this.checkType(type)) {
+			throw new IllegalArgumentException("IntegerConstantExpression.setType(type) : incompatible types"); //$NON-NLS-1$
+		}
+		super.setType(type);
+	}
 
-    protected boolean checkType(Type type) {
-        if (type.isPrimitiveType()) {
-            PrimitiveType valueType = PrimitiveTypeUtil.getPrimitiveTypeFromValue(value);
-            return (((PrimitiveType)type).getFlags() & valueType.getFlags()) != 0;
-        }
+	protected boolean checkType(Type type) {
+		if (type.isPrimitiveType()) {
+			PrimitiveType valueType = PrimitiveTypeUtil.getPrimitiveTypeFromValue(value);
+			return (((PrimitiveType)type).getFlags() & valueType.getFlags()) != 0;
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    @Override
-    public boolean isIntegerConstantExpression() { return true; }
+	@Override
+	public boolean isIntegerConstantExpression() { return true; }
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "IntegerConstantExpression{type=" + getType() + ", value=" + value + "}";
-    }
+	@Override
+	public String toString() {
+		return "IntegerConstantExpression{type=" + this.getType() + ", value=" + value + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new IntegerConstantExpression(lineNumber, getType(), value);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new IntegerConstantExpression(lineNumber, this.getType(), value);
+	}
 }

@@ -11,19 +11,19 @@ import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public abstract class AbstractLambdaExpression extends AbstractLineNumberTypeExpression {
-    protected final BaseStatement statements;
+	protected final BaseStatement statements;
 
-    protected AbstractLambdaExpression(int lineNumber, Type type, BaseStatement statements) {
-        super(lineNumber, type);
-        this.statements = statements;
-    }
+	protected AbstractLambdaExpression(int lineNumber, Type type, BaseStatement statements) {
+		super(lineNumber, type);
+		this.statements = statements;
+	}
 
-    @Override
-    public int getPriority() {
-        return 17;
-    }
+	@Override
+	public int getPriority() {
+		return 17;
+	}
 
-    public BaseStatement getStatements() {
-        return statements;
-    }
+	public BaseStatement getStatements() {
+		return statements;
+	}
 }

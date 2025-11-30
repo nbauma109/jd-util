@@ -12,25 +12,25 @@ import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import java.util.Map;
 
 public final class WildcardTypeArgument implements TypeArgument {
-    public static final WildcardTypeArgument WILDCARD_TYPE_ARGUMENT = new WildcardTypeArgument();
+	public static final WildcardTypeArgument WILDCARD_TYPE_ARGUMENT = new WildcardTypeArgument();
 
-    private WildcardTypeArgument() {}
+	private WildcardTypeArgument() {}
 
-    @Override
-    public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
-        return true;
-    }
+	@Override
+	public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
+		return true;
+	}
 
-    @Override
-    public void accept(TypeArgumentVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(TypeArgumentVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public boolean isWildcardTypeArgument() { return true; }
+	@Override
+	public boolean isWildcardTypeArgument() { return true; }
 
-    @Override
-    public String toString() {
-        return "Wildcard{?}";
-    }
+	@Override
+	public String toString() {
+		return "Wildcard{?}"; //$NON-NLS-1$
+	}
 }

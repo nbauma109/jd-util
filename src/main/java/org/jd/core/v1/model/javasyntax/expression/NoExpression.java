@@ -10,28 +10,28 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 
 public class NoExpression extends AbstractLineNumberTypeExpression {
-    public static final NoExpression NO_EXPRESSION = new NoExpression();
+	public static final NoExpression NO_EXPRESSION = new NoExpression();
 
-    protected NoExpression() {
-        super(PrimitiveType.TYPE_VOID);
-    }
+	protected NoExpression() {
+		super(PrimitiveType.TYPE_VOID);
+	}
 
-    protected NoExpression(int lineNumber) {
-        super(lineNumber, PrimitiveType.TYPE_VOID);
-    }
+	protected NoExpression(int lineNumber) {
+		super(lineNumber, PrimitiveType.TYPE_VOID);
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "NoExpression";
-    }
+	@Override
+	public String toString() {
+		return "NoExpression"; //$NON-NLS-1$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new NoExpression(lineNumber);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new NoExpression(lineNumber);
+	}
 }

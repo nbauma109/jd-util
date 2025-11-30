@@ -10,33 +10,33 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 
 public class QualifiedSuperExpression extends AbstractLineNumberExpression {
-    private final ObjectType type;
+	private final ObjectType type;
 
-    public QualifiedSuperExpression(int lineNumber, ObjectType type) {
-        super(lineNumber);
-        this.type = type;
-    }
+	public QualifiedSuperExpression(int lineNumber, ObjectType type) {
+		super(lineNumber);
+		this.type = type;
+	}
 
-    @Override
-    public ObjectType getType() {
-        return type;
-    }
+	@Override
+	public ObjectType getType() {
+		return type;
+	}
 
-    @Override
-    public boolean isSuperExpression() { return true; }
+	@Override
+	public boolean isSuperExpression() { return true; }
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "QualifiedSuperExpression{" + type + "}";
-    }
+	@Override
+	public String toString() {
+		return "QualifiedSuperExpression{" + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new QualifiedSuperExpression(lineNumber, type);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new QualifiedSuperExpression(lineNumber, type);
+	}
 }

@@ -12,33 +12,33 @@ import org.jd.core.v1.model.javasyntax.type.Type;
 
 public record CommentExpression(String text) implements Expression {
 
-    @Override
-    public int getLineNumber() {
-        return UNKNOWN_LINE_NUMBER;
-    }
+	@Override
+	public int getLineNumber() {
+		return Expression.UNKNOWN_LINE_NUMBER;
+	}
 
-    @Override
-    public Type getType() {
-        return PrimitiveType.TYPE_VOID;
-    }
+	@Override
+	public Type getType() {
+		return PrimitiveType.TYPE_VOID;
+	}
 
-    @Override
-    public int getPriority() {
-        return 0;
-    }
+	@Override
+	public int getPriority() {
+		return 0;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "CommentExpression{" + text + "}";
-    }
+	@Override
+	public String toString() {
+		return "CommentExpression{" + text + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
 
-    @Override
-    public Expression copyTo(int lineNumber) {
-        return new CommentExpression(text);
-    }
+	@Override
+	public Expression copyTo(int lineNumber) {
+		return new CommentExpression(text);
+	}
 }

@@ -11,37 +11,37 @@ import static org.junit.Assert.assertTrue;
 
 public class LocalVariableDeclarationTest {
 
-    private LocalVariableDeclaration localVariableDeclaration;
-    private TestDeclarationVisitor visitor;
+	private LocalVariableDeclaration localVariableDeclaration;
+	private TestDeclarationVisitor visitor;
 
-    @Before
-    public void setUp() {
-        ObjectType objectType = new ObjectType("org/jd/core/v1/service/test/LocalVariableTest", "org.jd.core.v1.service.test.LocalVariableTest", "LocalVariableTest");
-        LocalVariableDeclarator localVariableDeclarator = new LocalVariableDeclarator(0, "testVariable", null);
+	@Before
+	public void setUp() {
+		ObjectType objectType = new ObjectType("org/jd/core/v1/service/test/LocalVariableTest", "org.jd.core.v1.service.test.LocalVariableTest", "LocalVariableTest"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		LocalVariableDeclarator localVariableDeclarator = new LocalVariableDeclarator(0, "testVariable", null); //$NON-NLS-1$
 
-        localVariableDeclaration = new LocalVariableDeclaration(objectType, localVariableDeclarator);
+		localVariableDeclaration = new LocalVariableDeclaration(objectType, localVariableDeclarator);
 
-        visitor = new TestDeclarationVisitor();
-    }
+		visitor = new TestDeclarationVisitor();
+	}
 
-    @Test
-    public void testLocalVariableDeclaration() {
-        // Act
-        localVariableDeclaration.accept(visitor);
+	@Test
+	public void testLocalVariableDeclaration() {
+		// Act
+		localVariableDeclaration.accept(visitor);
 
-        // Assert
-        assertEquals(1, visitor.getLocalVariableDeclarationCount());
-        assertFalse(localVariableDeclaration.isFinal());
-        assertEquals("LocalVariableTest", ((ObjectType)localVariableDeclaration.getType()).getName());
-        assertEquals("testVariable", localVariableDeclaration.getLocalVariableDeclarators().getFirst().getName());
-    }
+		// Assert
+		assertEquals(1, visitor.getLocalVariableDeclarationCount());
+		assertFalse(localVariableDeclaration.isFinal());
+		assertEquals("LocalVariableTest", ((ObjectType)localVariableDeclaration.getType()).getName()); //$NON-NLS-1$
+		assertEquals("testVariable", localVariableDeclaration.getLocalVariableDeclarators().getFirst().getName()); //$NON-NLS-1$
+	}
 
-    @Test
-    public void testSetFinal() {
-        // Act
-        localVariableDeclaration.setFinal(true);
+	@Test
+	public void testSetFinal() {
+		// Act
+		localVariableDeclaration.setFinal(true);
 
-        // Assert
-        assertTrue(localVariableDeclaration.isFinal());
-    }
+		// Assert
+		assertTrue(localVariableDeclaration.isFinal());
+	}
 }

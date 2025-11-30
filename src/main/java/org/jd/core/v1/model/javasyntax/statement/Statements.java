@@ -11,29 +11,29 @@ import org.jd.core.v1.util.DefaultList;
 import java.util.List;
 
 public class Statements extends DefaultList<Statement> implements BaseStatement {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public Statements() {}
+	public Statements() {}
 
-    public Statements(List<Statement> list) {
-        super(list);
-        if (list.size() <= 1) {
-            throw new IllegalArgumentException("Use 'Statement' implementation instead");
-        }
-    }
+	public Statements(List<Statement> list) {
+		super(list);
+		if (list.size() <= 1) {
+			throw new IllegalArgumentException("Use 'Statement' implementation instead"); //$NON-NLS-1$
+		}
+	}
 
-    public Statements(Statement statement, Statement... statements) {
-        super(statement, statements);
-        if (statements.length <= 0) {
-            throw new IllegalArgumentException("Use 'Statement' implementation instead");
-        }
-    }
+	public Statements(Statement statement, Statement... statements) {
+		super(statement, statements);
+		if (statements.length <= 0) {
+			throw new IllegalArgumentException("Use 'Statement' implementation instead"); //$NON-NLS-1$
+		}
+	}
 
-    @Override
-    public boolean isStatements() { return true; }
+	@Override
+	public boolean isStatements() { return true; }
 
-    @Override
-    public void accept(StatementVisitor visitor) {
-        visitor.visit(this);
-    }
+	@Override
+	public void accept(StatementVisitor visitor) {
+		visitor.visit(this);
+	}
 }
