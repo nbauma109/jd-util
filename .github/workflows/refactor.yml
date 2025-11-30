@@ -79,7 +79,7 @@ jobs:
           cleanup_primitive_parsing: true
           cleanup_make_local_variable_final: false
           cleanup_qualify_static_member_accesses_with_declaring_class: false
-          cleanup_add_missing_override_annotations: true
+          cleanup_add_missing_override_annotations: false
           cleanup_use_blocks: true
           cleanup_multi_catch: true
           cleanup_collection_cloning: true
@@ -157,7 +157,7 @@ jobs:
           cleanup_embedded_if: true
           cleanup_use_anonymous_class_creation: false
           cleanup_invert_equals: true
-          cleanup_add_missing_override_annotations_interface_methods: true
+          cleanup_add_missing_override_annotations_interface_methods: false
           cleanup_switch_for_instanceof_pattern: false
           cleanup_remove_unused_private_members: false
           cleanup_never_use_parentheses_in_expressions: true
