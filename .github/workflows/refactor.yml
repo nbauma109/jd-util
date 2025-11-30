@@ -24,7 +24,7 @@ jobs:
         uses: nbauma109/refactoring-cleanup-action@v2
         with:
           project_root: .
-          source_level: "21"
+          source_level: "17"
 
           cleanup_array_with_curly: true
           cleanup_use_autoboxing: true
