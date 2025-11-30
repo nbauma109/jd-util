@@ -23,7 +23,7 @@ jobs:
       - name: Run refactoring action
         uses: nbauma109/refactoring-cleanup-action@v2
         with:
-          project_root: sample-project
+          project_root: .
           source_level: "21"
 
           cleanup_array_with_curly: true
