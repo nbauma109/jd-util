@@ -79,23 +79,23 @@ public class DecompilationResult {
     public void setMaxLineNumber(int maxLineNumber) {
         this.maxLineNumber = maxLineNumber;
     }
-    
+
     public void addString(StringData stringData) {
         strings.add(stringData);
     }
-    
+
     public void addDeclaration(String internalTypeName, DeclarationData declarationData) {
         declarations.put(internalTypeName, declarationData);
     }
-    
+
     public void addTypeDeclaration(int position, DeclarationData declarationData) {
         typeDeclarations.put(position, declarationData);
     }
-    
+
     public void addHyperLink(int position, HyperlinkData hyperlinkData) {
         hyperlinks.put(position, hyperlinkData);
     }
-    
+
     public void putLineNumber(int lineNumber, int sourceLineNumber) {
         lineNumbers.put(lineNumber, sourceLineNumber);
     }

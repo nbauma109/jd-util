@@ -38,11 +38,10 @@ public class TypeArguments extends DefaultList<TypeArgument> implements BaseType
             if (size() != ata.size()) {
                 return false;
             }
-            Iterator<TypeArgument> iterator1 = iterator();
             Iterator<TypeArgument> iterator2 = ata.iterator();
-    
-            while (iterator1.hasNext()) {
-                if (!iterator1.next().isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, iterator2.next())) {
+
+            for (TypeArgument element : this) {
+                if (!element.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, iterator2.next())) {
                     return false;
                 }
             }

@@ -646,7 +646,7 @@ public class TypeMaker {
     private Type parseReferenceTypeSignature(String signature) {
         return parseReferenceTypeSignature(new SignatureReader(signature));
     }
-    
+
     /**
      * Rules:
      *  ReferenceTypeSignature: ClassTypeSignature | ArrayTypeSignature | TypeVariableSignature
@@ -718,18 +718,16 @@ public class TypeMaker {
      *  WildcardIndicator: '+' | '-'
      */
     private TypeArgument parseTypeArgument(SignatureReader reader) {
-        switch (reader.read()) {
-            case '+':
-                return new WildcardExtendsTypeArgument(parseReferenceTypeSignature(reader));
-            case '-':
-                return new WildcardSuperTypeArgument(parseReferenceTypeSignature(reader));
-            case '*':
-                return WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
-            default:
-                // Unread 'c'
-                reader.index--;
-                return parseReferenceTypeSignature(reader);
-        }
+        return switch (reader.read()) {
+		case '+' -> new WildcardExtendsTypeArgument(parseReferenceTypeSignature(reader));
+		case '-' -> new WildcardSuperTypeArgument(parseReferenceTypeSignature(reader));
+		case '*' -> WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
+		default -> {
+			// Unread 'c'
+			reader.index--;
+			yield parseReferenceTypeSignature(reader);
+		}
+		};
     }
 
     static boolean isAReferenceTypeSignature(SignatureReader reader) {
@@ -741,21 +739,23 @@ public class TypeMaker {
                 c = reader.read();
             }
 
-            switch (c) {
-                case 'B', 'C', 'D', 'F', 'I', 'J', 'S', 'V', 'Z':
-                return true;
-                case 'L':
-                    // Unread 'L'
-                    reader.index--;
-                    return isAClassTypeSignature(reader);
-            case 'T':
-                    reader.searchEndMarker();
-                    return true;
-            default:
-                    // Unread 'c'
-                    reader.index--;
-                    return false;
-            }
+            return switch (c) {
+			case 'B', 'C', 'D', 'F', 'I', 'J', 'S', 'V', 'Z' -> true;
+			case 'L' -> {
+				// Unread 'L'
+				reader.index--;
+				yield isAClassTypeSignature(reader);
+			}
+			case 'T' -> {
+				reader.searchEndMarker();
+				yield true;
+			}
+			default -> {
+				// Unread 'c'
+				reader.index--;
+				yield false;
+			}
+			};
         }
         return false;
     }
@@ -811,16 +811,15 @@ public class TypeMaker {
     }
 
     private static boolean isATypeArgument(SignatureReader reader) {
-        switch (reader.read()) {
-            case '+', '-':
-                return isAReferenceTypeSignature(reader);
-            case '*':
-                return true;
-            default:
-                // Unread 'c'
-                reader.index--;
-                return isAReferenceTypeSignature(reader);
-        }
+        return switch (reader.read()) {
+		case '+', '-' -> isAReferenceTypeSignature(reader);
+		case '*' -> true;
+		default -> {
+			// Unread 'c'
+			reader.index--;
+			yield isAReferenceTypeSignature(reader);
+		}
+		};
     }
 
     private static String extractLocalClassName(String name) {
@@ -988,11 +987,11 @@ public class TypeMaker {
     public synchronized boolean isAssignable(Map<String, BaseType> typeBounds, ObjectType left, ObjectType right) {
         return isAssignable(Collections.emptyMap(), typeBounds, left, right);
     }
-    
+
     public synchronized boolean isAssignable(ObjectType left, ObjectType right) {
         return isAssignable(Collections.emptyMap(), left, right);
     }
-    
+
     public synchronized ObjectType searchSuperParameterizedType(long leftHashCode, String leftInternalTypeName, ObjectType right) {
         if (right.equals(TYPE_OBJECT)) {
             return null;
@@ -1935,14 +1934,13 @@ public class TypeMaker {
             case 1:
                 return match(typeBindings, typeBounds, parameterTypes.getFirst(), parameters.getFirst().getType());
             default:
-                Iterator<Type> iteratorType = parameterTypes.getList().iterator();
-                Iterator<Expression> iteratorExpression = parameters.getList().iterator();
+			Iterator<Expression> iteratorExpression = parameters.getList().iterator();
 
-                while (iteratorType.hasNext()) {
-                    if (!match(typeBindings, typeBounds, iteratorType.next(), iteratorExpression.next().getType())) {
-                        return false;
-                    }
-                }
+			for (Type element : parameterTypes.getList()) {
+			    if (!match(typeBindings, typeBounds, element, iteratorExpression.next().getType())) {
+			        return false;
+			    }
+			}
 
                 return true;
         }
@@ -1962,7 +1960,7 @@ public class TypeMaker {
             if (leftType  instanceof ObjectType otLeft) {
                 return isAssignable(typeBindings, typeBounds, otLeft, otRight);
             }
-    
+
             if (leftType instanceof GenericType gt) {
                 BaseType boundType = typeBounds.get(gt.getName());
                 if (boundType instanceof ObjectType ot && isAssignable(ot, otRight)) {
@@ -2026,7 +2024,7 @@ public class TypeMaker {
         public boolean isVarArgs() {
             return (accessFlags & Const.ACC_VARARGS) != 0;
         }
-        
+
         public int getAccessFlags() {
             return accessFlags;
         }
