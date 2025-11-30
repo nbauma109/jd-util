@@ -16,9 +16,9 @@ public class InnerObjectTypeTest {
 
         Set<String> innerTypeNames = new HashSet<>();
         innerTypeNames.add("InnerClass");
-        
+
         InnerObjectType innerObjectType = new InnerObjectType(internalName, qualifiedName, name, innerTypeNames, outerType);
-        
+
         // Test getOuterType
         assertEquals(outerType, innerObjectType.getOuterType());
 

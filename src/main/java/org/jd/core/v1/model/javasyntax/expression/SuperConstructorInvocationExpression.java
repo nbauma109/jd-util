@@ -23,7 +23,7 @@ public class SuperConstructorInvocationExpression extends ConstructorReferenceEx
     public boolean isVarArgs() {
         return varArgs;
     }
-    
+
     @Override
     public BaseExpression getParameters() {
         return parameters;

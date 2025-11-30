@@ -18,7 +18,7 @@ public class ClassFileTest {
     public void testClassFile() throws Exception {
         JavaClass outerJavaClass = Repository.lookupClass("java.util.Map");
         JavaClass innerJavaClass = Repository.lookupClass("java.util.Map$Entry");
-        
+
         ClassFile outerClassFile = new ClassFile(outerJavaClass);
         ClassFile innerClassFile = new ClassFile(innerJavaClass);
 
