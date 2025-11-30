@@ -29,7 +29,7 @@ public class PreferencesTest {
 
     @Test
     public void testConstructorWithPreferencesMap() {
-        Map<String, String> preferencesMap = new HashMap<>();
+        Map<String, String> preferencesMap = new HashMap<String, String>();
         preferencesMap.put(Preferences.ESCAPE_UNICODE_CHARACTERS, "true");
         preferencesMap.put(Preferences.OMIT_THIS_PREFIX, "false");
         preferencesMap.put(Preferences.DISPLAY_DEFAULT_CONSTRUCTOR, "true");

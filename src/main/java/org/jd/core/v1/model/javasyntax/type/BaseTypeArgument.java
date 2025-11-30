@@ -48,7 +48,7 @@ public interface BaseTypeArgument extends TypeArgumentVisitable {
     default Type type() { return ObjectType.TYPE_UNDEFINED_OBJECT; }
 
     default Set<String> findTypeParametersInType() {
-        Set<String> genericIdentifiers = new HashSet<>();
+        Set<String> genericIdentifiers = new HashSet<String>();
         AbstractTypeArgumentVisitor typeArgumentVisitor = new AbstractTypeArgumentVisitor() {
             @Override
             public void visit(GenericType genericType) {

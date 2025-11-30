@@ -23,7 +23,7 @@ public class BindTypesToTypesVisitorTest {
     @Before
     public void setup() {
         visitor = new BindTypesToTypesVisitor();
-        bindings = new HashMap<>();
+        bindings = new HashMap<String, TypeArgument>();
         typeMaker = new TypeMaker();
         visitor.setBindings(bindings);
     }

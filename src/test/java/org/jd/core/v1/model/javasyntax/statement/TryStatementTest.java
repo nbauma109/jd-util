@@ -1,6 +1,8 @@
 package org.jd.core.v1.model.javasyntax.statement;
 
 import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
+import org.jd.core.v1.model.javasyntax.statement.TryStatement.CatchClause;
+import org.jd.core.v1.model.javasyntax.statement.TryStatement.Resource;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.TestVisitor;
@@ -53,7 +55,7 @@ public class TryStatementTest {
     public void testTryStatement() {
         Statements tryStatements = new Statements();
         Statements finallyStatements = new Statements();
-        DefaultList<TryStatement.CatchClause> catchClauses = new DefaultList<>();
+        DefaultList<TryStatement.CatchClause> catchClauses = new DefaultList<CatchClause>();
         TryStatement tryStatement = new TryStatement(tryStatements, catchClauses, finallyStatements);
 
         assertEquals(tryStatements, tryStatement.getTryStatements());
@@ -62,7 +64,7 @@ public class TryStatementTest {
 
         assertTrue(tryStatement.isTryStatement());
 
-        DefaultList<TryStatement.Resource> resources = new DefaultList<>();
+        DefaultList<TryStatement.Resource> resources = new DefaultList<Resource>();
         StringConstantExpression expression = new StringConstantExpression("test");
         ObjectType type = ObjectType.TYPE_STRING;
         TryStatement.Resource resource = new TryStatement.Resource(type, "resource1", expression);
@@ -78,12 +80,12 @@ public class TryStatementTest {
         TypeMaker typeMaker = new TypeMaker();
 
         // Create resources
-        DefaultList<TryStatement.Resource> resources = new DefaultList<>();
+        DefaultList<TryStatement.Resource> resources = new DefaultList<Resource>();
         StringConstantExpression expression = new StringConstantExpression("test");
         resources.add(new TryStatement.Resource(typeMaker.makeFromInternalTypeName("ResourceType"), "resourceName", expression));
 
         // Create catch clauses
-        DefaultList<TryStatement.CatchClause> catchClauses = new DefaultList<>();
+        DefaultList<TryStatement.CatchClause> catchClauses = new DefaultList<CatchClause>();
         catchClauses.add(new TryStatement.CatchClause(1, typeMaker.makeFromInternalTypeName("CatchClauseType"), "catchClauseName", new Statements()));
 
         // Create try and finally statements

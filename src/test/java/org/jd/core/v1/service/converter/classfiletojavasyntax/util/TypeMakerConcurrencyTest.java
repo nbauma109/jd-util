@@ -88,7 +88,7 @@ public class TypeMakerConcurrencyTest {
         final int threads = Math.max(4, Runtime.getRuntime().availableProcessors() * 2);
         final ExecutorService pool = Executors.newFixedThreadPool(threads);
         final CountDownLatch start = new CountDownLatch(1);
-        final List<Callable<Void>> tasks = new ArrayList<>();
+        final List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Tasks that force classfile loads and member scans, populating:
         //  - internalTypeNameToObjectType
@@ -136,7 +136,7 @@ public class TypeMakerConcurrencyTest {
 
         // Randomize and run all tasks under contention.
         Collections.shuffle(tasks);
-        List<Future<Void>> futures = new ArrayList<>(tasks.size());
+        List<Future<Void>> futures = new ArrayList<Future<Void>>(tasks.size());
         for (Callable<Void> c : tasks) {
             futures.add(pool.submit(c));
         }

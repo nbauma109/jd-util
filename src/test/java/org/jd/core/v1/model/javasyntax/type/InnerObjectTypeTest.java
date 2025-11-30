@@ -14,11 +14,11 @@ public class InnerObjectTypeTest {
         String name = "InnerClass";
         ObjectType outerType = ObjectType.TYPE_CLASS;
 
-        Set<String> innerTypeNames = new HashSet<>();
+        Set<String> innerTypeNames = new HashSet<String>();
         innerTypeNames.add("InnerClass");
-        
+
         InnerObjectType innerObjectType = new InnerObjectType(internalName, qualifiedName, name, innerTypeNames, outerType);
-        
+
         // Test getOuterType
         assertEquals(outerType, innerObjectType.getOuterType());
 

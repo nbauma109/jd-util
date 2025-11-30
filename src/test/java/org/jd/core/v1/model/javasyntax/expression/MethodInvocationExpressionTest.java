@@ -63,13 +63,13 @@ public class MethodInvocationExpressionTest {
         assertEquals(1, methodInvocationExpression.getPriority());
 
         // Set and get typeBounds
-        Map<String, BaseType> typeBounds = new HashMap<>();
+        Map<String, BaseType> typeBounds = new HashMap<String, BaseType>();
         typeBounds.put("key", type);
         methodInvocationExpression.setTypeBounds(typeBounds);
         assertEquals(typeBounds, methodInvocationExpression.getTypeBounds());
 
         // Set and get typeBindings
-        Map<String, TypeArgument> typeBindings = new HashMap<>();
+        Map<String, TypeArgument> typeBindings = new HashMap<String, TypeArgument>();
         typeBindings.put("key", ObjectType.TYPE_STRING);
         methodInvocationExpression.setTypeBindings(typeBindings);
         assertEquals(typeBindings, methodInvocationExpression.getTypeBindings());

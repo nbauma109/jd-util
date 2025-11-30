@@ -341,17 +341,17 @@ public class TypeMakerTest extends TestCase {
     public void testArrayNumberAndArrayIntegerAssignment() throws Exception {
         Number[] arr1 = null;
         Integer[] arr2 = null;
-        
+
         ObjectType ot1 = (ObjectType) otNumber.createType(1);
         ObjectType ot2 = (ObjectType) otInteger.createType(1);
-        
+
         // Valid:   arr1 = arr2;
         assertTrue(typeMaker.isAssignable(ot1, ot2));
-        
+
         // Invalid: arr2 = arr1;
         assertFalse(typeMaker.isAssignable(ot2, ot1));
     }
-    
+
     @Test
     public void testIteratorNumberAndPrimitiveIteratorNumberAssignment() throws Exception {
         Iterator<Number> iterator1 = null;
@@ -710,7 +710,7 @@ public class TypeMakerTest extends TestCase {
 
         String internalTypeName = "org/apache/commons/lang3/builder/ToStringStyle";
         String name = "appendDetail";
-        Collection<Expression> arguments = new ArrayList<>();
+        Collection<Expression> arguments = new ArrayList<Expression>();
         arguments.add(new NullExpression(ObjectType.TYPE_STRING_BUFFER));
         arguments.add(new NullExpression(ObjectType.TYPE_STRING));
         arguments.add(new NullExpression(ObjectType.TYPE_OBJECT));
@@ -747,7 +747,7 @@ public class TypeMakerTest extends TestCase {
         assertEquals(mapEntrySet, typeMaker.searchSuperParameterizedType(set, unmodifiableEntrySet));
         assertEquals(set, typeMaker.searchSuperParameterizedType(genericSet, valueView));
     }
-    
+
     @Test
     public void testMakeFromDescriptorOrInternalTypeName() throws Exception {
         ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("[Ljava/util/HashMap;");
@@ -889,11 +889,11 @@ public class TypeMakerTest extends TestCase {
     @Test
     public void testIsAssignable2() {
         // Prepare some test data
-        Map<String, TypeArgument> typeBindings = new HashMap<>();
+        Map<String, TypeArgument> typeBindings = new HashMap<String, TypeArgument>();
         typeBindings.put("X", typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/core/net/MailManager"));
         typeBindings.put("Y", WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT);
 
-        Map<String, BaseType> typeBounds = new HashMap<>();
+        Map<String, BaseType> typeBounds = new HashMap<String, BaseType>();
         typeBounds.put("X", typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/core/appender/AbstractManager"));
 
         ObjectType left = typeMaker.makeFromInternalTypeName("org/apache/logging/log4j/core/appender/ManagerFactory");
@@ -937,7 +937,7 @@ public class TypeMakerTest extends TestCase {
         ObjectType left = typeMaker.makeFromInternalTypeName("java/util/Set");
         left = left.createType(ObjectType.TYPE_STRING);
         Map<String, BaseType> typeBounds = Collections.emptyMap();
-        Map<String, TypeArgument> typeBindings = new HashMap<>();
+        Map<String, TypeArgument> typeBindings = new HashMap<String, TypeArgument>();
         typeBindings.put("K", ObjectType.TYPE_STRING);
         typeBindings.put("V", left);
 
@@ -956,7 +956,7 @@ public class TypeMakerTest extends TestCase {
         GenericType v = new GenericType("V");
         left = left.createType(new WildcardExtendsTypeArgument(k));
         Map<String, BaseType> typeBounds = Collections.emptyMap();
-        Map<String, TypeArgument> typeBindings = new HashMap<>();
+        Map<String, TypeArgument> typeBindings = new HashMap<String, TypeArgument>();
         typeBindings.put("V", v);
         typeBindings.put("K", k);
 

@@ -44,7 +44,7 @@ public final class ClassFileDeserializer {
 
             // Load inner types
             if (innerClasses != null) {
-                DefaultList<ClassFile> innerClassFiles = new DefaultList<>();
+                DefaultList<ClassFile> innerClassFiles = new DefaultList<ClassFile>();
                 String innerTypePrefix = internalTypeName + '$';
 
                 for (InnerClass ic : innerClasses.getInnerClasses()) {

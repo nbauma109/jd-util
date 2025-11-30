@@ -26,7 +26,7 @@ public class CastExpression extends AbstractLineNumberTypeExpression {
     public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit) {
         this(lineNumber, type, expression, explicit, false);
     }
-    
+
     public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit, boolean byteCodeCheckCast) {
         super(lineNumber, type);
         this.expression = expression;

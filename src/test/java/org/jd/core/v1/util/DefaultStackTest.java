@@ -14,7 +14,7 @@ public class DefaultStackTest {
 
     @Before
     public void setUp() {
-        stack = new DefaultStack<>();
+        stack = new DefaultStack<Integer>();
     }
 
     @Test
@@ -82,7 +82,7 @@ public class DefaultStackTest {
 
     @Test
     public void testCopy() {
-        DefaultStack<Integer> other = new DefaultStack<>();
+        DefaultStack<Integer> other = new DefaultStack<Integer>();
         other.push(1);
         other.push(2);
         stack.copy(other);
@@ -92,7 +92,7 @@ public class DefaultStackTest {
 
     @Test
     public void testCopyAndResize() {
-        DefaultStack<Integer> other = new DefaultStack<>();
+        DefaultStack<Integer> other = new DefaultStack<Integer>();
         for(int i = 0; i < 20; i++) {
             other.push(i);
         }
@@ -104,7 +104,7 @@ public class DefaultStackTest {
     @Test
     public void testCopyConstructor() {
         stack.push(1);
-        DefaultStack<Integer> copiedStack = new DefaultStack<>(stack);
+        DefaultStack<Integer> copiedStack = new DefaultStack<Integer>(stack);
         assertNotNull(copiedStack);
         assertFalse(copiedStack.isEmpty());
         assertEquals(stack.size(), copiedStack.size());

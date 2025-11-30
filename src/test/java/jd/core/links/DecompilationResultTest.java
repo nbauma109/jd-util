@@ -42,7 +42,7 @@ public class DecompilationResultTest {
     @Test
     public void testSetAndGetTypeDeclarations() {
         DeclarationData declarationData = new DeclarationData(1, 1, "Type1", "Name1", "Descriptor1");
-        NavigableMap<Integer, DeclarationData> typeDeclarations = new TreeMap<>(Collections.singletonMap(1, declarationData));
+        NavigableMap<Integer, DeclarationData> typeDeclarations = new TreeMap<Integer, DeclarationData>(Collections.singletonMap(1, declarationData));
         result.setTypeDeclarations(typeDeclarations);
         assertEquals(typeDeclarations, result.getTypeDeclarations());
     }
@@ -80,7 +80,7 @@ public class DecompilationResultTest {
     @Test
     public void testSetAndGetHyperlinks() {
         HyperlinkData hyperlinkData = new HyperlinkData(1, 2);
-        SortedMap<Integer, HyperlinkData> hyperlinks = new TreeMap<>(Collections.singletonMap(1, hyperlinkData));
+        SortedMap<Integer, HyperlinkData> hyperlinks = new TreeMap<Integer, HyperlinkData>(Collections.singletonMap(1, hyperlinkData));
         result.setHyperlinks(hyperlinks);
         assertEquals(hyperlinks, result.getHyperlinks());
     }

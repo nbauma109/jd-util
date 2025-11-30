@@ -1,6 +1,9 @@
 package org.jd.core.v1.model.javasyntax.declaration;
 
 import org.junit.Test;
+import org.jd.core.v1.model.javasyntax.declaration.ModuleDeclaration.ModuleInfo;
+import org.jd.core.v1.model.javasyntax.declaration.ModuleDeclaration.PackageInfo;
+import org.jd.core.v1.model.javasyntax.declaration.ModuleDeclaration.ServiceInfo;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.TestDeclarationVisitor;
 
 import java.util.ArrayList;
@@ -77,26 +80,26 @@ public class ModuleDeclarationTest {
     }
 
     private static ModuleDeclaration createModuleDeclaration() {
-        List<ModuleDeclaration.ModuleInfo> requires = new ArrayList<>();
+        List<ModuleDeclaration.ModuleInfo> requires = new ArrayList<ModuleInfo>();
         requires.add(new ModuleDeclaration.ModuleInfo("module1", 0, "1.0"));
         requires.add(new ModuleDeclaration.ModuleInfo("module2", 1, null));
 
-        List<ModuleDeclaration.PackageInfo> exports = new ArrayList<>();
+        List<ModuleDeclaration.PackageInfo> exports = new ArrayList<PackageInfo>();
         exports.add(new ModuleDeclaration.PackageInfo("package1", 0, null));
         exports.add(new ModuleDeclaration.PackageInfo("package2", 1, List.of("module1")));
         exports.add(new ModuleDeclaration.PackageInfo("package3", 2, List.of("module1", "module2")));
 
-        List<ModuleDeclaration.PackageInfo> opens = new ArrayList<>();
+        List<ModuleDeclaration.PackageInfo> opens = new ArrayList<PackageInfo>();
         opens.add(new ModuleDeclaration.PackageInfo("package4", 0, null));
         opens.add(new ModuleDeclaration.PackageInfo("package5", 1, List.of("module1")));
         opens.add(new ModuleDeclaration.PackageInfo("package6", 2, List.of("module1", "module2")));
         opens.add(new ModuleDeclaration.PackageInfo("package7", 3, List.of()));
 
-        List<String> uses = new ArrayList<>();
+        List<String> uses = new ArrayList<String>();
         uses.add("service1");
         uses.add("service2");
 
-        List<ModuleDeclaration.ServiceInfo> provides = new ArrayList<>();
+        List<ModuleDeclaration.ServiceInfo> provides = new ArrayList<ServiceInfo>();
         provides.add(new ModuleDeclaration.ServiceInfo("interface1", List.of("impl1")));
         provides.add(new ModuleDeclaration.ServiceInfo("interface2", List.of("impl2", "impl3")));
         provides.add(new ModuleDeclaration.ServiceInfo("interface3", null));

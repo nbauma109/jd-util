@@ -87,7 +87,7 @@ public class GenericType implements Type {
             if (boundType != null) {
                 if (typeArgument instanceof WildcardExtendsTypeArgument wildcardExtendsTypeArgument) {
                     return wildcardExtendsTypeArgument.type().equals(boundType);
-                    
+
                 }
                 if (boundType.equals(typeArgument)) {
                     return true;

@@ -136,7 +136,7 @@ public class TryStatement implements Statement {
 
         public void addType(ObjectType type) {
             if (otherTypes == null) {
-                otherTypes = new DefaultList<>();
+                otherTypes = new DefaultList<ObjectType>();
             }
             otherTypes.add(type);
         }

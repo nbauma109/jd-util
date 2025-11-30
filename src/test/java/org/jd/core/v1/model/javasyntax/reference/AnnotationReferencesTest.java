@@ -13,8 +13,8 @@ public class AnnotationReferencesTest {
 
     @Before
     public void setUp() {
-        annotationReferences = new AnnotationReferences<>();
-        annotationReferencesWithCapacity = new AnnotationReferences<>(10);
+        annotationReferences = new AnnotationReferences<AnnotationReference>();
+        annotationReferencesWithCapacity = new AnnotationReferences<AnnotationReference>(10);
         visitor = new TestReferenceVisitor();
     }
 

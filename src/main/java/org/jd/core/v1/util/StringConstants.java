@@ -19,7 +19,6 @@ package org.jd.core.v1.util;
 public final class StringConstants
 {
     private StringConstants() {
-        super();
     }
 
     public static final String MIN_VALUE = "MIN_VALUE";
