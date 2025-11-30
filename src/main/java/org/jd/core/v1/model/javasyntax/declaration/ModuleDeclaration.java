@@ -41,7 +41,7 @@ public class ModuleDeclaration extends TypeDeclaration {
 
     @Override
     public String toString() {
-        return "ModuleDeclaration{" + internalTypeName + "}";
+        return "ModuleDeclaration{" + internalTypeName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public static record ModuleInfo(String name, int flags, String version) {
@@ -50,14 +50,14 @@ public class ModuleDeclaration extends TypeDeclaration {
         public String toString() {
             StringBuilder sb = new StringBuilder();
 
-            sb.append("ModuleInfo{name=").append(name);
-            sb.append(", flags=").append(flags);
+            sb.append("ModuleInfo{name=").append(name); //$NON-NLS-1$
+            sb.append(", flags=").append(flags); //$NON-NLS-1$
 
             if (version != null) {
-                sb.append(", version=").append(version);
+                sb.append(", version=").append(version); //$NON-NLS-1$
             }
 
-            return sb.append("}").toString();
+            return sb.append("}").toString(); //$NON-NLS-1$
         }
     }
 
@@ -67,14 +67,14 @@ public class ModuleDeclaration extends TypeDeclaration {
         public String toString() {
             StringBuilder sb = new StringBuilder();
 
-            sb.append("PackageInfo{internalName=").append(internalName);
-            sb.append(", flags=").append(flags);
+            sb.append("PackageInfo{internalName=").append(internalName); //$NON-NLS-1$
+            sb.append(", flags=").append(flags); //$NON-NLS-1$
 
             if (moduleInfoNames != null) {
-                sb.append(", moduleInfoNames=").append(moduleInfoNames);
+                sb.append(", moduleInfoNames=").append(moduleInfoNames); //$NON-NLS-1$
             }
 
-            return sb.append("}").toString();
+            return sb.append("}").toString(); //$NON-NLS-1$
         }
     }
 
@@ -84,13 +84,13 @@ public class ModuleDeclaration extends TypeDeclaration {
         public String toString() {
             StringBuilder sb = new StringBuilder();
 
-            sb.append("ServiceInfo{interfaceTypeName=").append(interfaceTypeName);
+            sb.append("ServiceInfo{interfaceTypeName=").append(interfaceTypeName); //$NON-NLS-1$
 
             if (implementationTypeNames != null) {
-                sb.append(", implementationTypeNames=").append(implementationTypeNames);
+                sb.append(", implementationTypeNames=").append(implementationTypeNames); //$NON-NLS-1$
             }
 
-            return sb.append("}").toString();
+            return sb.append("}").toString(); //$NON-NLS-1$
         }
     }
 }

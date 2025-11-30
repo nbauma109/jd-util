@@ -12,21 +12,21 @@ public class NoExpressionTest {
         // Test default constructor
         NoExpression noExpression = new NoExpression();
         assertEquals(PrimitiveType.TYPE_VOID, noExpression.getType());
-        assertEquals("NoExpression", noExpression.toString());
+        assertEquals("NoExpression", noExpression.toString()); //$NON-NLS-1$
 
         // Test constructor with line number
         int lineNumber = 10;
         NoExpression noExpressionWithLineNumber = new NoExpression(lineNumber);
         assertEquals(lineNumber, noExpressionWithLineNumber.getLineNumber());
         assertEquals(PrimitiveType.TYPE_VOID, noExpressionWithLineNumber.getType());
-        assertEquals("NoExpression", noExpressionWithLineNumber.toString());
+        assertEquals("NoExpression", noExpressionWithLineNumber.toString()); //$NON-NLS-1$
 
         // Test copyTo method
         int newLineNumber = 20;
         NoExpression copiedNoExpression = (NoExpression) noExpressionWithLineNumber.copyTo(newLineNumber);
         assertEquals(newLineNumber, copiedNoExpression.getLineNumber());
         assertEquals(PrimitiveType.TYPE_VOID, copiedNoExpression.getType());
-        assertEquals("NoExpression", copiedNoExpression.toString());
+        assertEquals("NoExpression", copiedNoExpression.toString()); //$NON-NLS-1$
 
         // Test accept method with TestVisitor
         TestVisitor visitor = new TestVisitor();
@@ -41,6 +41,6 @@ public class NoExpressionTest {
 
         assertSame(noExpression1, noExpression2);
         assertEquals(PrimitiveType.TYPE_VOID, noExpression1.getType());
-        assertEquals("NoExpression", noExpression1.toString());
+        assertEquals("NoExpression", noExpression1.toString()); //$NON-NLS-1$
     }
 }

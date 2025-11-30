@@ -50,18 +50,18 @@ public class ElementValuesTest {
         assertEquals(1, testVisitor.getVisitElementValuesCount());
 
     }
-    
+
     @Test
     public void testToString() {
         // Arrange
         BaseElementValue value1 = new ElementValueArrayInitializerElementValue();
         ElementValues values = new ElementValues(1);
         values.add(value1);
-        
+
         // Act
-        String expected = "ElementValues{[" + value1.toString() + "]}";
+        String expected = "ElementValues{[" + value1.toString() + "]}"; //$NON-NLS-1$ //$NON-NLS-2$
         String actual = values.toString();
-        
+
         // Assert
         assertEquals(expected, actual);
     }

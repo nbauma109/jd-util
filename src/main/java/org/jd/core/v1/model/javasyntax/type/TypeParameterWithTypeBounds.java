@@ -26,6 +26,6 @@ public class TypeParameterWithTypeBounds extends TypeParameter {
 
     @Override
     public String toString() {
-        return "TypeParameter{identifier=" + identifier + ", typeBounds=" + typeBounds + "}";
+        return "TypeParameter{identifier=" + identifier + ", typeBounds=" + typeBounds + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

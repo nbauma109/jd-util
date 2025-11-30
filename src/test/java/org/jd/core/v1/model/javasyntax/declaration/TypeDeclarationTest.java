@@ -29,8 +29,8 @@ public class TypeDeclarationTest {
         assertNull(moduleDeclaration.getName());
         assertNull(moduleDeclaration.getInternalTypeName());
         assertNull(moduleDeclaration.getBodyDeclaration());
-        assertEquals("ModuleInfo{name=null, flags=0}", moduleInfo.toString());
-        assertEquals("PackageInfo{internalName=null, flags=0}", packageInfo.toString());
-        assertEquals("ServiceInfo{interfaceTypeName=null}", serviceInfo.toString());
+        assertEquals("ModuleInfo{name=null, flags=0}", moduleInfo.toString()); //$NON-NLS-1$
+        assertEquals("PackageInfo{internalName=null, flags=0}", packageInfo.toString()); //$NON-NLS-1$
+        assertEquals("ServiceInfo{interfaceTypeName=null}", serviceInfo.toString()); //$NON-NLS-1$
     }
 }

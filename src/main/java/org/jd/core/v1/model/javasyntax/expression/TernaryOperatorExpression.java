@@ -63,7 +63,7 @@ public class TernaryOperatorExpression extends AbstractLineNumberTypeExpression 
 
     @Override
     public String toString() {
-        return "TernaryOperatorExpression{" + condition + " ? " + trueExpression + " : " + falseExpression + "}";
+        return "TernaryOperatorExpression{" + condition + " ? " + trueExpression + " : " + falseExpression + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
     @Override

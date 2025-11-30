@@ -37,9 +37,9 @@ public class FloatConstantExpressionTest {
     @Test
     public void testToString() {
         FloatConstantExpression floatConstantExpression = new FloatConstantExpression(10F);
-        assertEquals("FloatConstantExpression{10.0}", floatConstantExpression.toString());
+        assertEquals("FloatConstantExpression{10.0}", floatConstantExpression.toString()); //$NON-NLS-1$
 
         FloatConstantExpression floatConstantExpressionWithLineNumber = new FloatConstantExpression(2, 10F);
-        assertEquals("FloatConstantExpression{10.0}", floatConstantExpressionWithLineNumber.toString());
+        assertEquals("FloatConstantExpression{10.0}", floatConstantExpressionWithLineNumber.toString()); //$NON-NLS-1$
     }
 }

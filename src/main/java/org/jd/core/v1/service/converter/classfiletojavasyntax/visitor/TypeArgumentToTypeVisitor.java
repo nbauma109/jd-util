@@ -19,9 +19,6 @@ import org.jd.core.v1.model.javasyntax.type.WildcardExtendsTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardSuperTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 
-import static org.jd.core.v1.model.javasyntax.type.ObjectType.TYPE_OBJECT;
-import static org.jd.core.v1.model.javasyntax.type.ObjectType.TYPE_UNDEFINED_OBJECT;
-
 public class TypeArgumentToTypeVisitor extends AbstractTypeArgumentVisitor {
     private Type type;
 
@@ -34,8 +31,8 @@ public class TypeArgumentToTypeVisitor extends AbstractTypeArgumentVisitor {
     }
 
 
-    @Override public void visit(DiamondTypeArgument argument) { type = TYPE_OBJECT; }
-    @Override public void visit(WildcardTypeArgument argument) { type = TYPE_OBJECT; }
+    @Override public void visit(DiamondTypeArgument argument) { type = ObjectType.TYPE_OBJECT; }
+    @Override public void visit(WildcardTypeArgument argument) { type = ObjectType.TYPE_OBJECT; }
 
     @Override public void visit(PrimitiveType type) { this.type = type; }
     @Override public void visit(ObjectType type) { this.type = type; }
@@ -46,7 +43,7 @@ public class TypeArgumentToTypeVisitor extends AbstractTypeArgumentVisitor {
     @Override public void visit(WildcardSuperTypeArgument argument) { argument.type().accept(this); }
     @Override public void visit(TypeArguments arguments) {
         if (arguments.isEmpty()) {
-            type = TYPE_UNDEFINED_OBJECT;
+            type = ObjectType.TYPE_UNDEFINED_OBJECT;
         } else {
             arguments.getFirst().accept(this);
         }

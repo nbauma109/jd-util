@@ -11,7 +11,7 @@ import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class StringConstantExpression extends AbstractLineNumberExpression {
-    public static final StringConstantExpression EMPTY_STRING = new StringConstantExpression("");
+    public static final StringConstantExpression EMPTY_STRING = new StringConstantExpression(""); //$NON-NLS-1$
 
     private final String string;
 
@@ -44,7 +44,7 @@ public class StringConstantExpression extends AbstractLineNumberExpression {
 
     @Override
     public String toString() {
-        return "StringConstantExpression{\"" + string + "\"}";
+        return "StringConstantExpression{\"" + string + "\"}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

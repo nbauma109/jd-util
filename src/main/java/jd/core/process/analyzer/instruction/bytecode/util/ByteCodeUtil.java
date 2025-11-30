@@ -50,7 +50,6 @@ import jd.core.model.instruction.bytecode.ByteCodeConstants;
 public final class ByteCodeUtil
 {
     private ByteCodeUtil() {
-        super();
     }
 
     public static int nextTableSwitchOffset(byte[] code, int index)
@@ -106,9 +105,9 @@ public final class ByteCodeUtil
 
         return switch (opcode)
         {
-            case Const.TABLESWITCH  -> nextTableSwitchOffset(code, index);
-            case Const.LOOKUPSWITCH -> nextLookupSwitchOffset(code, index);
-            case Const.WIDE         -> nextWideOffset(code, index);
+            case Const.TABLESWITCH  -> ByteCodeUtil.nextTableSwitchOffset(code, index);
+            case Const.LOOKUPSWITCH -> ByteCodeUtil.nextLookupSwitchOffset(code, index);
+            case Const.WIDE         -> ByteCodeUtil.nextWideOffset(code, index);
             default                 -> index + 1 + Const.getNoOfOperands(opcode);
         };
     }
@@ -152,13 +151,13 @@ public final class ByteCodeUtil
         for (int i = 0; i < code.length; i++) {
             int offset = i;
             // check if opCode is ALOAD or in ALOAD_0..3 which is the beginning of the pattern
-            if (!opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
+            if (!ByteCodeUtil.opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
-            if (getOpCode(code, offset) == ALOAD) {
+            if (ByteCodeUtil.getOpCode(code, offset) == ALOAD) {
                 // skip ALOAD
                 offset++;
-                if (opCodeIn(code, offset, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
+                if (ByteCodeUtil.opCodeIn(code, offset, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                     // false start, this is the actual beginning, not the local variable index of an ALOAD
                     continue;
                 }
@@ -168,16 +167,16 @@ public final class ByteCodeUtil
             if (offset >= code.length) {
                 continue;
             }
-            while (offset < code.length && opCodeIn(code, offset, GETFIELD, INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE, CHECKCAST)) {
+            while (offset < code.length && ByteCodeUtil.opCodeIn(code, offset, GETFIELD, INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE, CHECKCAST)) {
                 // skip GETFIELD, INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE, CHECKCAST and parameters
-                offset += 1 + Const.getNoOfOperands(getOpCode(code, offset));
+                offset += 1 + Const.getNoOfOperands(ByteCodeUtil.getOpCode(code, offset));
             }
-            if (offset >= code.length || !opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
+            if (offset >= code.length || !ByteCodeUtil.opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
                 continue;
             }
             final int paramEndIdx = offset;
             final int astore1stIdxParam;
-            if (getOpCode(code, offset) == ASTORE) {
+            if (ByteCodeUtil.getOpCode(code, offset) == ASTORE) {
                 // skip ASTORE
                 offset++;
                 // store ASTORE parameter
@@ -188,18 +187,18 @@ public final class ByteCodeUtil
             }
             // skip ASTORE parameter or skip ALOAD_0..3
             offset++;
-            if (offset >= code.length || getOpCode(code, offset) != ACONST_NULL) {
+            if (offset >= code.length || ByteCodeUtil.getOpCode(code, offset) != ACONST_NULL) {
                 continue;
             }
             offset++;
-            if (offset >= code.length || !opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
+            if (offset >= code.length || !ByteCodeUtil.opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
                 continue;
             }
-            offset += 1 + Const.getNoOfOperands(getOpCode(code, offset));
-            if (offset >= code.length || !opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
+            offset += 1 + Const.getNoOfOperands(ByteCodeUtil.getOpCode(code, offset));
+            if (offset >= code.length || !ByteCodeUtil.opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
-            if (getOpCode(code, offset) == ALOAD) {
+            if (ByteCodeUtil.getOpCode(code, offset) == ALOAD) {
                 // skip ALOAD
                 offset++;
                 // check ALOAD local variable index parameter matches that of ASTORE
@@ -212,20 +211,20 @@ public final class ByteCodeUtil
             }
             // skip ALOAD parameter or skip ALOAD_0..3
             offset++;
-            if (offset >= code.length || getOpCode(code, offset) != INVOKEVIRTUAL) {
+            if (offset >= code.length || ByteCodeUtil.getOpCode(code, offset) != INVOKEVIRTUAL) {
                 continue;
             }
             final int invokeVirtualIdx = offset;
             // skip INVOKEVIRTUAL and parameters
             offset += 3;
-            if (!opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
+            if (!ByteCodeUtil.opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
                 continue;
             }
-            offset += 1 + Const.getNoOfOperands(getOpCode(code, offset));
-            if (offset >= code.length || !opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
+            offset += 1 + Const.getNoOfOperands(ByteCodeUtil.getOpCode(code, offset));
+            if (offset >= code.length || !ByteCodeUtil.opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
-            if (getOpCode(code, offset) == ALOAD) {
+            if (ByteCodeUtil.getOpCode(code, offset) == ALOAD) {
                 // skip ALOAD
                 offset++;
                 // check ALOAD local variable index parameter matches that of ASTORE
@@ -238,13 +237,10 @@ public final class ByteCodeUtil
             }
             // skip ALOAD parameter or skip ALOAD_0..3
             offset++;
-            if (offset >= code.length) {
+            if ((offset >= code.length) || !ByteCodeUtil.opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
-            if (!opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
-                continue;
-            }
-            if (getOpCode(code, offset) == ALOAD) {
+            if (ByteCodeUtil.getOpCode(code, offset) == ALOAD) {
                 // skip ALOAD
                 offset++;
                 // check ALOAD local variable index parameter matches that of ASTORE
@@ -260,23 +256,23 @@ public final class ByteCodeUtil
             if (offset >= code.length) {
                 continue;
             }
-            if (getOpCode(code, offset) != INVOKESTATIC) {
+            if (ByteCodeUtil.getOpCode(code, offset) != INVOKESTATIC) {
                 continue;
             }
             final int invokeStaticIdx = offset;
             // skip INVOKESTATIC and parameters
             offset += 3;
-            if (!opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
+            if (!ByteCodeUtil.opCodeIn(code, offset, ASTORE, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3)) {
                 continue;
             }
-            offset += 1 + Const.getNoOfOperands(getOpCode(code, offset));
+            offset += 1 + Const.getNoOfOperands(ByteCodeUtil.getOpCode(code, offset));
             if (offset >= code.length) {
                 continue;
             }
-            if (!opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
+            if (!ByteCodeUtil.opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
-            if (getOpCode(code, offset) == ALOAD) {
+            if (ByteCodeUtil.getOpCode(code, offset) == ALOAD) {
                 // skip ALOAD
                 offset++;
                 // check ALOAD local variable index parameter matches that of ASTORE
@@ -303,7 +299,7 @@ public final class ByteCodeUtil
                 int astoreIdx = paramEndIdx;
                 // subtract 33 for ASTORE to ALOAD conversion
                 byte aloadCode = (byte) (code[astoreIdx] - 33);
-                if (getOpCode(code, astoreIdx) == ASTORE) {
+                if (ByteCodeUtil.getOpCode(code, astoreIdx) == ASTORE) {
                     // rarest case
                     // skip ASTORE and parameter
                     // copy ALOAD and parameter twice
@@ -335,7 +331,7 @@ public final class ByteCodeUtil
     }
 
     public static boolean opCodeIn(byte[] code, int index, int... values) {
-        return Arrays.binarySearch(values, getOpCode(code, index)) >= 0;
+        return Arrays.binarySearch(values, ByteCodeUtil.getOpCode(code, index)) >= 0;
     }
 
     public static int getOpCode(byte[] code, int index) {
@@ -343,15 +339,15 @@ public final class ByteCodeUtil
     }
 
     public static boolean isLoadIntValue(int opcode) {
-        return opcode == ICONST || opcode == BIPUSH || opcode == SIPUSH;
+        return opcode == ByteCodeConstants.ICONST || opcode == BIPUSH || opcode == SIPUSH;
     }
 
     public static boolean isIfInstruction(int opcode, boolean includeComplex) {
-        return opcode >= IF && opcode <= IFXNULL || includeComplex && opcode == COMPLEXIF;
+        return opcode >= ByteCodeConstants.IF && opcode <= ByteCodeConstants.IFXNULL || includeComplex && opcode == ByteCodeConstants.COMPLEXIF;
     }
 
     public static boolean isIfOrGotoInstruction(int opcode, boolean includeComplex) {
-        return isIfInstruction(opcode, includeComplex) || opcode == GOTO;
+        return ByteCodeUtil.isIfInstruction(opcode, includeComplex) || opcode == GOTO;
     }
 
     public static int getCmpPriority(int cmp) {
@@ -359,8 +355,8 @@ public final class ByteCodeUtil
     }
 
     public static boolean getArrayRefIndex(byte[] code) {
-        return code.length == 5 
-                && (code[0] & 255) == Const.ILOAD_0 
+        return code.length == 5
+                && (code[0] & 255) == Const.ILOAD_0
                 && (code[1] & 255) == Const.ANEWARRAY
                 && (code[4] & 255) == Const.ARETURN;
     }

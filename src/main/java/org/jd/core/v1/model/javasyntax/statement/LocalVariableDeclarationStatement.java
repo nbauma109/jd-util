@@ -27,6 +27,6 @@ public class LocalVariableDeclarationStatement extends LocalVariableDeclaration 
 
     @Override
     public String toString() {
-        return "LocalVariableDeclarationStatement{" + type + " " + localVariableDeclarators + "}";
+        return "LocalVariableDeclarationStatement{" + type + " " + localVariableDeclarators + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

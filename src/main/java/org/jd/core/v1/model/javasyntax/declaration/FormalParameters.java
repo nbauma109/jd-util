@@ -16,7 +16,7 @@ public class FormalParameters extends DefaultList<FormalParameter> implements Ba
     public FormalParameters(FormalParameter parameter, FormalParameter... parameters) {
         super(parameter, parameters);
         if (parameters.length <= 0) {
-            throw new IllegalArgumentException("Use 'FormalParameter' instead");
+            throw new IllegalArgumentException("Use 'FormalParameter' instead"); //$NON-NLS-1$
         }
     }
 

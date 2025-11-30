@@ -9,8 +9,8 @@ public class MemberDeclarationsTest {
     @Test
     public void testMemberDeclarations() {
         // Arrange
-        MemberDeclaration declaration1 = new StaticInitializerDeclaration("", null);
-        MemberDeclaration declaration2 = new StaticInitializerDeclaration("", null);
+        MemberDeclaration declaration1 = new StaticInitializerDeclaration("", null); //$NON-NLS-1$
+        MemberDeclaration declaration2 = new StaticInitializerDeclaration("", null); //$NON-NLS-1$
         MemberDeclarations declarations = new MemberDeclarations(declaration1, declaration2);
 
         // Assert
@@ -27,6 +27,6 @@ public class MemberDeclarationsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testMemberDeclarationsException() {
-        new MemberDeclarations(new StaticInitializerDeclaration("", null));
+        new MemberDeclarations(new StaticInitializerDeclaration("", null)); //$NON-NLS-1$
     }
 }

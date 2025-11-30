@@ -50,15 +50,15 @@ public class BaseExpressionTest implements BaseExpression {
         assertEquals(NoExpression.NO_EXPRESSION, getLeftExpression());
         assertEquals(NoExpression.NO_EXPRESSION, getRightExpression());
 
-        assertEquals("", getDescriptor());
+        assertEquals("", getDescriptor()); //$NON-NLS-1$
         assertEquals(0D, getDoubleValue(), 0.00001D);
         assertEquals(0F, getFloatValue(), 0.00001F);
         assertEquals(0, getIntegerValue());
-        assertEquals("", getInternalTypeName());
+        assertEquals("", getInternalTypeName()); //$NON-NLS-1$
         assertEquals(0L, getLongValue());
-        assertEquals("", getName());
+        assertEquals("", getName()); //$NON-NLS-1$
         assertEquals(ObjectType.TYPE_UNDEFINED_OBJECT, getObjectType());
-        assertEquals("", getOperator());
-        assertEquals("", getStringValue());
+        assertEquals("", getOperator()); //$NON-NLS-1$
+        assertEquals("", getStringValue()); //$NON-NLS-1$
     }
 }

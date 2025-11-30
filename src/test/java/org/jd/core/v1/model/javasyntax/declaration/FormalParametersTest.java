@@ -12,8 +12,8 @@ public class FormalParametersTest {
     @Test
     public void testFormalParameters() {
         // Arrange
-        FormalParameter fp1 = new FormalParameter(ObjectType.TYPE_OBJECT, "param1");
-        FormalParameter fp2 = new FormalParameter(ObjectType.TYPE_OBJECT, "param2");
+        FormalParameter fp1 = new FormalParameter(ObjectType.TYPE_OBJECT, "param1"); //$NON-NLS-1$
+        FormalParameter fp2 = new FormalParameter(ObjectType.TYPE_OBJECT, "param2"); //$NON-NLS-1$
         TestDeclarationVisitor visitor = new TestDeclarationVisitor();
 
         // Act
@@ -35,7 +35,7 @@ public class FormalParametersTest {
     @Test
     public void testFormalParametersException() {
         // Arrange
-        FormalParameter fp1 = new FormalParameter(ObjectType.TYPE_OBJECT, "param1");
+        FormalParameter fp1 = new FormalParameter(ObjectType.TYPE_OBJECT, "param1"); //$NON-NLS-1$
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> new FormalParameters(fp1));

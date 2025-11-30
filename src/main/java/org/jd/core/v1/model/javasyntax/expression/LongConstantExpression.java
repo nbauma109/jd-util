@@ -37,7 +37,7 @@ public class LongConstantExpression extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "LongConstantExpression{" + value + "}";
+        return "LongConstantExpression{" + value + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

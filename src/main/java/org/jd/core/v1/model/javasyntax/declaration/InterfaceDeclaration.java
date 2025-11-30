@@ -44,6 +44,6 @@ public class InterfaceDeclaration extends TypeDeclaration {
 
     @Override
     public String toString() {
-        return "InterfaceDeclaration{" + internalTypeName + "}";
+        return "InterfaceDeclaration{" + internalTypeName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

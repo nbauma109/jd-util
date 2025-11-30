@@ -35,6 +35,6 @@ public class ThrowStatement implements Statement {
 
     @Override
     public String toString() {
-        return "ThrowStatement{throw " + expression + "}";
+        return "ThrowStatement{throw " + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

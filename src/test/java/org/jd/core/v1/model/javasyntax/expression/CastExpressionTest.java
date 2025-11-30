@@ -26,10 +26,10 @@ public class CastExpressionTest {
         assertFalse(castExpression.isByteCodeCheckCast());
         assertTrue(castExpression.isCastExpression());
         assertEquals(3, castExpression.getPriority());
-        assertEquals("CastExpression{cast (PrimitiveType{primitive=byte}) IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=42}}", castExpression.toString());
+        assertEquals("CastExpression{cast (PrimitiveType{primitive=byte}) IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=42}}", castExpression.toString()); //$NON-NLS-1$
 
         // Setters
-        Expression newExpression = new StringConstantExpression(3, "value");
+        Expression newExpression = new StringConstantExpression(3, "value"); //$NON-NLS-1$
         castExpression.setExpression(newExpression);
         castExpression.setExplicit(false);
         castExpression.setByteCodeCheckCast(true);
@@ -53,6 +53,6 @@ public class CastExpressionTest {
         assertTrue(copiedExpression.isByteCodeCheckCast());
         assertTrue(copiedExpression.isCastExpression());
         assertEquals(3, copiedExpression.getPriority());
-        assertEquals("CastExpression{cast (PrimitiveType{primitive=byte}) StringConstantExpression{\"value\"}}", copiedExpression.toString());
+        assertEquals("CastExpression{cast (PrimitiveType{primitive=byte}) StringConstantExpression{\"value\"}}", copiedExpression.toString()); //$NON-NLS-1$
     }
 }

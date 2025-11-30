@@ -51,7 +51,7 @@ public class TypeReferenceDotClassExpression implements Expression {
 
     @Override
     public String toString() {
-        return "TypeReferenceDotClassExpression{" + typeDotClass + "}";
+        return "TypeReferenceDotClassExpression{" + typeDotClass + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

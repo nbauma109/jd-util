@@ -16,8 +16,8 @@ public class EnumDeclarationTest {
 
     @Before
     public void setup() {
-        constant = new EnumDeclaration.Constant("CONSTANT_NAME");
-        enumDeclaration = new EnumDeclaration(1, "INTERNAL_NAME", "NAME", Arrays.asList(constant), null);
+        constant = new EnumDeclaration.Constant("CONSTANT_NAME"); //$NON-NLS-1$
+        enumDeclaration = new EnumDeclaration(1, "INTERNAL_NAME", "NAME", Arrays.asList(constant), null); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Test
@@ -32,7 +32,7 @@ public class EnumDeclarationTest {
 
     @Test
     public void testToString() {
-        String expected = "EnumDeclaration{INTERNAL_NAME}";
+        String expected = "EnumDeclaration{INTERNAL_NAME}"; //$NON-NLS-1$
         assertEquals(expected, enumDeclaration.toString());
     }
 
@@ -43,7 +43,7 @@ public class EnumDeclarationTest {
 
     @Test
     public void testConstantGetName() {
-        assertEquals("CONSTANT_NAME", constant.getName());
+        assertEquals("CONSTANT_NAME", constant.getName()); //$NON-NLS-1$
     }
 
     @Test

@@ -27,7 +27,7 @@ public class BooleanExpressionTest {
         assertTrue(booleanExpression.isBooleanExpression());
 
         // Test toString
-        assertEquals("BooleanExpression{true}", booleanExpression.toString());
+        assertEquals("BooleanExpression{true}", booleanExpression.toString()); //$NON-NLS-1$
 
         // Test copyTo
         BooleanExpression copiedExpression = (BooleanExpression) booleanExpression.copyTo(20);

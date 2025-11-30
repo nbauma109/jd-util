@@ -27,7 +27,7 @@ public class NoExpression extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "NoExpression";
+        return "NoExpression"; //$NON-NLS-1$
     }
 
     @Override

@@ -14,7 +14,7 @@ public record CommentExpression(String text) implements Expression {
 
     @Override
     public int getLineNumber() {
-        return UNKNOWN_LINE_NUMBER;
+        return Expression.UNKNOWN_LINE_NUMBER;
     }
 
     @Override
@@ -34,7 +34,7 @@ public record CommentExpression(String text) implements Expression {
 
     @Override
     public String toString() {
-        return "CommentExpression{" + text + "}";
+        return "CommentExpression{" + text + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

@@ -28,6 +28,6 @@ public class AnnotationDeclaration extends TypeDeclaration {
 
     @Override
     public String toString() {
-        return "AnnotationDeclaration{" + internalTypeName + "}";
+        return "AnnotationDeclaration{" + internalTypeName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

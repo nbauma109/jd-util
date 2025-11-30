@@ -16,15 +16,15 @@ public class NewInitializedArrayTest {
 
     @Test
     public void testNewInitializedArray() {
-        ArrayVariableInitializer arrayInitializer = new ArrayVariableInitializer(TEST_TYPE);
-        NewInitializedArray newInitializedArray = new NewInitializedArray(LINE_NUMBER, TEST_TYPE, arrayInitializer);
+        ArrayVariableInitializer arrayInitializer = new ArrayVariableInitializer(NewInitializedArrayTest.TEST_TYPE);
+        NewInitializedArray newInitializedArray = new NewInitializedArray(NewInitializedArrayTest.LINE_NUMBER, NewInitializedArrayTest.TEST_TYPE, arrayInitializer);
 
         assertSame(arrayInitializer, newInitializedArray.getArrayInitializer());
         assertEquals(0, newInitializedArray.getPriority());
         assertTrue(newInitializedArray.isNewInitializedArray());
         assertTrue(newInitializedArray.isNew());
 
-        String expectedString = "NewInitializedArray{new " + TEST_TYPE + " [" + arrayInitializer + "]}";
+        String expectedString = "NewInitializedArray{new " + NewInitializedArrayTest.TEST_TYPE + " [" + arrayInitializer + "]}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         assertEquals(expectedString, newInitializedArray.toString());
 
         int newLineNumber = 2;
@@ -32,7 +32,7 @@ public class NewInitializedArrayTest {
 
         assertTrue(copiedNewInitializedArray instanceof NewInitializedArray);
         assertEquals(newLineNumber, copiedNewInitializedArray.getLineNumber());
-        assertEquals(TEST_TYPE, ((NewInitializedArray) copiedNewInitializedArray).getType());
+        assertEquals(NewInitializedArrayTest.TEST_TYPE, ((NewInitializedArray) copiedNewInitializedArray).getType());
         assertSame(arrayInitializer, ((NewInitializedArray) copiedNewInitializedArray).getArrayInitializer());
     }
 
@@ -40,8 +40,8 @@ public class NewInitializedArrayTest {
     public void testAcceptWithTestVisitor() {
         TestVisitor visitor = new TestVisitor();
 
-        ArrayVariableInitializer arrayInitializer = new ArrayVariableInitializer(TEST_TYPE);
-        NewInitializedArray newInitializedArray = new NewInitializedArray(LINE_NUMBER, TEST_TYPE, arrayInitializer);
+        ArrayVariableInitializer arrayInitializer = new ArrayVariableInitializer(NewInitializedArrayTest.TEST_TYPE);
+        NewInitializedArray newInitializedArray = new NewInitializedArray(NewInitializedArrayTest.LINE_NUMBER, NewInitializedArrayTest.TEST_TYPE, arrayInitializer);
 
         newInitializedArray.accept(visitor);
 

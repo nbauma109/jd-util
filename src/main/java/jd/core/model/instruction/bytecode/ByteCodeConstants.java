@@ -19,7 +19,6 @@ package jd.core.model.instruction.bytecode;
 public class ByteCodeConstants
 {
     protected ByteCodeConstants() {
-        super();
     }
 
     // Extension for decompiler

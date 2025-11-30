@@ -56,7 +56,7 @@ public class SwitchStatement implements Statement {
 
         @Override
         public String toString() {
-            return "DefaultLabel";
+            return "DefaultLabel"; //$NON-NLS-1$
         }
     }
 
@@ -83,7 +83,7 @@ public class SwitchStatement implements Statement {
 
         @Override
         public String toString() {
-            return "ExpressionLabel{" + expression.toString() + '}';
+            return "ExpressionLabel{" + expression.toString() + '}'; //$NON-NLS-1$
         }
     }
 
@@ -123,7 +123,7 @@ public class SwitchStatement implements Statement {
 
         @Override
         public String toString() {
-            return "LabelBlock{label=" + label.toString() + '}';
+            return "LabelBlock{label=" + label.toString() + '}'; //$NON-NLS-1$
         }
     }
 
@@ -149,7 +149,7 @@ public class SwitchStatement implements Statement {
 
         @Override
         public String toString() {
-            return "MultiLabelsBlock{labels=" + labels.toString() + '}';
+            return "MultiLabelsBlock{labels=" + labels.toString() + '}'; //$NON-NLS-1$
         }
     }
 }

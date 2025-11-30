@@ -16,7 +16,7 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
     protected final String descriptor;
 
     public MethodReferenceExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor) {
-        this(UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor);
+        this(Expression.UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor);
     }
 
     public MethodReferenceExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor) {
@@ -63,6 +63,6 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
 
     @Override
     public String toString() {
-        return "MethodReferenceExpression{call " + expression + " :: " + name + "(" + descriptor + ")}";
+        return "MethodReferenceExpression{call " + expression + " :: " + name + "(" + descriptor + ")}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 }

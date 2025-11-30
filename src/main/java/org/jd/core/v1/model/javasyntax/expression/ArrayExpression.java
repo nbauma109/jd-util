@@ -16,11 +16,11 @@ public class ArrayExpression extends AbstractLineNumberTypeExpression {
     private Expression index;
 
     public ArrayExpression(Expression expression, Expression index) {
-        this(UNKNOWN_LINE_NUMBER, expression, index);
+        this(Expression.UNKNOWN_LINE_NUMBER, expression, index);
     }
 
     public ArrayExpression(int lineNumber, Expression expression, Expression index) {
-        super(lineNumber, createItemType(expression));
+        super(lineNumber, ArrayExpression.createItemType(expression));
         this.expression = expression;
         this.index = index;
     }
@@ -65,7 +65,7 @@ public class ArrayExpression extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "ArrayExpression{" + expression + "[" + index + "]}";
+        return "ArrayExpression{" + expression + "[" + index + "]}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

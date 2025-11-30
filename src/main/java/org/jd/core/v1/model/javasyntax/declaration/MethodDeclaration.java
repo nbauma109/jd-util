@@ -106,6 +106,6 @@ public class MethodDeclaration implements MemberDeclaration {
 
     @Override
     public String toString() {
-        return "MethodDeclaration{" + name + " " + descriptor + "}";
+        return "MethodDeclaration{" + name + " " + descriptor + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

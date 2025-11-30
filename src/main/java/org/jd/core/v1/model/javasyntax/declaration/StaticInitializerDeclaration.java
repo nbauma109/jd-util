@@ -33,6 +33,6 @@ public class StaticInitializerDeclaration implements MemberDeclaration {
 
     @Override
     public String toString() {
-        return "StaticInitializerDeclaration{}";
+        return "StaticInitializerDeclaration{}"; //$NON-NLS-1$
     }
 }

@@ -28,7 +28,7 @@ public class ForStatementTest {
         assertEquals(statements, forStatement.getStatements());
 
         // toString method
-        String expectedToString = "ForStatement{null or " + init + "; " + condition + "; " + update + "}";
+        String expectedToString = "ForStatement{null or " + init + "; " + condition + "; " + update + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         assertEquals(expectedToString, forStatement.toString());
 
         // Setters

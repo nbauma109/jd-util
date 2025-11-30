@@ -23,7 +23,7 @@ public class BindTypesToTypesVisitorTest {
     @Before
     public void setup() {
         visitor = new BindTypesToTypesVisitor();
-        bindings = new HashMap<>();
+        bindings = new HashMap<String, TypeArgument>();
         typeMaker = new TypeMaker();
         visitor.setBindings(bindings);
     }
@@ -31,8 +31,8 @@ public class BindTypesToTypesVisitorTest {
     @Test
     public void visitGenericTypeWhenTypeArgumentIsNull() {
         // Given
-        GenericType genericType = new GenericType("Test", 0);
-        bindings.put("Test", null);
+        GenericType genericType = new GenericType("Test", 0); //$NON-NLS-1$
+        bindings.put("Test", null); //$NON-NLS-1$
 
         // When
         visitor.init();
@@ -46,8 +46,8 @@ public class BindTypesToTypesVisitorTest {
     @Test
     public void visitGenericTypeWhenTypeArgumentIsWildcard() {
         // Given
-        GenericType genericType = new GenericType("Test", 0);
-        bindings.put("Test", WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT);
+        GenericType genericType = new GenericType("Test", 0); //$NON-NLS-1$
+        bindings.put("Test", WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT); //$NON-NLS-1$
 
         // When
         visitor.init();
@@ -61,9 +61,9 @@ public class BindTypesToTypesVisitorTest {
     @Test
     public void visitGenericTypeWhenTypeArgumentIsNotWildcardNorNull() {
         // Given
-        GenericType genericType = new GenericType("Test", 0);
+        GenericType genericType = new GenericType("Test", 0); //$NON-NLS-1$
         ObjectType typeArgument = ObjectType.TYPE_OBJECT;
-        bindings.put("Test", typeArgument);
+        bindings.put("Test", typeArgument); //$NON-NLS-1$
 
         // When
         visitor.init();
@@ -80,8 +80,8 @@ public class BindTypesToTypesVisitorTest {
     @Test
     public void visitInnerObjectTypeWhenResultIsNotEqualOuterTypeAndTypeArgumentsIsNotWildcardNorNull() {
         // Given
-        ObjectType outerType = typeMaker.makeFromInternalTypeName("OuterType<T>");
-        InnerObjectType innerObjectType = (InnerObjectType) typeMaker.makeFromInternalTypeName("OuterType<T>$InnerType<U>");
+        ObjectType outerType = typeMaker.makeFromInternalTypeName("OuterType<T>"); //$NON-NLS-1$
+        InnerObjectType innerObjectType = (InnerObjectType) typeMaker.makeFromInternalTypeName("OuterType<T>$InnerType<U>"); //$NON-NLS-1$
 
         outerType.accept(visitor);
 

@@ -16,6 +16,6 @@ public record ElementValuePair(String name, BaseElementValue elementValue) imple
 
     @Override
     public String toString() {
-        return "ElementValuePair{name=" + name + ", elementValue=" + elementValue + "}";
+        return "ElementValuePair{name=" + name + ", elementValue=" + elementValue + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

@@ -14,7 +14,7 @@ public class BinaryOperatorExpressionTest {
         int lineNumber = 1;
         Expression leftExpression = new IntegerConstantExpression(lineNumber, 1);
         Expression rightExpression = new IntegerConstantExpression(lineNumber, 2);
-        String operator = "+";
+        String operator = "+"; //$NON-NLS-1$
         int priority = 2;
         ObjectType type = ObjectType.TYPE_PRIMITIVE_INT;
 
@@ -31,7 +31,7 @@ public class BinaryOperatorExpressionTest {
         assertTrue(binaryOperatorExpression.isBinaryOperatorExpression());
 
         // toString method
-        String expectedToString = "BinaryOperatorExpression{" + leftExpression.toString() + ' ' + operator + ' ' + rightExpression.toString() + "}";
+        String expectedToString = "BinaryOperatorExpression{" + leftExpression.toString() + ' ' + operator + ' ' + rightExpression.toString() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
         assertEquals(expectedToString, binaryOperatorExpression.toString());
 
         // copyTo method
@@ -45,7 +45,7 @@ public class BinaryOperatorExpressionTest {
         // Setters
         Expression newLeftExpression = new IntegerConstantExpression(lineNumber, 3);
         Expression newRightExpression = new IntegerConstantExpression(lineNumber, 4);
-        String newOperator = "-";
+        String newOperator = "-"; //$NON-NLS-1$
         int newPriority = 3;
 
         binaryOperatorExpression.setLeftExpression(newLeftExpression);

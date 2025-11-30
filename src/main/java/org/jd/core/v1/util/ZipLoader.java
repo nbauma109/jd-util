@@ -20,9 +20,9 @@ import java.util.zip.ZipInputStream;
 
 public class ZipLoader implements Loader {
 
-    protected static final Pattern CLASS_SUFFIX_PATTERN = Pattern.compile("\\.class$");
+    protected static final Pattern CLASS_SUFFIX_PATTERN = Pattern.compile("\\.class$"); //$NON-NLS-1$
 
-    private HashMap<String, byte[]> map = new HashMap<>();
+    private HashMap<String, byte[]> map = new HashMap<String, byte[]>();
 
     public  ZipLoader(InputStream in) throws IOException {
         byte[] buffer = new byte[1024 * 2];
@@ -51,7 +51,7 @@ public class ZipLoader implements Loader {
     }
 
     protected String makeEntryName(String entryName) {
-        return CLASS_SUFFIX_PATTERN.matcher(entryName).replaceFirst("");
+        return ZipLoader.CLASS_SUFFIX_PATTERN.matcher(entryName).replaceFirst(""); //$NON-NLS-1$
     }
 
     @Override

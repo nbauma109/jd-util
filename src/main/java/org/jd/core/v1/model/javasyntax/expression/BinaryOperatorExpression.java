@@ -69,7 +69,7 @@ public class BinaryOperatorExpression extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "BinaryOperatorExpression{" + leftExpression.toString() + ' ' + operator + ' ' + rightExpression.toString() + "}";
+        return "BinaryOperatorExpression{" + leftExpression.toString() + ' ' + operator + ' ' + rightExpression.toString() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

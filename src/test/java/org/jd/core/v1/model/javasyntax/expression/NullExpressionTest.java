@@ -12,15 +12,15 @@ public class NullExpressionTest {
 
     @Test
     public void testNullExpression() {
-        test(ObjectType.TYPE_OBJECT, 10, new NullExpression(10, ObjectType.TYPE_OBJECT));
-        test(ObjectType.TYPE_OBJECT, 0, new NullExpression(ObjectType.TYPE_OBJECT));
+        NullExpressionTest.test(ObjectType.TYPE_OBJECT, 10, new NullExpression(10, ObjectType.TYPE_OBJECT));
+        NullExpressionTest.test(ObjectType.TYPE_OBJECT, 0, new NullExpression(ObjectType.TYPE_OBJECT));
     }
 
     private static void test(Type type, int lineNumber, NullExpression nullExpression) {
         // Assert
         assertEquals(lineNumber, nullExpression.getLineNumber());
         assertEquals(type, nullExpression.getType());
-        assertEquals("NullExpression{type=ObjectType{java/lang/Object}}", nullExpression.toString());
+        assertEquals("NullExpression{type=ObjectType{java/lang/Object}}", nullExpression.toString()); //$NON-NLS-1$
         assertEquals(true, nullExpression.isNullExpression());
 
         // Act & Assert

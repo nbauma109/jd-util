@@ -42,7 +42,7 @@ public class GenericType implements Type {
     @Override
     public Type createType(int dimension) {
         if (dimension < 0) {
-            throw new IllegalArgumentException("GenericType.createType(dim) : create type with negative dimension");
+            throw new IllegalArgumentException("GenericType.createType(dim) : create type with negative dimension"); //$NON-NLS-1$
         }
         if (this.dimension == dimension) {
             return this;
@@ -87,7 +87,7 @@ public class GenericType implements Type {
             if (boundType != null) {
                 if (typeArgument instanceof WildcardExtendsTypeArgument wildcardExtendsTypeArgument) {
                     return wildcardExtendsTypeArgument.type().equals(boundType);
-                    
+
                 }
                 if (boundType.equals(typeArgument)) {
                     return true;
@@ -113,12 +113,12 @@ public class GenericType implements Type {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("GenericType{");
+        StringBuilder sb = new StringBuilder("GenericType{"); //$NON-NLS-1$
 
         sb.append(name);
 
         if (dimension > 0) {
-            sb.append(", dimension=").append(dimension);
+            sb.append(", dimension=").append(dimension); //$NON-NLS-1$
         }
 
         return sb.append('}').toString();

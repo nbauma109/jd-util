@@ -37,7 +37,7 @@ public class LambdaIdentifiersExpression extends AbstractLambdaExpression {
 
     @Override
     public String toString() {
-        return "LambdaIdentifiersExpression{" + parameterNames + " -> " + statements + "}";
+        return "LambdaIdentifiersExpression{" + parameterNames + " -> " + statements + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

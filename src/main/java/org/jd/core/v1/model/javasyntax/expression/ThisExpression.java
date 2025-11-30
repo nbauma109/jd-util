@@ -14,7 +14,7 @@ public class ThisExpression extends AbstractLineNumberExpression {
     private final boolean explicit;
 
     public ThisExpression(Type type) {
-        this(UNKNOWN_LINE_NUMBER, type);
+        this(Expression.UNKNOWN_LINE_NUMBER, type);
     }
 
     public ThisExpression(int lineNumber, Type type) {
@@ -42,7 +42,7 @@ public class ThisExpression extends AbstractLineNumberExpression {
 
     @Override
     public String toString() {
-        return "ThisExpression{" + type + "}";
+        return "ThisExpression{" + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

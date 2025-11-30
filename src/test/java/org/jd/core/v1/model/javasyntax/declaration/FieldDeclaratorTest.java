@@ -13,7 +13,7 @@ public class FieldDeclaratorTest {
 
     @Test
     public void testFieldDeclarator() {
-        String name = "field";
+        String name = "field"; //$NON-NLS-1$
 
         FieldDeclarator fieldDeclarator = new FieldDeclarator(name);
 
@@ -38,7 +38,7 @@ public class FieldDeclaratorTest {
         assertEquals(1, testVisitor.getFieldDeclaratorCount());
 
         // toString method
-        String expectedToString = "FieldDeclarator{" + name + "}";
+        String expectedToString = "FieldDeclarator{" + name + "}"; //$NON-NLS-1$ //$NON-NLS-2$
         assertEquals(expectedToString, fieldDeclarator.toString());
 
         // Equals method

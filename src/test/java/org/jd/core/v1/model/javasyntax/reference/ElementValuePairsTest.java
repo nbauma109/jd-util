@@ -12,6 +12,6 @@ public class ElementValuePairsTest {
         TestReferenceVisitor referenceVisitor = new TestReferenceVisitor();
         elementValuePairs.accept(referenceVisitor);
         assertEquals(1, referenceVisitor.getVisitElementValuePairsCount());
-        assertEquals("ElementValuePairs{[]}", elementValuePairs.toString());
+        assertEquals("ElementValuePairs{[]}", elementValuePairs.toString()); //$NON-NLS-1$
     }
 }

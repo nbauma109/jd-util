@@ -13,7 +13,7 @@ import java.util.jar.Manifest;
 public interface VersionAware {
 
     default String getVersion() throws IOException {
-        return getMainAttribute("JD-Core-Version");
+        return getMainAttribute("JD-Core-Version"); //$NON-NLS-1$
     }
 
     default String getMainAttribute(String attributeName) throws IOException {
@@ -23,7 +23,7 @@ public interface VersionAware {
     default String getMainAttribute(Class<?> clazz, String attributeName) throws IOException {
         String className = clazz.getSimpleName() + StringConstants.CLASS_FILE_SUFFIX;
         String classPath = clazz.getResource(className).toString();
-        if (!classPath.startsWith("jar")) {
+        if (!classPath.startsWith("jar")) { //$NON-NLS-1$
             return findFirstMainAttribute(attributeName);
         }
         URL url = new URL(classPath);
@@ -34,7 +34,7 @@ public interface VersionAware {
     }
 
     default String findFirstMainAttribute(String attributeName) throws IOException {
-        Enumeration<URL> manifestURLs = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+        Enumeration<URL> manifestURLs = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF"); //$NON-NLS-1$
         while (manifestURLs.hasMoreElements()) {
             URL manifestUrl = manifestURLs.nextElement();
             try (InputStream inputStream = manifestUrl.openStream()) {
@@ -46,6 +46,6 @@ public interface VersionAware {
                 }
             }
         }
-        return "SNAPSHOT";
+        return "SNAPSHOT"; //$NON-NLS-1$
     }
 }

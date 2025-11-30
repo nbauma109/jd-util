@@ -13,13 +13,13 @@ public class NewArrayTest {
 
     @Test
     public void testNewArray() {
-        BaseExpression dimensionExpressionList = new IntegerConstantExpression(LINE_NUMBER, 0);
-        NewArray newArray = new NewArray(LINE_NUMBER, TEST_TYPE, dimensionExpressionList);
+        BaseExpression dimensionExpressionList = new IntegerConstantExpression(NewArrayTest.LINE_NUMBER, 0);
+        NewArray newArray = new NewArray(NewArrayTest.LINE_NUMBER, NewArrayTest.TEST_TYPE, dimensionExpressionList);
 
         assertTrue(newArray.isEmptyNewArray());
         assertSame(dimensionExpressionList, newArray.getDimensionExpressionList());
 
-        BaseExpression newDimensionExpressionList = new IntegerConstantExpression(LINE_NUMBER, 1);
+        BaseExpression newDimensionExpressionList = new IntegerConstantExpression(NewArrayTest.LINE_NUMBER, 1);
         newArray.setDimensionExpressionList(newDimensionExpressionList);
 
         assertFalse(newArray.isEmptyNewArray());
@@ -29,7 +29,7 @@ public class NewArrayTest {
         assertTrue(newArray.isNewArray());
         assertTrue(newArray.isNew());
 
-        String expectedString = "NewArray{" + TEST_TYPE + "}";
+        String expectedString = "NewArray{" + NewArrayTest.TEST_TYPE + "}"; //$NON-NLS-1$ //$NON-NLS-2$
         assertEquals(expectedString, newArray.toString());
 
         int newLineNumber = 2;
@@ -37,7 +37,7 @@ public class NewArrayTest {
 
         assertTrue(copiedNewArray instanceof NewArray);
         assertEquals(newLineNumber, copiedNewArray.getLineNumber());
-        assertEquals(TEST_TYPE, ((NewArray) copiedNewArray).getType());
+        assertEquals(NewArrayTest.TEST_TYPE, ((NewArray) copiedNewArray).getType());
         assertSame(newDimensionExpressionList, ((NewArray) copiedNewArray).getDimensionExpressionList());
 
         TestVisitor testVisitor = new TestVisitor();

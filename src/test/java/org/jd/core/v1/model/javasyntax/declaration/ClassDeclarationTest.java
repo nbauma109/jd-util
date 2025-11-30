@@ -25,10 +25,10 @@ public class ClassDeclarationTest {
 
         BaseAnnotationReference annotationReferences = null;
         int flags = ACC_PUBLIC | ACC_STATIC;
-        String internalName = "org/jd/core/v1/model/test/TestClass";
-        String name = "TestClass";
+        String internalName = "org/jd/core/v1/model/test/TestClass"; //$NON-NLS-1$
+        String name = "TestClass"; //$NON-NLS-1$
         BaseTypeParameter typeParameters = null;
-        ObjectType superType = new ObjectType("java/lang/Object", "java.lang.Object", "Object");
+        ObjectType superType = new ObjectType("java/lang/Object", "java.lang.Object", "Object"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         BaseType interfaces = null;
         BodyDeclaration bodyDeclaration = null;
 
@@ -42,10 +42,10 @@ public class ClassDeclarationTest {
 
         // Assert
         assertEquals(1, visitor.getClassDeclarationCount());
-        assertEquals("org/jd/core/v1/model/test/TestClass", classDeclaration.getInternalTypeName());
+        assertEquals("org/jd/core/v1/model/test/TestClass", classDeclaration.getInternalTypeName()); //$NON-NLS-1$
         assertTrue(classDeclaration.isClassDeclaration());
         assertTrue(classDeclaration.isStatic());
         assertNotNull(classDeclaration.getSuperType());
-        assertEquals("ClassDeclaration{org/jd/core/v1/model/test/TestClass}", classDeclaration.toString());
+        assertEquals("ClassDeclaration{org/jd/core/v1/model/test/TestClass}", classDeclaration.toString()); //$NON-NLS-1$
     }
 }

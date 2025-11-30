@@ -15,7 +15,7 @@ public class ForEachStatementTest {
     public void testForEachStatement() {
         // Arrange
         ObjectType type = ObjectType.TYPE_ITERABLE;
-        String name = "element";
+        String name = "element"; //$NON-NLS-1$
         Expression expression = new LocalVariableReferenceExpression(type, name);
         BaseStatement statements = new ExpressionStatement(expression);
 

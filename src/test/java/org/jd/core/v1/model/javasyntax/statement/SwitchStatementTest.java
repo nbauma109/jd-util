@@ -64,14 +64,14 @@ public class SwitchStatementTest {
     public void testDefaultLabel() {
         defaultLabel.accept(testVisitor);
         assertEquals(1, testVisitor.getDefaultLabelCount());
-        assertEquals("DefaultLabel", defaultLabel.toString());
+        assertEquals("DefaultLabel", defaultLabel.toString()); //$NON-NLS-1$
     }
 
     @Test
     public void testExpressionLabel() {
         expressionLabel.accept(testVisitor);
         assertEquals(1, testVisitor.getExpressionLabelCount());
-        assertEquals("ExpressionLabel{" + condition.toString() + '}', expressionLabel.toString());
+        assertEquals("ExpressionLabel{" + condition.toString() + '}', expressionLabel.toString()); //$NON-NLS-1$
         assertEquals(condition, expressionLabel.getExpression());
         IntegerConstantExpression newExpression = new IntegerConstantExpression(PrimitiveType.TYPE_INT, 30);
         expressionLabel.setExpression(newExpression);
@@ -93,7 +93,7 @@ public class SwitchStatementTest {
         ReturnExpressionStatement returnExpressionStatement = new ReturnExpressionStatement(condition);
         labelBlock = new SwitchStatement.LabelBlock(defaultLabel, returnExpressionStatement);
         assertEquals(returnExpressionStatement, labelBlock.getStatements());
-        assertEquals("LabelBlock{label=DefaultLabel}", labelBlock.toString());
+        assertEquals("LabelBlock{label=DefaultLabel}", labelBlock.toString()); //$NON-NLS-1$
     }
 
     @Test
@@ -101,6 +101,6 @@ public class SwitchStatementTest {
         ReturnExpressionStatement returnExpressionStatement = new ReturnExpressionStatement(condition);
         SwitchStatement.MultiLabelsBlock multiLabelsBlock = new SwitchStatement.MultiLabelsBlock(Arrays.asList(defaultLabel, expressionLabel), returnExpressionStatement);
         assertEquals(returnExpressionStatement, multiLabelsBlock.getStatements());
-        assertEquals("MultiLabelsBlock{labels=[DefaultLabel, ExpressionLabel{IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=10}}]}", multiLabelsBlock.toString());
+        assertEquals("MultiLabelsBlock{labels=[DefaultLabel, ExpressionLabel{IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=10}}]}", multiLabelsBlock.toString()); //$NON-NLS-1$
     }
 }

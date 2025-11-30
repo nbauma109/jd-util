@@ -18,14 +18,14 @@ public class InterfaceDeclarationTest {
 
     @Before
     public void setUp() {
-        ObjectType cloneableType = new ObjectType(StringConstants.JAVA_LANG_CLONEABLE, "java.lang.Cloneable", "Cloneable");
-        ObjectType stringType = new ObjectType(StringConstants.JAVA_LANG_STRING, "java.lang.String", "String");
-        ObjectType listType = new ObjectType("java/util/List", "java.util.List", "List", stringType);
+        ObjectType cloneableType = new ObjectType(StringConstants.JAVA_LANG_CLONEABLE, "java.lang.Cloneable", "Cloneable"); //$NON-NLS-1$ //$NON-NLS-2$
+        ObjectType stringType = new ObjectType(StringConstants.JAVA_LANG_STRING, "java.lang.String", "String"); //$NON-NLS-1$ //$NON-NLS-2$
+        ObjectType listType = new ObjectType("java/util/List", "java.util.List", "List", stringType); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
         interfaceDeclaration = new InterfaceDeclaration(
             Const.ACC_PUBLIC,
-            "org/jd/core/v1/service/test/InterfaceTest",
-            "InterfaceTest",
+            "org/jd/core/v1/service/test/InterfaceTest", //$NON-NLS-1$
+            "InterfaceTest", //$NON-NLS-1$
             new Types(listType, cloneableType)
         );
 
@@ -46,6 +46,6 @@ public class InterfaceDeclarationTest {
     @Test
     public void testToString() {
         // Act & Assert
-        assertEquals("InterfaceDeclaration{org/jd/core/v1/service/test/InterfaceTest}", interfaceDeclaration.toString());
+        assertEquals("InterfaceDeclaration{org/jd/core/v1/service/test/InterfaceTest}", interfaceDeclaration.toString()); //$NON-NLS-1$
     }
 }

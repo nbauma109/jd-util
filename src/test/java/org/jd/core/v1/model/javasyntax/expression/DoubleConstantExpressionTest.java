@@ -37,9 +37,9 @@ public class DoubleConstantExpressionTest {
     @Test
     public void testToString() {
         DoubleConstantExpression doubleConstantExpression = new DoubleConstantExpression(10D);
-        assertEquals("DoubleConstantExpression{10.0}", doubleConstantExpression.toString());
+        assertEquals("DoubleConstantExpression{10.0}", doubleConstantExpression.toString()); //$NON-NLS-1$
 
         DoubleConstantExpression doubleConstantExpressionWithLineNumber = new DoubleConstantExpression(2, 10D);
-        assertEquals("DoubleConstantExpression{10.0}", doubleConstantExpressionWithLineNumber.toString());
+        assertEquals("DoubleConstantExpression{10.0}", doubleConstantExpressionWithLineNumber.toString()); //$NON-NLS-1$
     }
 }

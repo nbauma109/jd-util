@@ -22,45 +22,45 @@ public class PrimitiveType implements Type {
     public static final int FLAG_VOID    = 256;
 
     /** Type, type = ..., ... = type */
-    public static final PrimitiveType TYPE_BOOLEAN                = new PrimitiveType("boolean",                FLAG_BOOLEAN,                                         FLAG_BOOLEAN,                                         FLAG_BOOLEAN);
-    public static final PrimitiveType TYPE_BYTE                   = new PrimitiveType("byte",                   FLAG_BYTE,                                            FLAG_BYTE,                                            FLAG_BYTE|FLAG_INT|FLAG_SHORT);
-    public static final PrimitiveType TYPE_CHAR                   = new PrimitiveType("char",                   FLAG_CHAR,                                            FLAG_CHAR,                                            FLAG_CHAR|FLAG_INT);
-    public static final PrimitiveType TYPE_DOUBLE                 = new PrimitiveType("double",                 FLAG_DOUBLE,                                          FLAG_DOUBLE,                                          FLAG_DOUBLE);
-    public static final PrimitiveType TYPE_FLOAT                  = new PrimitiveType("float",                  FLAG_FLOAT,                                           FLAG_FLOAT,                                           FLAG_FLOAT);
-    public static final PrimitiveType TYPE_INT                    = new PrimitiveType("int",                    FLAG_INT,                                             FLAG_INT|FLAG_BYTE|FLAG_CHAR|FLAG_SHORT,              FLAG_INT);
-    public static final PrimitiveType TYPE_LONG                   = new PrimitiveType("long",                   FLAG_LONG,                                            FLAG_LONG,                                            FLAG_LONG);
-    public static final PrimitiveType TYPE_SHORT                  = new PrimitiveType("short",                  FLAG_SHORT,                                           FLAG_SHORT|FLAG_BYTE,                                 FLAG_SHORT|FLAG_INT);
-    public static final PrimitiveType TYPE_VOID                   = new PrimitiveType("void",                   FLAG_VOID,                                            FLAG_VOID,                                            FLAG_VOID);
+    public static final PrimitiveType TYPE_BOOLEAN                = new PrimitiveType("boolean",                PrimitiveType.FLAG_BOOLEAN,                                         PrimitiveType.FLAG_BOOLEAN,                                         PrimitiveType.FLAG_BOOLEAN); //$NON-NLS-1$
+    public static final PrimitiveType TYPE_BYTE                   = new PrimitiveType("byte",                   PrimitiveType.FLAG_BYTE,                                            PrimitiveType.FLAG_BYTE,                                            PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_INT|PrimitiveType.FLAG_SHORT); //$NON-NLS-1$
+    public static final PrimitiveType TYPE_CHAR                   = new PrimitiveType("char",                   PrimitiveType.FLAG_CHAR,                                            PrimitiveType.FLAG_CHAR,                                            PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_INT); //$NON-NLS-1$
+    public static final PrimitiveType TYPE_DOUBLE                 = new PrimitiveType("double",                 PrimitiveType.FLAG_DOUBLE,                                          PrimitiveType.FLAG_DOUBLE,                                          PrimitiveType.FLAG_DOUBLE); //$NON-NLS-1$
+    public static final PrimitiveType TYPE_FLOAT                  = new PrimitiveType("float",                  PrimitiveType.FLAG_FLOAT,                                           PrimitiveType.FLAG_FLOAT,                                           PrimitiveType.FLAG_FLOAT); //$NON-NLS-1$
+    public static final PrimitiveType TYPE_INT                    = new PrimitiveType("int",                    PrimitiveType.FLAG_INT,                                             PrimitiveType.FLAG_INT|PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT,              PrimitiveType.FLAG_INT); //$NON-NLS-1$
+    public static final PrimitiveType TYPE_LONG                   = new PrimitiveType("long",                   PrimitiveType.FLAG_LONG,                                            PrimitiveType.FLAG_LONG,                                            PrimitiveType.FLAG_LONG); //$NON-NLS-1$
+    public static final PrimitiveType TYPE_SHORT                  = new PrimitiveType("short",                  PrimitiveType.FLAG_SHORT,                                           PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_BYTE,                                 PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT); //$NON-NLS-1$
+    public static final PrimitiveType TYPE_VOID                   = new PrimitiveType("void",                   PrimitiveType.FLAG_VOID,                                            PrimitiveType.FLAG_VOID,                                            PrimitiveType.FLAG_VOID); //$NON-NLS-1$
 
     /** 32768 .. 65535 */
-    public static final PrimitiveType MAYBE_CHAR_TYPE             = new PrimitiveType("maybe_char",             FLAG_CHAR|FLAG_INT,                                   FLAG_CHAR|FLAG_INT,                                   FLAG_CHAR|FLAG_INT);
+    public static final PrimitiveType MAYBE_CHAR_TYPE             = new PrimitiveType("maybe_char",             PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_INT,                                   PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_INT,                                   PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_INT); //$NON-NLS-1$
     /** 128 .. 32767 */
-    public static final PrimitiveType MAYBE_SHORT_TYPE            = new PrimitiveType("maybe_short",            FLAG_CHAR|FLAG_SHORT|FLAG_INT,                        FLAG_CHAR|FLAG_SHORT|FLAG_INT,                        FLAG_CHAR|FLAG_SHORT|FLAG_INT);
+    public static final PrimitiveType MAYBE_SHORT_TYPE            = new PrimitiveType("maybe_short",            PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,                        PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,                        PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT); //$NON-NLS-1$
     /** 2 .. 127 */
-    public static final PrimitiveType MAYBE_BYTE_TYPE             = new PrimitiveType("maybe_byte",             FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT,              FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT,              FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT);
+    public static final PrimitiveType MAYBE_BYTE_TYPE             = new PrimitiveType("maybe_byte",             PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,              PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,              PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT); //$NON-NLS-1$
     /** 0 .. 1 */
-    public static final PrimitiveType MAYBE_BOOLEAN_TYPE          = new PrimitiveType("maybe_boolean",          FLAG_BOOLEAN|FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT, FLAG_BOOLEAN|FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT, FLAG_BOOLEAN|FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT);
+    public static final PrimitiveType MAYBE_BOOLEAN_TYPE          = new PrimitiveType("maybe_boolean",          PrimitiveType.FLAG_BOOLEAN|PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT, PrimitiveType.FLAG_BOOLEAN|PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT, PrimitiveType.FLAG_BOOLEAN|PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT); //$NON-NLS-1$
     /** -128 .. -1 */
-    public static final PrimitiveType MAYBE_NEGATIVE_BYTE_TYPE    = new PrimitiveType("maybe_negative_byte",    FLAG_BYTE|FLAG_SHORT|FLAG_INT,                        FLAG_BYTE|FLAG_SHORT|FLAG_INT,                        FLAG_BYTE|FLAG_SHORT|FLAG_INT);
+    public static final PrimitiveType MAYBE_NEGATIVE_BYTE_TYPE    = new PrimitiveType("maybe_negative_byte",    PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,                        PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,                        PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT); //$NON-NLS-1$
     /** -32768 .. -129 */
-    public static final PrimitiveType MAYBE_NEGATIVE_SHORT_TYPE   = new PrimitiveType("maybe_negative_short",   FLAG_SHORT|FLAG_INT,                                  FLAG_SHORT|FLAG_INT,                                  FLAG_SHORT|FLAG_INT);
+    public static final PrimitiveType MAYBE_NEGATIVE_SHORT_TYPE   = new PrimitiveType("maybe_negative_short",   PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,                                  PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,                                  PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT); //$NON-NLS-1$
     /** Otherwise. */
-    public static final PrimitiveType MAYBE_INT_TYPE              = new PrimitiveType("maybe_int",              FLAG_INT,                                             FLAG_INT,                                             FLAG_INT);
+    public static final PrimitiveType MAYBE_INT_TYPE              = new PrimitiveType("maybe_int",              PrimitiveType.FLAG_INT,                                             PrimitiveType.FLAG_INT,                                             PrimitiveType.FLAG_INT); //$NON-NLS-1$
     /** Boolean or negative. */
-    public static final PrimitiveType MAYBE_NEGATIVE_BOOLEAN_TYPE = new PrimitiveType("maybe_negative_boolean", FLAG_BOOLEAN|FLAG_BYTE|FLAG_SHORT|FLAG_INT,           FLAG_BOOLEAN|FLAG_BYTE|FLAG_SHORT|FLAG_INT,           FLAG_BOOLEAN|FLAG_BYTE|FLAG_SHORT|FLAG_INT);
+    public static final PrimitiveType MAYBE_NEGATIVE_BOOLEAN_TYPE = new PrimitiveType("maybe_negative_boolean", PrimitiveType.FLAG_BOOLEAN|PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,           PrimitiveType.FLAG_BOOLEAN|PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT,           PrimitiveType.FLAG_BOOLEAN|PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT); //$NON-NLS-1$
 
     protected static final PrimitiveType[] descriptorToType = new PrimitiveType['Z' - 'B' + 1];
 
     static {
-        descriptorToType[0]         = TYPE_BYTE;
-        descriptorToType['C' - 'B'] = TYPE_CHAR;
-        descriptorToType['D' - 'B'] = TYPE_DOUBLE;
-        descriptorToType['F' - 'B'] = TYPE_FLOAT;
-        descriptorToType['I' - 'B'] = TYPE_INT;
-        descriptorToType['J' - 'B'] = TYPE_LONG;
-        descriptorToType['S' - 'B'] = TYPE_SHORT;
-        descriptorToType['V' - 'B'] = TYPE_VOID;
-        descriptorToType['Z' - 'B'] = TYPE_BOOLEAN;
+        PrimitiveType.descriptorToType[0]         = PrimitiveType.TYPE_BYTE;
+        PrimitiveType.descriptorToType['C' - 'B'] = PrimitiveType.TYPE_CHAR;
+        PrimitiveType.descriptorToType['D' - 'B'] = PrimitiveType.TYPE_DOUBLE;
+        PrimitiveType.descriptorToType['F' - 'B'] = PrimitiveType.TYPE_FLOAT;
+        PrimitiveType.descriptorToType['I' - 'B'] = PrimitiveType.TYPE_INT;
+        PrimitiveType.descriptorToType['J' - 'B'] = PrimitiveType.TYPE_LONG;
+        PrimitiveType.descriptorToType['S' - 'B'] = PrimitiveType.TYPE_SHORT;
+        PrimitiveType.descriptorToType['V' - 'B'] = PrimitiveType.TYPE_VOID;
+        PrimitiveType.descriptorToType['Z' - 'B'] = PrimitiveType.TYPE_BOOLEAN;
     }
 
     private final String name;
@@ -77,19 +77,19 @@ public class PrimitiveType implements Type {
 
         StringBuilder sb = new StringBuilder();
 
-        if ((flags & FLAG_DOUBLE) != 0) {
+        if ((flags & PrimitiveType.FLAG_DOUBLE) != 0) {
             sb.append('D');
-        } else if ((flags & FLAG_FLOAT) != 0) {
+        } else if ((flags & PrimitiveType.FLAG_FLOAT) != 0) {
             sb.append('F');
-        } else if ((flags & FLAG_LONG) != 0) {
+        } else if ((flags & PrimitiveType.FLAG_LONG) != 0) {
             sb.append('J');
-        } else if ((flags & FLAG_BOOLEAN) != 0) {
+        } else if ((flags & PrimitiveType.FLAG_BOOLEAN) != 0) {
             sb.append('Z');
-        } else if ((flags & FLAG_BYTE) != 0) {
+        } else if ((flags & PrimitiveType.FLAG_BYTE) != 0) {
             sb.append('B');
-        } else if ((flags & FLAG_CHAR) != 0) {
+        } else if ((flags & PrimitiveType.FLAG_CHAR) != 0) {
             sb.append('C');
-        } else if ((flags & FLAG_SHORT) != 0) {
+        } else if ((flags & PrimitiveType.FLAG_SHORT) != 0) {
             sb.append('S');
         } else {
             sb.append('I');
@@ -99,7 +99,7 @@ public class PrimitiveType implements Type {
     }
 
     public static PrimitiveType getPrimitiveType(char primitiveDescriptor) {
-        return descriptorToType[primitiveDescriptor - 'B'];
+        return PrimitiveType.descriptorToType[primitiveDescriptor - 'B'];
     }
 
     @Override
@@ -132,7 +132,7 @@ public class PrimitiveType implements Type {
     @Override
     public Type createType(int dimension) {
         if (dimension < 0) {
-            throw new IllegalArgumentException("PrimitiveType.createType(dim) : create type with negative dimension");
+            throw new IllegalArgumentException("PrimitiveType.createType(dim) : create type with negative dimension"); //$NON-NLS-1$
         }
         if (dimension == 0) {
             return this;
@@ -186,24 +186,24 @@ public class PrimitiveType implements Type {
 
     @Override
     public String toString() {
-        return "PrimitiveType{primitive=" + name + "}";
+        return "PrimitiveType{primitive=" + name + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public int getJavaPrimitiveFlags() {
-        if ((flags & FLAG_BOOLEAN) != 0) {
-            return FLAG_BOOLEAN;
+        if ((flags & PrimitiveType.FLAG_BOOLEAN) != 0) {
+            return PrimitiveType.FLAG_BOOLEAN;
         }
-        if ((flags & FLAG_INT) != 0) {
-            return FLAG_INT;
+        if ((flags & PrimitiveType.FLAG_INT) != 0) {
+            return PrimitiveType.FLAG_INT;
         }
-        if ((flags & FLAG_CHAR) != 0) {
-            return FLAG_CHAR;
+        if ((flags & PrimitiveType.FLAG_CHAR) != 0) {
+            return PrimitiveType.FLAG_CHAR;
         }
-        if ((flags & FLAG_SHORT) != 0) {
-            return FLAG_SHORT;
+        if ((flags & PrimitiveType.FLAG_SHORT) != 0) {
+            return PrimitiveType.FLAG_SHORT;
         }
-        if ((flags & FLAG_BYTE) != 0) {
-            return FLAG_BYTE;
+        if ((flags & PrimitiveType.FLAG_BYTE) != 0) {
+            return PrimitiveType.FLAG_BYTE;
         }
 
         return flags;

@@ -42,7 +42,7 @@ public class EnumDeclaration extends TypeDeclaration {
 
     @Override
     public String toString() {
-        return "EnumDeclaration{" + internalTypeName + "}";
+        return "EnumDeclaration{" + internalTypeName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public static class Constant implements Declaration {

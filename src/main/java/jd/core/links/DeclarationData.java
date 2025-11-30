@@ -44,6 +44,6 @@ public class DeclarationData {
 
     @Override
     public String toString() {
-        return "DeclarationData [typeName=" + typeName + ", name=" + name + ", descriptor=" + descriptor + "]";
+        return "DeclarationData [typeName=" + typeName + ", name=" + name + ", descriptor=" + descriptor + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 }

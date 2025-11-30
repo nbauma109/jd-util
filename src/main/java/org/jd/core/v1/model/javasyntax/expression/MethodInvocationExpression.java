@@ -28,7 +28,7 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     }
 
     public MethodInvocationExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
-        this(UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor, parameters, methodTypes);
+        this(Expression.UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor, parameters, methodTypes);
     }
 
     public MethodInvocationExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
@@ -44,7 +44,7 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     public BaseType getExceptionTypes() {
         return Optional.ofNullable(methodTypes).map(MethodTypes::getExceptionTypes).orElse(null);
     }
-    
+
     public BaseTypeArgument getNonWildcardTypeArguments() {
         return nonWildcardTypeArguments;
     }
@@ -70,7 +70,7 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     public Map<String, BaseType> getTypeBounds() {
         return typeBounds;
     }
-    
+
     public void setTypeBounds(Map<String, BaseType> typeBounds) {
         this.typeBounds = typeBounds;
     }
@@ -98,6 +98,6 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
 
     @Override
     public String toString() {
-        return "MethodInvocationExpression{call " + expression + " . " + name + "(" + descriptor + ")}";
+        return "MethodInvocationExpression{call " + expression + " . " + name + "(" + descriptor + ")}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 }

@@ -12,8 +12,8 @@ public class ContinueStatementTest {
     @Test
     public void testContinueStatement() {
         // Test ContinueStatement with label
-        ContinueStatement continueStatementWithLabel = new ContinueStatement("myLabel");
-        assertEquals("myLabel", continueStatementWithLabel.getLabel());
+        ContinueStatement continueStatementWithLabel = new ContinueStatement("myLabel"); //$NON-NLS-1$
+        assertEquals("myLabel", continueStatementWithLabel.getLabel()); //$NON-NLS-1$
         assertTrue(continueStatementWithLabel.isContinueStatement());
 
         // Test ContinueStatement without label (using static CONTINUE)

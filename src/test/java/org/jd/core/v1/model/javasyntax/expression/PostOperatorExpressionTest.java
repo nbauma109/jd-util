@@ -13,7 +13,7 @@ public class PostOperatorExpressionTest {
     @Test
     public void testPostOperatorExpression() {
         Expression expression = new IntegerConstantExpression(10, PrimitiveType.TYPE_INT, 5);
-        String operator = "--";
+        String operator = "--"; //$NON-NLS-1$
         PostOperatorExpression postOperatorExpression = new PostOperatorExpression(10, expression, operator);
 
         // Test getOperator
@@ -33,7 +33,7 @@ public class PostOperatorExpressionTest {
         assertTrue(postOperatorExpression.isPostOperatorExpression());
 
         // Test toString
-        assertEquals("PostOperatorExpression{IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=5} --}", postOperatorExpression.toString());
+        assertEquals("PostOperatorExpression{IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=5} --}", postOperatorExpression.toString()); //$NON-NLS-1$
 
         // Test copyTo
         PostOperatorExpression copiedExpression = (PostOperatorExpression) postOperatorExpression.copyTo(20);

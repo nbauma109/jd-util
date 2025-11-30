@@ -45,7 +45,7 @@ public class NewArray extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "NewArray{" + getType() + "}";
+        return "NewArray{" + getType() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

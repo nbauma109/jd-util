@@ -9,12 +9,9 @@ package org.jd.core.v1.model.javasyntax.statement;
 
 import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
+import org.jd.core.v1.model.javasyntax.expression.NoExpression;
 import org.jd.core.v1.util.Base;
 import org.jd.core.v1.util.DefaultList;
-
-import static org.jd.core.v1.model.javasyntax.expression.Expression.UNKNOWN_LINE_NUMBER;
-import static org.jd.core.v1.model.javasyntax.expression.NoExpression.NO_EXPRESSION;
-import static org.jd.core.v1.model.javasyntax.statement.NoStatement.NO_STATEMENT;
 
 public interface BaseStatement extends Base<Statement> {
     void accept(StatementVisitor visitor);
@@ -41,19 +38,19 @@ public interface BaseStatement extends Base<Statement> {
     default boolean isTryStatement() { return false; }
     default boolean isWhileStatement() { return false; }
 
-    default Expression getCondition() { return NO_EXPRESSION; }
-    default Expression getExpression() { return NO_EXPRESSION; }
-    default Expression getMonitor() { return NO_EXPRESSION; }
+    default Expression getCondition() { return NoExpression.NO_EXPRESSION; }
+    default Expression getExpression() { return NoExpression.NO_EXPRESSION; }
+    default Expression getMonitor() { return NoExpression.NO_EXPRESSION; }
 
-    default BaseStatement getElseStatements() { return NO_STATEMENT; }
-    default BaseStatement getFinallyStatements() { return NO_STATEMENT; }
-    default BaseStatement getStatements() { return NO_STATEMENT; }
-    default BaseStatement getTryStatements() { return NO_STATEMENT; }
+    default BaseStatement getElseStatements() { return NoStatement.NO_STATEMENT; }
+    default BaseStatement getFinallyStatements() { return NoStatement.NO_STATEMENT; }
+    default BaseStatement getStatements() { return NoStatement.NO_STATEMENT; }
+    default BaseStatement getTryStatements() { return NoStatement.NO_STATEMENT; }
 
-    default BaseExpression getInit() { return NO_EXPRESSION; }
-    default BaseExpression getUpdate() { return NO_EXPRESSION; }
+    default BaseExpression getInit() { return NoExpression.NO_EXPRESSION; }
+    default BaseExpression getUpdate() { return NoExpression.NO_EXPRESSION; }
 
     default DefaultList<TryStatement.CatchClause> getCatchClauses() { return DefaultList.emptyList(); }
 
-    default int getLineNumber() { return UNKNOWN_LINE_NUMBER; }
+    default int getLineNumber() { return Expression.UNKNOWN_LINE_NUMBER; }
 }

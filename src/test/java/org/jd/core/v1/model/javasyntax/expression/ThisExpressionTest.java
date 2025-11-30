@@ -21,7 +21,7 @@ public class ThisExpressionTest {
         assertEquals(type, thisExpression.getType());
         assertTrue(thisExpression.isExplicit());
         assertTrue(thisExpression.isThisExpression());
-        assertEquals("ThisExpression{" + type + "}", thisExpression.toString());
+        assertEquals("ThisExpression{" + type + "}", thisExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$
 
         // Accept method
         TestVisitor testVisitor = new TestVisitor();
@@ -35,6 +35,6 @@ public class ThisExpressionTest {
         assertEquals(type, copiedExpression.getType());
         assertTrue(copiedExpression.isExplicit());
         assertTrue(copiedExpression.isThisExpression());
-        assertEquals("ThisExpression{" + type + "}", copiedExpression.toString());
+        assertEquals("ThisExpression{" + type + "}", copiedExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

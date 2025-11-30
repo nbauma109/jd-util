@@ -29,13 +29,13 @@ public class PreferencesTest {
 
     @Test
     public void testConstructorWithPreferencesMap() {
-        Map<String, String> preferencesMap = new HashMap<>();
-        preferencesMap.put(Preferences.ESCAPE_UNICODE_CHARACTERS, "true");
-        preferencesMap.put(Preferences.OMIT_THIS_PREFIX, "false");
-        preferencesMap.put(Preferences.DISPLAY_DEFAULT_CONSTRUCTOR, "true");
-        preferencesMap.put(Preferences.REALIGN_LINE_NUMBERS, "false");
-        preferencesMap.put(Preferences.WRITE_LINE_NUMBERS, "false");
-        preferencesMap.put(Preferences.WRITE_METADATA, "false");
+        Map<String, String> preferencesMap = new HashMap<String, String>();
+        preferencesMap.put(Preferences.ESCAPE_UNICODE_CHARACTERS, "true"); //$NON-NLS-1$
+        preferencesMap.put(Preferences.OMIT_THIS_PREFIX, "false"); //$NON-NLS-1$
+        preferencesMap.put(Preferences.DISPLAY_DEFAULT_CONSTRUCTOR, "true"); //$NON-NLS-1$
+        preferencesMap.put(Preferences.REALIGN_LINE_NUMBERS, "false"); //$NON-NLS-1$
+        preferencesMap.put(Preferences.WRITE_LINE_NUMBERS, "false"); //$NON-NLS-1$
+        preferencesMap.put(Preferences.WRITE_METADATA, "false"); //$NON-NLS-1$
 
         Preferences preferences = new Preferences(preferencesMap);
 

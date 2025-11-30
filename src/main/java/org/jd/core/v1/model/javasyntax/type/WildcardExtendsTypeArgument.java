@@ -25,7 +25,7 @@ public record WildcardExtendsTypeArgument(Type type) implements TypeArgument {
         if (typeArgument instanceof Type) {
             return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
         }
-        
+
         return false;
     }
 
@@ -58,6 +58,6 @@ public record WildcardExtendsTypeArgument(Type type) implements TypeArgument {
 
     @Override
     public String toString() {
-        return "WildcardExtendsTypeArgument{? extends " + type + "}";
+        return "WildcardExtendsTypeArgument{? extends " + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

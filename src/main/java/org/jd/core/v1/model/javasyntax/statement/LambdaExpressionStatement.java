@@ -35,6 +35,6 @@ public class LambdaExpressionStatement implements Statement {
 
     @Override
     public String toString() {
-        return "LambdaExpressionStatement{" + expression + "}";
+        return "LambdaExpressionStatement{" + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

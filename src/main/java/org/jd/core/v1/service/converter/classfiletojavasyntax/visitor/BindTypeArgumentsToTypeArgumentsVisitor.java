@@ -24,8 +24,6 @@ import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 
 import java.util.Map;
 
-import static org.jd.core.v1.model.javasyntax.type.ObjectType.TYPE_OBJECT;
-
 public class BindTypeArgumentsToTypeArgumentsVisitor extends AbstractTypeArgumentVisitor {
     private final TypeArgumentToTypeVisitor typeArgumentToTypeVisitor = new TypeArgumentToTypeVisitor();
     private Map<String, TypeArgument> bindings;
@@ -40,7 +38,7 @@ public class BindTypeArgumentsToTypeArgumentsVisitor extends AbstractTypeArgumen
     }
 
     public BaseTypeArgument getTypeArgument() {
-        if (result == null || TYPE_OBJECT.equals(result)) {
+        if (result == null || ObjectType.TYPE_OBJECT.equals(result)) {
             return null;
         }
         return result;
@@ -95,14 +93,14 @@ public class BindTypeArgumentsToTypeArgumentsVisitor extends AbstractTypeArgumen
             result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
         } else if (result == argument.type()) {
             result = argument;
-        } else if (TYPE_OBJECT.equals(result)) {
+        } else if (ObjectType.TYPE_OBJECT.equals(result)) {
             result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
         } else if (result != null) {
             typeArgumentToTypeVisitor.init();
             result.accept(typeArgumentToTypeVisitor);
             BaseType bt = typeArgumentToTypeVisitor.getType();
 
-            if (TYPE_OBJECT.equals(bt)) {
+            if (ObjectType.TYPE_OBJECT.equals(bt)) {
                 result = WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
             } else {
                 result = new WildcardExtendsTypeArgument((Type)bt);

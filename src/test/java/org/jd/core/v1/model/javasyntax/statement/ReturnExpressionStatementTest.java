@@ -20,7 +20,7 @@ public class ReturnExpressionStatementTest {
         assertTrue(returnExpressionStatement.getExpression() instanceof IntegerConstantExpression);
         assertEquals(1, returnExpressionStatement.getLineNumber());
         assertTrue(returnExpressionStatement.isReturnExpressionStatement());
-        assertEquals("ReturnExpressionStatement{return IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=10}}", returnExpressionStatement.toString());
+        assertEquals("ReturnExpressionStatement{return IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=10}}", returnExpressionStatement.toString()); //$NON-NLS-1$
 
         // Test constructor with lineNumber and Expression
         ReturnExpressionStatement returnExpressionStatementWithLineNumber = new ReturnExpressionStatement(2, expression);

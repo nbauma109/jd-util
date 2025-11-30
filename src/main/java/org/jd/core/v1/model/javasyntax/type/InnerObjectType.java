@@ -30,19 +30,19 @@ public class InnerObjectType extends ObjectType {
         this.setOuterType(outerType);
         checkArguments(qualifiedName, name);
     }
-    
+
     public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, ObjectType outerType) {
         super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments);
         this.setOuterType(outerType);
         checkArguments(qualifiedName, name);
     }
-    
+
     public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension, ObjectType outerType) {
         super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
         this.outerType = outerType;
         checkArguments(qualifiedName, name);
     }
-    
+
     protected void checkArguments(String qualifiedName, String name) {
         if (name != null && Character.isDigit(name.charAt(0)) && qualifiedName != null) {
             throw new IllegalArgumentException();
@@ -61,7 +61,7 @@ public class InnerObjectType extends ObjectType {
     @Override
     public Type createType(int dimension) {
         if (dimension < 0) {
-            throw new IllegalArgumentException("InnerObjectType.createType(dim) : create type with negative dimension");
+            throw new IllegalArgumentException("InnerObjectType.createType(dim) : create type with negative dimension"); //$NON-NLS-1$
         }
         return new InnerObjectType(internalName, qualifiedName, name, innerTypeNames, typeArguments, dimension, outerType);
     }
@@ -112,8 +112,8 @@ public class InnerObjectType extends ObjectType {
     @Override
     public String toString() {
         if (typeArguments == null) {
-            return "InnerObjectType{" + outerType + "." + descriptor + "}";
+            return "InnerObjectType{" + outerType + "." + descriptor + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
-        return "InnerObjectType{" + outerType + "." + descriptor + "<" + typeArguments + ">}";
+        return "InnerObjectType{" + outerType + "." + descriptor + "<" + typeArguments + ">}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 }

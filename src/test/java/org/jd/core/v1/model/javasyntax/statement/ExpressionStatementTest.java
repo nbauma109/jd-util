@@ -41,6 +41,6 @@ public class ExpressionStatementTest {
         ExpressionStatement expressionStatement = new ExpressionStatement(new IntegerConstantExpression(123));
 
         // Act & Assert
-        assertEquals("ExpressionStatement{IntegerConstantExpression{type=PrimitiveType{primitive=maybe_byte}, value=123}}", expressionStatement.toString());
+        assertEquals("ExpressionStatement{IntegerConstantExpression{type=PrimitiveType{primitive=maybe_byte}, value=123}}", expressionStatement.toString()); //$NON-NLS-1$
     }
 }

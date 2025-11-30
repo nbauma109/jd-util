@@ -25,7 +25,7 @@ public class QualifiedSuperExpressionTest {
         Assert.assertEquals(1, visitor.getQualifiedSuperExpressionCount());
 
         // Test toString method
-        String expectedToString = "QualifiedSuperExpression{ObjectType{java/lang/Object}}";
+        String expectedToString = "QualifiedSuperExpression{ObjectType{java/lang/Object}}"; //$NON-NLS-1$
         Assert.assertEquals(expectedToString, expression.toString());
 
         // Test copyTo method

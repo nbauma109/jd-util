@@ -25,6 +25,6 @@ public class ElementValues extends DefaultList<BaseElementValue> implements Base
 
     @Override
     public String toString() {
-        return "ElementValues{" + super.toString() + "}";
+        return "ElementValues{" + super.toString() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

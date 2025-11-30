@@ -68,6 +68,6 @@ public class FieldDeclarator implements BaseFieldDeclarator {
 
     @Override
     public String toString() {
-        return "FieldDeclarator{" + name + "}";
+        return "FieldDeclarator{" + name + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

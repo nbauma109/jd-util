@@ -29,7 +29,7 @@ public class LambdaExpressionStatementTest {
         assertEquals(1, visitor.getLambdaExpressionStatementCount());
 
         // Test toString method
-        assertEquals("LambdaExpressionStatement{IntegerConstantExpression{type=PrimitiveType{primitive=maybe_byte}, value=20}}",
+        assertEquals("LambdaExpressionStatement{IntegerConstantExpression{type=PrimitiveType{primitive=maybe_byte}, value=20}}", //$NON-NLS-1$
                 lambdaExpressionStatement.toString());
 
         // Test isLambdaExpressionStatement method

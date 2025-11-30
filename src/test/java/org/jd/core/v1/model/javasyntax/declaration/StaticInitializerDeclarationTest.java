@@ -13,7 +13,7 @@ public class StaticInitializerDeclarationTest {
     @Test
     public void testStaticInitializerDeclaration() {
         // Arrange
-        String descriptor = "void";
+        String descriptor = "void"; //$NON-NLS-1$
         IntegerConstantExpression returnExpression = new IntegerConstantExpression(1);
         BaseStatement baseStatement = new ReturnExpressionStatement(returnExpression);
 
@@ -28,7 +28,7 @@ public class StaticInitializerDeclarationTest {
     @Test
     public void testAccept() {
         // Arrange
-        String descriptor = "void";
+        String descriptor = "void"; //$NON-NLS-1$
         IntegerConstantExpression returnExpression = new IntegerConstantExpression(1);
         BaseStatement baseStatement = new ReturnExpressionStatement(returnExpression);
         StaticInitializerDeclaration staticInitializerDeclaration = new StaticInitializerDeclaration(descriptor, baseStatement);
@@ -43,7 +43,7 @@ public class StaticInitializerDeclarationTest {
     @Test
     public void testToString() {
         // Arrange
-        String descriptor = "void";
+        String descriptor = "void"; //$NON-NLS-1$
         IntegerConstantExpression returnExpression = new IntegerConstantExpression(1);
         BaseStatement baseStatement = new ReturnExpressionStatement(returnExpression);
         StaticInitializerDeclaration staticInitializerDeclaration = new StaticInitializerDeclaration(descriptor, baseStatement);
@@ -52,6 +52,6 @@ public class StaticInitializerDeclarationTest {
         String result = staticInitializerDeclaration.toString();
 
         // Assert
-        assertEquals("StaticInitializerDeclaration{}", result);
+        assertEquals("StaticInitializerDeclaration{}", result); //$NON-NLS-1$
     }
 }

@@ -22,14 +22,14 @@ public class Expressions extends DefaultList<Expression> implements BaseExpressi
     public Expressions(Collection<Expression> collection) {
         super(collection);
         if (collection.size() <= 1) {
-            throw new IllegalArgumentException("Use 'Expression' or sub class instead");
+            throw new IllegalArgumentException("Use 'Expression' or sub class instead"); //$NON-NLS-1$
         }
     }
 
     public Expressions(Expression expression, Expression... expressions) {
         super(expression, expressions);
         if (expressions.length <= 0) {
-            throw new IllegalArgumentException("Use 'Expression' or sub class instead");
+            throw new IllegalArgumentException("Use 'Expression' or sub class instead"); //$NON-NLS-1$
         }
     }
 

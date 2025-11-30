@@ -67,18 +67,18 @@ public class FormalParameter implements BaseFormalParameter {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("FormalParameter{");
+        StringBuilder s = new StringBuilder("FormalParameter{"); //$NON-NLS-1$
 
         if (annotationReferences != null) {
-            s.append(annotationReferences).append(" ");
+            s.append(annotationReferences).append(" "); //$NON-NLS-1$
         }
 
         if (varargs) {
-            s.append(type.createType(type.getDimension()-1)).append("... ");
+            s.append(type.createType(type.getDimension()-1)).append("... "); //$NON-NLS-1$
         } else {
-            s.append(type).append(" ");
+            s.append(type).append(" "); //$NON-NLS-1$
         }
 
-        return s.append(name).append("}").toString();
+        return s.append(name).append("}").toString(); //$NON-NLS-1$
     }
 }

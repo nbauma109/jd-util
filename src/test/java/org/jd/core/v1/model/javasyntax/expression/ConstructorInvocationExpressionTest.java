@@ -13,7 +13,7 @@ public class ConstructorInvocationExpressionTest {
     public void testConstructorInvocationExpression() {
         int lineNumber = 0;
         ObjectType type = ObjectType.TYPE_ITERABLE;
-        String descriptor = "descriptor";
+        String descriptor = "descriptor"; //$NON-NLS-1$
         BaseExpression parameters = new Expressions();
         boolean varArgs = true;
 
@@ -35,7 +35,7 @@ public class ConstructorInvocationExpressionTest {
         assertTrue(constructorInvocationExpression.isConstructorInvocationExpression());
 
         // Test toString
-        assertEquals("ConstructorInvocationExpression{call this(" + descriptor + ")}", constructorInvocationExpression.toString());
+        assertEquals("ConstructorInvocationExpression{call this(" + descriptor + ")}", constructorInvocationExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$
 
         // Test the accept method with a simple visitor
         TestVisitor visitor = new TestVisitor();

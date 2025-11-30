@@ -10,9 +10,9 @@ public class GenericTypeTest {
 
     @Test
     public void test() throws Exception {
-        GenericType genericType = new GenericType("T");
+        GenericType genericType = new GenericType("T"); //$NON-NLS-1$
         assertTrue(genericType.isGenericTypeArgument());
         assertThrows(IllegalArgumentException.class, () -> genericType.createType(-1));
-        assertEquals("GenericType{T, dimension=1}", genericType.createType(1).toString());
+        assertEquals("GenericType{T, dimension=1}", genericType.createType(1).toString()); //$NON-NLS-1$
     }
 }

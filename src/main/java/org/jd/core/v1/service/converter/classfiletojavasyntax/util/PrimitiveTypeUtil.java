@@ -49,7 +49,6 @@ import static org.jd.core.v1.model.javasyntax.type.PrimitiveType.TYPE_VOID;
 public final class PrimitiveTypeUtil {
 
     private PrimitiveTypeUtil() {
-        super();
     }
 
     public static Type getPrimitiveTypeFromDescriptor(String descriptor) {
@@ -68,51 +67,51 @@ public final class PrimitiveTypeUtil {
     public static PrimitiveType getPrimitiveTypeFromValue(int value) {
         if (value >= 0) {
             if (value <= 1) {
-                return MAYBE_BOOLEAN_TYPE;
+                return PrimitiveType.MAYBE_BOOLEAN_TYPE;
             }
             if (value <= Byte.MAX_VALUE) {
-                return MAYBE_BYTE_TYPE;
+                return PrimitiveType.MAYBE_BYTE_TYPE;
             }
             if (value <= Short.MAX_VALUE) {
-                return MAYBE_SHORT_TYPE;
+                return PrimitiveType.MAYBE_SHORT_TYPE;
             }
             if (value <= Character.MAX_VALUE) {
-                return MAYBE_CHAR_TYPE;
+                return PrimitiveType.MAYBE_CHAR_TYPE;
             }
         } else {
             if (value >= Byte.MIN_VALUE) {
-                return MAYBE_NEGATIVE_BYTE_TYPE;
+                return PrimitiveType.MAYBE_NEGATIVE_BYTE_TYPE;
             }
             if (value >= Short.MIN_VALUE) {
-                return MAYBE_NEGATIVE_SHORT_TYPE;
+                return PrimitiveType.MAYBE_NEGATIVE_SHORT_TYPE;
             }
         }
-        return MAYBE_INT_TYPE;
+        return PrimitiveType.MAYBE_INT_TYPE;
     }
 
     public static PrimitiveType getCommonPrimitiveType(PrimitiveType pt1, PrimitiveType pt2) {
-        return getPrimitiveTypeFromFlags(pt1.getFlags() & pt2.getFlags());
+        return PrimitiveTypeUtil.getPrimitiveTypeFromFlags(pt1.getFlags() & pt2.getFlags());
     }
 
     public static PrimitiveType getPrimitiveTypeFromFlags(int flags) {
         return switch (flags) {
-            case FLAG_BOOLEAN -> TYPE_BOOLEAN;
-            case FLAG_CHAR    -> TYPE_CHAR;
-            case FLAG_FLOAT   -> TYPE_FLOAT;
-            case FLAG_DOUBLE  -> TYPE_DOUBLE;
-            case FLAG_BYTE    -> TYPE_BYTE;
-            case FLAG_SHORT   -> TYPE_SHORT;
-            case FLAG_INT     -> TYPE_INT;
-            case FLAG_LONG    -> TYPE_LONG;
-            case FLAG_VOID    -> TYPE_VOID;
+            case FLAG_BOOLEAN -> PrimitiveType.TYPE_BOOLEAN;
+            case FLAG_CHAR    -> PrimitiveType.TYPE_CHAR;
+            case FLAG_FLOAT   -> PrimitiveType.TYPE_FLOAT;
+            case FLAG_DOUBLE  -> PrimitiveType.TYPE_DOUBLE;
+            case FLAG_BYTE    -> PrimitiveType.TYPE_BYTE;
+            case FLAG_SHORT   -> PrimitiveType.TYPE_SHORT;
+            case FLAG_INT     -> PrimitiveType.TYPE_INT;
+            case FLAG_LONG    -> PrimitiveType.TYPE_LONG;
+            case FLAG_VOID    -> PrimitiveType.TYPE_VOID;
             default           -> switch (flags) {
-            case FLAG_CHAR|FLAG_INT                                   -> MAYBE_CHAR_TYPE;
-            case FLAG_CHAR|FLAG_SHORT|FLAG_INT                        -> MAYBE_SHORT_TYPE;
-            case FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT              -> MAYBE_BYTE_TYPE;
-            case FLAG_BOOLEAN|FLAG_BYTE|FLAG_CHAR|FLAG_SHORT|FLAG_INT -> MAYBE_BOOLEAN_TYPE;
-            case FLAG_BYTE|FLAG_SHORT|FLAG_INT                        -> MAYBE_NEGATIVE_BYTE_TYPE;
-            case FLAG_SHORT|FLAG_INT                                  -> MAYBE_NEGATIVE_SHORT_TYPE;
-            case FLAG_BOOLEAN|FLAG_BYTE|FLAG_SHORT|FLAG_INT           -> MAYBE_NEGATIVE_BOOLEAN_TYPE;
+            case PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_INT                                   -> PrimitiveType.MAYBE_CHAR_TYPE;
+            case PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT                        -> PrimitiveType.MAYBE_SHORT_TYPE;
+            case PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT              -> PrimitiveType.MAYBE_BYTE_TYPE;
+            case PrimitiveType.FLAG_BOOLEAN|PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_CHAR|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT -> PrimitiveType.MAYBE_BOOLEAN_TYPE;
+            case PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT                        -> PrimitiveType.MAYBE_NEGATIVE_BYTE_TYPE;
+            case PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT                                  -> PrimitiveType.MAYBE_NEGATIVE_SHORT_TYPE;
+            case PrimitiveType.FLAG_BOOLEAN|PrimitiveType.FLAG_BYTE|PrimitiveType.FLAG_SHORT|PrimitiveType.FLAG_INT           -> PrimitiveType.MAYBE_NEGATIVE_BOOLEAN_TYPE;
             default                                                   -> null;
             };
         };
@@ -120,14 +119,14 @@ public final class PrimitiveTypeUtil {
 
     public static Type getPrimitiveTypeFromTag(int tag) {
         return switch (tag) {
-            case T_BOOLEAN -> TYPE_BOOLEAN;
-            case T_CHAR    -> TYPE_CHAR;
-            case T_FLOAT   -> TYPE_FLOAT;
-            case T_DOUBLE  -> TYPE_DOUBLE;
-            case T_BYTE    -> TYPE_BYTE;
-            case T_SHORT   -> TYPE_SHORT;
-            case T_INT     -> TYPE_INT;
-            case T_LONG    -> TYPE_LONG;
+            case T_BOOLEAN -> PrimitiveType.TYPE_BOOLEAN;
+            case T_CHAR    -> PrimitiveType.TYPE_CHAR;
+            case T_FLOAT   -> PrimitiveType.TYPE_FLOAT;
+            case T_DOUBLE  -> PrimitiveType.TYPE_DOUBLE;
+            case T_BYTE    -> PrimitiveType.TYPE_BYTE;
+            case T_SHORT   -> PrimitiveType.TYPE_SHORT;
+            case T_INT     -> PrimitiveType.TYPE_INT;
+            case T_LONG    -> PrimitiveType.TYPE_LONG;
             default        -> throw new IllegalStateException();
         };
     }

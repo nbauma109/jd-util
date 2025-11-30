@@ -17,8 +17,8 @@ public class AnnotationDeclarationTest {
         annotationDeclaration = new AnnotationDeclaration(
                 null,
                 0,
-                "org/jd/core/v1/service/test/AnnotationTest",
-                "AnnotationTest",
+                "org/jd/core/v1/service/test/AnnotationTest", //$NON-NLS-1$
+                "AnnotationTest", //$NON-NLS-1$
                 null,
                 null
         );
@@ -39,6 +39,6 @@ public class AnnotationDeclarationTest {
     @Test
     public void testToString() {
         // Act & Assert
-        assertEquals("AnnotationDeclaration{org/jd/core/v1/service/test/AnnotationTest}", annotationDeclaration.toString());
+        assertEquals("AnnotationDeclaration{org/jd/core/v1/service/test/AnnotationTest}", annotationDeclaration.toString()); //$NON-NLS-1$
     }
 }

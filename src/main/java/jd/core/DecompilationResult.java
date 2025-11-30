@@ -16,12 +16,12 @@ import jd.core.links.StringData;
 public class DecompilationResult {
 
     private String decompiledOutput;
-    private Map<String, DeclarationData> declarations = new HashMap<>();
-    private NavigableMap<Integer, DeclarationData> typeDeclarations = new TreeMap<>();
-    private List<ReferenceData> references = new ArrayList<>();
-    private List<StringData> strings = new ArrayList<>();
-    private SortedMap<Integer, HyperlinkData> hyperlinks = new TreeMap<>();
-    private Map<Integer, Integer> lineNumbers = new TreeMap<>();
+    private Map<String, DeclarationData> declarations = new HashMap<String, DeclarationData>();
+    private NavigableMap<Integer, DeclarationData> typeDeclarations = new TreeMap<Integer, DeclarationData>();
+    private List<ReferenceData> references = new ArrayList<ReferenceData>();
+    private List<StringData> strings = new ArrayList<StringData>();
+    private SortedMap<Integer, HyperlinkData> hyperlinks = new TreeMap<Integer, HyperlinkData>();
+    private Map<Integer, Integer> lineNumbers = new TreeMap<Integer, Integer>();
     private int maxLineNumber;
 
     public String getDecompiledOutput() {
@@ -79,23 +79,23 @@ public class DecompilationResult {
     public void setMaxLineNumber(int maxLineNumber) {
         this.maxLineNumber = maxLineNumber;
     }
-    
+
     public void addString(StringData stringData) {
         strings.add(stringData);
     }
-    
+
     public void addDeclaration(String internalTypeName, DeclarationData declarationData) {
         declarations.put(internalTypeName, declarationData);
     }
-    
+
     public void addTypeDeclaration(int position, DeclarationData declarationData) {
         typeDeclarations.put(position, declarationData);
     }
-    
+
     public void addHyperLink(int position, HyperlinkData hyperlinkData) {
         hyperlinks.put(position, hyperlinkData);
     }
-    
+
     public void putLineNumber(int lineNumber, int sourceLineNumber) {
         lineNumbers.put(lineNumber, sourceLineNumber);
     }

@@ -26,6 +26,6 @@ public class ReturnStatementTest {
         // Assert
         assertEquals(1, visitor.getReturnStatementCount());
         assertTrue(returnStatement.isReturnStatement());
-        assertEquals("ReturnStatement{}", returnStatement.toString());
+        assertEquals("ReturnStatement{}", returnStatement.toString()); //$NON-NLS-1$
     }
 }

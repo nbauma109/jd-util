@@ -39,7 +39,7 @@ public class FieldDeclarationTest {
         assertEquals(1, testVisitor.getFieldDeclarationCount());
 
         // ToString
-        assertEquals("FieldDeclaration{" + type + " " + fieldDeclarators + "}", fieldDeclaration.toString());
+        assertEquals("FieldDeclaration{" + type + " " + fieldDeclarators + "}", fieldDeclaration.toString()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Test

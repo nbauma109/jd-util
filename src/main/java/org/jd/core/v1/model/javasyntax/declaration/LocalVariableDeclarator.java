@@ -55,6 +55,6 @@ public class LocalVariableDeclarator implements BaseLocalVariableDeclarator {
 
     @Override
     public String toString() {
-        return "LocalVariableDeclarator{name=" + name + ", dimension" + dimension + ", variableInitializer=" + variableInitializer + "}";
+        return "LocalVariableDeclarator{name=" + name + ", dimension" + dimension + ", variableInitializer=" + variableInitializer + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 }

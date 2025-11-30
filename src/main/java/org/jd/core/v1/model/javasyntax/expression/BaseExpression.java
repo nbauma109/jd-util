@@ -10,8 +10,6 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.util.Base;
 
-import static org.jd.core.v1.model.javasyntax.expression.NoExpression.NO_EXPRESSION;
-
 public interface BaseExpression extends Base<Expression> {
     void accept(ExpressionVisitor visitor);
 
@@ -42,16 +40,16 @@ public interface BaseExpression extends Base<Expression> {
     default boolean isTernaryOperatorExpression() { return false; }
     default boolean isThisExpression() { return false; }
 
-    default BaseExpression getDimensionExpressionList() { return NO_EXPRESSION; }
-    default BaseExpression getParameters() { return NO_EXPRESSION; }
+    default BaseExpression getDimensionExpressionList() { return NoExpression.NO_EXPRESSION; }
+    default BaseExpression getParameters() { return NoExpression.NO_EXPRESSION; }
 
-    default Expression getCondition() { return NO_EXPRESSION; }
-    default Expression getExpression() { return NO_EXPRESSION; }
-    default Expression getTrueExpression() { return NO_EXPRESSION; }
-    default Expression getFalseExpression() { return NO_EXPRESSION; }
-    default Expression getIndex() { return NO_EXPRESSION; }
-    default Expression getLeftExpression() { return NO_EXPRESSION; }
-    default Expression getRightExpression() { return NO_EXPRESSION; }
+    default Expression getCondition() { return NoExpression.NO_EXPRESSION; }
+    default Expression getExpression() { return NoExpression.NO_EXPRESSION; }
+    default Expression getTrueExpression() { return NoExpression.NO_EXPRESSION; }
+    default Expression getFalseExpression() { return NoExpression.NO_EXPRESSION; }
+    default Expression getIndex() { return NoExpression.NO_EXPRESSION; }
+    default Expression getLeftExpression() { return NoExpression.NO_EXPRESSION; }
+    default Expression getRightExpression() { return NoExpression.NO_EXPRESSION; }
 
     default String getDescriptor() { return ""; }
     default double getDoubleValue() { return 0D; }

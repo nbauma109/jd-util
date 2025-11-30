@@ -16,9 +16,9 @@ public class ClassFileTest {
 
     @Test
     public void testClassFile() throws Exception {
-        JavaClass outerJavaClass = Repository.lookupClass("java.util.Map");
-        JavaClass innerJavaClass = Repository.lookupClass("java.util.Map$Entry");
-        
+        JavaClass outerJavaClass = Repository.lookupClass("java.util.Map"); //$NON-NLS-1$
+        JavaClass innerJavaClass = Repository.lookupClass("java.util.Map$Entry"); //$NON-NLS-1$
+
         ClassFile outerClassFile = new ClassFile(outerJavaClass);
         ClassFile innerClassFile = new ClassFile(innerJavaClass);
 
@@ -41,8 +41,8 @@ public class ClassFileTest {
         assertFalse(outerClassFile.isAInnerClass());
 
         // Verify other properties of the classes
-        assertEquals("java/util/Map", outerClassFile.getInternalTypeName());
-        assertEquals("java/util/Map$Entry", innerClassFile.getInternalTypeName());
+        assertEquals("java/util/Map", outerClassFile.getInternalTypeName()); //$NON-NLS-1$
+        assertEquals("java/util/Map$Entry", innerClassFile.getInternalTypeName()); //$NON-NLS-1$
         assertTrue(innerClassFile.isInterface());
         assertFalse(innerClassFile.isEnum());
         assertTrue(innerClassFile.isAbstract());
@@ -90,7 +90,7 @@ public class ClassFileTest {
         assertNotNull(outerClassFile.getAttribute(Const.ATTR_SOURCE_FILE));
 
         // Verify the toString method
-        assertEquals("ClassFile{java/util/Map}", outerClassFile.toString());
-        assertEquals("ClassFile{java/util/Map$Entry}", innerClassFile.toString());
+        assertEquals("ClassFile{java/util/Map}", outerClassFile.toString()); //$NON-NLS-1$
+        assertEquals("ClassFile{java/util/Map$Entry}", innerClassFile.toString()); //$NON-NLS-1$
     }
 }

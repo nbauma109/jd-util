@@ -18,14 +18,14 @@ public class Statements extends DefaultList<Statement> implements BaseStatement 
     public Statements(List<Statement> list) {
         super(list);
         if (list.size() <= 1) {
-            throw new IllegalArgumentException("Use 'Statement' implementation instead");
+            throw new IllegalArgumentException("Use 'Statement' implementation instead"); //$NON-NLS-1$
         }
     }
 
     public Statements(Statement statement, Statement... statements) {
         super(statement, statements);
         if (statements.length <= 0) {
-            throw new IllegalArgumentException("Use 'Statement' implementation instead");
+            throw new IllegalArgumentException("Use 'Statement' implementation instead"); //$NON-NLS-1$
         }
     }
 

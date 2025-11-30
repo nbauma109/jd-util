@@ -15,7 +15,7 @@ public class AssertStatementTest {
     public void testAssertStatement() {
         // Test constructor
         Expression condition = new IntegerConstantExpression(1, 1);
-        Expression message = new StringConstantExpression("Assertion failed");
+        Expression message = new StringConstantExpression("Assertion failed"); //$NON-NLS-1$
         AssertStatement assertStatement = new AssertStatement(condition, message);
 
         assertTrue(assertStatement.getCondition() instanceof IntegerConstantExpression);

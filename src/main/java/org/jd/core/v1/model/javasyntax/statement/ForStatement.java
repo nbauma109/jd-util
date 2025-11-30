@@ -72,6 +72,6 @@ public class ForStatement implements Statement {
 
     @Override
     public String toString() {
-        return "ForStatement{" + declaration + " or " + init + "; " + condition + "; " + update + "}";
+        return "ForStatement{" + declaration + " or " + init + "; " + condition + "; " + update + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 }

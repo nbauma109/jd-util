@@ -59,6 +59,6 @@ public class ReturnExpressionStatement implements Statement {
 
     @Override
     public String toString() {
-        return "ReturnExpressionStatement{return " + expression + "}";
+        return "ReturnExpressionStatement{return " + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

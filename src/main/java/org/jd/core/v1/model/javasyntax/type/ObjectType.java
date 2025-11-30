@@ -15,44 +15,44 @@ import java.util.Objects;
 import java.util.Set;
 
 public class ObjectType implements Type {
-    public static final ObjectType TYPE_BOOLEAN           = new ObjectType(StringConstants.JAVA_LANG_BOOLEAN, "java.lang.Boolean", "Boolean");
-    public static final ObjectType TYPE_BYTE              = new ObjectType(StringConstants.JAVA_LANG_BYTE, "java.lang.Byte", "Byte");
-    public static final ObjectType TYPE_CHARACTER         = new ObjectType(StringConstants.JAVA_LANG_CHARACTER, "java.lang.Character", "Character");
-    public static final ObjectType TYPE_CLASS             = new ObjectType(StringConstants.JAVA_LANG_CLASS, "java.lang.Class", "Class");
-    public static final ObjectType TYPE_CLASS_WILDCARD    = TYPE_CLASS.createType(WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT);
-    public static final ObjectType TYPE_DATE              = new ObjectType(StringConstants.JAVA_UTIL_DATE, "java.util.Date", "Date");
-    public static final ObjectType TYPE_DOUBLE            = new ObjectType(StringConstants.JAVA_LANG_DOUBLE, "java.lang.Double", "Double");
-    public static final ObjectType TYPE_ENUM              = new ObjectType(StringConstants.JAVA_LANG_ENUM, "java.lang.Enum", "Enum");
-    public static final ObjectType TYPE_EXCEPTION         = new ObjectType(StringConstants.JAVA_LANG_EXCEPTION, "java.lang.Exception", "Exception");
-    public static final ObjectType TYPE_FLOAT             = new ObjectType(StringConstants.JAVA_LANG_FLOAT, "java.lang.Float", "Float");
-    public static final ObjectType TYPE_INTEGER           = new ObjectType(StringConstants.JAVA_LANG_INTEGER, "java.lang.Integer", "Integer");
-    public static final ObjectType TYPE_ITERABLE          = new ObjectType(StringConstants.JAVA_LANG_ITERABLE, "java.lang.Iterable", "Iterable");
-    public static final ObjectType TYPE_LONG              = new ObjectType(StringConstants.JAVA_LANG_LONG, "java.lang.Long", "Long");
-    public static final ObjectType TYPE_MATH              = new ObjectType(StringConstants.JAVA_LANG_MATH, "java.lang.Math", "Math");
-    public static final ObjectType TYPE_NUMBER            = new ObjectType(StringConstants.JAVA_LANG_NUMBER, "java.lang.Number", "Number");
-    public static final ObjectType TYPE_OBJECT            = new ObjectType(StringConstants.JAVA_LANG_OBJECT, "java.lang.Object", "Object");
-    public static final ObjectType TYPE_RUNTIME_EXCEPTION = new ObjectType(StringConstants.JAVA_LANG_RUNTIME_EXCEPTION, "java.lang.RuntimeException", "RuntimeException");
-    public static final ObjectType TYPE_SHORT             = new ObjectType(StringConstants.JAVA_LANG_SHORT, "java.lang.Short", "Short");
-    public static final ObjectType TYPE_STRING            = new ObjectType(StringConstants.JAVA_LANG_STRING, "java.lang.String", "String");
-    public static final ObjectType TYPE_STRING_BUFFER     = new ObjectType(StringConstants.JAVA_LANG_STRING_BUFFER, "java.lang.StringBuffer", "StringBuffer");
-    public static final ObjectType TYPE_STRING_BUILDER    = new ObjectType(StringConstants.JAVA_LANG_STRING_BUILDER, "java.lang.StringBuilder", "StringBuilder");
-    public static final ObjectType TYPE_SYSTEM            = new ObjectType(StringConstants.JAVA_LANG_SYSTEM, "java.lang.System", "System");
-    public static final ObjectType TYPE_THREAD            = new ObjectType(StringConstants.JAVA_LANG_THREAD, "java.lang.Thread", "Thread");
-    public static final ObjectType TYPE_THROWABLE         = new ObjectType(StringConstants.JAVA_LANG_THROWABLE, "java.lang.Throwable", "Throwable");
+    public static final ObjectType TYPE_BOOLEAN           = new ObjectType(StringConstants.JAVA_LANG_BOOLEAN, "java.lang.Boolean", "Boolean"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_BYTE              = new ObjectType(StringConstants.JAVA_LANG_BYTE, "java.lang.Byte", "Byte"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_CHARACTER         = new ObjectType(StringConstants.JAVA_LANG_CHARACTER, "java.lang.Character", "Character"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_CLASS             = new ObjectType(StringConstants.JAVA_LANG_CLASS, "java.lang.Class", "Class"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_CLASS_WILDCARD    = ObjectType.TYPE_CLASS.createType(WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT);
+    public static final ObjectType TYPE_DATE              = new ObjectType(StringConstants.JAVA_UTIL_DATE, "java.util.Date", "Date"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_DOUBLE            = new ObjectType(StringConstants.JAVA_LANG_DOUBLE, "java.lang.Double", "Double"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_ENUM              = new ObjectType(StringConstants.JAVA_LANG_ENUM, "java.lang.Enum", "Enum"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_EXCEPTION         = new ObjectType(StringConstants.JAVA_LANG_EXCEPTION, "java.lang.Exception", "Exception"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_FLOAT             = new ObjectType(StringConstants.JAVA_LANG_FLOAT, "java.lang.Float", "Float"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_INTEGER           = new ObjectType(StringConstants.JAVA_LANG_INTEGER, "java.lang.Integer", "Integer"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_ITERABLE          = new ObjectType(StringConstants.JAVA_LANG_ITERABLE, "java.lang.Iterable", "Iterable"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_LONG              = new ObjectType(StringConstants.JAVA_LANG_LONG, "java.lang.Long", "Long"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_MATH              = new ObjectType(StringConstants.JAVA_LANG_MATH, "java.lang.Math", "Math"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_NUMBER            = new ObjectType(StringConstants.JAVA_LANG_NUMBER, "java.lang.Number", "Number"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_OBJECT            = new ObjectType(StringConstants.JAVA_LANG_OBJECT, "java.lang.Object", "Object"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_RUNTIME_EXCEPTION = new ObjectType(StringConstants.JAVA_LANG_RUNTIME_EXCEPTION, "java.lang.RuntimeException", "RuntimeException"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_SHORT             = new ObjectType(StringConstants.JAVA_LANG_SHORT, "java.lang.Short", "Short"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_STRING            = new ObjectType(StringConstants.JAVA_LANG_STRING, "java.lang.String", "String"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_STRING_BUFFER     = new ObjectType(StringConstants.JAVA_LANG_STRING_BUFFER, "java.lang.StringBuffer", "StringBuffer"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_STRING_BUILDER    = new ObjectType(StringConstants.JAVA_LANG_STRING_BUILDER, "java.lang.StringBuilder", "StringBuilder"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_SYSTEM            = new ObjectType(StringConstants.JAVA_LANG_SYSTEM, "java.lang.System", "System"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_THREAD            = new ObjectType(StringConstants.JAVA_LANG_THREAD, "java.lang.Thread", "Thread"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final ObjectType TYPE_THROWABLE         = new ObjectType(StringConstants.JAVA_LANG_THROWABLE, "java.lang.Throwable", "Throwable"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final ObjectType TYPE_PRIMITIVE_BOOLEAN = new ObjectType("Z");
-    public static final ObjectType TYPE_PRIMITIVE_BYTE    = new ObjectType("B");
-    public static final ObjectType TYPE_PRIMITIVE_CHAR    = new ObjectType("C");
-    public static final ObjectType TYPE_PRIMITIVE_DOUBLE  = new ObjectType("D");
-    public static final ObjectType TYPE_PRIMITIVE_FLOAT   = new ObjectType("F");
-    public static final ObjectType TYPE_PRIMITIVE_INT     = new ObjectType("I");
-    public static final ObjectType TYPE_PRIMITIVE_LONG    = new ObjectType("J");
-    public static final ObjectType TYPE_PRIMITIVE_SHORT   = new ObjectType("S");
-    public static final ObjectType TYPE_PRIMITIVE_VOID    = new ObjectType("V");
+    public static final ObjectType TYPE_PRIMITIVE_BOOLEAN = new ObjectType("Z"); //$NON-NLS-1$
+    public static final ObjectType TYPE_PRIMITIVE_BYTE    = new ObjectType("B"); //$NON-NLS-1$
+    public static final ObjectType TYPE_PRIMITIVE_CHAR    = new ObjectType("C"); //$NON-NLS-1$
+    public static final ObjectType TYPE_PRIMITIVE_DOUBLE  = new ObjectType("D"); //$NON-NLS-1$
+    public static final ObjectType TYPE_PRIMITIVE_FLOAT   = new ObjectType("F"); //$NON-NLS-1$
+    public static final ObjectType TYPE_PRIMITIVE_INT     = new ObjectType("I"); //$NON-NLS-1$
+    public static final ObjectType TYPE_PRIMITIVE_LONG    = new ObjectType("J"); //$NON-NLS-1$
+    public static final ObjectType TYPE_PRIMITIVE_SHORT   = new ObjectType("S"); //$NON-NLS-1$
+    public static final ObjectType TYPE_PRIMITIVE_VOID    = new ObjectType("V"); //$NON-NLS-1$
 
-    public static final ObjectType TYPE_UNDEFINED_OBJECT = new ObjectType(StringConstants.JAVA_LANG_OBJECT, "java.lang.Object", "Object") {
+    public static final ObjectType TYPE_UNDEFINED_OBJECT = new ObjectType(StringConstants.JAVA_LANG_OBJECT, "java.lang.Object", "Object") { //$NON-NLS-1$ //$NON-NLS-2$
         @Override
-        public String toString() { return "UndefinedObjectType"; }
+        public String toString() { return "UndefinedObjectType"; } //$NON-NLS-1$
     };
 
     protected final String internalName;
@@ -79,30 +79,30 @@ public class ObjectType implements Type {
     public ObjectType(String internalName, String qualifiedName, String name) {
         this(internalName, qualifiedName, name, Collections.emptySet(), null, 0);
     }
-    
+
     public ObjectType(String internalName, String qualifiedName, String name, int dimension) {
         this(internalName, qualifiedName, name, Collections.emptySet(), null, dimension);
     }
-    
+
     public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments) {
         this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, 0);
     }
-    
+
     public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension) {
         this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
     }
-    
+
     public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, int dimension) {
         this.internalName = internalName;
         this.qualifiedName = qualifiedName;
         this.name = name;
         this.typeArguments = typeArguments;
         this.dimension = dimension;
-        this.descriptor = createDescriptor("L" + internalName + ';', dimension);
+        this.descriptor = ObjectType.createDescriptor("L" + internalName + ';', dimension); //$NON-NLS-1$
         this.innerTypeNames = innerTypeNames;
 
-        if (internalName == null || internalName.endsWith(";")) {
-            throw new IllegalArgumentException("internal name is null or ends with ;");
+        if (internalName == null || internalName.endsWith(";")) { //$NON-NLS-1$
+            throw new IllegalArgumentException("internal name is null or ends with ;"); //$NON-NLS-1$
         }
     }
 
@@ -114,7 +114,7 @@ public class ObjectType implements Type {
         this.internalName = primitiveDescriptor;
         this.qualifiedName = this.name = PrimitiveType.getPrimitiveType(primitiveDescriptor.charAt(0)).getName();
         this.dimension = dimension;
-        this.descriptor = createDescriptor(primitiveDescriptor, dimension);
+        this.descriptor = ObjectType.createDescriptor(primitiveDescriptor, dimension);
         this.typeArguments = null;
         this.innerTypeNames = Collections.emptySet();
     }
@@ -122,8 +122,8 @@ public class ObjectType implements Type {
     protected static String createDescriptor(String descriptor, int dimension) {
         return switch (dimension) {
             case 0  -> descriptor;
-            case 1  -> "[" + descriptor;
-            case 2  -> "[[" + descriptor;
+            case 1  -> "[" + descriptor; //$NON-NLS-1$
+            case 2  -> "[[" + descriptor; //$NON-NLS-1$
             default -> new String(new char[dimension]).replace('\0', '[') + descriptor;
         };
     }
@@ -159,7 +159,7 @@ public class ObjectType implements Type {
     @Override
     public Type createType(int dimension) {
         if (dimension < 0) {
-            throw new IllegalArgumentException("ObjectType.createType(dim) : create type with negative dimension");
+            throw new IllegalArgumentException("ObjectType.createType(dim) : create type with negative dimension"); //$NON-NLS-1$
         }
 
         if (this.dimension == dimension) {
@@ -285,14 +285,14 @@ public class ObjectType implements Type {
     public boolean isObjectTypeArgument() {
         return true;
     }
-    
+
     public Set<String> getInnerTypeNames() {
         return innerTypeNames;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("ObjectType{");
+        StringBuilder sb = new StringBuilder("ObjectType{"); //$NON-NLS-1$
 
         sb.append(internalName);
 
@@ -301,7 +301,7 @@ public class ObjectType implements Type {
         }
 
         if (dimension > 0) {
-            sb.append(", dimension=").append(dimension);
+            sb.append(", dimension=").append(dimension); //$NON-NLS-1$
         }
 
         return sb.append('}').toString();

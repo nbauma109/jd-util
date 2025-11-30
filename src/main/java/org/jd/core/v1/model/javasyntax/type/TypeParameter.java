@@ -25,6 +25,6 @@ public class TypeParameter implements BaseTypeParameter {
 
     @Override
     public String toString() {
-        return "TypeParameter{identifier=" + identifier + "}";
+        return "TypeParameter{identifier=" + identifier + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

@@ -14,7 +14,7 @@ public class LengthExpressionTest {
     public void testLengthExpression() {
         // Array expression
         ObjectType type = (ObjectType) ObjectType.TYPE_PRIMITIVE_INT.createType(1);
-        String name = "array";
+        String name = "array"; //$NON-NLS-1$
         Expression expression = new LocalVariableReferenceExpression(type, name);
         int lineNumber = 0;
         Expression index = new IntegerConstantExpression(lineNumber, PrimitiveType.TYPE_INT, 0);
@@ -32,7 +32,7 @@ public class LengthExpressionTest {
         assertTrue(lengthExpression.isLengthExpression());
 
         // Test toString
-        assertEquals("LengthExpression{ArrayExpression{LocalVariableReferenceExpression{type=ObjectType{I, dimension=1}, name=array}[IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=0}]}}", lengthExpression.toString());
+        assertEquals("LengthExpression{ArrayExpression{LocalVariableReferenceExpression{type=ObjectType{I, dimension=1}, name=array}[IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=0}]}}", lengthExpression.toString()); //$NON-NLS-1$
 
         // Test copyTo
         LengthExpression copiedExpression = (LengthExpression) lengthExpression.copyTo(20);

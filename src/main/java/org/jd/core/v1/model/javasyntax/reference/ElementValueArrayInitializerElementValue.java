@@ -29,6 +29,6 @@ public class ElementValueArrayInitializerElementValue implements BaseElementValu
 
     @Override
     public String toString() {
-        return "ElementValueArrayInitializerElementValue{" + elementValueArrayInitializer + "}";
+        return "ElementValueArrayInitializerElementValue{" + elementValueArrayInitializer + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

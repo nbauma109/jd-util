@@ -13,7 +13,7 @@ public class PreOperatorExpressionTest {
     @Test
     public void testPreOperatorExpression() {
         Expression expression = new IntegerConstantExpression(10, PrimitiveType.TYPE_INT, 5);
-        String operator = "++";
+        String operator = "++"; //$NON-NLS-1$
         PreOperatorExpression preOperatorExpression = new PreOperatorExpression(10, operator, expression);
 
         // Test getOperator
@@ -33,7 +33,7 @@ public class PreOperatorExpressionTest {
         assertTrue(preOperatorExpression.isPreOperatorExpression());
 
         // Test toString
-        assertEquals("PreOperatorExpression{++ IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=5}}", preOperatorExpression.toString());
+        assertEquals("PreOperatorExpression{++ IntegerConstantExpression{type=PrimitiveType{primitive=int}, value=5}}", preOperatorExpression.toString()); //$NON-NLS-1$
 
         // Test copyTo
         PreOperatorExpression copiedExpression = (PreOperatorExpression) preOperatorExpression.copyTo(20);

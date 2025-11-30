@@ -31,10 +31,10 @@ public class MethodInvocationExpressionTest {
 
     @Test
     public void testMethodInvocationExpression() {
-        String internalTypeName = "java/lang/String";
-        String name = "testMethod";
-        String descriptor = "(Ljava/lang/String;)V";
-        Expression expression = new StringConstantExpression("Expression");
+        String internalTypeName = "java/lang/String"; //$NON-NLS-1$
+        String name = "testMethod"; //$NON-NLS-1$
+        String descriptor = "(Ljava/lang/String;)V"; //$NON-NLS-1$
+        Expression expression = new StringConstantExpression("Expression"); //$NON-NLS-1$
 
         Type type = typeMaker.makeFromInternalTypeName(internalTypeName);
         MethodTypes methodTypes = typeMaker.makeMethodTypes(internalTypeName, name, descriptor);
@@ -55,7 +55,7 @@ public class MethodInvocationExpressionTest {
         assertEquals(nonWildcardTypeArgument, methodInvocationExpression.getNonWildcardTypeArguments());
 
         // Set and get parameters
-        BaseExpression baseExpression = new StringConstantExpression("Params");
+        BaseExpression baseExpression = new StringConstantExpression("Params"); //$NON-NLS-1$
         methodInvocationExpression.setParameters(baseExpression);
         assertEquals(baseExpression, methodInvocationExpression.getParameters());
 
@@ -63,14 +63,14 @@ public class MethodInvocationExpressionTest {
         assertEquals(1, methodInvocationExpression.getPriority());
 
         // Set and get typeBounds
-        Map<String, BaseType> typeBounds = new HashMap<>();
-        typeBounds.put("key", type);
+        Map<String, BaseType> typeBounds = new HashMap<String, BaseType>();
+        typeBounds.put("key", type); //$NON-NLS-1$
         methodInvocationExpression.setTypeBounds(typeBounds);
         assertEquals(typeBounds, methodInvocationExpression.getTypeBounds());
 
         // Set and get typeBindings
-        Map<String, TypeArgument> typeBindings = new HashMap<>();
-        typeBindings.put("key", ObjectType.TYPE_STRING);
+        Map<String, TypeArgument> typeBindings = new HashMap<String, TypeArgument>();
+        typeBindings.put("key", ObjectType.TYPE_STRING); //$NON-NLS-1$
         methodInvocationExpression.setTypeBindings(typeBindings);
         assertEquals(typeBindings, methodInvocationExpression.getTypeBindings());
 
@@ -78,7 +78,7 @@ public class MethodInvocationExpressionTest {
         assertTrue(methodInvocationExpression.isMethodInvocationExpression());
 
         // Check toString
-        assertEquals("MethodInvocationExpression{call " + expression + " . " + name + "(" + descriptor + ")}", methodInvocationExpression.toString());
+        assertEquals("MethodInvocationExpression{call " + expression + " . " + name + "(" + descriptor + ")}", methodInvocationExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
         // Check accept
         TestVisitor testVisitor = new TestVisitor();
@@ -96,17 +96,17 @@ public class MethodInvocationExpressionTest {
 
     @Test
     public void testMethodReferenceExpression() {
-        String internalTypeName = "java/lang/String";
-        String name = "testMethod";
-        String descriptor = "(Ljava/lang/String;)V";
-        Expression expression = new StringConstantExpression("Expression");
+        String internalTypeName = "java/lang/String"; //$NON-NLS-1$
+        String name = "testMethod"; //$NON-NLS-1$
+        String descriptor = "(Ljava/lang/String;)V"; //$NON-NLS-1$
+        Expression expression = new StringConstantExpression("Expression"); //$NON-NLS-1$
 
         Type type = typeMaker.makeFromInternalTypeName(internalTypeName);
 
         MethodReferenceExpression methodReferenceExpression = new MethodReferenceExpression(type, expression, internalTypeName, name, descriptor);
 
         // Check toString
-        assertEquals("MethodReferenceExpression{call " + expression + " :: " + name + "(" + descriptor + ")}", methodReferenceExpression.toString());
+        assertEquals("MethodReferenceExpression{call " + expression + " :: " + name + "(" + descriptor + ")}", methodReferenceExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
         // Check accept
         TestVisitor testVisitor = new TestVisitor();

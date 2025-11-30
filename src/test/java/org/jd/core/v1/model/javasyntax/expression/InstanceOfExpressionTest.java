@@ -12,7 +12,7 @@ public class InstanceOfExpressionTest {
 
     @Test
     public void testInstanceOfExpression() {
-        Expression expression = new LocalVariableReferenceExpression(ObjectType.TYPE_STRING, "var");
+        Expression expression = new LocalVariableReferenceExpression(ObjectType.TYPE_STRING, "var"); //$NON-NLS-1$
         Type instanceOfType = ObjectType.TYPE_ITERABLE;
         int lineNumber = 10;
 

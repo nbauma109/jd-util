@@ -27,6 +27,6 @@ public class ElementValuePairs extends DefaultList<ElementValuePair> implements 
 
     @Override
     public String toString() {
-        return "ElementValuePairs{" + super.toString() + "}";
+        return "ElementValuePairs{" + super.toString() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

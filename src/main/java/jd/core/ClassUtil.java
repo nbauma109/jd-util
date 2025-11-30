@@ -25,7 +25,7 @@ public final class ClassUtil {
 
     public static String getInternalName(String s) {
         if (s == null || !s.endsWith(StringConstants.CLASS_FILE_SUFFIX)) {
-            throw new IllegalArgumentException("Not a .class file: " + s);
+            throw new IllegalArgumentException("Not a .class file: " + s); //$NON-NLS-1$
         }
         return s.substring(0, s.length() - 6); // 6 = ".class".length()
     }

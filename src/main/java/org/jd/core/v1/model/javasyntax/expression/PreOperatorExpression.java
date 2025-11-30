@@ -53,7 +53,7 @@ public class PreOperatorExpression extends AbstractLineNumberExpression {
 
     @Override
     public String toString() {
-        return "PreOperatorExpression{" + operator + " " + expression + "}";
+        return "PreOperatorExpression{" + operator + " " + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

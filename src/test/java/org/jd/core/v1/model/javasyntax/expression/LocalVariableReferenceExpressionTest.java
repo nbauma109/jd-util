@@ -13,7 +13,7 @@ public class LocalVariableReferenceExpressionTest {
     public void testLocalVariableReferenceExpression() {
         // Arrange
         Type type = ObjectType.TYPE_OBJECT;
-        String name = "variable";
+        String name = "variable"; //$NON-NLS-1$
         int lineNumber = 0;
 
         // Act
@@ -32,7 +32,7 @@ public class LocalVariableReferenceExpressionTest {
         assertNotEquals(localVariableReferenceExpression.getLineNumber(), copy.getLineNumber());
 
         // Test setName
-        String newName = "newVariable";
+        String newName = "newVariable"; //$NON-NLS-1$
         localVariableReferenceExpression.setName(newName);
         assertEquals(newName, localVariableReferenceExpression.getName());
 
@@ -42,7 +42,7 @@ public class LocalVariableReferenceExpressionTest {
         assertEquals(1, visitor.getLocalVariableReferenceExpressionCount());
 
         // Test toString method
-        String expectedToString = "LocalVariableReferenceExpression{type=" + type + ", name=" + newName + "}";
+        String expectedToString = "LocalVariableReferenceExpression{type=" + type + ", name=" + newName + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         assertEquals(expectedToString, localVariableReferenceExpression.toString());
     }
 }

@@ -10,7 +10,7 @@ public class PrimitiveTypeTest {
 
     @Test
     public void test() throws Exception {
-        assertEquals("Z", PrimitiveType.TYPE_BOOLEAN.getDescriptor());
+        assertEquals("Z", PrimitiveType.TYPE_BOOLEAN.getDescriptor()); //$NON-NLS-1$
         assertTrue(PrimitiveType.TYPE_BOOLEAN.isPrimitiveTypeArgument());
         assertThrows(IllegalArgumentException.class, () -> PrimitiveType.TYPE_BOOLEAN.createType(-1));
         assertEquals(PrimitiveType.FLAG_BOOLEAN, PrimitiveType.TYPE_BOOLEAN.getLeftFlags());

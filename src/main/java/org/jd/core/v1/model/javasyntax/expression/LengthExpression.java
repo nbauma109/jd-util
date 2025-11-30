@@ -14,7 +14,7 @@ public class LengthExpression extends AbstractLineNumberExpression {
     private Expression expression;
 
     public LengthExpression(Expression expression) {
-        this(UNKNOWN_LINE_NUMBER, expression);
+        this(Expression.UNKNOWN_LINE_NUMBER, expression);
     }
 
     public LengthExpression(int lineNumber, Expression expression) {
@@ -46,7 +46,7 @@ public class LengthExpression extends AbstractLineNumberExpression {
 
     @Override
     public String toString() {
-        return "LengthExpression{" + expression + "}";
+        return "LengthExpression{" + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

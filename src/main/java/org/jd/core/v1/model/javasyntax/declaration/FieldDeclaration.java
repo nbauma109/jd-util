@@ -80,6 +80,6 @@ public class FieldDeclaration implements MemberDeclaration {
 
     @Override
     public String toString() {
-        return "FieldDeclaration{" + type + " " + fieldDeclarators + "}";
+        return "FieldDeclaration{" + type + " " + fieldDeclarators + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

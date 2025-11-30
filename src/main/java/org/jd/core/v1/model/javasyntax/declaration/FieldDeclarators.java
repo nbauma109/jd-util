@@ -18,7 +18,7 @@ public class FieldDeclarators extends DefaultList<FieldDeclarator> implements Ba
     public FieldDeclarators(FieldDeclarator declarator, FieldDeclarator... declarators) {
         super(declarator, declarators);
         if (declarators.length <= 0) {
-            throw new IllegalArgumentException("Use 'FieldDeclarator' instead");
+            throw new IllegalArgumentException("Use 'FieldDeclarator' instead"); //$NON-NLS-1$
         }
     }
 

@@ -27,7 +27,7 @@ public class SuperExpressionTest {
         Assert.assertEquals(1, visitor.getSuperExpressionCount());
 
         // Test toString method
-        String expectedToString = "SuperExpression{" + type + "}";
+        String expectedToString = "SuperExpression{" + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
         Assert.assertEquals(expectedToString, expression.toString());
 
         // Test copyTo method

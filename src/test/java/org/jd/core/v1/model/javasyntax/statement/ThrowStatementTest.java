@@ -16,22 +16,22 @@ public class ThrowStatementTest {
     public void testThrowStatement() {
         // Test constructor
         TypeMaker typeMaker = new TypeMaker();
-        ObjectType type = typeMaker.makeFromInternalTypeName("java/lang/RuntimeException");
-        NewExpression newExpression = new NewExpression(1, type, "(Ljava/lang/String;)V", false, false);
-        newExpression.setParameters(new StringConstantExpression("Error"));
+        ObjectType type = typeMaker.makeFromInternalTypeName("java/lang/RuntimeException"); //$NON-NLS-1$
+        NewExpression newExpression = new NewExpression(1, type, "(Ljava/lang/String;)V", false, false); //$NON-NLS-1$
+        newExpression.setParameters(new StringConstantExpression("Error")); //$NON-NLS-1$
         ThrowStatement throwStatement = new ThrowStatement(newExpression);
 
         assertTrue(throwStatement.getExpression() instanceof NewExpression);
         assertTrue(throwStatement.isThrowStatement());
 
         // Test setExpression method
-        NewExpression newNewExpression = new NewExpression(2, type, "(Ljava/lang/String;)V", false, false);
-        newNewExpression.setParameters(new StringConstantExpression("New Error"));
+        NewExpression newNewExpression = new NewExpression(2, type, "(Ljava/lang/String;)V", false, false); //$NON-NLS-1$
+        newNewExpression.setParameters(new StringConstantExpression("New Error")); //$NON-NLS-1$
         throwStatement.setExpression(newNewExpression);
         assertTrue(throwStatement.getExpression() instanceof NewExpression);
 
         // Test toString method
-        assertEquals("ThrowStatement{throw NewExpression{new ObjectType{java/lang/RuntimeException}}}", throwStatement.toString());
+        assertEquals("ThrowStatement{throw NewExpression{new ObjectType{java/lang/RuntimeException}}}", throwStatement.toString()); //$NON-NLS-1$
 
         // Test the accept method with a simple visitor
         TestVisitor visitor = new TestVisitor();

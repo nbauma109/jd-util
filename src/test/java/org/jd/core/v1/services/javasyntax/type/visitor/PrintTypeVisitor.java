@@ -59,7 +59,7 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
             arguments.get(0).accept(this);
 
             for (int i=1; i<size; i++) {
-                sb.append(", ");
+                sb.append(", "); //$NON-NLS-1$
                 arguments.get(i).accept(this);
             }
         }
@@ -67,7 +67,7 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
 
     @Override
     public void visit(Types types) {
-        printList(types, ", ");
+        printList(types, ", "); //$NON-NLS-1$
     }
 
     @Override
@@ -75,7 +75,7 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
 
     @Override
     public void visit(WildcardExtendsTypeArgument argument) {
-        sb.append("? extends ");
+        sb.append("? extends "); //$NON-NLS-1$
 
         BaseType type = argument.type();
 
@@ -85,15 +85,15 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
     @Override
     public void visit(PrimitiveType type) {
         switch (type.getJavaPrimitiveFlags()) {
-            case FLAG_BOOLEAN: sb.append("boolean"); break;
-            case FLAG_CHAR: sb.append("char");    break;
-            case FLAG_FLOAT: sb.append("float");   break;
-            case FLAG_DOUBLE: sb.append("double");  break;
-            case FLAG_BYTE: sb.append("byte");    break;
-            case FLAG_SHORT: sb.append("short");   break;
-            case FLAG_INT: sb.append("int");     break;
-            case FLAG_LONG: sb.append("long");    break;
-            case FLAG_VOID: sb.append("void");    break;
+            case FLAG_BOOLEAN: sb.append("boolean"); break; //$NON-NLS-1$
+            case FLAG_CHAR: sb.append("char");    break; //$NON-NLS-1$
+            case FLAG_FLOAT: sb.append("float");   break; //$NON-NLS-1$
+            case FLAG_DOUBLE: sb.append("double");  break; //$NON-NLS-1$
+            case FLAG_BYTE: sb.append("byte");    break; //$NON-NLS-1$
+            case FLAG_SHORT: sb.append("short");   break; //$NON-NLS-1$
+            case FLAG_INT: sb.append("int");     break; //$NON-NLS-1$
+            case FLAG_LONG: sb.append("long");    break; //$NON-NLS-1$
+            case FLAG_VOID: sb.append("void");    break; //$NON-NLS-1$
         }
 
         printDimension(type.getDimension());
@@ -129,7 +129,7 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
 
     @Override
     public void visit(WildcardSuperTypeArgument argument) {
-        sb.append("? super ");
+        sb.append("? super "); //$NON-NLS-1$
 
         BaseType type = argument.type();
 
@@ -144,12 +144,12 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
     @Override
     public void visit(TypeParameterWithTypeBounds parameter) {
         sb.append(parameter.getIdentifier());
-        sb.append(" extends ");
+        sb.append(" extends "); //$NON-NLS-1$
 
         BaseType types = parameter.getTypeBounds();
 
         if (types.isList()) {
-            printList(types.getList(), " & ");
+            printList(types.getList(), " & "); //$NON-NLS-1$
         } else {
             BaseType type = types.getFirst();
 
@@ -165,7 +165,7 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
             parameters.get(0).accept(this);
 
             for (int i=1; i<size; i++) {
-                sb.append(", ");
+                sb.append(", "); //$NON-NLS-1$
                 parameters.get(i).accept(this);
             }
         }
@@ -200,13 +200,13 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
             case 0:
                 break;
             case 1:
-                sb.append("[]");
+                sb.append("[]"); //$NON-NLS-1$
                 break;
             case 2:
-                sb.append("[][]");
+                sb.append("[][]"); //$NON-NLS-1$
                 break;
             default:
-                sb.append(new String(new char[dimension]).replace("\0", "[]"));
+                sb.append(new String(new char[dimension]).replace("\0", "[]")); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 }

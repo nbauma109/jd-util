@@ -55,6 +55,6 @@ public record WildcardSuperTypeArgument(Type type) implements TypeArgument {
 
     @Override
     public String toString() {
-        return "WildcardSuperTypeArgument{? super " + type + "}";
+        return "WildcardSuperTypeArgument{? super " + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

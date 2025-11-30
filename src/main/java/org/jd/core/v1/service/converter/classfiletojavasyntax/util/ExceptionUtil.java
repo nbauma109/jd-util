@@ -10,7 +10,6 @@ package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 public final class ExceptionUtil {
 
     private ExceptionUtil() {
-        super();
     }
 
     public static boolean printStackTrace(Throwable throwable) {

@@ -38,6 +38,6 @@ public class ClassDeclaration extends InterfaceDeclaration {
 
     @Override
     public String toString() {
-        return "ClassDeclaration{" + internalTypeName + "}";
+        return "ClassDeclaration{" + internalTypeName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

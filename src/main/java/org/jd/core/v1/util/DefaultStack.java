@@ -67,25 +67,26 @@ public class DefaultStack<E> {
         int i = head - 1;
 
         while (i >=0 && elements[i] == old) {
-            elements[i--] = nevv;
+            elements[i] = nevv;
+			i--;
         }
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Stack{head=");
+        StringBuilder sb = new StringBuilder("Stack{head="); //$NON-NLS-1$
         sb.append(head);
-        sb.append(", elements=[");
+        sb.append(", elements=["); //$NON-NLS-1$
 
         if (head > 0) {
             sb.append(elements[0]);
             for (int i = 1; i < head; i++) {
-                sb.append(", ");
+                sb.append(", "); //$NON-NLS-1$
                 sb.append(elements[i]);
             }
         }
 
-        sb.append("]}");
+        sb.append("]}"); //$NON-NLS-1$
 
         return sb.toString();
     }

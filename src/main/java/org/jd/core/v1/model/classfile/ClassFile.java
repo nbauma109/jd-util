@@ -126,7 +126,7 @@ public class ClassFile {
     public ConstantPool getConstantPool() {
         return javaClass.getConstantPool();
     }
-    
+
     public Attribute[] getAttributes() {
         return javaClass.getAttributes();
     }
@@ -146,6 +146,6 @@ public class ClassFile {
 
     @Override
     public String toString() {
-        return "ClassFile{" + getInternalTypeName() + "}";
+        return "ClassFile{" + getInternalTypeName() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

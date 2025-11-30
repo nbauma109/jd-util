@@ -16,7 +16,7 @@ public class CastExpression extends AbstractLineNumberTypeExpression {
     private Type intersectType;
 
     public CastExpression(Type type, Expression expression) {
-        this(UNKNOWN_LINE_NUMBER, type, expression);
+        this(Expression.UNKNOWN_LINE_NUMBER, type, expression);
     }
 
     public CastExpression(int lineNumber, Type type, Expression expression) {
@@ -26,7 +26,7 @@ public class CastExpression extends AbstractLineNumberTypeExpression {
     public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit) {
         this(lineNumber, type, expression, explicit, false);
     }
-    
+
     public CastExpression(int lineNumber, Type type, Expression expression, boolean explicit, boolean byteCodeCheckCast) {
         super(lineNumber, type);
         this.expression = expression;
@@ -83,7 +83,7 @@ public class CastExpression extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "CastExpression{cast (" + getType() + ") " + expression + "}";
+        return "CastExpression{cast (" + getType() + ") " + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

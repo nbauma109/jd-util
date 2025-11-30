@@ -27,7 +27,7 @@ public class ObjectTypeReferenceExpressionTest {
         assertTrue(objectTypeReferenceExpression.isObjectTypeReferenceExpression());
 
         // toString method
-        String expectedToString = "ObjectTypeReferenceExpression{" + type + "}";
+        String expectedToString = "ObjectTypeReferenceExpression{" + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
         assertEquals(expectedToString, objectTypeReferenceExpression.toString());
 
         // copyTo method

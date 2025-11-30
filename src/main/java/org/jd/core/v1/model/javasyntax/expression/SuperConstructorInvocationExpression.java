@@ -23,7 +23,7 @@ public class SuperConstructorInvocationExpression extends ConstructorReferenceEx
     public boolean isVarArgs() {
         return varArgs;
     }
-    
+
     @Override
     public BaseExpression getParameters() {
         return parameters;
@@ -48,6 +48,6 @@ public class SuperConstructorInvocationExpression extends ConstructorReferenceEx
 
     @Override
     public String toString() {
-        return "SuperConstructorInvocationExpression{call super(" + descriptor + ")}";
+        return "SuperConstructorInvocationExpression{call super(" + descriptor + ")}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

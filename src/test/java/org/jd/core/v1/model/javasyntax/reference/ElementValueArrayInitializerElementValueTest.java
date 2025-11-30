@@ -14,14 +14,14 @@ public class ElementValueArrayInitializerElementValueTest {
 
         // Assert
         assertNull(noArgsElementValue.getElementValueArrayInitializer());
-        assertEquals("ElementValueArrayInitializerElementValue{null}", noArgsElementValue.toString());
+        assertEquals("ElementValueArrayInitializerElementValue{null}", noArgsElementValue.toString()); //$NON-NLS-1$
 
         // Act
         ElementValueArrayInitializerElementValue elementValueArrayInitializerElementValue = new ElementValueArrayInitializerElementValue();
 
         // Assert
         assertNull(elementValueArrayInitializerElementValue.getElementValueArrayInitializer());
-        assertEquals("ElementValueArrayInitializerElementValue{null}", elementValueArrayInitializerElementValue.toString());
+        assertEquals("ElementValueArrayInitializerElementValue{null}", elementValueArrayInitializerElementValue.toString()); //$NON-NLS-1$
 
         // Act & Assert for visitor
         TestReferenceVisitor visitor = new TestReferenceVisitor();

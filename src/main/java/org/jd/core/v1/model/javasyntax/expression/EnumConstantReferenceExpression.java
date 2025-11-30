@@ -43,7 +43,7 @@ public class EnumConstantReferenceExpression extends AbstractLineNumberExpressio
 
     @Override
     public String toString() {
-        return "EnumConstantReferenceExpression{type=" + type + ", name=" + name + "}";
+        return "EnumConstantReferenceExpression{type=" + type + ", name=" + name + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

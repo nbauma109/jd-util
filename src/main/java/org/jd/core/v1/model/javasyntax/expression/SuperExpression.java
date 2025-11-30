@@ -32,7 +32,7 @@ public class SuperExpression extends AbstractLineNumberExpression {
 
     @Override
     public String toString() {
-        return "SuperExpression{" + type + "}";
+        return "SuperExpression{" + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

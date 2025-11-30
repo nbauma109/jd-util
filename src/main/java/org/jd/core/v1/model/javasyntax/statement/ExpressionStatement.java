@@ -40,6 +40,6 @@ public class ExpressionStatement implements Statement {
 
     @Override
     public String toString() {
-        return "ExpressionStatement{" + expression.toString() + "}";
+        return "ExpressionStatement{" + expression.toString() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

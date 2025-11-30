@@ -15,7 +15,7 @@ public class IntegerConstantExpression extends AbstractLineNumberTypeExpression 
     private final int value;
 
     public IntegerConstantExpression(Type type, int value) {
-        this(UNKNOWN_LINE_NUMBER, type, value);
+        this(Expression.UNKNOWN_LINE_NUMBER, type, value);
     }
 
     public IntegerConstantExpression(int lineNumber, Type type, int value) {
@@ -28,7 +28,7 @@ public class IntegerConstantExpression extends AbstractLineNumberTypeExpression 
     }
 
     public IntegerConstantExpression(int value) {
-        this(UNKNOWN_LINE_NUMBER, value);
+        this(Expression.UNKNOWN_LINE_NUMBER, value);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class IntegerConstantExpression extends AbstractLineNumberTypeExpression 
     @Override
     public void setType(Type type) {
         if (!checkType(type)) {
-            throw new IllegalArgumentException("IntegerConstantExpression.setType(type) : incompatible types");
+            throw new IllegalArgumentException("IntegerConstantExpression.setType(type) : incompatible types"); //$NON-NLS-1$
         }
         super.setType(type);
     }
@@ -63,7 +63,7 @@ public class IntegerConstantExpression extends AbstractLineNumberTypeExpression 
 
     @Override
     public String toString() {
-        return "IntegerConstantExpression{type=" + getType() + ", value=" + value + "}";
+        return "IntegerConstantExpression{type=" + getType() + ", value=" + value + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

@@ -22,6 +22,6 @@ public class AnnotationElementValue extends AnnotationReference implements BaseE
 
     @Override
     public String toString() {
-        return "AnnotationElementValue{type=" + type + ", elementValue=" + elementValue + ", elementValuePairs=" + elementValuePairs + "}";
+        return "AnnotationElementValue{type=" + type + ", elementValue=" + elementValue + ", elementValuePairs=" + elementValuePairs + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 }

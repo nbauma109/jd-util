@@ -11,7 +11,7 @@ public class CommentExpressionTest {
     @Test
     public void testCommentExpression() {
         // Test constructor
-        String text = "This is a comment";
+        String text = "This is a comment"; //$NON-NLS-1$
         CommentExpression commentExpression = new CommentExpression(text);
 
         assertEquals(text, commentExpression.text());
@@ -25,7 +25,7 @@ public class CommentExpressionTest {
         assertEquals(1, visitor.getCommentExpressionCount());
 
         // Test toString method
-        String expectedToString = "CommentExpression{" + text + "}";
+        String expectedToString = "CommentExpression{" + text + "}"; //$NON-NLS-1$ //$NON-NLS-2$
         assertEquals(expectedToString, commentExpression.toString());
 
         // Test copyTo method

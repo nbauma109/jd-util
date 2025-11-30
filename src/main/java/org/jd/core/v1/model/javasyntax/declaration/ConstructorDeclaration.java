@@ -78,6 +78,6 @@ public class ConstructorDeclaration implements MemberDeclaration {
 
     @Override
     public String toString() {
-        return "ConstructorDeclaration{" + descriptor + "}";
+        return "ConstructorDeclaration{" + descriptor + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

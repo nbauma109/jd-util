@@ -37,9 +37,9 @@ public class LongConstantExpressionTest {
     @Test
     public void testToString() {
         LongConstantExpression longConstantExpression = new LongConstantExpression(10L);
-        assertEquals("LongConstantExpression{10}", longConstantExpression.toString());
+        assertEquals("LongConstantExpression{10}", longConstantExpression.toString()); //$NON-NLS-1$
 
         LongConstantExpression longConstantExpressionWithLineNumber = new LongConstantExpression(2, 10L);
-        assertEquals("LongConstantExpression{10}", longConstantExpressionWithLineNumber.toString());
+        assertEquals("LongConstantExpression{10}", longConstantExpressionWithLineNumber.toString()); //$NON-NLS-1$
     }
 }

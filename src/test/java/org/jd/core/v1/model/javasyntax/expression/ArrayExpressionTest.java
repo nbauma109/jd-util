@@ -26,7 +26,7 @@ public class ArrayExpressionTest {
         assertTrue(arrayExpression.isArrayExpression());
 
         // toString method
-        String expectedToString = "ArrayExpression{" + expression.toString() + "[" + index.toString() + "]}";
+        String expectedToString = "ArrayExpression{" + expression.toString() + "[" + index.toString() + "]}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         assertEquals(expectedToString, arrayExpression.toString());
 
         // copyTo method

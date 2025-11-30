@@ -8,12 +8,12 @@ public class ClassUtilTest {
 
     @Test
     public void testGetInternalNameValid() {
-        assertEquals("MyClass", ClassUtil.getInternalName("MyClass.class"));
+        assertEquals("MyClass", ClassUtil.getInternalName("MyClass.class")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Test
     public void testGetInternalNameInvalid() {
-        assertThrows(IllegalArgumentException.class, () -> ClassUtil.getInternalName("NotClassFile.txt"));
+        assertThrows(IllegalArgumentException.class, () -> ClassUtil.getInternalName("NotClassFile.txt")); //$NON-NLS-1$
     }
 
     @Test
@@ -23,6 +23,6 @@ public class ClassUtilTest {
 
     @Test
     public void testGetInternalNameEdgeCase() {
-        assertEquals("", ClassUtil.getInternalName(".class"));
+        assertEquals("", ClassUtil.getInternalName(".class")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

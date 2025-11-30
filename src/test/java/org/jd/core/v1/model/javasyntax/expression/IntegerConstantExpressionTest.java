@@ -42,9 +42,9 @@ public class IntegerConstantExpressionTest {
     @Test
     public void testToString() {
         IntegerConstantExpression integerConstantExpression = new IntegerConstantExpression(10);
-        assertEquals("IntegerConstantExpression{type=PrimitiveType{primitive=maybe_byte}, value=10}", integerConstantExpression.toString());
+        assertEquals("IntegerConstantExpression{type=PrimitiveType{primitive=maybe_byte}, value=10}", integerConstantExpression.toString()); //$NON-NLS-1$
 
         IntegerConstantExpression integerConstantExpressionWithLineNumber = new IntegerConstantExpression(2, 10);
-        assertEquals("IntegerConstantExpression{type=PrimitiveType{primitive=maybe_byte}, value=10}", integerConstantExpressionWithLineNumber.toString());
+        assertEquals("IntegerConstantExpression{type=PrimitiveType{primitive=maybe_byte}, value=10}", integerConstantExpressionWithLineNumber.toString()); //$NON-NLS-1$
     }
 }

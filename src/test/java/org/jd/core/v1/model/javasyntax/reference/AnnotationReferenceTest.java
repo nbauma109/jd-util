@@ -22,7 +22,7 @@ public class AnnotationReferenceTest {
     @Before
     public void setUp() {
         typeMaker = new TypeMaker();
-        objectType = typeMaker.makeFromInternalTypeName("java/lang/Deprecated");
+        objectType = typeMaker.makeFromInternalTypeName("java/lang/Deprecated"); //$NON-NLS-1$
         elementValuePairs = new ElementValuePairs();
         elementValue = null;
         annotationReference = new AnnotationReference(objectType, elementValue, elementValuePairs);
@@ -70,7 +70,7 @@ public class AnnotationReferenceTest {
     @Test
     public void testEquals() {
         AnnotationReference equalAnnotationReference = new AnnotationReference(objectType, elementValue, elementValuePairs);
-        ObjectType differentObjectType = typeMaker.makeFromInternalTypeName("java/lang/Override");
+        ObjectType differentObjectType = typeMaker.makeFromInternalTypeName("java/lang/Override"); //$NON-NLS-1$
         AnnotationReference differentAnnotationReference = new AnnotationReference(differentObjectType, elementValue, elementValuePairs);
         assertEquals(annotationReference, equalAnnotationReference);
         assertNotEquals(annotationReference, differentAnnotationReference);
@@ -84,7 +84,7 @@ public class AnnotationReferenceTest {
         assertNotEquals(ar1, ar3);
         assertNotEquals(ar1, ar4);
         assertNotEquals(ar1, null);
-        assertNotEquals(ar1, "Non-AnnotationReference Object");
+        assertNotEquals(ar1, "Non-AnnotationReference Object"); //$NON-NLS-1$
     }
 
     @Test

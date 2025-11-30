@@ -9,7 +9,7 @@ public class ElementValuePairTest {
     @Test
     public void test() throws Exception {
         ElementValuePair elementValuePair = new ElementValuePair(null, null);
-        assertEquals("ElementValuePair{name=null, elementValue=null}", elementValuePair.toString());
+        assertEquals("ElementValuePair{name=null, elementValue=null}", elementValuePair.toString()); //$NON-NLS-1$
         TestReferenceVisitor referenceVisitor = new TestReferenceVisitor();
         elementValuePair.accept(referenceVisitor);
         assertEquals(1, referenceVisitor.getVisitElementValuePairCount());

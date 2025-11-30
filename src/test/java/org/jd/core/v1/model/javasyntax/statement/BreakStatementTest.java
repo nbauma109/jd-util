@@ -12,8 +12,8 @@ public class BreakStatementTest {
     @Test
     public void testBreakStatement() {
         // Test BreakStatement with label
-        BreakStatement breakStatementWithLabel = new BreakStatement("myLabel");
-        assertEquals("myLabel", breakStatementWithLabel.getLabel());
+        BreakStatement breakStatementWithLabel = new BreakStatement("myLabel"); //$NON-NLS-1$
+        assertEquals("myLabel", breakStatementWithLabel.getLabel()); //$NON-NLS-1$
         assertTrue(breakStatementWithLabel.isBreakStatement());
 
         // Test BreakStatement without label (using static BREAK)

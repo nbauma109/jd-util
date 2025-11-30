@@ -19,6 +19,6 @@ public record LabelStatement(String label, Statement statement) implements State
 
     @Override
     public String toString() {
-        return "LabelStatement{" + label + ": " + statement + "}";
+        return "LabelStatement{" + label + ": " + statement + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

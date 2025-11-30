@@ -31,6 +31,6 @@ public class ExpressionElementValue implements BaseElementValue {
 
     @Override
     public String toString() {
-        return "ExpressionElementValue{" + expression + "}";
+        return "ExpressionElementValue{" + expression + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

@@ -31,6 +31,6 @@ public final class WildcardTypeArgument implements TypeArgument {
 
     @Override
     public String toString() {
-        return "Wildcard{?}";
+        return "Wildcard{?}"; //$NON-NLS-1$
     }
 }

@@ -67,7 +67,7 @@ public class ObjectTypeReferenceExpression implements Expression {
 
     @Override
     public String toString() {
-        return "ObjectTypeReferenceExpression{" + type + "}";
+        return "ObjectTypeReferenceExpression{" + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

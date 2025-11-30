@@ -25,7 +25,7 @@ public class TypeParameters extends DefaultList<TypeParameter> implements BaseTy
         sb.append(get(0));
 
         for (int i=1; i<size(); i++) {
-            sb.append(" & ");
+            sb.append(" & "); //$NON-NLS-1$
             sb.append(get(i));
         }
 

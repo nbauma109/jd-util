@@ -21,7 +21,7 @@ public class LocalVariableDeclaratorsTest {
     @Test
     public void testLocalVariableDeclarators() {
         // Arrange
-        LocalVariableDeclarator declarator = new LocalVariableDeclarator(1, "test", null);
+        LocalVariableDeclarator declarator = new LocalVariableDeclarator(1, "test", null); //$NON-NLS-1$
         localVariableDeclarators.add(declarator);
 
         // Act

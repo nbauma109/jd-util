@@ -18,10 +18,10 @@ public class ConstructorDeclarationTest {
     public void testConstructorDeclaration() {
         Type type = ObjectType.TYPE_STRING;
         boolean varargs = false;
-        String name = "param";
+        String name = "param"; //$NON-NLS-1$
 
         FormalParameter formalParameter = new FormalParameter(type, varargs, name);
-        String descriptor = "()V";
+        String descriptor = "()V"; //$NON-NLS-1$
         BaseStatement statements = new ExpressionStatement(new SuperConstructorInvocationExpression(0, ObjectType.TYPE_OBJECT, descriptor, null, false));
 
         ConstructorDeclaration constructorDeclaration = new ConstructorDeclaration(0, formalParameter, descriptor, statements);
@@ -46,7 +46,7 @@ public class ConstructorDeclarationTest {
         assertEquals(1, testVisitor.getConstructorDeclarationCount());
 
         // toString method
-        String expectedToString = "ConstructorDeclaration{" + descriptor + "}";
+        String expectedToString = "ConstructorDeclaration{" + descriptor + "}"; //$NON-NLS-1$ //$NON-NLS-2$
         assertEquals(expectedToString, constructorDeclaration.toString());
     }
 }

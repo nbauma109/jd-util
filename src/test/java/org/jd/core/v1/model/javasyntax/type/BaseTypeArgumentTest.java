@@ -76,8 +76,8 @@ public class BaseTypeArgumentTest {
         assertTrue(baseTypeArgument.findTypeParametersInType().isEmpty());
 
         // Test findTypeParametersInType with generic types
-        Set<String> typeParameters = ObjectType.TYPE_ITERABLE.createType(new GenericType("T")).findTypeParametersInType();
+        Set<String> typeParameters = ObjectType.TYPE_ITERABLE.createType(new GenericType("T")).findTypeParametersInType(); //$NON-NLS-1$
         assertFalse(typeParameters.isEmpty());
-        assertTrue(typeParameters.contains("T"));
+        assertTrue(typeParameters.contains("T")); //$NON-NLS-1$
     }
 }

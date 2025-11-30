@@ -14,13 +14,13 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class TypeArgumentToTypeVisitorTest {
-    
+
     @Test
     public void testTypeArgumentToTypeVisitor() {
         // Arrange
         TypeArgumentToTypeVisitor visitor = new TypeArgumentToTypeVisitor();
         visitor.init();
-        
+
         // Act & Assert - PrimitiveType
         PrimitiveType primitiveType = PrimitiveType.TYPE_INT;
         primitiveType.accept(visitor);
@@ -32,12 +32,12 @@ public class TypeArgumentToTypeVisitorTest {
         assertEquals(objectType, visitor.getType());
 
         // Act & Assert - InnerObjectType
-        ObjectType innerObjectType = new TypeMaker().makeFromInternalTypeName("java/util/Map$Entry");
+        ObjectType innerObjectType = new TypeMaker().makeFromInternalTypeName("java/util/Map$Entry"); //$NON-NLS-1$
         innerObjectType.accept(visitor);
         assertEquals(innerObjectType, visitor.getType());
 
         // Act & Assert - GenericType
-        GenericType genericType = new GenericType("T");
+        GenericType genericType = new GenericType("T"); //$NON-NLS-1$
         genericType.accept(visitor);
         assertEquals(genericType, visitor.getType());
 

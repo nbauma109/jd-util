@@ -11,7 +11,7 @@ public abstract class AbstractLineNumberExpression implements Expression {
     private final int lineNumber;
 
     protected AbstractLineNumberExpression() {
-        this.lineNumber = UNKNOWN_LINE_NUMBER;
+        this.lineNumber = Expression.UNKNOWN_LINE_NUMBER;
     }
 
     protected AbstractLineNumberExpression(int lineNumber) {

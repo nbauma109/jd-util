@@ -12,21 +12,21 @@ public class LocalVariableDeclaratorTest {
     @Test
     public void testNameGetterAndSetter() {
         // Arrange
-        String expectedName = "myVariable";
+        String expectedName = "myVariable"; //$NON-NLS-1$
         LocalVariableDeclarator localVariableDeclarator = new LocalVariableDeclarator(expectedName);
 
         // Act
-        localVariableDeclarator.setName("newVariable");
+        localVariableDeclarator.setName("newVariable"); //$NON-NLS-1$
         String actualName = localVariableDeclarator.getName();
 
         // Assert
-        Assert.assertEquals("newVariable", actualName);
+        Assert.assertEquals("newVariable", actualName); //$NON-NLS-1$
     }
 
     @Test
     public void testDimensionGetterAndSetter() {
         // Arrange
-        String name = "myVariable";
+        String name = "myVariable"; //$NON-NLS-1$
         LocalVariableDeclarator localVariableDeclarator = new LocalVariableDeclarator(name);
 
         // Act
@@ -40,7 +40,7 @@ public class LocalVariableDeclaratorTest {
     @Test
     public void testVariableInitializerGetter() {
         // Arrange
-        String name = "myVariable";
+        String name = "myVariable"; //$NON-NLS-1$
         Expression expression = new IntegerConstantExpression(1, 42);
         ExpressionVariableInitializer variableInitializer = new ExpressionVariableInitializer(expression);
         LocalVariableDeclarator localVariableDeclarator = new LocalVariableDeclarator(1, name, variableInitializer);
@@ -55,9 +55,9 @@ public class LocalVariableDeclaratorTest {
     @Test
     public void testToStringMethod() {
         // Arrange
-        String name = "myVariable";
+        String name = "myVariable"; //$NON-NLS-1$
         int dimension = 3;
-        Expression expression = new StringConstantExpression(2, "Hello");
+        Expression expression = new StringConstantExpression(2, "Hello"); //$NON-NLS-1$
         ExpressionVariableInitializer variableInitializer = new ExpressionVariableInitializer(expression);
         LocalVariableDeclarator localVariableDeclarator = new LocalVariableDeclarator(1, name, variableInitializer);
         localVariableDeclarator.setDimension(dimension);
@@ -66,14 +66,14 @@ public class LocalVariableDeclaratorTest {
         String actualString = localVariableDeclarator.toString();
 
         // Assert
-        Assert.assertEquals("LocalVariableDeclarator{name=myVariable, dimension3, variableInitializer=" + variableInitializer + "}", actualString);
+        Assert.assertEquals("LocalVariableDeclarator{name=myVariable, dimension3, variableInitializer=" + variableInitializer + "}", actualString); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Test
     public void testGetLineNumber() {
         // Arrange
         int lineNumber = 5;
-        String name = "myVariable";
+        String name = "myVariable"; //$NON-NLS-1$
         LocalVariableDeclarator localVariableDeclarator = new LocalVariableDeclarator(lineNumber, name, null);
 
         // Act
@@ -86,7 +86,7 @@ public class LocalVariableDeclaratorTest {
     @Test
     public void testAccept() {
         // Arrange
-        String name = "myVariable";
+        String name = "myVariable"; //$NON-NLS-1$
         LocalVariableDeclarator localVariableDeclarator = new LocalVariableDeclarator(name);
         TestDeclarationVisitor testDeclarationVisitor = new TestDeclarationVisitor();
 

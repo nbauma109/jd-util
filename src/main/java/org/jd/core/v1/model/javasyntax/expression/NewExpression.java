@@ -36,7 +36,7 @@ public class NewExpression extends AbstractLineNumberExpression {
     public boolean isVarArgs() {
         return varArgs;
     }
-    
+
     @Override
     public ObjectType getObjectType() {
         return type;
@@ -77,11 +77,11 @@ public class NewExpression extends AbstractLineNumberExpression {
     public BodyDeclaration getBodyDeclaration() {
         return bodyDeclaration;
     }
-    
+
     public boolean isDiamondPossible() {
         return diamondPossible;
     }
-    
+
     public void setDiamondPossible(boolean diamondPossible) {
         this.diamondPossible = diamondPossible;
     }
@@ -104,7 +104,7 @@ public class NewExpression extends AbstractLineNumberExpression {
 
     @Override
     public String toString() {
-        return "NewExpression{new " + type + "}";
+        return "NewExpression{new " + type + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

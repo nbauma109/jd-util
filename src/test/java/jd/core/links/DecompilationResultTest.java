@@ -26,30 +26,30 @@ public class DecompilationResultTest {
 
     @Test
     public void testSetAndGetDecompiledOutput() {
-        String expectedOutput = "Decompiled output string";
+        String expectedOutput = "Decompiled output string"; //$NON-NLS-1$
         result.setDecompiledOutput(expectedOutput);
         assertEquals(expectedOutput, result.getDecompiledOutput());
     }
 
     @Test
     public void testSetAndGetDeclarations() {
-        DeclarationData declarationData = new DeclarationData(1, 1, "Type1", "Name1", "Descriptor1");
-        Map<String, DeclarationData> declarations = Collections.singletonMap("InternalTypeName", declarationData);
+        DeclarationData declarationData = new DeclarationData(1, 1, "Type1", "Name1", "Descriptor1"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        Map<String, DeclarationData> declarations = Collections.singletonMap("InternalTypeName", declarationData); //$NON-NLS-1$
         result.setDeclarations(declarations);
         assertEquals(declarations, result.getDeclarations());
     }
 
     @Test
     public void testSetAndGetTypeDeclarations() {
-        DeclarationData declarationData = new DeclarationData(1, 1, "Type1", "Name1", "Descriptor1");
-        NavigableMap<Integer, DeclarationData> typeDeclarations = new TreeMap<>(Collections.singletonMap(1, declarationData));
+        DeclarationData declarationData = new DeclarationData(1, 1, "Type1", "Name1", "Descriptor1"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        NavigableMap<Integer, DeclarationData> typeDeclarations = new TreeMap<Integer, DeclarationData>(Collections.singletonMap(1, declarationData));
         result.setTypeDeclarations(typeDeclarations);
         assertEquals(typeDeclarations, result.getTypeDeclarations());
     }
 
     @Test
     public void testSetAndGetReferences() {
-        ReferenceData referenceData = new ReferenceData("TypeName1", "Name1", "Descriptor1", "Owner1");
+        ReferenceData referenceData = new ReferenceData("TypeName1", "Name1", "Descriptor1", "Owner1"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         List<ReferenceData> references = Collections.singletonList(referenceData);
         result.setReferences(references);
         assertEquals(references, result.getReferences());
@@ -57,7 +57,7 @@ public class DecompilationResultTest {
 
     @Test
     public void testSetAndGetStringData() {
-        StringData stringData = new StringData(1, "Text1", "Owner1");
+        StringData stringData = new StringData(1, "Text1", "Owner1"); //$NON-NLS-1$ //$NON-NLS-2$
         List<StringData> stringDataList = Collections.singletonList(stringData);
         result.setStrings(stringDataList);
         assertEquals(stringDataList, result.getStrings());
@@ -80,22 +80,22 @@ public class DecompilationResultTest {
     @Test
     public void testSetAndGetHyperlinks() {
         HyperlinkData hyperlinkData = new HyperlinkData(1, 2);
-        SortedMap<Integer, HyperlinkData> hyperlinks = new TreeMap<>(Collections.singletonMap(1, hyperlinkData));
+        SortedMap<Integer, HyperlinkData> hyperlinks = new TreeMap<Integer, HyperlinkData>(Collections.singletonMap(1, hyperlinkData));
         result.setHyperlinks(hyperlinks);
         assertEquals(hyperlinks, result.getHyperlinks());
     }
 
     @Test
     public void testAddString() {
-        StringData stringData = new StringData(1, "test", "owner");
+        StringData stringData = new StringData(1, "test", "owner"); //$NON-NLS-1$ //$NON-NLS-2$
         result.addString(stringData);
         assertTrue(result.getStrings().contains(stringData));
     }
 
     @Test
     public void testAddDeclaration() {
-        String internalTypeName = "InternalTypeName";
-        DeclarationData declarationData = new DeclarationData(1, 1, "Type1", "Name1", "Descriptor1");
+        String internalTypeName = "InternalTypeName"; //$NON-NLS-1$
+        DeclarationData declarationData = new DeclarationData(1, 1, "Type1", "Name1", "Descriptor1"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         result.addDeclaration(internalTypeName, declarationData);
         assertTrue(result.getDeclarations().containsKey(internalTypeName));
         assertEquals(declarationData, result.getDeclarations().get(internalTypeName));
@@ -104,7 +104,7 @@ public class DecompilationResultTest {
     @Test
     public void testAddTypeDeclaration() {
         int position = 1;
-        DeclarationData declarationData = new DeclarationData(1, 1, "Type1", "Name1", "Descriptor1");
+        DeclarationData declarationData = new DeclarationData(1, 1, "Type1", "Name1", "Descriptor1"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         result.addTypeDeclaration(position, declarationData);
         assertTrue(result.getTypeDeclarations().containsKey(position));
         assertEquals(declarationData, result.getTypeDeclarations().get(position));
@@ -130,7 +130,7 @@ public class DecompilationResultTest {
 
     @Test
     public void testAddReference() {
-        ReferenceData referenceData = new ReferenceData("TypeName1", "Name1", "Descriptor1", "Owner1");
+        ReferenceData referenceData = new ReferenceData("TypeName1", "Name1", "Descriptor1", "Owner1"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         result.addReference(referenceData);
         assertTrue(result.getReferences().contains(referenceData));
     }

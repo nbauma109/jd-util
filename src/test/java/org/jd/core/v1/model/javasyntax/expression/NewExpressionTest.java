@@ -17,7 +17,7 @@ public class NewExpressionTest {
     public void testNewExpression() {
         int lineNumber = 1;
         Type type = ObjectType.TYPE_STRING;
-        String descriptor = "Ljava/lang/String;";
+        String descriptor = "Ljava/lang/String;"; //$NON-NLS-1$
         boolean varArgs = true;
         boolean diamondPossible = false;
 
@@ -34,14 +34,14 @@ public class NewExpressionTest {
         assertFalse(newExpression.isDiamondPossible());
         assertTrue(newExpression.isNewExpression());
         assertTrue(newExpression.isNew());
-        assertEquals("NewExpression{new " + type + "}", newExpression.toString());
+        assertEquals("NewExpression{new " + type + "}", newExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$
 
         // Setters
         BaseExpression parameters = new IntegerConstantExpression(2, 42);
         newExpression.setParameters(parameters);
         newExpression.setDiamondPossible(true);
         newExpression.setQualifier(new ThisExpression(3, type));
-        
+
         assertEquals(parameters, newExpression.getParameters());
         assertTrue(newExpression.isDiamondPossible());
         assertNotNull(newExpression.getQualifier());
@@ -62,8 +62,8 @@ public class NewExpressionTest {
         assertTrue(copiedExpression.isVarArgs());
         assertTrue(copiedExpression.isDiamondPossible());
         assertTrue(copiedExpression.isNewExpression());
-        assertEquals("NewExpression{new " + type + "}", copiedExpression.toString());
-        
+        assertEquals("NewExpression{new " + type + "}", copiedExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+
         // Priority
         assertEquals(0, newExpression.getPriority());
     }

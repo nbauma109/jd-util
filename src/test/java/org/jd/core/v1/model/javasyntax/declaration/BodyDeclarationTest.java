@@ -13,9 +13,9 @@ public class BodyDeclarationTest {
     public void testBodyDeclaration() {
         // Test constructor
         BaseMemberDeclaration memberDeclarations = new ClassDeclaration(0, null, null, null);
-        BodyDeclaration bodyDeclaration = new BodyDeclaration("MyType", memberDeclarations);
+        BodyDeclaration bodyDeclaration = new BodyDeclaration("MyType", memberDeclarations); //$NON-NLS-1$
 
-        assertEquals("MyType", bodyDeclaration.getInternalTypeName());
+        assertEquals("MyType", bodyDeclaration.getInternalTypeName()); //$NON-NLS-1$
         assertTrue(bodyDeclaration.getMemberDeclarations() instanceof ClassDeclaration);
         assertFalse(bodyDeclaration.isAnonymous());
 

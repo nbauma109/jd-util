@@ -27,7 +27,7 @@ public class ClassPathLoader implements Loader {
 
     @Override
     public byte[] load(String internalName) throws IOException {
-        InputStream is = this.getClass().getResourceAsStream(getPathForInternalName(internalName));
+        InputStream is = this.getClass().getResourceAsStream(ClassPathLoader.getPathForInternalName(internalName));
 
         if (is == null) {
             return null;
@@ -47,6 +47,6 @@ public class ClassPathLoader implements Loader {
 
     @Override
     public boolean canLoad(String internalName) {
-        return this.getClass().getResource(getPathForInternalName(internalName)) != null;
+        return this.getClass().getResource(ClassPathLoader.getPathForInternalName(internalName)) != null;
     }
 }

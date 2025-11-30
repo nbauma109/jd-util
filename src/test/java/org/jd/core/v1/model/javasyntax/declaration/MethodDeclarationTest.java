@@ -15,8 +15,8 @@ public class MethodDeclarationTest {
 
     @Before
     public void setUp() {
-        BaseStatement statements = new ReturnExpressionStatement(new StringConstantExpression("Hello World"));
-        methodDeclaration = new MethodDeclaration(0, "methodName", ObjectType.TYPE_STRING, "()V", statements);
+        BaseStatement statements = new ReturnExpressionStatement(new StringConstantExpression("Hello World")); //$NON-NLS-1$
+        methodDeclaration = new MethodDeclaration(0, "methodName", ObjectType.TYPE_STRING, "()V", statements); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Test
@@ -46,7 +46,7 @@ public class MethodDeclarationTest {
 
     @Test
     public void testGetName() {
-        Assert.assertEquals("methodName", methodDeclaration.getName());
+        Assert.assertEquals("methodName", methodDeclaration.getName()); //$NON-NLS-1$
     }
 
     @Test
@@ -71,7 +71,7 @@ public class MethodDeclarationTest {
 
     @Test
     public void testGetDescriptor() {
-        Assert.assertEquals("()V", methodDeclaration.getDescriptor());
+        Assert.assertEquals("()V", methodDeclaration.getDescriptor()); //$NON-NLS-1$
     }
 
     @Test
@@ -89,7 +89,7 @@ public class MethodDeclarationTest {
 
     @Test
     public void testToString() {
-        Assert.assertEquals("MethodDeclaration{methodName ()V}", methodDeclaration.toString());
+        Assert.assertEquals("MethodDeclaration{methodName ()V}", methodDeclaration.toString()); //$NON-NLS-1$
     }
 
     @Test

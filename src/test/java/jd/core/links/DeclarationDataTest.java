@@ -8,19 +8,19 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class DeclarationDataTest {
-    
+
     @Test
     public void testDeclarationData() {
         // Arrange
         int startPosition = 10;
         int length = 5;
-        String typeName = "TestType";
-        String fieldName = "TestField";
-        String fieldDescriptor = "I";
-        String methodName = "TestMethod";
-        String methodDescriptor = "(I)V";
+        String typeName = "TestType"; //$NON-NLS-1$
+        String fieldName = "TestField"; //$NON-NLS-1$
+        String fieldDescriptor = "I"; //$NON-NLS-1$
+        String methodName = "TestMethod"; //$NON-NLS-1$
+        String methodDescriptor = "(I)V"; //$NON-NLS-1$
         String constructorName = StringConstants.INSTANCE_CONSTRUCTOR;
-        String constructorDescriptor = "(Ljava/lang/String;)V";
+        String constructorDescriptor = "(Ljava/lang/String;)V"; //$NON-NLS-1$
 
         // Act
         DeclarationData fieldType = new DeclarationData(startPosition, length, typeName, fieldName, fieldDescriptor);
@@ -54,7 +54,7 @@ public class DeclarationDataTest {
         assertEquals(typeName, fieldType.getTypeName());
         assertEquals(fieldName, fieldType.getName());
 
-        String expectedString = "DeclarationData [typeName=" + typeName + ", name=" + fieldName + ", descriptor=" + fieldDescriptor + "]";
+        String expectedString = "DeclarationData [typeName=" + typeName + ", name=" + fieldName + ", descriptor=" + fieldDescriptor + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         assertEquals(expectedString, fieldType.toString());
     }
 }

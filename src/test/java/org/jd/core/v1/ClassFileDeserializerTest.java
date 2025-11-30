@@ -35,34 +35,34 @@ public class ClassFileDeserializerTest extends TestCase {
 
             @Override
             public byte[] load(String internalName) throws IOException {
-                fail("Loader cannot load anything");
+                fail("Loader cannot load anything"); //$NON-NLS-1$
                 return null;
             }
         }
 
         ClassFileDeserializer deserializer = new ClassFileDeserializer();
         try {
-            deserializer.loadClassFile(new NoOpLoader(), "DoesNotExist");
-            fail("Expected exception");
+            deserializer.loadClassFile(new NoOpLoader(), "DoesNotExist"); //$NON-NLS-1$
+            fail("Expected exception"); //$NON-NLS-1$
         }
         // Expecting exception because class cannot be loaded
         catch (IllegalArgumentException expected) {
-            assertEquals("Class DoesNotExist could not be loaded", expected.getMessage());
+            assertEquals("Class DoesNotExist could not be loaded", expected.getMessage()); //$NON-NLS-1$
         }
     }
 
     @Test
     public void testAnnotatedClass() throws Exception {
-        try (InputStream is = this.getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip")) {
+        try (InputStream is = this.getClass().getResourceAsStream("/zip/data-java-jdk-1.7.0.zip")) { //$NON-NLS-1$
             ZipLoader loader = new ZipLoader(is);
             ClassFileDeserializer deserializer = new ClassFileDeserializer();
 
-            ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/AnnotatedClass");
+            ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/AnnotatedClass"); //$NON-NLS-1$
 
             // Check class
             assertNotNull(classFile);
-            assertEquals("org/jd/core/test/AnnotatedClass", classFile.getInternalTypeName());
-            assertEquals("java/util/ArrayList", classFile.getSuperTypeName());
+            assertEquals("org/jd/core/test/AnnotatedClass", classFile.getInternalTypeName()); //$NON-NLS-1$
+            assertEquals("java/util/ArrayList", classFile.getSuperTypeName()); //$NON-NLS-1$
 
             Annotations invAttr = classFile.getAttribute(Const.ATTR_RUNTIME_INVISIBLE_ANNOTATIONS);
             assertNotNull(invAttr.getAnnotationEntries());
@@ -71,13 +71,13 @@ public class ClassFileDeserializerTest extends TestCase {
             assertEquals(1, invAttr.getAnnotationEntries()[0].getNumElementValuePairs());
 
             AnnotationElementValue annotationValue = (AnnotationElementValue) invAttr.getAnnotationEntries()[1].getElementValuePairs()[0].getValue();
-            assertEquals("Lorg/jd/core/test/annotation/Name;", annotationValue.getAnnotationEntry().getAnnotationType());
+            assertEquals("Lorg/jd/core/test/annotation/Name;", annotationValue.getAnnotationEntry().getAnnotationType()); //$NON-NLS-1$
             assertNotNull(annotationValue.getAnnotationEntry().getElementValuePairs());
             assertEquals(3, annotationValue.getAnnotationEntry().getNumElementValuePairs());
-            assertEquals("salutation", annotationValue.getAnnotationEntry().getElementValuePairs()[0].getNameString());
+            assertEquals("salutation", annotationValue.getAnnotationEntry().getElementValuePairs()[0].getNameString()); //$NON-NLS-1$
 
             SimpleElementValue ev = (SimpleElementValue) annotationValue.getAnnotationEntry().getElementValuePairs()[1].getValue();
-            assertEquals("Donald", ev.toString());
+            assertEquals("Donald", ev.toString()); //$NON-NLS-1$
 
             // Check fields
             assertNotNull(classFile.getFields());
@@ -85,31 +85,31 @@ public class ClassFileDeserializerTest extends TestCase {
 
             // Check 1st field
             Field field = classFile.getFields()[1];
-            assertEquals("b1", field.getName());
-            assertEquals("B", field.getSignature());
+            assertEquals("b1", field.getName()); //$NON-NLS-1$
+            assertEquals("B", field.getSignature()); //$NON-NLS-1$
 
             assertNotNull(field.getAnnotationEntries());
             assertEquals(1, field.getAnnotationEntries().length);
             assertNotNull(field.getAnnotationEntries()[0].getElementValuePairs());
             assertEquals(1, field.getAnnotationEntries()[0].getElementValuePairs().length);
-            assertEquals("b", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString());
+            assertEquals("b", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString()); //$NON-NLS-1$
 
             ev = (SimpleElementValue) field.getAnnotationEntries()[0].getElementValuePairs()[0].getValue();
             assertEquals(-15, ev.getValueByte());
 
             // Check 8th field
             field = classFile.getFields()[8];
-            assertEquals("str2", field.getName());
-            assertEquals("Ljava/lang/String;", field.getSignature());
+            assertEquals("str2", field.getName()); //$NON-NLS-1$
+            assertEquals("Ljava/lang/String;", field.getSignature()); //$NON-NLS-1$
 
             assertNotNull(field.getAnnotationEntries());
             assertEquals(1, field.getAnnotationEntries().length);
             assertNotNull(field.getAnnotationEntries()[0].getElementValuePairs());
             assertEquals(1, field.getAnnotationEntries()[0].getElementValuePairs().length);
-            assertEquals("str", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString());
+            assertEquals("str", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString()); //$NON-NLS-1$
 
             ev = (SimpleElementValue) field.getAnnotationEntries()[0].getElementValuePairs()[0].getValue();
-            assertEquals("str \u0083 \u0909 \u1109", ev.toString());
+            assertEquals("str \u0083 \u0909 \u1109", ev.toString()); //$NON-NLS-1$
 
             // Check getters
             assertNotNull(classFile.getMethods());
@@ -117,7 +117,7 @@ public class ClassFileDeserializerTest extends TestCase {
 
             // Check constructor
             assertEquals(StringConstants.INSTANCE_CONSTRUCTOR, classFile.getMethods()[0].getName());
-            assertEquals("()V", classFile.getMethods()[0].getSignature());
+            assertEquals("()V", classFile.getMethods()[0].getSignature()); //$NON-NLS-1$
             assertNotNull(classFile.getMethods()[0].getCode());
         }
     }

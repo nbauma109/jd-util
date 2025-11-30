@@ -21,6 +21,5 @@ public final class CoreConstants
     public static final int JAVA_MAGIC_NUMBER = 0xCafeBabe;
 
     private CoreConstants() {
-        super();
     }
 }

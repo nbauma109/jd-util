@@ -19,7 +19,7 @@ public class LambdaIdentifiersExpressionTest {
         // Test constructor
         Type type = PrimitiveType.TYPE_INT;
         Type returnedType = PrimitiveType.TYPE_VOID;
-        List<String> parameterNames = Arrays.asList("a", "b");
+        List<String> parameterNames = Arrays.asList("a", "b"); //$NON-NLS-1$ //$NON-NLS-2$
         BaseStatement statements = new Statements();
         LambdaIdentifiersExpression lambdaIdentifiersExpression = new LambdaIdentifiersExpression(1, type, returnedType, parameterNames, statements);
 
@@ -34,7 +34,7 @@ public class LambdaIdentifiersExpressionTest {
         assertEquals(1, visitor.getLambdaIdentifiersExpressionCount());
 
         // Test toString method
-        String expectedToString = "LambdaIdentifiersExpression{" + parameterNames + " -> " + statements + "}";
+        String expectedToString = "LambdaIdentifiersExpression{" + parameterNames + " -> " + statements + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         assertEquals(expectedToString, lambdaIdentifiersExpression.toString());
 
         // Test copyTo method

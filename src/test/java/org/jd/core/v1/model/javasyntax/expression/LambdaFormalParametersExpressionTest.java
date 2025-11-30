@@ -20,7 +20,7 @@ public class LambdaFormalParametersExpressionTest {
         Type type = ObjectType.TYPE_OBJECT;
         Expression returnExpression = new IntegerConstantExpression(1);
         BaseStatement statement = new ReturnExpressionStatement(returnExpression);
-        BaseFormalParameter baseFormalParameter = new FormalParameter(ObjectType.TYPE_INTEGER, "x");
+        BaseFormalParameter baseFormalParameter = new FormalParameter(ObjectType.TYPE_INTEGER, "x"); //$NON-NLS-1$
         int lineNumber = 10;
 
         // Act
@@ -45,7 +45,7 @@ public class LambdaFormalParametersExpressionTest {
         assertEquals(1, visitor.getLambdaFormalParametersExpressionCount());
 
         // Test toString method
-        String expectedToString = "LambdaFormalParametersExpression{" + baseFormalParameter + " -> " + statement + "}";
+        String expectedToString = "LambdaFormalParametersExpression{" + baseFormalParameter + " -> " + statement + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         assertEquals(expectedToString, lambdaFormalParametersExpression.toString());
     }
 }

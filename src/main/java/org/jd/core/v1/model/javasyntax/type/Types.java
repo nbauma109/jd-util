@@ -26,7 +26,7 @@ public class Types extends DefaultList<Type> implements BaseType {
     public Types(Type type, Type... types) {
         super(type, types);
         if (types.length <= 0) {
-            throw new IllegalArgumentException("Use 'Type' implementation instead");
+            throw new IllegalArgumentException("Use 'Type' implementation instead"); //$NON-NLS-1$
         }
     }
 

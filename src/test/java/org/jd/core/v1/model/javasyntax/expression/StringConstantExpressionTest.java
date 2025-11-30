@@ -11,7 +11,7 @@ public class StringConstantExpressionTest {
     public void testStringConstantExpression() {
         // Arrange
         int lineNumber = 10;
-        String string = "Hello, World!";
+        String string = "Hello, World!"; //$NON-NLS-1$
         TestVisitor visitor = new TestVisitor();
 
         // Act
@@ -26,7 +26,7 @@ public class StringConstantExpressionTest {
         Assert.assertEquals(1, visitor.getStringConstantExpressionCount());
 
         // Test toString method
-        String expectedToString = "StringConstantExpression{\"Hello, World!\"}";
+        String expectedToString = "StringConstantExpression{\"Hello, World!\"}"; //$NON-NLS-1$
         Assert.assertEquals(expectedToString, expression.toString());
 
         // Test copyTo method

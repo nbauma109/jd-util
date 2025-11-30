@@ -21,8 +21,6 @@ import org.jd.core.v1.model.javasyntax.type.WildcardTypeArgument;
 
 import java.util.Map;
 
-import static org.jd.core.v1.model.javasyntax.type.ObjectType.TYPE_OBJECT;
-
 public class BindTypesToTypesVisitor extends AbstractNopTypeVisitor {
     private final TypeArgumentToTypeVisitor typeArgumentToTypeVisitor = new TypeArgumentToTypeVisitor();
     private final BindTypeArgumentsToTypeArgumentsVisitor bindTypeArgumentsToTypeArgumentsVisitor = new BindTypeArgumentsToTypeArgumentsVisitor();
@@ -112,7 +110,7 @@ public class BindTypesToTypesVisitor extends AbstractNopTypeVisitor {
         TypeArgument ta = bindings.get(type.getName());
 
         if (ta == null || ta == WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT) {
-            result = TYPE_OBJECT.createType(type.getDimension());
+            result = ObjectType.TYPE_OBJECT.createType(type.getDimension());
         } else {
             typeArgumentToTypeVisitor.init();
             ta.accept(typeArgumentToTypeVisitor);

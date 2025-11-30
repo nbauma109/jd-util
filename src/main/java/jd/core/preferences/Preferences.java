@@ -20,14 +20,14 @@ import java.util.Map;
 
 public final class Preferences {
 
-    public static final String JD_CORE_VERSION             = "JdGuiPreferences.jdCoreVersion";
-    public static final String DISPLAY_DEFAULT_CONSTRUCTOR = "ClassFileViewerPreferences.displayDefaultConstructor";
-    public static final String WRITE_LINE_NUMBERS          = "ClassFileSaverPreferences.writeLineNumbers";
-    public static final String WRITE_METADATA              = "ClassFileSaverPreferences.writeMetadata";
-    public static final String ESCAPE_UNICODE_CHARACTERS   = "ClassFileSaverPreferences.escapeUnicodeCharacters";
-    public static final String OMIT_THIS_PREFIX            = "ClassFileSaverPreferences.omitThisPrefix";
-    public static final String WRITE_DEFAULT_CONSTRUCTOR   = "ClassFileSaverPreferences.writeDefaultConstructor";
-    public static final String REALIGN_LINE_NUMBERS        = "ClassFileSaverPreferences.realignLineNumbers";
+    public static final String JD_CORE_VERSION             = "JdGuiPreferences.jdCoreVersion"; //$NON-NLS-1$
+    public static final String DISPLAY_DEFAULT_CONSTRUCTOR = "ClassFileViewerPreferences.displayDefaultConstructor"; //$NON-NLS-1$
+    public static final String WRITE_LINE_NUMBERS          = "ClassFileSaverPreferences.writeLineNumbers"; //$NON-NLS-1$
+    public static final String WRITE_METADATA              = "ClassFileSaverPreferences.writeMetadata"; //$NON-NLS-1$
+    public static final String ESCAPE_UNICODE_CHARACTERS   = "ClassFileSaverPreferences.escapeUnicodeCharacters"; //$NON-NLS-1$
+    public static final String OMIT_THIS_PREFIX            = "ClassFileSaverPreferences.omitThisPrefix"; //$NON-NLS-1$
+    public static final String WRITE_DEFAULT_CONSTRUCTOR   = "ClassFileSaverPreferences.writeDefaultConstructor"; //$NON-NLS-1$
+    public static final String REALIGN_LINE_NUMBERS        = "ClassFileSaverPreferences.realignLineNumbers"; //$NON-NLS-1$
 
     private boolean showDefaultConstructor;
     private boolean realignmentLineNumber;
@@ -46,12 +46,12 @@ public final class Preferences {
     }
 
     public Preferences(Map<String, String> preferences) {
-        setUnicodeEscape(Boolean.parseBoolean(preferences.getOrDefault(ESCAPE_UNICODE_CHARACTERS, Boolean.FALSE.toString())));
-        setShowPrefixThis(!Boolean.parseBoolean(preferences.getOrDefault(OMIT_THIS_PREFIX, Boolean.FALSE.toString())));
-        setShowDefaultConstructor(Boolean.parseBoolean(preferences.getOrDefault(DISPLAY_DEFAULT_CONSTRUCTOR, Boolean.FALSE.toString())));
-        setRealignmentLineNumber(Boolean.parseBoolean(preferences.getOrDefault(REALIGN_LINE_NUMBERS, Boolean.FALSE.toString())));
-        setShowLineNumbers(Boolean.parseBoolean(preferences.getOrDefault(WRITE_LINE_NUMBERS, Boolean.FALSE.toString())));
-        setWriteMetaData(Boolean.parseBoolean(preferences.getOrDefault(WRITE_METADATA, Boolean.FALSE.toString())));
+        setUnicodeEscape(Boolean.parseBoolean(preferences.getOrDefault(Preferences.ESCAPE_UNICODE_CHARACTERS, Boolean.FALSE.toString())));
+        setShowPrefixThis(!Boolean.parseBoolean(preferences.getOrDefault(Preferences.OMIT_THIS_PREFIX, Boolean.FALSE.toString())));
+        setShowDefaultConstructor(Boolean.parseBoolean(preferences.getOrDefault(Preferences.DISPLAY_DEFAULT_CONSTRUCTOR, Boolean.FALSE.toString())));
+        setRealignmentLineNumber(Boolean.parseBoolean(preferences.getOrDefault(Preferences.REALIGN_LINE_NUMBERS, Boolean.FALSE.toString())));
+        setShowLineNumbers(Boolean.parseBoolean(preferences.getOrDefault(Preferences.WRITE_LINE_NUMBERS, Boolean.FALSE.toString())));
+        setWriteMetaData(Boolean.parseBoolean(preferences.getOrDefault(Preferences.WRITE_METADATA, Boolean.FALSE.toString())));
     }
 
     public boolean getShowDefaultConstructor() {

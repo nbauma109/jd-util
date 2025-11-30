@@ -15,8 +15,8 @@ public class SuperConstructorInvocationExpressionTest {
         // Arrange
         int lineNumber = 10;
         ObjectType type = ObjectType.TYPE_STRING_BUILDER;
-        String descriptor = "(Ljava/lang/String;)V";
-        BaseExpression parameters = new StringConstantExpression("test");
+        String descriptor = "(Ljava/lang/String;)V"; //$NON-NLS-1$
+        BaseExpression parameters = new StringConstantExpression("test"); //$NON-NLS-1$
         boolean varArgs = true;
 
         // Act
@@ -37,11 +37,11 @@ public class SuperConstructorInvocationExpressionTest {
         assertEquals(1, visitor.getSuperConstructorInvocationExpressionCount());
 
         // Test toString method
-        String expectedToString = "SuperConstructorInvocationExpression{call super(" + descriptor + ")}";
+        String expectedToString = "SuperConstructorInvocationExpression{call super(" + descriptor + ")}"; //$NON-NLS-1$ //$NON-NLS-2$
         assertEquals(expectedToString, expression.toString());
 
         // Test setParameters method
-        BaseExpression newParameters = new StringConstantExpression("newTest");
+        BaseExpression newParameters = new StringConstantExpression("newTest"); //$NON-NLS-1$
         expression.setParameters(newParameters);
         assertEquals(newParameters, expression.getParameters());
     }

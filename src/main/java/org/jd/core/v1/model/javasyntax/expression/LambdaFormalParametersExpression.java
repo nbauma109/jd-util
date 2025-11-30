@@ -30,7 +30,7 @@ public class LambdaFormalParametersExpression extends AbstractLambdaExpression {
 
     @Override
     public String toString() {
-        return "LambdaFormalParametersExpression{" + formalParameters + " -> " + statements + "}";
+        return "LambdaFormalParametersExpression{" + formalParameters + " -> " + statements + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

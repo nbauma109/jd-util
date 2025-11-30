@@ -21,29 +21,29 @@ public class ArrayVariableInitializerTest {
     @Test
     public void testArrayVariableInitializer() {
         Expression expression1 = new IntegerConstantExpression(1, 42);
-        Expression expression2 = new StringConstantExpression(2, "Hello");
+        Expression expression2 = new StringConstantExpression(2, "Hello"); //$NON-NLS-1$
 
         ExpressionVariableInitializer variableInitializer1 = new ExpressionVariableInitializer(expression1);
         ExpressionVariableInitializer variableInitializer2 = new ExpressionVariableInitializer(expression2);
 
-        ArrayVariableInitializer arrayInitializer1 = new ArrayVariableInitializer(TEST_TYPE);
+        ArrayVariableInitializer arrayInitializer1 = new ArrayVariableInitializer(ArrayVariableInitializerTest.TEST_TYPE);
         arrayInitializer1.add(variableInitializer1);
         arrayInitializer1.add(variableInitializer2);
 
-        ArrayVariableInitializer arrayInitializer2 = new ArrayVariableInitializer(TEST_TYPE);
+        ArrayVariableInitializer arrayInitializer2 = new ArrayVariableInitializer(ArrayVariableInitializerTest.TEST_TYPE);
         arrayInitializer2.add(variableInitializer1);
         arrayInitializer2.add(variableInitializer2);
 
         assertEquals(2, arrayInitializer1.size());
         assertEquals(variableInitializer1, arrayInitializer1.get(0));
         assertEquals(variableInitializer2, arrayInitializer1.get(1));
-        assertEquals(TEST_TYPE, arrayInitializer1.getType());
+        assertEquals(ArrayVariableInitializerTest.TEST_TYPE, arrayInitializer1.getType());
         assertEquals(1, arrayInitializer1.getLineNumber());
 
         assertEquals(arrayInitializer1, arrayInitializer2); // Same elements
         assertEquals(arrayInitializer2, arrayInitializer1); // Reversed order
         assertNotEquals(arrayInitializer1, null);
-        assertNotEquals(arrayInitializer1, "Not an ArrayVariableInitializer");
+        assertNotEquals(arrayInitializer1, "Not an ArrayVariableInitializer"); //$NON-NLS-1$
         assertEquals(arrayInitializer1, arrayInitializer1);
 
         TestDeclarationVisitor visitor = new TestDeclarationVisitor();
@@ -55,15 +55,15 @@ public class ArrayVariableInitializerTest {
         assertEquals(hashCode1, hashCode2);
 
         assertFalse(arrayInitializer1.isExpressionVariableInitializer());
-        assertEquals(NO_EXPRESSION, arrayInitializer1.getExpression());
+        assertEquals(NoExpression.NO_EXPRESSION, arrayInitializer1.getExpression());
     }
 
     @Test
     public void testAcceptWithTestVisitor() {
         TestVisitor visitor = new TestVisitor();
 
-        ArrayVariableInitializer arrayInitializer = new ArrayVariableInitializer(TEST_TYPE);
-        NewInitializedArray newInitializedArray = new NewInitializedArray(LINE_NUMBER, TEST_TYPE, arrayInitializer);
+        ArrayVariableInitializer arrayInitializer = new ArrayVariableInitializer(ArrayVariableInitializerTest.TEST_TYPE);
+        NewInitializedArray newInitializedArray = new NewInitializedArray(ArrayVariableInitializerTest.LINE_NUMBER, ArrayVariableInitializerTest.TEST_TYPE, arrayInitializer);
 
         newInitializedArray.accept(visitor);
 

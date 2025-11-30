@@ -15,21 +15,21 @@ public class DefaultListTest {
 
     @Test
     public void testDefaultConstructor() {
-        DefaultList<Integer> list = new DefaultList<>();
+        DefaultList<Integer> list = new DefaultList<Integer>();
         assertTrue(list.isList());
         assertEquals(0, list.size());
     }
 
     @Test
     public void testConstructorWithCapacity() {
-        DefaultList<Integer> list = new DefaultList<>(10);
+        DefaultList<Integer> list = new DefaultList<Integer>(10);
         assertTrue(list.isList());
         assertEquals(0, list.size());
     }
 
     @Test
     public void testAddAndRemove() {
-        DefaultList<Integer> list = new DefaultList<>();
+        DefaultList<Integer> list = new DefaultList<Integer>();
         list.add(10);
         list.add(20);
         assertEquals(Integer.valueOf(10), list.getFirst());
@@ -42,14 +42,14 @@ public class DefaultListTest {
 
     @Test(expected = NoSuchElementException.class)
     public void testEmptyIterator() {
-        DefaultList<Integer> list = new DefaultList<>();
+        DefaultList<Integer> list = new DefaultList<Integer>();
         list.iterator().next();
     }
 
     @Test
     public void testConstructorWithCollection() {
         List<Integer> initialList = Arrays.asList(10, 20, 30);
-        DefaultList<Integer> list = new DefaultList<>(initialList);
+        DefaultList<Integer> list = new DefaultList<Integer>(initialList);
         assertEquals(3, list.size());
         assertEquals(Integer.valueOf(10), list.getFirst());
         assertEquals(Integer.valueOf(30), list.getLast());
@@ -57,7 +57,7 @@ public class DefaultListTest {
 
     @Test
     public void testConstructorWithElementAndVarargs() {
-        DefaultList<Integer> list = new DefaultList<>(10, 20, 30);
+        DefaultList<Integer> list = new DefaultList<Integer>(10, 20, 30);
         assertEquals(3, list.size());
         assertEquals(Integer.valueOf(10), list.getFirst());
         assertEquals(Integer.valueOf(30), list.getLast());
@@ -66,7 +66,7 @@ public class DefaultListTest {
     @Test
     public void testConstructorWithArray() {
         Integer[] initialArray = { 10, 20, 30 };
-        DefaultList<Integer> list = new DefaultList<>(initialArray);
+        DefaultList<Integer> list = new DefaultList<Integer>(initialArray);
         assertEquals(3, list.size());
         assertEquals(Integer.valueOf(10), list.getFirst());
         assertEquals(Integer.valueOf(30), list.getLast());
@@ -75,20 +75,20 @@ public class DefaultListTest {
     @Test
     public void testConstructorWithNullArray() {
         Integer[] initialArray = null;
-        DefaultList<Integer> list = new DefaultList<>(initialArray);
+        DefaultList<Integer> list = new DefaultList<Integer>(initialArray);
         assertEquals(0, list.size());
     }
 
     @Test
     public void testConstructorWithEmptyArray() {
         Integer[] initialArray = {};
-        DefaultList<Integer> list = new DefaultList<>(initialArray);
+        DefaultList<Integer> list = new DefaultList<Integer>(initialArray);
         assertEquals(0, list.size());
     }
 
     @Test
     public void testGetList() {
-        DefaultList<Integer> list = new DefaultList<>();
+        DefaultList<Integer> list = new DefaultList<Integer>();
         assertEquals(list, list.getList());
     }
 

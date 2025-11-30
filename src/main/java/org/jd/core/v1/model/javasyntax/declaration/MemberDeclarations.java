@@ -18,7 +18,7 @@ public class MemberDeclarations extends DefaultList<MemberDeclaration> implement
     public MemberDeclarations(MemberDeclaration declaration, MemberDeclaration... declarations) {
         super(declaration, declarations);
         if (declarations.length <= 0) {
-            throw new IllegalArgumentException("Use 'MemberDeclaration' implementation instead");
+            throw new IllegalArgumentException("Use 'MemberDeclaration' implementation instead"); //$NON-NLS-1$
         }
     }
 

@@ -10,8 +10,8 @@ public class FieldDeclaratorsTest {
     @Test
     public void testFieldDeclarators() {
         // Arrange
-        FieldDeclarator declarator1 = new FieldDeclarator("field1", new ExpressionVariableInitializer(null));
-        FieldDeclarator declarator2 = new FieldDeclarator("field2", new ExpressionVariableInitializer(null));
+        FieldDeclarator declarator1 = new FieldDeclarator("field1", new ExpressionVariableInitializer(null)); //$NON-NLS-1$
+        FieldDeclarator declarator2 = new FieldDeclarator("field2", new ExpressionVariableInitializer(null)); //$NON-NLS-1$
         FieldDeclarators declarators = new FieldDeclarators(declarator1, declarator2);
 
         // Assert
@@ -35,6 +35,6 @@ public class FieldDeclaratorsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testFieldDeclaratorsException() {
-        new FieldDeclarators(new FieldDeclarator("name"));
+        new FieldDeclarators(new FieldDeclarator("name")); //$NON-NLS-1$
     }
 }

@@ -15,7 +15,7 @@ public class ConstructorReferenceExpressionTest {
         // Test constructor
         int lineNumber = 10;
         ObjectType objectType = ObjectType.TYPE_STRING_BUILDER;
-        String descriptor = "TestDescriptor";
+        String descriptor = "TestDescriptor"; //$NON-NLS-1$
         Type type = objectType;
         ConstructorReferenceExpression expression = new ConstructorReferenceExpression(lineNumber, type, objectType, descriptor);
 

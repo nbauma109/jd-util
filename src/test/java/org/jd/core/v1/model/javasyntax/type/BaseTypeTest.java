@@ -15,7 +15,7 @@ public class BaseTypeTest implements BaseType {
         assertFalse(isPrimitiveType());
         assertFalse(isTypes());
         assertEquals(ObjectType.TYPE_UNDEFINED_OBJECT, getOuterType());
-        assertEquals("", getInternalName());
+        assertEquals("", getInternalName()); //$NON-NLS-1$
     }
 
     @Override

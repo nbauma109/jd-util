@@ -23,7 +23,7 @@ public class ConstructorInvocationExpression extends ConstructorReferenceExpress
     public boolean isVarArgs() {
         return varArgs;
     }
-    
+
     @Override
     public BaseExpression getParameters() {
         return parameters;
@@ -48,6 +48,6 @@ public class ConstructorInvocationExpression extends ConstructorReferenceExpress
 
     @Override
     public String toString() {
-        return "ConstructorInvocationExpression{call this(" + descriptor + ")}";
+        return "ConstructorInvocationExpression{call this(" + descriptor + ")}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

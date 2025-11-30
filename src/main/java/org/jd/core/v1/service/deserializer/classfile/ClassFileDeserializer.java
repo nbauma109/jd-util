@@ -29,11 +29,11 @@ import jd.core.process.analyzer.instruction.bytecode.util.ByteCodeUtil;
 public final class ClassFileDeserializer {
 
     public ClassFile loadClassFile(Loader loader, String internalTypeName) throws IOException {
-        Validate.isTrue(loader.canLoad(internalTypeName), "Class %s could not be loaded", internalTypeName);
+        Validate.isTrue(loader.canLoad(internalTypeName), "Class %s could not be loaded", internalTypeName); //$NON-NLS-1$
 
         byte[] data = loader.load(internalTypeName);
 
-        Validate.notNull(data, "Class %s could not be loaded", internalTypeName);
+        Validate.notNull(data, "Class %s could not be loaded", internalTypeName); //$NON-NLS-1$
 
         try (DataInputStream reader = new DataInputStream(new ByteArrayInputStream(data))) {
 
@@ -44,7 +44,7 @@ public final class ClassFileDeserializer {
 
             // Load inner types
             if (innerClasses != null) {
-                DefaultList<ClassFile> innerClassFiles = new DefaultList<>();
+                DefaultList<ClassFile> innerClassFiles = new DefaultList<ClassFile>();
                 String innerTypePrefix = internalTypeName + '$';
 
                 for (InnerClass ic : innerClasses.getInnerClasses()) {

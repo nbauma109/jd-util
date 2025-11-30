@@ -22,6 +22,6 @@ public class ReturnStatement implements Statement {
 
     @Override
     public String toString() {
-        return "ReturnStatement{}";
+        return "ReturnStatement{}"; //$NON-NLS-1$
     }
 }

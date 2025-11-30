@@ -28,7 +28,7 @@ public class NullExpression extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "NullExpression{type=" + getType() + "}";
+        return "NullExpression{type=" + getType() + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

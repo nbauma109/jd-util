@@ -37,7 +37,7 @@ public class NewInitializedArray extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "NewInitializedArray{new " + getType() + " [" + arrayInitializer + "]}";
+        return "NewInitializedArray{new " + getType() + " [" + arrayInitializer + "]}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

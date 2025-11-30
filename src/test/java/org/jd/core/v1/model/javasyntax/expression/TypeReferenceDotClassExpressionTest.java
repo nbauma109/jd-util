@@ -30,7 +30,7 @@ public class TypeReferenceDotClassExpressionTest {
         assertEquals(0, typeReferenceDotClassExpression.getPriority());
 
         // Test toString
-        assertEquals("TypeReferenceDotClassExpression{" + typeDotClass + "}", typeReferenceDotClassExpression.toString());
+        assertEquals("TypeReferenceDotClassExpression{" + typeDotClass + "}", typeReferenceDotClassExpression.toString()); //$NON-NLS-1$ //$NON-NLS-2$
 
         // Test copyTo
         TypeReferenceDotClassExpression copiedExpression = (TypeReferenceDotClassExpression) typeReferenceDotClassExpression.copyTo(20);

@@ -3,7 +3,7 @@
  * This project is distributed under the GPLv3 license.
  * This is a Copyleft license that gives the user the right to use,
  * copy and modify the code freely for non-commercial purposes.
- * 
+ *
  * Original source code location :
  * https://github.com/java-decompiler/jd-gui/blob/master/services/src/main/java/org/jd/gui/view/component/TypePage.java
  */
@@ -74,6 +74,6 @@ public class ReferenceData {
 
     @Override
     public String toString() {
-        return "ReferenceData [typeName=" + typeName + ", name=" + name + ", descriptor=" + descriptor + ", owner=" + owner + ", enabled=" + enabled + "]";
+        return "ReferenceData [typeName=" + typeName + ", name=" + name + ", descriptor=" + descriptor + ", owner=" + owner + ", enabled=" + enabled + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
     }
 }

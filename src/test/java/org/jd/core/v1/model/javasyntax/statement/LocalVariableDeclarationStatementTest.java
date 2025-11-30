@@ -21,7 +21,7 @@ public class LocalVariableDeclarationStatementTest {
 
         Type type = PrimitiveType.TYPE_INT;
         BaseLocalVariableDeclarator localVariableDeclarators = new LocalVariableDeclarators(1);
-        ((LocalVariableDeclarators)localVariableDeclarators).add(new LocalVariableDeclarator("a"));
+        ((LocalVariableDeclarators)localVariableDeclarators).add(new LocalVariableDeclarator("a")); //$NON-NLS-1$
 
         localVariableDeclarationStatement = new LocalVariableDeclarationStatement(type, localVariableDeclarators);
     }
@@ -34,6 +34,6 @@ public class LocalVariableDeclarationStatementTest {
         // Assert
         assertEquals(1, visitor.getLocalVariableDeclarationStatementCount());
         assertTrue(localVariableDeclarationStatement.isLocalVariableDeclarationStatement());
-        assertEquals("LocalVariableDeclarationStatement{PrimitiveType{primitive=int} [LocalVariableDeclarator{name=a, dimension0, variableInitializer=null}]}", localVariableDeclarationStatement.toString());
+        assertEquals("LocalVariableDeclarationStatement{PrimitiveType{primitive=int} [LocalVariableDeclarator{name=a, dimension0, variableInitializer=null}]}", localVariableDeclarationStatement.toString()); //$NON-NLS-1$
     }
 }

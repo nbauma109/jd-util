@@ -29,7 +29,7 @@ public class TernaryOperatorExpressionTest {
         assertTrue(ternaryOperatorExpression.isTernaryOperatorExpression());
 
         // toString method
-        String expectedToString = "TernaryOperatorExpression{" + condition + " ? " + trueExpression + " : " + falseExpression + "}";
+        String expectedToString = "TernaryOperatorExpression{" + condition + " ? " + trueExpression + " : " + falseExpression + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         assertEquals(expectedToString, ternaryOperatorExpression.toString());
 
         // copyTo method

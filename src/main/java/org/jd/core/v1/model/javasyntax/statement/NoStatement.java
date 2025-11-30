@@ -19,6 +19,6 @@ public class NoStatement implements Statement {
 
     @Override
     public String toString() {
-        return "NoStatement";
+        return "NoStatement"; //$NON-NLS-1$
     }
 }

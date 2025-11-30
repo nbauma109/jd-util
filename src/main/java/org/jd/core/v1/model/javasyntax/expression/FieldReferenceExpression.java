@@ -69,7 +69,7 @@ public class FieldReferenceExpression extends AbstractLineNumberTypeExpression {
 
     @Override
     public String toString() {
-        return "FieldReferenceExpression{type=" + getType() + ", expression=" + expression + ", name=" + name + ", descriptor=" + descriptor + "}";
+        return "FieldReferenceExpression{type=" + getType() + ", expression=" + expression + ", name=" + name + ", descriptor=" + descriptor + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 
     @Override

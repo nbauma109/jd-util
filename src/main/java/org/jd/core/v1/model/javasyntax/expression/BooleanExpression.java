@@ -47,7 +47,7 @@ public class BooleanExpression extends AbstractLineNumberExpression {
 
     @Override
     public String toString() {
-        return "BooleanExpression{" + value + "}";
+        return "BooleanExpression{" + value + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

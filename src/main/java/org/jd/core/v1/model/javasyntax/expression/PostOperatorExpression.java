@@ -53,7 +53,7 @@ public class PostOperatorExpression extends AbstractLineNumberExpression {
 
     @Override
     public String toString() {
-        return "PostOperatorExpression{" + expression + " " + operator + "}";
+        return "PostOperatorExpression{" + expression + " " + operator + "}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override
