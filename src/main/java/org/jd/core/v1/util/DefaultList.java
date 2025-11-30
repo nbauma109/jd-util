@@ -50,19 +50,23 @@ public class DefaultList<E> extends ArrayList<E> {
         }
     }
 
-    public E getFirst() {
+    @Override
+	public E getFirst() {
         return get(0);
     }
 
-    public E getLast() {
+    @Override
+	public E getLast() {
         return get(size()-1);
     }
 
-    public E removeFirst() {
+    @Override
+	public E removeFirst() {
         return remove(0);
     }
 
-    public E removeLast() {
+    @Override
+	public E removeLast() {
         return remove(size()-1);
     }
 

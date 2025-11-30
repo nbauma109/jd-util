@@ -14,13 +14,13 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class TypeArgumentToTypeVisitorTest {
-    
+
     @Test
     public void testTypeArgumentToTypeVisitor() {
         // Arrange
         TypeArgumentToTypeVisitor visitor = new TypeArgumentToTypeVisitor();
         visitor.init();
-        
+
         // Act & Assert - PrimitiveType
         PrimitiveType primitiveType = PrimitiveType.TYPE_INT;
         primitiveType.accept(visitor);
