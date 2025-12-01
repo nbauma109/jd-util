@@ -49,7 +49,6 @@ import static org.jd.core.v1.model.javasyntax.type.PrimitiveType.TYPE_VOID;
 public final class PrimitiveTypeUtil {
 
     private PrimitiveTypeUtil() {
-        super();
     }
 
     public static Type getPrimitiveTypeFromDescriptor(String descriptor) {
