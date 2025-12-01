@@ -25,7 +25,7 @@ public record WildcardExtendsTypeArgument(Type type) implements TypeArgument {
         if (typeArgument instanceof Type) {
             return type.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, typeArgument);
         }
-        
+
         return false;
     }
 

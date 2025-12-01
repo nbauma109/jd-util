@@ -16,7 +16,7 @@ public class ExpressionVariableInitializerTest {
         // Arrange
         int lineNumber = 10;
         Expression expression = new IntegerConstantExpression(lineNumber, 20);
-        
+
         // Act
         ExpressionVariableInitializer initializer = new ExpressionVariableInitializer(expression);
 

@@ -30,19 +30,19 @@ public class InnerObjectType extends ObjectType {
         this.setOuterType(outerType);
         checkArguments(qualifiedName, name);
     }
-    
+
     public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, ObjectType outerType) {
         super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments);
         this.setOuterType(outerType);
         checkArguments(qualifiedName, name);
     }
-    
+
     public InnerObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension, ObjectType outerType) {
         super(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
         this.outerType = outerType;
         checkArguments(qualifiedName, name);
     }
-    
+
     protected void checkArguments(String qualifiedName, String name) {
         if (name != null && Character.isDigit(name.charAt(0)) && qualifiedName != null) {
             throw new IllegalArgumentException();

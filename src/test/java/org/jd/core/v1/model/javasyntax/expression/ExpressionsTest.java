@@ -24,7 +24,7 @@ public class ExpressionsTest {
         List<Expression> expressionList = new ArrayList<>();
         expressionList.add(new CommentExpression("Test1"));
         expressionList.add(new CommentExpression("Test2"));
-        
+
         Expressions expressionsFromCollection = new Expressions(expressionList);
         assertEquals(2, expressionsFromCollection.size());
         assertEquals("Test1", ((CommentExpression) expressionsFromCollection.get(0)).text());
@@ -33,7 +33,7 @@ public class ExpressionsTest {
         // Test constructor with expression parameters
         Expression expression1 = new CommentExpression("Test3");
         Expression expression2 = new CommentExpression("Test4");
-        
+
         Expressions expressionsFromExpressions = new Expressions(expression1, expression2);
         assertEquals(2, expressionsFromExpressions.size());
         assertEquals("Test3", ((CommentExpression) expressionsFromExpressions.get(0)).text());
@@ -41,13 +41,13 @@ public class ExpressionsTest {
 
         // Test IllegalArgumentException on single element collection
         List<Expression> singleElementList = Collections.singletonList(new CommentExpression("Test5"));
-        
+
         Exception exception1 = assertThrows(IllegalArgumentException.class, () -> new Expressions(singleElementList));
         assertEquals("Use 'Expression' or sub class instead", exception1.getMessage());
 
         // Test IllegalArgumentException on single element parameters
         Expression singleExpression = new CommentExpression("Test6");
-        
+
         Exception exception2 = assertThrows(IllegalArgumentException.class, () -> new Expressions(singleExpression));
         assertEquals("Use 'Expression' or sub class instead", exception2.getMessage());
 
