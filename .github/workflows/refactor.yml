@@ -51,8 +51,10 @@ jobs:
           cleanup_always_use_blocks: true
           cleanup_use_blocks_only_for_return_and_throw: false
           cleanup_never_use_blocks: false
+          cleanup_else_if: true
           cleanup_simplify_boolean_if_else: true
           cleanup_reduce_indentation: true
+          cleanup_switch: true
           cleanup_add_all: true
 
           # Expressions
@@ -86,6 +88,7 @@ jobs:
           cleanup_controlflow_merge: false
           cleanup_one_if_rather_than_duplicate_blocks_that_fall_through: true
           cleanup_redundant_falling_through_block_end: true
+          cleanup_if_condition: true
           cleanup_pull_out_if_from_if_else: true
 
           ######################################################################
@@ -118,6 +121,7 @@ jobs:
           # Java 7
           cleanup_try_with_resource: true
           cleanup_multi_catch: true
+          cleanup_remove_redundant_type_arguments: true
           cleanup_hash: true
           cleanup_objects_equals: true
           cleanup_system_property: true
@@ -173,6 +177,7 @@ jobs:
           # Performance
           ######################################################################
 
+          cleanup_single_used_field: false
           cleanup_break_loop: true
           cleanup_static_inner_class: true
           cleanup_stringconcat_stringbuffer_stringbuilder: true
@@ -196,6 +201,7 @@ jobs:
 
           # Code standardization
           cleanup_invert_equals: true
+          cleanup_standard_comparison: true
           cleanup_bitwise_conditional_expression: false
 
           # Deprecated Methods Calls and Fields
@@ -240,21 +246,19 @@ jobs:
           cleanup_redundant_comparator: true
           cleanup_remove_unnecessary_array_creation: true
           cleanup_array_with_curly: true
+          cleanup_return_expression: true
           cleanup_useless_return: true
           cleanup_useless_continue: true
           cleanup_unlooped_while: true
 
-          cleanup_remove_redundant_type_arguments: true
+          ######################################################################
+          # Uncategorized items
+          ######################################################################
+
           cleanup_stringbuilder: true
-          cleanup_standard_comparison: true
-          cleanup_if_condition: true
-          cleanup_single_used_field: false
           cleanup_do_while_rather_than_while: true
           cleanup_insert_inferred_type_arguments: false
-          cleanup_return_expression: true
-          cleanup_switch: true
           cleanup_add_missing_nls_tags: false
-          cleanup_else_if: true
           cleanup_make_type_abstract_if_missing_method: false
 
       - name: Open pull request
