@@ -7,17 +7,17 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class CommentStatementTest {
-    
+
     private CommentStatement commentStatement;
     private TestVisitor visitor;
-    
+
     @Before
     public void setUp() {
         commentStatement = new CommentStatement();
         commentStatement.setText("This is a comment");
         visitor = new TestVisitor();
     }
-    
+
     @Test
     public void testCommentStatement() {
         // Act

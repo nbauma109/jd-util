@@ -50,7 +50,6 @@ import jd.core.model.instruction.bytecode.ByteCodeConstants;
 public final class ByteCodeUtil
 {
     private ByteCodeUtil() {
-        super();
     }
 
     public static int nextTableSwitchOffset(byte[] code, int index)
@@ -359,8 +358,8 @@ public final class ByteCodeUtil
     }
 
     public static boolean getArrayRefIndex(byte[] code) {
-        return code.length == 5 
-                && (code[0] & 255) == Const.ILOAD_0 
+        return code.length == 5
+                && (code[0] & 255) == Const.ILOAD_0
                 && (code[1] & 255) == Const.ANEWARRAY
                 && (code[4] & 255) == Const.ARETURN;
     }

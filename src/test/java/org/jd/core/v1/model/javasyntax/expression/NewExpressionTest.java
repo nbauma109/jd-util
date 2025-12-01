@@ -41,7 +41,7 @@ public class NewExpressionTest {
         newExpression.setParameters(parameters);
         newExpression.setDiamondPossible(true);
         newExpression.setQualifier(new ThisExpression(3, type));
-        
+
         assertEquals(parameters, newExpression.getParameters());
         assertTrue(newExpression.isDiamondPossible());
         assertNotNull(newExpression.getQualifier());
@@ -63,7 +63,7 @@ public class NewExpressionTest {
         assertTrue(copiedExpression.isDiamondPossible());
         assertTrue(copiedExpression.isNewExpression());
         assertEquals("NewExpression{new " + type + "}", copiedExpression.toString());
-        
+
         // Priority
         assertEquals(0, newExpression.getPriority());
     }
