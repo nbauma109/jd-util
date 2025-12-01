@@ -44,7 +44,7 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     public BaseType getExceptionTypes() {
         return Optional.ofNullable(methodTypes).map(MethodTypes::getExceptionTypes).orElse(null);
     }
-    
+
     public BaseTypeArgument getNonWildcardTypeArguments() {
         return nonWildcardTypeArguments;
     }
@@ -70,7 +70,7 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
     public Map<String, BaseType> getTypeBounds() {
         return typeBounds;
     }
-    
+
     public void setTypeBounds(Map<String, BaseType> typeBounds) {
         this.typeBounds = typeBounds;
     }

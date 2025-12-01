@@ -79,19 +79,19 @@ public class ObjectType implements Type {
     public ObjectType(String internalName, String qualifiedName, String name) {
         this(internalName, qualifiedName, name, Collections.emptySet(), null, 0);
     }
-    
+
     public ObjectType(String internalName, String qualifiedName, String name, int dimension) {
         this(internalName, qualifiedName, name, Collections.emptySet(), null, dimension);
     }
-    
+
     public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments) {
         this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, 0);
     }
-    
+
     public ObjectType(String internalName, String qualifiedName, String name, BaseTypeArgument typeArguments, int dimension) {
         this(internalName, qualifiedName, name, Collections.emptySet(), typeArguments, dimension);
     }
-    
+
     public ObjectType(String internalName, String qualifiedName, String name, Set<String> innerTypeNames, BaseTypeArgument typeArguments, int dimension) {
         this.internalName = internalName;
         this.qualifiedName = qualifiedName;
@@ -285,7 +285,7 @@ public class ObjectType implements Type {
     public boolean isObjectTypeArgument() {
         return true;
     }
-    
+
     public Set<String> getInnerTypeNames() {
         return innerTypeNames;
     }
