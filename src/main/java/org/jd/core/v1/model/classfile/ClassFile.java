@@ -126,7 +126,7 @@ public class ClassFile {
     public ConstantPool getConstantPool() {
         return javaClass.getConstantPool();
     }
-    
+
     public Attribute[] getAttributes() {
         return javaClass.getAttributes();
     }

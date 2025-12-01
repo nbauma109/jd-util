@@ -76,14 +76,14 @@ public class SignatureParserTest extends TestCase {
             visitor.reset();
             type.accept(visitor);
             source = visitor.toString();
-            
+
             assertEquals("byte", source);
-            
+
             type = typeMaker.parseFieldSignature(classFile, classFile.getFields()[2]);
             visitor.reset();
             type.accept(visitor);
             source = visitor.toString();
-            
+
             assertEquals("short", source);
 
             // Check method 'add'
@@ -184,15 +184,16 @@ public class SignatureParserTest extends TestCase {
 
             String source = visitor.toString();
             String expected =
-                    "T1, " +
-                            "T2, " +
-                            "T3 extends org.jd.core.test.AnnotatedClass, " +
-                            "T4 extends java.io.Serializable, " +
-                            "T5 extends java.io.Serializable & java.lang.Comparable, " +
-                            "T6 extends org.jd.core.test.AnnotatedClass & java.io.Serializable & java.lang.Comparable<org.jd.core.test.GenericClass>, " +
-                            "T7 extends java.util.Map<?, ?>, " +
-                            "T8 extends java.util.Map<? extends java.lang.Number, ? super java.io.Serializable>, " +
-                            "T9 extends T8";
+                    """
+				T1, \
+				T2, \
+				T3 extends org.jd.core.test.AnnotatedClass, \
+				T4 extends java.io.Serializable, \
+				T5 extends java.io.Serializable & java.lang.Comparable, \
+				T6 extends org.jd.core.test.AnnotatedClass & java.io.Serializable & java.lang.Comparable<org.jd.core.test.GenericClass>, \
+				T7 extends java.util.Map<?, ?>, \
+				T8 extends java.util.Map<? extends java.lang.Number, ? super java.io.Serializable>, \
+				T9 extends T8""";
 
             assertEquals(expected, source);
 
@@ -413,34 +414,34 @@ public class SignatureParserTest extends TestCase {
 
         assertEquals("java.io.IOException", source);
     }
-    
+
     @Test
     public void testAbstractMap() throws Exception {
         PrintTypeVisitor visitor = new PrintTypeVisitor();
         ClassPathLoader loader = new ClassPathLoader();
         TypeMaker typeMaker = new TypeMaker(loader);
-        
+
         ClassFile classFile = deserializer.loadClassFile(loader, "java/util/AbstractMap");
-        
+
         // Check type
         TypeMaker.TypeTypes typeTypes = typeMaker.parseClassFileSignature(classFile);
-        
+
         // Check type parameterTypes
         assertNotNull(typeTypes.getTypeParameters());
-        
+
         // Check super type
         assertEquals(ObjectType.TYPE_OBJECT, typeTypes.getSuperType());
         visitor.reset();
-        
+
         // Check interfaces
         assertNotNull(typeTypes.getInterfaces());
         visitor.reset();
         typeTypes.getInterfaces().accept(visitor);
         String source = visitor.toString();
-        
+
         assertEquals("java.util.Map<K, V>", source);
     }
-    
+
     @Test
     public void testQualityLevel() throws Exception {
         PrintTypeVisitor visitor = new PrintTypeVisitor();
@@ -451,37 +452,37 @@ public class SignatureParserTest extends TestCase {
             ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/annotation/Quality$Level");
 
             MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[2]);
-    
+
             // Check parameterTypes
             assertNotNull(methodTypes.getParameterTypes());
             assertEquals(2, methodTypes.getParameterTypes().size());
-    
+
             BaseType type = methodTypes.getParameterTypes();
             type.accept(visitor);
             String source = visitor.toString();
-    
+
             assertEquals("java.lang.String, int", source);
         }
     }
-    
+
     @Test
     public void testExceptionTypes() throws Exception {
         PrintTypeVisitor visitor = new PrintTypeVisitor();
         Loader loader = new ClassPathLoader();
         TypeMaker typeMaker = new TypeMaker(loader);
-        
+
         ClassFile classFile = deserializer.loadClassFile(loader, "org/apache/commons/lang3/function/FailableBooleanSupplier");
-        
+
         MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[0]);
-        
+
         // Check exceptionTypes
         assertNotNull(methodTypes.getExceptionTypes());
         assertEquals(1, methodTypes.getExceptionTypes().size());
-        
+
         BaseType type = methodTypes.getExceptionTypes();
         type.accept(visitor);
         String source = visitor.toString();
-        
+
         assertEquals("E", source);
     }
 
@@ -495,15 +496,15 @@ public class SignatureParserTest extends TestCase {
             ClassFile classFile = deserializer.loadClassFile(loader, "org/jd/core/test/Enum$Planet");
 
             MethodTypes methodTypes = typeMaker.parseMethodSignature(classFile, classFile.getMethods()[2]);
-            
+
             // Check parameterTypes
             assertNotNull(methodTypes.getParameterTypes());
             assertEquals(4, methodTypes.getParameterTypes().size());
-            
+
             BaseType type = methodTypes.getParameterTypes();
             type.accept(visitor);
             String source = visitor.toString();
-            
+
             assertEquals("java.lang.String, int, double, double", source);
         }
     }

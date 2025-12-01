@@ -67,7 +67,8 @@ public class DefaultStack<E> {
         int i = head - 1;
 
         while (i >=0 && elements[i] == old) {
-            elements[i--] = nevv;
+            elements[i] = nevv;
+			i--;
         }
     }
 
