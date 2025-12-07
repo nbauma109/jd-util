@@ -15,7 +15,6 @@ import org.jd.core.v1.model.javasyntax.expression.FieldReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.FloatConstantExpression;
 import org.jd.core.v1.model.javasyntax.expression.InstanceOfExpression;
 import org.jd.core.v1.model.javasyntax.expression.IntegerConstantExpression;
-import org.jd.core.v1.model.javasyntax.expression.LambdaFormalParametersExpression;
 import org.jd.core.v1.model.javasyntax.expression.LambdaIdentifiersExpression;
 import org.jd.core.v1.model.javasyntax.expression.LengthExpression;
 import org.jd.core.v1.model.javasyntax.expression.LocalVariableReferenceExpression;
@@ -120,7 +119,6 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
     private int floatConstantExpressionCount;
     private int instanceOfExpressionCount;
     private int integerConstantExpressionCount;
-    private int lambdaFormalParametersExpressionCount;
     private int lambdaIdentifiersExpressionCount;
     private int lengthExpressionCount;
     private int localVariableReferenceExpressionCount;
@@ -377,12 +375,6 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
     public void visit(IntegerConstantExpression expression) {
         super.visit(expression);
         integerConstantExpressionCount++;
-    }
-
-    @Override
-    public void visit(LambdaFormalParametersExpression expression) {
-        super.visit(expression);
-        lambdaFormalParametersExpressionCount++;
     }
 
     @Override
@@ -862,14 +854,6 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
 
     public void setIntegerConstantExpressionCount(int integerConstantExpressionCount) {
         this.integerConstantExpressionCount = integerConstantExpressionCount;
-    }
-
-    public int getLambdaFormalParametersExpressionCount() {
-        return lambdaFormalParametersExpressionCount;
-    }
-
-    public void setLambdaFormalParametersExpressionCount(int lambdaFormalParametersExpressionCount) {
-        this.lambdaFormalParametersExpressionCount = lambdaFormalParametersExpressionCount;
     }
 
     public int getLambdaIdentifiersExpressionCount() {

@@ -22,7 +22,6 @@ public abstract class AbstractNopExpressionVisitor implements ExpressionVisitor 
     @Override public void visit(FloatConstantExpression expression) {}
     @Override public void visit(IntegerConstantExpression expression) {}
     @Override public void visit(InstanceOfExpression expression) {}
-    @Override public void visit(LambdaFormalParametersExpression expression) {}
     @Override public void visit(LambdaIdentifiersExpression expression) {}
     @Override public void visit(LengthExpression expression) {}
     @Override public void visit(LocalVariableReferenceExpression expression) {}

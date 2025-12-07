@@ -22,7 +22,6 @@ public interface ExpressionVisitor {
     void visit(FloatConstantExpression expression);
     void visit(IntegerConstantExpression expression);
     void visit(InstanceOfExpression expression);
-    void visit(LambdaFormalParametersExpression expression);
     void visit(LambdaIdentifiersExpression expression);
     void visit(LengthExpression expression);
     void visit(LocalVariableReferenceExpression expression);
