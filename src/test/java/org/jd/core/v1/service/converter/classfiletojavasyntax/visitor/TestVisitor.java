@@ -5,7 +5,6 @@ import org.jd.core.v1.model.javasyntax.expression.ArrayExpression;
 import org.jd.core.v1.model.javasyntax.expression.BinaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.BooleanExpression;
 import org.jd.core.v1.model.javasyntax.expression.CastExpression;
-import org.jd.core.v1.model.javasyntax.expression.CommentExpression;
 import org.jd.core.v1.model.javasyntax.expression.ConstructorInvocationExpression;
 import org.jd.core.v1.model.javasyntax.expression.ConstructorReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.DoubleConstantExpression;
@@ -315,12 +314,6 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
     public void visit(CastExpression expression) {
         super.visit(expression);
         castExpressionCount++;
-    }
-
-    @Override
-    public void visit(CommentExpression expression) {
-        super.visit(expression);
-        commentExpressionCount++;
     }
 
     @Override

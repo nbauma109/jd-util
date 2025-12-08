@@ -12,7 +12,6 @@ public abstract class AbstractNopExpressionVisitor implements ExpressionVisitor 
     @Override public void visit(BinaryOperatorExpression expression) {}
     @Override public void visit(BooleanExpression expression) {}
     @Override public void visit(CastExpression expression) {}
-    @Override public void visit(CommentExpression expression) {}
     @Override public void visit(ConstructorInvocationExpression expression) {}
     @Override public void visit(ConstructorReferenceExpression expression) {}
     @Override public void visit(DoubleConstantExpression expression) {}

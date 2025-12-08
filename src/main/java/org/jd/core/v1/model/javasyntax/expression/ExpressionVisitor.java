@@ -12,7 +12,6 @@ public interface ExpressionVisitor {
     void visit(BinaryOperatorExpression expression);
     void visit(BooleanExpression expression);
     void visit(CastExpression expression);
-    void visit(CommentExpression expression);
     void visit(ConstructorInvocationExpression expression);
     void visit(ConstructorReferenceExpression expression);
     void visit(DoubleConstantExpression expression);
