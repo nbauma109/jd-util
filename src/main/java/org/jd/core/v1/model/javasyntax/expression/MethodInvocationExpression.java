@@ -83,6 +83,10 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
         this.typeBindings = typeBindings;
     }
 
+    public int getParameterTypeCount() {
+        return parameters == null ? 0 : parameters.size();
+    }
+
     @Override
     public boolean isMethodInvocationExpression() { return true; }
 
