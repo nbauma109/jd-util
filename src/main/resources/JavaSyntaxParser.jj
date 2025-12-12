@@ -1,0 +1,332 @@
+options {
+    STATIC = false;
+    LOOKAHEAD = 2;
+    JAVA_UNICODE_ESCAPE = true;
+    UNICODE_INPUT = true;
+}
+
+PARSER_BEGIN(JavaSyntaxParser)
+
+import java.util.*;
+import org.jd.core.v1.model.javasyntax.declaration.*;
+import org.jd.core.v1.model.javasyntax.expression.*;
+import org.jd.core.v1.model.javasyntax.statement.*;
+import org.jd.core.v1.model.javasyntax.type.*;
+import org.jd.core.v1.model.javasyntax.reference.*;
+
+public class JavaSyntaxParser {
+
+    public static Type primitiveType(String name) {
+        return new PrimitiveType(name, 0, 0, 0);
+    }
+
+    public static ObjectType objectType(String name) {
+        return new ObjectType(name.replace('.', '/'), name, name);
+    }
+}
+
+PARSER_END(JavaSyntaxParser)
+
+/* ===========================
+   ========== TOKENS =========
+   =========================== */
+
+SKIP : { " " | "\t" | "\r" | "\n" }
+
+TOKEN : {
+    < CLASS: "class" >
+|   < INTERFACE: "interface" >
+|   < PUBLIC: "public" >
+|   < PRIVATE: "private" >
+|   < PROTECTED: "protected" >
+|   < STATIC: "static" >
+|   < FINAL: "final" >
+|   < VOID: "void" >
+|   < NEW: "new" >
+|   < RETURN: "return" >
+|   < INT: "int" >
+|   < BOOLEAN: "boolean" >
+|   < IDENTIFIER: (["A"-"Z","a"-"z","_"])(["A"-"Z","a"-"z","0"-"9","_"])* >
+|   < INTEGER_LITERAL: (["0"-"9"])+ >
+|   < STRING_LITERAL: "\"" (~["\""])* "\"" >
+|   < LPAREN: "(" >
+|   < RPAREN: ")" >
+|   < LBRACE: "{" >
+|   < RBRACE: "}" >
+|   < SEMICOLON: ";" >
+|   < COMMA: "," >
+|   < ASSIGN: "=" >
+|   < PLUS: "+" >
+}
+
+/* ===========================
+   ===== COMPILATION UNIT ====
+   =========================== */
+
+TypeDeclaration CompilationUnit() :
+{
+    TypeDeclaration type;
+}
+{
+    type = TypeDeclaration()
+    <EOF>
+    { return type; }
+}
+
+/* ===========================
+   ===== TYPE DECLARATION ====
+   =========================== */
+
+TypeDeclaration TypeDeclaration() :
+{
+    Token name;
+    BodyDeclaration body;
+}
+{
+    <CLASS>
+    name = <IDENTIFIER>
+    body = ClassBody(name.image)
+    {
+        return new ClassDeclaration(
+            0,
+            name.image,
+            name.image,
+            body
+        );
+    }
+}
+
+BodyDeclaration ClassBody(String internalName) :
+{
+    MemberDeclarations members = new MemberDeclarations(8);
+}
+{
+    <LBRACE>
+    (
+        members.add(MemberDeclaration())
+    )*
+    <RBRACE>
+    {
+        return new BodyDeclaration(internalName, members);
+    }
+}
+
+/* ===========================
+   ===== MEMBER DECLARATION ==
+   =========================== */
+
+MemberDeclaration MemberDeclaration() :
+{
+    MemberDeclaration member;
+}
+{
+    member = FieldDeclaration()
+    |
+    member = MethodDeclaration()
+    |
+    member = ConstructorDeclaration()
+    { return member; }
+}
+
+FieldDeclaration FieldDeclaration() :
+{
+    Type type;
+    Token name;
+}
+{
+    type = Type()
+    name = <IDENTIFIER>
+    <SEMICOLON>
+    {
+        FieldDeclarator declarator = new FieldDeclarator(name.image);
+        FieldDeclarators declarators = new FieldDeclarators(declarator, null);
+        return new FieldDeclaration(0, type, declarators);
+    }
+}
+
+MethodDeclaration MethodDeclaration() :
+{
+    Type returnType;
+    Token name;
+    FormalParameters params;
+    Statements statements;
+}
+{
+    returnType = Type()
+    name = <IDENTIFIER>
+    params = FormalParameters()
+    statements = Block()
+    {
+        return new MethodDeclaration(
+            0,
+            name.image,
+            returnType,
+            params,
+            "()V",
+            statements
+        );
+    }
+}
+
+ConstructorDeclaration ConstructorDeclaration() :
+{
+    Token name;
+    FormalParameters params;
+    Statements statements;
+}
+{
+    name = <IDENTIFIER>
+    params = FormalParameters()
+    statements = Block()
+    {
+        return new ConstructorDeclaration(
+            0,
+            params,
+            "()V",
+            statements
+        );
+    }
+}
+
+/* ===========================
+   ===== PARAMETERS ==========
+   =========================== */
+
+FormalParameters FormalParameters() :
+{
+    FormalParameters parameters = new FormalParameters();
+    FormalParameter p;
+}
+{
+    <LPAREN>
+    (
+        p = FormalParameter()
+        { parameters.add(p); }
+        (
+            <COMMA>
+            p = FormalParameter()
+            { parameters.add(p); }
+        )*
+    )?
+    <RPAREN>
+    { return parameters; }
+}
+
+FormalParameter FormalParameter() :
+{
+    Type type;
+    Token name;
+}
+{
+    type = Type()
+    name = <IDENTIFIER>
+    {
+        return new FormalParameter(type, name.image);
+    }
+}
+
+/* ===========================
+   ===== STATEMENTS ==========
+   =========================== */
+
+Statements Block() :
+{
+    Statements statements = new Statements();
+    Statement s;
+}
+{
+    <LBRACE>
+    (
+        s = Statement()
+        { statements.add(s); }
+    )*
+    <RBRACE>
+    { return statements; }
+}
+
+Statement Statement() :
+{
+    Expression e;
+}
+{
+    <RETURN>
+    e = Expression()
+    <SEMICOLON>
+    { return new ReturnExpressionStatement(e); }
+|
+    e = Expression()
+    <SEMICOLON>
+    { return new ExpressionStatement(e); }
+}
+
+/* ===========================
+   ===== EXPRESSIONS =========
+   =========================== */
+
+Expression Expression() :
+{
+    Expression left;
+    Expression right;
+    Token op;
+}
+{
+    left = PrimaryExpression()
+    (
+        op = <PLUS>
+        right = PrimaryExpression()
+        {
+            left = new BinaryOperatorExpression(
+                0,
+                null,
+                left,
+                op.image,
+                right,
+                0
+            );
+        }
+    )*
+    { return left; }
+}
+
+Expression PrimaryExpression() :
+{
+    Token t;
+}
+{
+    t = <INTEGER_LITERAL>
+    { return new IntegerConstantExpression(Integer.parseInt(t.image)); }
+|
+    t = <STRING_LITERAL>
+    { return new StringConstantExpression(t.image.substring(1, t.image.length() - 1)); }
+|
+    t = <IDENTIFIER>
+    { return new LocalVariableReferenceExpression(null, t.image); }
+|
+    <NEW>
+    t = <IDENTIFIER>
+    <LPAREN>
+    <RPAREN>
+    {
+        ObjectType type = objectType(t.image);
+        return new NewExpression(0, type, "()V", false, false);
+    }
+}
+
+/* ===========================
+   ===== TYPES ===============
+   =========================== */
+
+Type Type() :
+{
+    Token t;
+}
+{
+    t = <INT>
+    { return primitiveType("int"); }
+|
+    t = <BOOLEAN>
+    { return primitiveType("boolean"); }
+|
+    t = <IDENTIFIER>
+    { return objectType(t.image); }
+}
