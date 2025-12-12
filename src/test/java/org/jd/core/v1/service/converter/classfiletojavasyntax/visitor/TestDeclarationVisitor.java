@@ -177,7 +177,7 @@ public class TestDeclarationVisitor extends AbstractNopDeclarationVisitor {
         super.visit(declaration);
         recordDeclarationCount++;
     }
-    
+
     @Override
     public void visit(StaticInitializerDeclaration declaration) {
         super.visit(declaration);
