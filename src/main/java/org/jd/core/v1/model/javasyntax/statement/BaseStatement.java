@@ -31,8 +31,8 @@ public interface BaseStatement extends Base<Statement> {
     default boolean isLocalVariableDeclarationStatement() { return false; }
     default boolean isMonitorEnterStatement() { return false; }
     default boolean isMonitorExitStatement() { return false; }
-    default boolean isReturnStatement() { return false; }
     default boolean isReturnExpressionStatement() { return false; }
+    default boolean isReturnStatement() { return false; }
     default boolean isStatements() { return false; }
     default boolean isSwitchStatement() { return false; }
     default boolean isSwitchStatementLabelBlock() { return false; }
@@ -40,6 +40,8 @@ public interface BaseStatement extends Base<Statement> {
     default boolean isThrowStatement() { return false; }
     default boolean isTryStatement() { return false; }
     default boolean isWhileStatement() { return false; }
+    default boolean isYieldExpressionStatement() { return false; }
+    default boolean isYieldStatement() { return false; }
 
     default Expression getCondition() { return NO_EXPRESSION; }
     default Expression getExpression() { return NO_EXPRESSION; }

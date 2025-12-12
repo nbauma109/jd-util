@@ -13,6 +13,7 @@ public interface DeclarationVisitor {
     void visit(BodyDeclaration declaration);
     void visit(ClassDeclaration declaration);
     void visit(ConstructorDeclaration declaration);
+    void visit(RecordDeclaration declaration);
     void visit(EnumDeclaration declaration);
     void visit(EnumDeclaration.Constant declaration);
     void visit(ExpressionVariableInitializer declaration);

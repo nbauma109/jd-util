@@ -21,6 +21,7 @@ import org.jd.core.v1.model.javasyntax.declaration.LocalVariableDeclarators;
 import org.jd.core.v1.model.javasyntax.declaration.MemberDeclarations;
 import org.jd.core.v1.model.javasyntax.declaration.MethodDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.ModuleDeclaration;
+import org.jd.core.v1.model.javasyntax.declaration.RecordDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.StaticInitializerDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.TypeDeclarations;
 
@@ -46,115 +47,144 @@ public class TestDeclarationVisitor extends AbstractNopDeclarationVisitor {
     private int methodDeclarationCount;
     private int memberDeclarationsCount;
     private int moduleDeclarationCount;
+    private int recordDeclarationCount;
     private int staticInitializerDeclarationCount;
     private int typeDeclarationsCount;
 
 
+    @Override
     public void visit(AnnotationDeclaration declaration) {
         super.visit(declaration);
         annotationDeclarationCount++;
     }
 
+    @Override
     public void visit(ArrayVariableInitializer declaration) {
         super.visit(declaration);
         arrayVariableInitializerCount++;
     }
 
+    @Override
     public void visit(BodyDeclaration declaration) {
         super.visit(declaration);
         bodyDeclarationCount++;
     }
 
+    @Override
     public void visit(ClassDeclaration declaration) {
         super.visit(declaration);
         classDeclarationCount++;
     }
 
+    @Override
     public void visit(ConstructorDeclaration declaration) {
         super.visit(declaration);
         constructorDeclarationCount++;
     }
 
+    @Override
     public void visit(EnumDeclaration declaration) {
         super.visit(declaration);
         enumDeclarationCount++;
     }
 
+    @Override
     public void visit(Constant declaration) {
         super.visit(declaration);
         constantCount++;
     }
 
+    @Override
     public void visit(ExpressionVariableInitializer declaration) {
         super.visit(declaration);
         expressionVariableInitializerCount++;
     }
 
+    @Override
     public void visit(FieldDeclaration declaration) {
         super.visit(declaration);
         fieldDeclarationCount++;
     }
 
+    @Override
     public void visit(FieldDeclarator declaration) {
         super.visit(declaration);
         fieldDeclaratorCount++;
     }
 
+    @Override
     public void visit(FieldDeclarators declarations) {
         super.visit(declarations);
         fieldDeclaratorsCount++;
     }
 
+    @Override
     public void visit(FormalParameter declaration) {
         super.visit(declaration);
         formalParameterCount++;
     }
 
+    @Override
     public void visit(FormalParameters declarations) {
         super.visit(declarations);
         formalParametersCount++;
     }
 
+    @Override
     public void visit(InterfaceDeclaration declaration) {
         super.visit(declaration);
         interfaceDeclarationCount++;
     }
 
+    @Override
     public void visit(LocalVariableDeclaration declaration) {
         super.visit(declaration);
         localVariableDeclarationCount++;
     }
 
+    @Override
     public void visit(LocalVariableDeclarator declarator) {
         super.visit(declarator);
         localVariableDeclaratorCount++;
     }
 
+    @Override
     public void visit(LocalVariableDeclarators declarators) {
         super.visit(declarators);
         localVariableDeclaratorsCount++;
     }
 
+    @Override
     public void visit(MethodDeclaration declaration) {
         super.visit(declaration);
         methodDeclarationCount++;
     }
 
+    @Override
     public void visit(MemberDeclarations declarations) {
         super.visit(declarations);
         memberDeclarationsCount++;
     }
 
+    @Override
     public void visit(ModuleDeclaration declaration) {
         super.visit(declaration);
         moduleDeclarationCount++;
     }
 
+    @Override
+    public void visit(RecordDeclaration declaration) {
+        super.visit(declaration);
+        recordDeclarationCount++;
+    }
+    
+    @Override
     public void visit(StaticInitializerDeclaration declaration) {
         super.visit(declaration);
         staticInitializerDeclarationCount++;
     }
 
+    @Override
     public void visit(TypeDeclarations declarations) {
         super.visit(declarations);
         typeDeclarationsCount++;
@@ -336,5 +366,13 @@ public class TestDeclarationVisitor extends AbstractNopDeclarationVisitor {
 
     public void setTypeDeclarationsCount(int typeDeclarationsCount) {
         this.typeDeclarationsCount = typeDeclarationsCount;
+    }
+
+    public int getRecordDeclarationCount() {
+        return recordDeclarationCount;
+    }
+
+    public void setRecordDeclarationCount(int recordDeclarationCount) {
+        this.recordDeclarationCount = recordDeclarationCount;
     }
 }

@@ -37,4 +37,5 @@ public interface StatementVisitor {
     void visit(TryStatement.CatchClause statement);
     void visit(TypeDeclarationStatement statement);
     void visit(WhileStatement statement);
+    void visit(YieldExpressionStatement statement);
 }

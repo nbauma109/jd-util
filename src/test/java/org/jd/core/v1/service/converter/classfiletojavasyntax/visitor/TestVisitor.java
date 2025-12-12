@@ -33,6 +33,7 @@ import org.jd.core.v1.model.javasyntax.expression.QualifiedSuperExpression;
 import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperConstructorInvocationExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperExpression;
+import org.jd.core.v1.model.javasyntax.expression.SwitchExpression;
 import org.jd.core.v1.model.javasyntax.expression.TernaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
 import org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression;
@@ -66,6 +67,7 @@ import org.jd.core.v1.model.javasyntax.statement.TryStatement.CatchClause;
 import org.jd.core.v1.model.javasyntax.statement.TryStatement.Resource;
 import org.jd.core.v1.model.javasyntax.statement.TypeDeclarationStatement;
 import org.jd.core.v1.model.javasyntax.statement.WhileStatement;
+import org.jd.core.v1.model.javasyntax.statement.YieldExpressionStatement;
 
 public class TestVisitor extends AbstractNopExpressionVisitor implements StatementVisitor {
 
@@ -87,6 +89,7 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
     private int localVariableDeclarationStatementCount;
     private int noStatementCount;
     private int returnExpressionStatementCount;
+    private int yieldExpressionStatementCount;
     private int returnStatementCount;
     private int statementsCount;
     private int switchStatementCount;
@@ -140,6 +143,7 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
     private int ternaryOperatorExpressionCount;
     private int thisExpressionCount;
     private int typeReferenceDotClassExpressionCount;
+    private int switchExpressionCount;
 
 
     // --- statement visit methods ---
@@ -222,6 +226,11 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
     @Override
     public void visit(ReturnExpressionStatement statement) {
         returnExpressionStatementCount++;
+    }
+
+    @Override
+    public void visit(YieldExpressionStatement statement) {
+        yieldExpressionStatementCount++;
     }
 
     @Override
@@ -500,6 +509,12 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
     public void visit(TypeReferenceDotClassExpression expression) {
         super.visit(expression);
         typeReferenceDotClassExpressionCount++;
+    }
+
+    @Override
+    public void visit(SwitchExpression expression) {
+        super.visit(expression);
+        switchExpressionCount++;
     }
 
 
@@ -1023,5 +1038,21 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
 
     public void setTypeReferenceDotClassExpressionCount(int typeReferenceDotClassExpressionCount) {
         this.typeReferenceDotClassExpressionCount = typeReferenceDotClassExpressionCount;
+    }
+
+    public int getYieldExpressionStatementCount() {
+        return yieldExpressionStatementCount;
+    }
+
+    public void setYieldExpressionStatementCount(int yieldExpressionStatementCount) {
+        this.yieldExpressionStatementCount = yieldExpressionStatementCount;
+    }
+
+    public int getSwitchExpressionCount() {
+        return switchExpressionCount;
+    }
+
+    public void setSwitchExpressionCount(int switchExpressionCount) {
+        this.switchExpressionCount = switchExpressionCount;
     }
 }

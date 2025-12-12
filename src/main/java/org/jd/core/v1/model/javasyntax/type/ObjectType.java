@@ -39,6 +39,7 @@ public class ObjectType implements Type {
     public static final ObjectType TYPE_SYSTEM            = new ObjectType(StringConstants.JAVA_LANG_SYSTEM, "java.lang.System", "System");
     public static final ObjectType TYPE_THREAD            = new ObjectType(StringConstants.JAVA_LANG_THREAD, "java.lang.Thread", "Thread");
     public static final ObjectType TYPE_THROWABLE         = new ObjectType(StringConstants.JAVA_LANG_THROWABLE, "java.lang.Throwable", "Throwable");
+    public static final ObjectType TYPE_RECORD            = new ObjectType(StringConstants.JAVA_LANG_RECORD, "java.lang.Record", "Record");
 
     public static final ObjectType TYPE_PRIMITIVE_BOOLEAN = new ObjectType("Z");
     public static final ObjectType TYPE_PRIMITIVE_BYTE    = new ObjectType("B");

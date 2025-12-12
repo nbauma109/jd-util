@@ -39,6 +39,7 @@ public interface BaseExpression extends Base<Expression> {
     default boolean isStringConstantExpression() { return false; }
     default boolean isSuperConstructorInvocationExpression() { return false; }
     default boolean isSuperExpression() { return false; }
+    default boolean isSwitchExpression() { return false; }
     default boolean isTernaryOperatorExpression() { return false; }
     default boolean isThisExpression() { return false; }
 

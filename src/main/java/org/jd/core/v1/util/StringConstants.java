@@ -101,6 +101,7 @@ public final class StringConstants
     public static final String JAVA_LANG_THREAD = "java/lang/Thread";
     public static final String JAVA_LANG_ITERABLE = "java/lang/Iterable";
     public static final String JAVA_LANG_SYSTEM = "java/lang/System";
+    public static final String JAVA_LANG_RECORD = "java/lang/Record";
 
     public static final String JAVA_LANG_VOID = "java/lang/Void";
     public static final String JAVA_LANG_BOOLEAN = "java/lang/Boolean";
