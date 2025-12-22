@@ -9,4 +9,5 @@ package org.jd.core.v1.model.javasyntax.declaration;
 
 public interface BaseTypeDeclaration extends BaseMemberDeclaration {
     String getInternalTypeName();
+    int getFlags();
 }

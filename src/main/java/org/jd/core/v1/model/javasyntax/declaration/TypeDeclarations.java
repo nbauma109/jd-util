@@ -8,6 +8,8 @@ package org.jd.core.v1.model.javasyntax.declaration;
 
 import org.jd.core.v1.util.DefaultList;
 
+import static org.apache.bcel.Const.ACC_PUBLIC;
+
 public class TypeDeclarations extends DefaultList<MemberDeclaration> implements BaseTypeDeclaration {
     private static final long serialVersionUID = 1L;
 
@@ -23,8 +25,8 @@ public class TypeDeclarations extends DefaultList<MemberDeclaration> implements 
         }
 
         for (MemberDeclaration member : this) {
-            if (member instanceof BaseTypeDeclaration baseTypeDeclaration) {
-                String internalName = baseTypeDeclaration.getInternalTypeName();
+            if (member instanceof BaseTypeDeclaration btd && (btd.getFlags() & ACC_PUBLIC) != 0) {
+                String internalName = btd.getInternalTypeName();
                 if (internalName != null && !internalName.isEmpty()) {
                     return internalName;
                 }
@@ -32,6 +34,11 @@ public class TypeDeclarations extends DefaultList<MemberDeclaration> implements 
         }
 
         return "";
+    }
+
+    @Override
+    public int getFlags() {
+        throw new UnsupportedOperationException();
     }
 
 }
