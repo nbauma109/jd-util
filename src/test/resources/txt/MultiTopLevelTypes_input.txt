@@ -1,0 +1,13 @@
+package demo;
+
+public class A {
+	String method() {
+/* 6 */ return "";
+	}
+}
+
+class B {
+	String method() {
+/* 12 */ return "";
+	}
+}

@@ -15,4 +15,23 @@ public class TypeDeclarations extends DefaultList<MemberDeclaration> implements 
     public void accept(DeclarationVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String getInternalTypeName() {
+        if (isEmpty()) {
+            return "";
+        }
+
+        for (MemberDeclaration member : this) {
+            if (member instanceof BaseTypeDeclaration baseTypeDeclaration) {
+                String internalName = baseTypeDeclaration.getInternalTypeName();
+                if (internalName != null && !internalName.isEmpty()) {
+                    return internalName;
+                }
+            }
+        }
+
+        return "";
+    }
+
 }

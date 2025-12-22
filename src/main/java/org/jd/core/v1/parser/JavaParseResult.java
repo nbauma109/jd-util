@@ -7,8 +7,10 @@
 
 package org.jd.core.v1.parser;
 
+import org.jd.core.v1.model.javafragment.ImportsFragment;
 import org.jd.core.v1.model.javasyntax.JavaImport;
 import org.jd.core.v1.model.javasyntax.declaration.BaseTypeDeclaration;
+import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,19 @@ public record JavaParseResult(String packageName,
     packageName = packageName == null ? "" : packageName;
     imports = Collections.unmodifiableList(Objects.requireNonNull(imports, "imports"));
     Objects.requireNonNull(typeDeclaration, "typeDeclaration");
+  }
+
+  public ImportsFragment getImportsFragments() {
+      ImportsFragment importsFragment = JavaFragmentFactory.newImportsFragment();
+      for (JavaImport javaImport : imports()) {
+          importsFragment.addImport(javaImport);
+      }
+      importsFragment.initLineCounts();
+      return importsFragment;
+  }
+
+  public String getInternalTypeName() {
+      return typeDeclaration.getInternalTypeName();
   }
 }
 
