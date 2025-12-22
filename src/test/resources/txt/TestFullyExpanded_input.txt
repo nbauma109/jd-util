@@ -62,10 +62,10 @@
               public String method5(int i) {
 /* 113 */         this.log("Test.method5 start");
 /* 114 */         String s = switch (i) {
-                      case 0 -> "Test.method4 case 0";
-                      case 1 -> "Test.method4 case 1";
-                      case 2 -> "Test.method4 case 2";
-                      case 3 -> "Test.method4 case 3";
+                      case 0 -> "Test.method5 case 0";
+                      case 1 -> "Test.method5 case 1";
+                      case 2 -> "Test.method5 case 2";
+                      case 3 -> "Test.method5 case 3";
                       default -> throw new IllegalArgumentException();
                   };
 /* 137 */         return "return:" + s;
