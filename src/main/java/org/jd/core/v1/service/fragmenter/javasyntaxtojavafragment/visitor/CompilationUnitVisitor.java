@@ -337,15 +337,15 @@ public class CompilationUnitVisitor extends StatementVisitor {
             BaseType permittedSubclasses = declaration.getPermittedSubclasses();
             if (permittedSubclasses != null && permittedSubclasses.size() > 0) {
                 fragments.addTokensFragment(tokens);
-                
+
                 JavaFragmentFactory.addSpacerBeforeImplements(fragments);
-                
+
                 tokens = new Tokens();
                 tokens.add(PERMITS);
                 tokens.add(TextToken.SPACE);
                 permittedSubclasses.accept(this);
                 fragments.addTokensFragment(tokens);
-                
+
                 tokens = new Tokens();
             }
 
@@ -954,18 +954,18 @@ public class CompilationUnitVisitor extends StatementVisitor {
             BaseType permittedSubclasses = declaration.getPermittedSubclasses();
             if (permittedSubclasses != null && permittedSubclasses.size() > 0) {
                 fragments.addTokensFragment(tokens);
-                
+
                 JavaFragmentFactory.addSpacerBeforeImplements(fragments);
-                
+
                 tokens = new Tokens();
                 tokens.add(PERMITS);
                 tokens.add(TextToken.SPACE);
                 permittedSubclasses.accept(this);
                 fragments.addTokensFragment(tokens);
-                
+
                 tokens = new Tokens();
             }
-            
+
             tokens.add(EndBlockToken.END_DECLARATION_OR_STATEMENT_BLOCK);
             fragments.addTokensFragment(tokens);
 

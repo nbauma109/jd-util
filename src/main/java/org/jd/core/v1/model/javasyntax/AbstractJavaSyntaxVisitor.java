@@ -483,7 +483,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
             rule.accept(this);
         }
     }
-    
+
     @Override
     public void visit(SwitchExpression.DefaultLabel label) {
     }
@@ -508,7 +508,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
         }
         safeAccept(rule.getStatements());
     }
-    
+
     @Override
     public void visit(ThisExpression expression) {
         BaseType type = expression.getType();
@@ -668,7 +668,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
         safeAcceptListStatement(statement.getLabels());
         statement.getStatements().accept(this);
     }
-    
+
     @Override
     public void visit(SynchronizedStatement statement) {
         statement.getMonitor().accept(this);
@@ -722,7 +722,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
     public void visit(YieldExpressionStatement statement) {
         statement.getExpression().accept(this);
     }
-    
+
     @Override
     public void visit(TypeParameter parameter) {}
 

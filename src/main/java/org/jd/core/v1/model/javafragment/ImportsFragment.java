@@ -36,14 +36,14 @@ public class ImportsFragment extends FlexibleFragment implements JavaFragment {
 
     public void addImport(JavaImport javaImport) {
         JavaImport imp = importMap.get(javaImport.getInternalName());
-        
+
         if (imp == null) {
             importMap.put(javaImport.getInternalName(), javaImport);
         } else {
             imp.incCounter();
         }
     }
-    
+
     public boolean incCounter(String internalName) {
         JavaImport imp = importMap.get(internalName);
 

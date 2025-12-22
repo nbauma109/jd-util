@@ -33,8 +33,7 @@ public class WriteTokenProcessor {
         printer.start(maxLineNumber, majorVersion, minorVersion);
         visitor.start(printer, tokens);
 
-        for (int i = 0; i < tokens.size(); i++) {
-            Token token = tokens.get(i);
+        for (Token token : tokens) {
             token.accept(visitor);
         }
 

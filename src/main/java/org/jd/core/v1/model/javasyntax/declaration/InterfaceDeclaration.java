@@ -22,7 +22,7 @@ public class InterfaceDeclaration extends TypeDeclaration {
     public InterfaceDeclaration(int flags, String internalName, String name, BaseType interfaces) {
         this(null, flags, internalName, name, null, interfaces, null, null);
     }
-    
+
     public InterfaceDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, BaseType interfaces, BodyDeclaration bodyDeclaration) {
         this(annotationReferences, flags, internalName, name, typeParameters, interfaces, null, bodyDeclaration);
     }
