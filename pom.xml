@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.nbauma109</groupId>
   <artifactId>jd-util</artifactId>
-  <version>1.2.5-SNAPSHOT</version>
+  <version>1.3.0-SNAPSHOT</version>
 
   <name>JD Util</name>
   <description>Common utilities for Java bytecode analysis and type bindings used by jd-core projects</description>
