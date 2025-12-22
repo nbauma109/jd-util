@@ -8,6 +8,13 @@
 package org.jd.core.v1.model.javasyntax.declaration;
 
 public interface BaseTypeDeclaration extends BaseMemberDeclaration {
+    /**
+     * @return internal name on a single type, else first public top-level type
+     */
     String getInternalTypeName();
+
+    /**
+     * @return modifier flags on a single type, else 0
+     */
     int getFlags();
 }
