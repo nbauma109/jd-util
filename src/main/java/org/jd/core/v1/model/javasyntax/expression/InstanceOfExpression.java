@@ -25,7 +25,7 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
     public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType) {
         this(lineNumber, expression, instanceOfType, null);
     }
-    
+
     @Override
     public Expression getExpression() {
         return expression;
@@ -48,7 +48,7 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
     public int getPriority() {
         return 8;
     }
-    
+
     public String getVariableName() {
         return variableName;
     }

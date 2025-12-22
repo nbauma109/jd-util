@@ -27,7 +27,7 @@ public class ClassDeclaration extends InterfaceDeclaration {
         super(annotationReferences, flags, internalName, name, typeParameters, interfaces, permittedSubclasses, bodyDeclaration);
         this.superType = superType;
     }
-    
+
     public ObjectType getSuperType() {
         return superType;
     }

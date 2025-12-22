@@ -234,7 +234,7 @@ public class ExpressionVisitor extends TypeVisitor {
         //tokens.add(new ReferenceToken(ReferenceToken.CONSTRUCTOR, ot.getInternalName(), "new", expression.getDescriptor(), currentInternalTypeName));
         tokens.add(NEW);
     }
-    
+
     @Override
     public void visit(DoubleConstantExpression expression) {
         tokens.addLineNumberToken(expression);
@@ -598,8 +598,7 @@ public class ExpressionVisitor extends TypeVisitor {
             objectType = objectType.createType(DiamondTypeArgument.DIAMOND);
         }
 
-        if (objectType instanceof InnerObjectType && expression.getQualifier() != null) {
-            InnerObjectType innerObjectType = (InnerObjectType) objectType;
+        if (objectType instanceof InnerObjectType innerObjectType && expression.getQualifier() != null) {
             InnerObjectType newObjectType = (InnerObjectType) innerObjectType.createType(innerObjectType.getTypeArguments());
             newObjectType.setOuterType(null);
             expression.setObjectType(newObjectType);
@@ -841,7 +840,7 @@ public class ExpressionVisitor extends TypeVisitor {
             JavaFragmentFactory.addEndStatementsBlock(fragments, start);
 
             tokens = new Tokens();
-            
+
         } else {
             statement.getStatements().accept(this);
         }

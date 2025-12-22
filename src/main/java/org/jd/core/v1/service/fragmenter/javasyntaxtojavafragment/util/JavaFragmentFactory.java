@@ -109,7 +109,7 @@ public final class JavaFragmentFactory {
         fragments.add(new EndBlockInParameterFragment(0, 1, 2, 15, "End statements in SwitchExpression block spacer in parameter", start));
         fragments.add(new SpaceSpacerFragment(0, 0, Integer.MAX_VALUE, 15, "End statements in SwitchExpression block spacer in parameter"));
     }
-    
+
     public static void addEndStatementsInSwitchExpressionBlock(List<Fragment> fragments, StartBlockFragment start) {
         fragments.add(new SpacerFragment(0, 0, Integer.MAX_VALUE, 15, "End statements in SwitchExpression block spacer"));
         fragments.add(new EndBlockFragment(0, 1, 2, 15, "End statements in SwitchExpression block spacer", start));

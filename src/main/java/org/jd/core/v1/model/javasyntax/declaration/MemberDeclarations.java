@@ -43,7 +43,7 @@ public class MemberDeclarations extends DefaultList<MemberDeclaration> implement
     public boolean addAll(int index, Collection<? extends MemberDeclaration> c) {
         return super.addAll(index, c);
     }
-    
+
     @Override
     public void accept(DeclarationVisitor visitor) {
         visitor.visit(this);

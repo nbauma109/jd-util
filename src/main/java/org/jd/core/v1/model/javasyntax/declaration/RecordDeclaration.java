@@ -51,7 +51,7 @@ public class RecordDeclaration extends TypeDeclaration {
     public boolean isClassDeclaration() {
         return true;
     }
-    
+
     @Override
     public void accept(DeclarationVisitor visitor) {
         visitor.visit(this);
