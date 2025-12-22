@@ -11,6 +11,7 @@ import java.util.Objects;
 public class FieldDeclarator implements BaseFieldDeclarator {
     private FieldDeclaration fieldDeclaration;
     private final String name;
+    protected int dimension;
     private VariableInitializer variableInitializer;
 
     public FieldDeclarator(String name) {
@@ -33,6 +34,14 @@ public class FieldDeclarator implements BaseFieldDeclarator {
 
     public String getName() {
         return name;
+    }
+
+    public int getDimension() {
+        return dimension;
+    }
+
+    public void setDimension(int dimension) {
+        this.dimension = dimension;
     }
 
     public VariableInitializer getVariableInitializer() {

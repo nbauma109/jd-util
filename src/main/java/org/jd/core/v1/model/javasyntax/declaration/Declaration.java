@@ -12,6 +12,8 @@ public interface Declaration {
     int FLAG_ANONYMOUS    = 0x0200;  // .  .  M  .  .  .  .  . // Custom flag
     // Extension
     int FLAG_DEFAULT      = 0x10000; // .  .  M  .  .  .  .  .
+    int FLAG_SEALED       = 0x20000;
+    int FLAG_NON_SEALED   = 0x40000;
 
     void accept(DeclarationVisitor visitor);
 }

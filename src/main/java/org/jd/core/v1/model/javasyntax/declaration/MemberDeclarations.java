@@ -8,6 +8,8 @@ package org.jd.core.v1.model.javasyntax.declaration;
 
 import org.jd.core.v1.util.DefaultList;
 
+import java.util.Collection;
+
 public class MemberDeclarations extends DefaultList<MemberDeclaration> implements BaseMemberDeclaration {
     private static final long serialVersionUID = 1L;
 
@@ -22,6 +24,26 @@ public class MemberDeclarations extends DefaultList<MemberDeclaration> implement
         }
     }
 
+    @Override
+    public void add(int index, MemberDeclaration element) {
+        super.add(index, element);
+    }
+
+    @Override
+    public boolean add(MemberDeclaration e) {
+        return super.add(e);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends MemberDeclaration> c) {
+        return super.addAll(c);
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends MemberDeclaration> c) {
+        return super.addAll(index, c);
+    }
+    
     @Override
     public void accept(DeclarationVisitor visitor) {
         visitor.visit(this);

@@ -8,6 +8,8 @@
 package org.jd.core.v1.model.javasyntax.expression;
 
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
+import org.jd.core.v1.model.javasyntax.statement.LambdaExpressionStatement;
+import org.jd.core.v1.model.javasyntax.statement.Statement;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public abstract class AbstractLambdaExpression extends AbstractLineNumberTypeExpression {
@@ -15,7 +17,18 @@ public abstract class AbstractLambdaExpression extends AbstractLineNumberTypeExp
 
     protected AbstractLambdaExpression(int lineNumber, Type type, BaseStatement statements) {
         super(lineNumber, type);
-        this.statements = statements;
+        this.statements = prepareStatements(statements);
+    }
+
+    private BaseStatement prepareStatements(BaseStatement baseStatement) {
+        if (baseStatement != null && baseStatement.size() == 1) {
+            Statement statement = baseStatement.getFirst();
+
+            if (statement.isReturnExpressionStatement() || statement.isExpressionStatement()) {
+                return new LambdaExpressionStatement(statement.getExpression());
+            }
+        }
+        return baseStatement;
     }
 
     @Override

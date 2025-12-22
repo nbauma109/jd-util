@@ -11,20 +11,27 @@ import org.jd.core.v1.model.javasyntax.reference.BaseAnnotationReference;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 
+import static org.apache.bcel.Const.ACC_FINAL;
 import static org.apache.bcel.Const.ACC_STATIC;
 
 public class InterfaceDeclaration extends TypeDeclaration {
     private final BaseTypeParameter typeParameters;
     private final BaseType interfaces;
+    private final BaseType permittedSubclasses;
 
     public InterfaceDeclaration(int flags, String internalName, String name, BaseType interfaces) {
-        this(null, flags, internalName, name, null, interfaces, null);
+        this(null, flags, internalName, name, null, interfaces, null, null);
+    }
+    
+    public InterfaceDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, BaseType interfaces, BodyDeclaration bodyDeclaration) {
+        this(annotationReferences, flags, internalName, name, typeParameters, interfaces, null, bodyDeclaration);
     }
 
-    public InterfaceDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, BaseType interfaces, BodyDeclaration bodyDeclaration) {
+    public InterfaceDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, BaseType interfaces, BaseType permittedSubclasses, BodyDeclaration bodyDeclaration) {
         super(annotationReferences, flags, internalName, name, bodyDeclaration);
         this.typeParameters = typeParameters;
         this.interfaces = interfaces;
+        this.permittedSubclasses = permittedSubclasses;
     }
 
     public BaseTypeParameter getTypeParameters() {
@@ -35,7 +42,13 @@ public class InterfaceDeclaration extends TypeDeclaration {
         return interfaces;
     }
 
+    public BaseType getPermittedSubclasses() {
+        return permittedSubclasses;
+    }
+
     public boolean isStatic() { return (flags & ACC_STATIC) != 0; }
+
+    public boolean isFinal() { return (flags & ACC_FINAL) != 0; }
 
     @Override
     public void accept(DeclarationVisitor visitor) {

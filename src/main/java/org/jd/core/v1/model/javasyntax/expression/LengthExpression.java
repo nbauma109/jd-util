@@ -23,6 +23,10 @@ public class LengthExpression extends AbstractLineNumberExpression {
     }
 
     @Override
+    public int getPriority() {
+        return 1;
+    }
+    @Override
     public Type getType() {
         return PrimitiveType.TYPE_INT;
     }

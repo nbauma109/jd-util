@@ -1,0 +1,4386 @@
+/*
+ * Copyright (c) 2025 GPLv3
+ * This project is distributed under the GPLv3 license.
+ * This is a Copyleft license that gives the user the right to use,
+ * copy and modify the code freely for non-commercial purposes.
+ */
+
+options
+{
+  JAVA_UNICODE_ESCAPE = true;
+  UNICODE_INPUT = true;
+  USER_TOKEN_MANAGER = false;
+}
+
+PARSER_BEGIN(JdJavaSourceParser)
+
+package org.jd.core.v1.parser;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.jd.core.v1.util.DefaultList;
+import org.jd.core.v1.model.javasyntax.*;
+import org.jd.core.v1.model.javasyntax.declaration.*;
+import org.jd.core.v1.model.javasyntax.expression.*;
+import org.jd.core.v1.model.javasyntax.reference.*;
+import org.jd.core.v1.model.javasyntax.statement.*;
+import org.jd.core.v1.model.javasyntax.type.*;
+
+import static org.jd.core.v1.model.javasyntax.declaration.Declaration.*;
+import static org.jd.core.v1.model.javasyntax.type.ObjectType.TYPE_UNDEFINED_OBJECT;
+import static org.jd.core.v1.parser.util.TextUtilities.*;
+import static org.jd.core.v1.parser.util.ASTUtilities.*;
+import static org.jd.core.v1.parser.util.LineNumberUtilities.sortMembersByFirstLineNumber;
+import static org.apache.bcel.Const.*;
+
+public class JdJavaSourceParser
+{
+  private static final int DEFAULT_CAPACITY = 4;
+
+  public static JavaParseResult parse(String source) throws ParseException
+  {
+    Map<Integer, Integer> map = 
+    JavaLineNumberCommentScanner.scan(source);
+    JdJavaSourceParser p = new JdJavaSourceParser(new StringReader(source));
+    p.setPhysicalToMappedLineNumbers(map);
+    return p.CompilationUnitResult();
+  }
+
+  private Map<Integer, Integer> physicalToMappedLineNumbers = Collections.emptyMap();
+  private List<JavaImport> parsedImports = new ArrayList<>();
+
+  public void setPhysicalToMappedLineNumbers(Map<Integer, Integer> map)
+  {
+    this.physicalToMappedLineNumbers = Optional.ofNullable(map).orElse(Collections.emptyMap());
+  }
+
+  private String currentPackage = "";
+  private Deque<TypeContext> typeContextStack = new ArrayDeque<>();
+  private int anonymousCounter;
+
+  private int consumeLineNumber(Token anchor)
+  {
+    int physical = anchor.beginLine;
+    Integer mapped = physicalToMappedLineNumbers.get(Integer.valueOf(physical));
+    return (mapped == null) ? 0 : mapped.intValue();
+  }
+
+  private String currentTypeInternalNameOrFallback()
+  {
+    TypeContext ctx = typeContextStack.peek();
+    if (ctx != null)
+    {
+      return ctx.internalName();
+    }
+    return "Anonymous";
+  }
+
+  private String nextAnonymousInternalName()
+  {
+    anonymousCounter++;
+    return currentTypeInternalNameOrFallback() + "$" + anonymousCounter;
+  }
+
+  private static ObjectType objectTypeFromQualified(String qualifiedName)
+  {
+    String q = qualifiedName;
+    String internal = q.replace('.', '/');
+    String simple = q.contains(".") ? q.substring(q.lastIndexOf('.') + 1) : q;
+    return new ObjectType(internal, q, simple);
+  }
+
+  private String computeInternalName(String simpleName)
+  {
+    TypeContext outer = typeContextStack.peek();
+    if (outer != null)
+    {
+      return outer.internalName() + "$" + simpleName;
+    }
+    String pkg = currentPackage;
+    if (pkg == null || pkg.isEmpty())
+    {
+      return simpleName;
+    }
+    return pkg.replace('.', '/') + "/" + simpleName;
+  }
+
+  private String computeQualifiedName(String simpleName)
+  {
+    TypeContext outer = typeContextStack.peek();
+    if (outer != null)
+    {
+      return outer.qualifiedName() + "." + simpleName;
+    }
+    String pkg = currentPackage;
+    if (pkg == null || pkg.isEmpty())
+    {
+      return simpleName;
+    }
+    return pkg + "." + simpleName;
+  }
+
+  private static int flagOf(String m)
+  {
+    if ("public".equals(m)) return ACC_PUBLIC;
+    if ("private".equals(m)) return ACC_PRIVATE;
+    if ("protected".equals(m)) return ACC_PROTECTED;
+    if ("static".equals(m)) return ACC_STATIC;
+    if ("final".equals(m)) return ACC_FINAL;
+    if ("synchronized".equals(m)) return ACC_SYNCHRONIZED;
+    if ("volatile".equals(m)) return ACC_VOLATILE;
+    if ("transient".equals(m)) return ACC_TRANSIENT;
+    if ("native".equals(m)) return ACC_NATIVE;
+    if ("abstract".equals(m)) return ACC_ABSTRACT;
+    if ("strictfp".equals(m)) return ACC_STRICT;
+    if ("default".equals(m)) return FLAG_DEFAULT;
+    return 0;
+  }
+
+  private static int flagsOf(List<String> modifiers)
+  {
+    int f = 0;
+    for (String modifier : modifiers)
+    {
+      f |= flagOf(modifier);
+    }
+    return f;
+  }
+
+  private int typeArgDepth = 0;
+
+  private void onTypeArgStart()
+  {
+    if (typeArgDepth == 0)
+    {
+      token_source.SwitchTo(IN_TYPE_ARGS);
+    }
+    typeArgDepth++;
+  }
+
+  private void onTypeArgEnd()
+  {
+    if (typeArgDepth <= 0)
+    {
+      return;
+    }
+    typeArgDepth--;
+    if (typeArgDepth == 0)
+    {
+      token_source.SwitchTo(DEFAULT);
+    }
+  }
+
+  private Deque<Set<String>> typeParameterScopes = new ArrayDeque<>();
+
+  private void pushTypeParameterScope(Set<String> names)
+  {
+    typeParameterScopes.push(names);
+  }
+
+  private void popTypeParameterScope()
+  {
+    if (!typeParameterScopes.isEmpty())
+    {
+      typeParameterScopes.pop();
+    }
+  }
+
+  private boolean isTypeParameterName(String name)
+  {
+    for (Set<String> s : typeParameterScopes)
+    {
+      if (s.contains(name))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isLocalVariableDeclarationAhead() {
+    int i = 1;
+    i = skipLeadingAnnotations(i);
+    i = skipFinalModifier(i);
+  
+    final int afterType = scanTypeLikePrefix(i);
+    if (afterType < 0) {
+      return false;
+    }
+  
+    final Token name = getToken(afterType);
+    if (name.kind != IDENTIFIER) {
+      return false;
+    }
+  
+    final int nextKind = getToken(afterType + 1).kind;
+    return nextKind == ASSIGN || nextKind == COMMA || nextKind == SEMI || nextKind == LBRACKET;
+  }
+  
+  private int skipFinalModifier(final int startIndex) {
+    int i = startIndex;
+    if (getToken(i).kind == FINAL) {
+      i++;
+    }
+    return i;
+  }
+  
+  private int skipLeadingAnnotations(final int startIndex) {
+    int i = startIndex;
+    while (getToken(i).kind == AT) {
+      i = skipOneAnnotation(i);
+      if (i < 0) {
+        return -1;
+      }
+    }
+    return i;
+  }
+  
+  private int skipOneAnnotation(final int atIndex) {
+    int i = atIndex;
+    if (getToken(i).kind != AT) {
+      return -1;
+    }
+    i++; // '@'
+  
+    if (getToken(i).kind != IDENTIFIER) {
+      return -1;
+    }
+    i = scanQualifiedName(i);
+    if (i < 0) {
+      return -1;
+    }
+  
+    if (getToken(i).kind == LPAREN) {
+      int depth = 0;
+      while (true) {
+        final Token t = getToken(i);
+        if (t.kind == 0) {
+          return -1;
+        }
+        if (t.kind == LPAREN) {
+          depth++;
+        } else if (t.kind == RPAREN) {
+          depth--;
+          if (depth == 0) {
+            i++;
+            break;
+          }
+        }
+        i++;
+      }
+    }
+  
+    return i;
+  }
+  
+  private int scanQualifiedName(final int startIndex) {
+    int i = startIndex;
+    if (getToken(i).kind != IDENTIFIER) {
+      return -1;
+    }
+    i++;
+    while (getToken(i).kind == DOT) {
+      if (getToken(i + 1).kind != IDENTIFIER) {
+        return -1;
+      }
+      i += 2;
+    }
+    return i;
+  }
+  
+  private int scanTypeLikePrefix(final int startIndex) {
+    int i = startIndex;
+    final int k = getToken(i).kind;
+  
+    if (isPrimitiveTypeToken(k) || k == VOID) {
+      i++;
+    } else if (k == IDENTIFIER) {
+      i = scanQualifiedName(i);
+      if (i < 0) {
+        return -1;
+      }
+    } else {
+      return -1;
+    }
+  
+    i = scanTypeArgumentsIfPresent(i);
+    if (i < 0) {
+      return -1;
+    }
+  
+    while (getToken(i).kind == LBRACKET && getToken(i + 1).kind == RBRACKET) {
+      i += 2;
+    }
+  
+    return i;
+  }
+  
+  private int scanTypeArgumentsIfPresent(final int startIndex) {
+    int i = startIndex;
+    if (getToken(i).kind != LT) {
+      return i;
+    }
+  
+    int depth = 0;
+    while (true) {
+      final Token t = getToken(i);
+      if (t.kind == 0) {
+        return -1;
+      }
+  
+      if (t.kind == LT) {
+        depth++;
+      } else if (t.kind == GT) {
+        depth = Math.max(0, depth - 1);
+        if (depth == 0) {
+          i++;
+          break;
+        }
+      } else if (t.kind == RSHIFT) {
+        depth = Math.max(0, depth - 2);
+        if (depth == 0) {
+          i++;
+          break;
+        }
+      } else if (t.kind == URSHIFT) {
+        depth = Math.max(0, depth - 3);
+        if (depth == 0) {
+          i++;
+          break;
+        }
+      }
+  
+      i++;
+    }
+  
+    return i;
+  }
+  
+  private boolean isPrimitiveTypeToken(final Token t) {
+    if (t == null) {
+      return false;
+    }
+    return isPrimitiveTypeToken(t.kind);
+  }
+  
+  private boolean isPrimitiveTypeToken(final int kind) {
+    return kind == BOOLEAN_KW
+        || kind == BYTE_KW
+        || kind == SHORT_KW
+        || kind == CHAR_KW
+        || kind == INT_KW
+        || kind == LONG_KW
+        || kind == FLOAT_KW
+        || kind == DOUBLE_KW;
+  }
+
+  private boolean isEnhancedForAhead() {
+    int index = 1;
+
+    index = skipTypeUseAnnotationsAhead(index);
+    if (index < 0) {
+      return false;
+    }
+
+    /* Support optional modifiers (at least "final") before the element type, and
+       allow type-use annotations again after them (for example: final @TypeUse Entry<...> e : ...). */
+    while (true) {
+      final Token m = getToken(index);
+      if (m == null) {
+        return false;
+      }
+      if (m.kind != FINAL) {
+        break;
+      }
+      index++;
+
+      index = skipTypeUseAnnotationsAhead(index);
+      if (index < 0) {
+        return false;
+      }
+    }
+
+    final Token first = getToken(index);
+    if (first == null) {
+      return false;
+    }
+
+    if (isPrimitiveTypeToken(first)) {
+      index++;
+    } else if (first.kind == IDENTIFIER) {
+      index = skipQualifiedNameWithTypeArgumentsAhead(index);
+      if (index < 0) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+
+    index = skipArrayDimsAhead(index);
+
+    final Token varName = getToken(index);
+    if (varName == null || varName.kind != IDENTIFIER) {
+      return false;
+    }
+    index++;
+
+    index = skipArrayDimsAhead(index);
+
+    final Token colon = getToken(index);
+    return colon != null && colon.kind == COLON;
+  }
+  
+  private int skipQualifiedNameWithTypeArgumentsAhead(final int startIndex) {
+    int index = skipTypeUseAnnotationsAhead(startIndex);
+  
+    Token t = getToken(index);
+    if (t == null || t.kind != IDENTIFIER) {
+      return -1;
+    }
+    index++;
+  
+    index = skipTypeArgumentsAhead(index);
+    if (index < 0) {
+      return -1;
+    }
+  
+    while (true) {
+      index = skipTypeUseAnnotationsAhead(index);
+  
+      final Token dot = getToken(index);
+      if (dot == null || dot.kind != DOT) {
+        break;
+      }
+      index++;
+  
+      index = skipTypeUseAnnotationsAhead(index);
+  
+      t = getToken(index);
+      if (t == null || t.kind != IDENTIFIER) {
+        return -1;
+      }
+      index++;
+  
+      index = skipTypeArgumentsAhead(index);
+      if (index < 0) {
+        return -1;
+      }
+    }
+  
+    return index;
+  }
+  
+  private int skipTypeArgumentsAhead(final int startIndex) {
+    Token t = getToken(startIndex);
+    if (t == null || t.kind != LT) {
+      return startIndex;
+    }
+  
+    int index = startIndex;
+    int depth = 0;
+  
+    while (true) {
+      t = getToken(index);
+      if (t == null) {
+        return -1;
+      }
+  
+      if (t.kind == LT) {
+        depth++;
+      } else if (t.kind == GT) {
+        depth--;
+      } else if (t.kind == RSHIFT) {
+        depth -= 2;
+      } else if (t.kind == URSHIFT) {
+        depth -= 3;
+      }
+  
+      index++;
+  
+      if (depth <= 0) {
+        return index;
+      }
+    }
+  }
+  
+  private int skipArrayDimsAhead(final int startIndex) {
+    int index = startIndex;
+  
+    while (true) {
+      final Token lb = getToken(index);
+      final Token rb = getToken(index + 1);
+  
+      if (lb == null || rb == null) {
+        return index;
+      }
+      if (lb.kind == LBRACKET && rb.kind == RBRACKET) {
+        index += 2;
+        continue;
+      }
+      return index;
+    }
+  }
+  
+  private int skipTypeUseAnnotationsAhead(final int startIndex) {
+    int index = startIndex;
+  
+    while (true) {
+      final Token at = getToken(index);
+      if (at == null || at.kind != AT) {
+        return index;
+      }
+      index++;
+  
+      Token t = getToken(index);
+      if (t == null || t.kind != IDENTIFIER) {
+        return -1;
+      }
+      index++;
+  
+      while (true) {
+        final Token dot = getToken(index);
+        final Token id = getToken(index + 1);
+        if (dot != null && id != null && dot.kind == DOT && id.kind == IDENTIFIER) {
+          index += 2;
+        } else {
+          break;
+        }
+      }
+  
+      final Token lp = getToken(index);
+      if (lp != null && lp.kind == LPAREN) {
+        int depth = 0;
+        while (true) {
+          t = getToken(index);
+          if (t == null) {
+            return -1;
+          }
+          if (t.kind == LPAREN) {
+            depth++;
+          } else if (t.kind == RPAREN) {
+            depth--;
+          }
+          index++;
+          if (depth == 0) {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  private boolean isPackageDeclarationAhead() {
+    int i = 1;
+    Token tok = getToken(i);
+
+    while (tok.kind == AT) {
+      i++;
+      tok = getToken(i);
+      if (tok.kind != IDENTIFIER) {
+        return false;
+      }
+
+      i++;
+      tok = getToken(i);
+      while (tok.kind == DOT) {
+        i++;
+        tok = getToken(i);
+        if (tok.kind != IDENTIFIER) {
+          return false;
+        }
+        i++;
+        tok = getToken(i);
+      }
+
+      if (tok.kind == LPAREN) {
+        int depth = 0;
+        do {
+          if (tok.kind == LPAREN) {
+            depth++;
+          } else if (tok.kind == RPAREN) {
+            depth--;
+          }
+          i++;
+          tok = getToken(i);
+          if (tok.kind == EOF) {
+            return false;
+          }
+        } while (depth > 0);
+      }
+
+      tok = getToken(i);
+    }
+
+    return tok.kind == PACKAGE;
+  }
+
+  private boolean isCastAhead() {
+    int index = 1;
+  
+    final Token lp = getToken(index);
+    if (lp == null || lp.kind != LPAREN) {
+      return false;
+    }
+    index++;
+  
+    index = skipTypeUseAnnotationsAhead(index);
+    if (index < 0) {
+      return false;
+    }
+  
+    final Token first = getToken(index);
+    if (first == null) {
+      return false;
+    }
+  
+    final boolean primitiveCast;
+    if (isPrimitiveTypeToken(first)) {
+      primitiveCast = true;
+      index++;
+    } else if (first.kind == IDENTIFIER) {
+      primitiveCast = false;
+      index = skipQualifiedNameWithTypeArgumentsAhead(index);
+      if (index < 0) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  
+    index = skipArrayDimsAhead(index);
+  
+    final Token rp = getToken(index);
+    if (rp == null || rp.kind != RPAREN) {
+      return false;
+    }
+    index++;
+  
+    final Token after = getToken(index);
+    if (after == null) {
+      return false;
+    }
+  
+    if (primitiveCast) {
+      return isUnaryExpressionStartToken(after);
+    }
+    return isUnaryExpressionNotPlusMinusStartToken(after);
+  }
+  
+  private boolean isUnaryExpressionStartToken(final Token t) {
+    if (t == null) {
+      return false;
+    }
+  
+    final int k = t.kind;
+  
+    if (k == BANG || k == TILDE || k == PLUS || k == MINUS || k == INC || k == DEC) {
+      return true;
+    }
+  
+    if (k == LPAREN || k == NEW || k == THIS || k == SUPER || k == SWITCH) {
+      return true;
+    }
+  
+    if (k == IDENTIFIER) {
+      return true;
+    }
+  
+    return k == INT_LITERAL
+        || k == LONG_LITERAL
+        || k == FLOAT_LITERAL
+        || k == DOUBLE_LITERAL
+        || k == CHAR_LITERAL
+        || k == STRING_LITERAL
+        || k == TEXT_BLOCK_LITERAL
+        || k == TRUE
+        || k == FALSE
+        || k == NULL;
+  }
+  
+  private boolean isUnaryExpressionNotPlusMinusStartToken(final Token t) {
+    if (!isUnaryExpressionStartToken(t)) {
+      return false;
+    }
+    return t.kind != PLUS && t.kind != MINUS;
+  }
+
+}
+PARSER_END(JdJavaSourceParser)
+
+/* -------------------- LEXER -------------------- */
+
+< DEFAULT, IN_TYPE_ARGS >
+SKIP :
+{
+  " "
+| "\t"
+| "\f"
+| "\r"
+| "\n"
+}
+
+< DEFAULT, IN_TYPE_ARGS >
+SKIP :
+{
+  < LINE_COMMENT :
+    "//" (~[ "\r", "\n" ])*
+    (
+      "\r\n"
+    | "\r"
+    | "\n"
+    )
+  >
+}
+
+< DEFAULT, IN_TYPE_ARGS >
+SKIP :
+{
+  < BLOCK_COMMENT :
+    "/*"
+    (
+      ~[ "*" ]
+    | "*" ~[ "/" ]
+    )*
+    "*/"
+  >
+}
+
+/* -------------------- NUMERIC LITERALS -------------------- */
+
+< DEFAULT, IN_TYPE_ARGS >
+TOKEN :
+{
+  /* digits */
+  < #DIGIT : [ "0"-"9" ] >
+| < #HEX_DIGIT : [ "0"-"9", "a"-"f", "A"-"F" ] >
+| < #OCT_DIGIT : [ "0"-"7" ] >
+| < #BIN_DIGIT : [ "0"-"1" ] >
+
+  /* digit sequences with underscores between digits */
+| < #DEC_DIGITS :
+    <DIGIT>
+    (
+      <DIGIT>
+    | "_" <DIGIT>
+    )*
+  >
+| < #HEX_DIGITS :
+    <HEX_DIGIT>
+    (
+      <HEX_DIGIT>
+    | "_" <HEX_DIGIT>
+    )*
+  >
+| < #OCT_DIGITS :
+    <OCT_DIGIT>
+    (
+      <OCT_DIGIT>
+    | "_" <OCT_DIGIT>
+    )*
+  >
+| < #BIN_DIGITS :
+    <BIN_DIGIT>
+    (
+      <BIN_DIGIT>
+    | "_" <BIN_DIGIT>
+    )*
+  >
+
+  /* integer bodies */
+| < #HEX_INT :
+    "0" ( "x" | "X" ) <HEX_DIGITS>
+  >
+| < #BIN_INT :
+    "0" ( "b" | "B" ) <BIN_DIGITS>
+  >
+| < #OCT_INT :
+    "0" <OCT_DIGITS>
+  >
+| < #DEC_INT :
+    <DEC_DIGITS>
+  >
+
+  /* floating parts (decimal only) */
+| < #EXPONENT :
+    ( "e" | "E" ) ( "+" | "-" )? <DEC_DIGITS>
+  >
+| < #DECIMAL_FRACTION :
+    ( <DEC_DIGITS> "." ( <DEC_DIGITS> )? )
+  | ( "." <DEC_DIGITS> )
+  >
+| < #DECIMAL_FLOAT :
+    ( <DECIMAL_FRACTION> ( <EXPONENT> )? )
+  | ( <DEC_DIGITS> <EXPONENT> )
+  >
+
+  /* public numeric tokens */
+| < LONG_LITERAL :
+    ( <HEX_INT> | <BIN_INT> | <OCT_INT> | <DEC_INT> )
+    ( "L" | "l" )
+  >
+| < INT_LITERAL :
+    ( <HEX_INT> | <BIN_INT> | <OCT_INT> | <DEC_INT> )
+  >
+| < FLOAT_LITERAL :
+    <DECIMAL_FLOAT> ( "f" | "F" )
+  >
+| < DOUBLE_LITERAL :
+    <DECIMAL_FLOAT> ( "d" | "D" )?
+  >
+}
+
+/* -------------------- STRING / CHAR LITERALS -------------------- */
+
+< DEFAULT, IN_TYPE_ARGS >
+TOKEN :
+{
+  /* octal escape after backslash: \0 .. \377 */
+< #OCTAL_ESCAPE :
+    ( [ "0"-"3" ] [ "0"-"7" ] [ "0"-"7" ] )
+  | ( [ "0"-"7" ] [ "0"-"7" ] )
+  | ( [ "0"-"7" ] )
+>
+
+  /* unicode escape after backslash (extra 'u' allowed) */
+| < #UNICODE_ESCAPE :
+    "u" ( "u" )* <HEX_DIGIT> <HEX_DIGIT> <HEX_DIGIT> <HEX_DIGIT>
+  >
+
+  /* common escape sequence including octal/unicode */
+| < #ESCAPE_SEQUENCE :
+    "\\"
+    (
+      [ "b", "t", "n", "f", "r", "\"", "'", "\\", "s" ]
+    | <OCTAL_ESCAPE>
+    | <UNICODE_ESCAPE>
+    )
+  >
+
+| < TEXT_BLOCK_LITERAL :
+    "\"\"\""
+    (
+      ~[ "\"" ]
+    | "\"" ~[ "\"" ]
+    | "\"\"" ~[ "\"" ]
+    )*
+    "\"\"\""
+  >
+
+| < STRING_LITERAL :
+    "\""
+    (
+      <ESCAPE_SEQUENCE>
+    | ~[ "\"", "\\", "\r", "\n" ]
+    )*
+    "\""
+  >
+
+| < CHAR_LITERAL :
+    "'"
+    (
+      <ESCAPE_SEQUENCE>
+    | ~[ "'", "\\", "\r", "\n" ]
+    )
+    "'"
+  >
+}
+
+/* keywords */
+< DEFAULT, IN_TYPE_ARGS >
+TOKEN :
+{
+  < PACKAGE : "package" >
+| < IMPORT : "import" >
+| < CLASS : "class" >
+| < INTERFACE : "interface" >
+| < ENUM : "enum" >
+| < RECORD : "record" >
+| < AT : "@" >
+| < AT_INTERFACE : "@interface" >
+| < EXTENDS : "extends" >
+| < IMPLEMENTS : "implements" >
+| < PERMITS : "permits" >
+| < THROWS : "throws" >
+| < SEALED : "sealed" >
+| < NON_SEALED : "non-sealed" >
+| < VOID : "void" >
+| < THIS : "this" >
+| < SUPER : "super" >
+| < NEW : "new" >
+| < RETURN : "return" >
+| < THROW : "throw" >
+| < IF : "if" >
+| < ELSE : "else" >
+| < WHILE : "while" >
+| < DO : "do" >
+| < FOR : "for" >
+| < TRY : "try" >
+| < CATCH : "catch" >
+| < FINALLY : "finally" >
+| < SWITCH : "switch" >
+| < CASE : "case" >
+| < WHEN : "when" >
+| < DEFAULT_KW : "default" >
+| < BREAK : "break" >
+| < CONTINUE : "continue" >
+| < ASSERT : "assert" >
+| < SYNCHRONIZED : "synchronized" >
+| < YIELD : "yield" >
+| < INSTANCEOF : "instanceof" >
+| < TRUE : "true" >
+| < FALSE : "false" >
+| < NULL : "null" >
+| < BOOLEAN_KW : "boolean" >
+| < BYTE_KW : "byte" >
+| < SHORT_KW : "short" >
+| < CHAR_KW : "char" >
+| < INT_KW : "int" >
+| < LONG_KW : "long" >
+| < FLOAT_KW : "float" >
+| < DOUBLE_KW : "double" >
+}
+
+/* modifiers */
+< DEFAULT, IN_TYPE_ARGS >
+TOKEN :
+{
+  < PUBLIC : "public" >
+| < PRIVATE : "private" >
+| < PROTECTED : "protected" >
+| < STATIC : "static" >
+| < FINAL : "final" >
+| < ABSTRACT : "abstract" >
+| < NATIVE : "native" >
+| < VOLATILE : "volatile" >
+| < TRANSIENT : "transient" >
+| < STRICTFP : "strictfp" >
+}
+
+/* punctuation/operators */
+< DEFAULT, IN_TYPE_ARGS >
+TOKEN :
+{
+  < LPAREN : "(" >
+| < RPAREN : ")" >
+| < LBRACE : "{" >
+| < RBRACE : "}" >
+| < LBRACKET : "[" >
+| < RBRACKET : "]" >
+| < SEMI : ";" >
+| < COMMA : "," >
+| < DOT : "." >
+| < COLON : ":" >
+| < QUESTION : "?" >
+| < METHOD_REF : "::" >
+| < ARROW : "->" >
+| < ASSIGN : "=" >
+| < PLUS_ASSIGN : "+=" >
+| < MINUS_ASSIGN : "-=" >
+| < STAR_ASSIGN : "*=" >
+| < SLASH_ASSIGN : "/=" >
+| < PERCENT_ASSIGN : "%=" >
+| < AND_ASSIGN : "&=" >
+| < OR_ASSIGN : "|=" >
+| < XOR_ASSIGN : "^=" >
+| < LSHIFT_ASSIGN : "<<=" >
+| < RSHIFT_ASSIGN : ">>=" >
+| < URSHIFT_ASSIGN : ">>>=" >
+| < PLUS : "+" >
+| < MINUS : "-" >
+| < STAR : "*" >
+| < SLASH : "/" >
+| < PERCENT : "%" >
+| < INC : "++" >
+| < DEC : "--" >
+| < BANG : "!" >
+| < TILDE : "~" >
+| < LT : "<" >
+| < GT : ">" >
+| < LE : "<=" >
+| < GE : ">=" >
+| < EQ : "==" >
+| < NE : "!=" >
+| < ANDAND : "&&" >
+| < OROR : "||" >
+| < AMP : "&" >
+| < BAR : "|" >
+| < CARET : "^" >
+| < LSHIFT : "<<" >
+}
+
+<DEFAULT>
+TOKEN :
+{
+  < RSHIFT : ">>" >
+| < URSHIFT : ">>>" >
+}
+
+< DEFAULT, IN_TYPE_ARGS >
+TOKEN :
+{
+  < IDENTIFIER : ([ "A"-"Z", "a"-"z", "_", "$" ]) ([ "A"-"Z", "a"-"z", "0"-"9", "_", "$" ])* >
+}
+
+/* -------------------- PARSER -------------------- */
+
+JavaParseResult CompilationUnitResult() :
+{
+  JavaImport imp;
+  MemberDeclaration td;
+  MemberDeclarations topLevelTypes = new MemberDeclarations(DEFAULT_CAPACITY);
+  BaseTypeDeclaration resultTypes;
+}
+{
+  (
+    LOOKAHEAD( { isPackageDeclarationAhead() } )
+    PackageDecl()
+  )?
+  (
+    imp = ImportDecl()
+    {
+      parsedImports.add(imp);
+    }
+  )*
+  (
+    td = TopLevelTypeDeclaration()
+    {
+      if (td != null)
+      {
+        topLevelTypes.add(td);
+      }
+    }
+  )*
+  <EOF>
+  {
+    if (topLevelTypes.isEmpty()) {
+      resultTypes = new TypeDeclarations();
+    } else {
+      resultTypes = toBaseTypeDeclaration(topLevelTypes);
+    }
+
+    return new JavaParseResult(currentPackage, new ArrayList<>(parsedImports), resultTypes);
+  }
+}
+
+void PackageDecl() :
+{
+  String qn;
+  BaseAnnotationReference packageAnnotations;
+}
+{
+  packageAnnotations = AnnotationsOpt()
+  <PACKAGE> qn = QualifiedName() <SEMI>
+  {
+    currentPackage = qn;
+  }
+}
+
+JavaImport ImportDecl() :
+{
+  String qn;
+  boolean isStatic = false;
+  boolean onDemand = false;
+}
+{
+  <IMPORT> 
+  (<STATIC>
+  {
+    isStatic = true;
+  }
+  )? 
+  qn = QualifiedName() 
+  (<DOT> <STAR>
+  {
+    onDemand = true;
+  }
+  )? 
+  <SEMI>
+  {
+    return new JavaImport(qn, isStatic, onDemand);
+  }
+}
+
+TypeDeclaration TopLevelTypeDeclaration() :
+{
+  BaseAnnotationReference anns;
+  List<String> mods;
+  TypeDeclaration td;
+}
+{
+  anns = AnnotationsOpt() 
+  mods = ModifiersOpt() 
+  td = TypeDeclarationAfterPreamble(anns, mods)
+  {
+    return td;
+  }
+}
+
+TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<String> mods) :
+{
+  Token nameTok;
+  String simpleName;
+  String internalName;
+  String qualifiedName;
+  int flags;
+  BodyDeclaration body;
+  BaseType interfaces;
+  BaseType permittedClasses;
+  Type superType;
+  List<EnumDeclaration.Constant> enumConstants;
+  List<RecordDeclaration.RecordComponent> recordComponents;
+  Set<String> typeParameterNames;
+  BaseTypeParameter typeParameters;
+  boolean pushedTypeParams;
+}
+{
+  (
+    <CLASS> nameTok = <IDENTIFIER>
+    {
+      simpleName = nameTok.image;
+      internalName = computeInternalName(simpleName);
+      qualifiedName = computeQualifiedName(simpleName);
+      flags = flagsOf(mods);
+      typeContextStack.push(new TypeContext(internalName, qualifiedName));
+      typeParameterNames = new HashSet<>();
+      pushedTypeParams = false;
+    }
+    typeParameters = TypeParametersOpt(typeParameterNames)
+    {
+      if (!typeParameterNames.isEmpty())
+      {
+        pushTypeParameterScope(typeParameterNames);
+        pushedTypeParams = true;
+      }
+    }
+    (
+      <EXTENDS> superType = ReferenceType()
+    |
+      {
+        superType = null;
+      }
+    )
+    (
+      <IMPLEMENTS> interfaces = TypeList()
+    |
+      {
+        interfaces = null;
+      }
+    )
+    (
+      <PERMITS> permittedClasses = TypeList()
+    |
+      {
+        permittedClasses = null;
+      }
+    )
+    body = ClassBody(internalName)
+    {
+      if (pushedTypeParams)
+      {
+        popTypeParameterScope();
+      }
+      typeContextStack.pop();
+      if (mods.contains("non-sealed"))
+      {
+        flags |= Declaration.FLAG_NON_SEALED;
+      }
+      if (mods.contains("sealed"))
+      {
+        flags |= Declaration.FLAG_SEALED;
+      }
+      return new ClassDeclaration(anns, flags, internalName, simpleName, typeParameters, (ObjectType) superType, interfaces, permittedClasses, body);
+    }
+  | 
+    <INTERFACE> nameTok = <IDENTIFIER>
+    {
+      simpleName = nameTok.image;
+      internalName = computeInternalName(simpleName);
+      qualifiedName = computeQualifiedName(simpleName);
+      flags = (flagsOf(mods)
+    | 0x0200);
+      typeContextStack.push(new TypeContext(internalName, qualifiedName));
+      typeParameterNames = new HashSet<>();
+      pushedTypeParams = false;
+    }
+    typeParameters = TypeParametersOpt(typeParameterNames)
+    {
+      if (!typeParameterNames.isEmpty())
+      {
+        pushTypeParameterScope(typeParameterNames);
+        pushedTypeParams = true;
+      }
+    }
+    (
+      <EXTENDS> interfaces = TypeList()
+    |
+      {
+        interfaces = null;
+      }
+    )
+    (
+      <PERMITS> permittedClasses = TypeList()
+    |
+      {
+        permittedClasses = null;
+      }
+    )
+    body = ClassBody(internalName)
+    {
+      if (pushedTypeParams)
+      {
+        popTypeParameterScope();
+      }
+      typeContextStack.pop();
+      if (mods.contains("non-sealed"))
+      {
+        flags |= Declaration.FLAG_NON_SEALED;
+      }
+      if (mods.contains("sealed"))
+      {
+        flags |= Declaration.FLAG_SEALED;
+      }
+      return new InterfaceDeclaration(anns, flags, internalName, simpleName, typeParameters, interfaces, permittedClasses, body);
+    }
+  | 
+    <ENUM> nameTok = <IDENTIFIER>
+    {
+      simpleName = nameTok.image;
+      internalName = computeInternalName(simpleName);
+      qualifiedName = computeQualifiedName(simpleName);
+      flags = (flagsOf(mods)
+    | 0x4000);
+      typeContextStack.push(new TypeContext(internalName, qualifiedName));
+      enumConstants = new ArrayList<>();
+    }
+    (
+      <IMPLEMENTS> interfaces = TypeList()
+    |
+      {
+        interfaces = null;
+      }
+    )
+    body = EnumBody(internalName, enumConstants)
+    {
+      typeContextStack.pop();
+      return new EnumDeclaration(anns, flags, internalName, simpleName, interfaces, enumConstants, body);
+    }
+  | 
+    <RECORD> nameTok = <IDENTIFIER>
+    {
+      simpleName = nameTok.image;
+      internalName = computeInternalName(simpleName);
+      qualifiedName = computeQualifiedName(simpleName);
+      flags = flagsOf(mods);
+      typeContextStack.push(new TypeContext(internalName, qualifiedName));
+      typeParameterNames = new HashSet<>();
+      pushedTypeParams = false;
+    }
+    typeParameters = TypeParametersOpt(typeParameterNames)
+    {
+      if (!typeParameterNames.isEmpty())
+      {
+        pushTypeParameterScope(typeParameterNames);
+        pushedTypeParams = true;
+      }
+    }
+    recordComponents = RecordHeader()
+    (
+      <IMPLEMENTS> interfaces = TypeList()
+    |
+      {
+        interfaces = null;
+      }
+    )
+    body = ClassBody(internalName)
+    {
+      if (pushedTypeParams)
+      {
+        popTypeParameterScope();
+      }
+      typeContextStack.pop();
+      return new RecordDeclaration(anns, flags, internalName, simpleName, typeParameters, recordComponents, interfaces, body);
+    }
+  | 
+    <AT_INTERFACE> nameTok = <IDENTIFIER>
+    {
+      simpleName = nameTok.image;
+      internalName = computeInternalName(simpleName);
+      qualifiedName = computeQualifiedName(simpleName);
+      flags = (flagsOf(mods)
+    | 0x2000);
+      typeContextStack.push(new TypeContext(internalName, qualifiedName));
+    }
+    body = ClassBody(internalName)
+    {
+      typeContextStack.pop();
+      return new AnnotationDeclaration(anns, flags, internalName, simpleName, null, body);
+    }
+  )
+}
+
+List<RecordDeclaration.RecordComponent> RecordHeader() :
+{
+  List<RecordDeclaration.RecordComponent> comps = new ArrayList<>();
+  RecordDeclaration.RecordComponent c;
+}
+{
+  <LPAREN>
+  (
+    c = RecordComponent()
+    {
+      comps.add(c);
+    }
+    (
+      <COMMA> c = RecordComponent()
+      {
+        comps.add(c);
+      }
+    )*
+  )?
+  <RPAREN>
+  {
+    return comps;
+  }
+}
+
+RecordDeclaration.RecordComponent RecordComponent() :
+{
+  BaseAnnotationReference anns;
+  Type t;
+  Token nameTok;
+}
+{
+  anns = AnnotationsOpt() 
+  t = TypeRef() 
+  nameTok = <IDENTIFIER>
+  {
+    return new RecordDeclaration.RecordComponent(anns, t, nameTok.image);
+  }
+}
+
+BodyDeclaration ClassBody(String internalTypeName) :
+{
+  MemberDeclarations members = new MemberDeclarations(DEFAULT_CAPACITY);
+  MemberDeclaration m;
+  MemberDeclarations decls;
+}
+{
+  <LBRACE>
+  (
+    m = ClassBodyDeclaration()
+    {
+      if (m != null) members.add(m);
+    }
+  )*
+  <RBRACE>
+  {
+    sortMembersByFirstLineNumber(members);
+    decls = new MemberDeclarations(members.size());
+    decls.addAll(members);
+    return new BodyDeclaration(internalTypeName, decls);
+  }
+}
+
+BodyDeclaration EnumBody(String enumInternalName, List<EnumDeclaration.Constant> constantsOut) :
+{
+  MemberDeclarations members = new MemberDeclarations(DEFAULT_CAPACITY);
+  MemberDeclaration m;
+  MemberDeclarations decls;
+}
+{
+  <LBRACE>
+  (
+    LOOKAHEAD(EnumConstantStart())
+    EnumConstants(enumInternalName, constantsOut) 
+    (<SEMI>)?
+  )?
+  (
+    m = ClassBodyDeclaration()
+    {
+      if (m != null) members.add(m);
+    }
+  )*
+  <RBRACE>
+  {
+    sortMembersByFirstLineNumber(members);
+    decls = new MemberDeclarations(members.size());
+    decls.addAll(members);
+    return new BodyDeclaration(enumInternalName, decls);
+  }
+}
+
+void EnumConstantStart() :
+{}
+{
+  <IDENTIFIER>
+}
+
+void EnumConstants(String enumInternalName, List<EnumDeclaration.Constant> constantsOut) :
+{
+  EnumDeclaration.Constant c;
+}
+{
+  c = EnumConstant
+  (
+    enumInternalName, constantsOut.size()
+  )
+  {
+    constantsOut.add(c);
+  }
+  (
+    <COMMA> c = EnumConstant
+    (
+      enumInternalName, constantsOut.size()
+    )
+    {
+      constantsOut.add(c);
+    }
+  )*
+  (<COMMA>)?
+}
+
+EnumDeclaration.Constant EnumConstant(String enumInternalName, int index) :
+{
+  Token nameTok;
+  BaseExpression args;
+  BodyDeclaration body;
+  int ln;
+  String anonInternalName;
+}
+{
+  nameTok = <IDENTIFIER>
+  {
+    ln = consumeLineNumber(nameTok);
+    args = null;
+    body = null;
+    anonInternalName = enumInternalName + "$" + nameTok.image;
+  }
+  (
+    LOOKAHEAD(<LPAREN>)
+    args = ArgumentsAsExpressions()
+  )?
+  (
+    LOOKAHEAD(<LBRACE>)
+    body = ClassBody(anonInternalName)
+  )?
+  {
+    return new EnumDeclaration.Constant(ln, nameTok.image, args, body);
+  }
+}
+
+MemberDeclaration ClassBodyDeclaration() :
+{
+  BaseAnnotationReference anns;
+  List<String> mods;
+  MemberDeclaration m;
+  BaseStatement stmts;
+}
+{
+  (
+    LOOKAHEAD( <SEMI> )
+    <SEMI>
+    { return null; }
+  |
+    /* static initializer */
+    LOOKAHEAD( <STATIC> <LBRACE> )
+    <STATIC>
+    stmts = BlockAsStatements()
+    { return new StaticInitializerDeclaration("", stmts); }
+  |
+    /* instance initializer (notably in anonymous class bodies) */
+    LOOKAHEAD( <LBRACE> )
+    stmts = BlockAsStatements()
+    {
+      return new ConstructorDeclaration(
+          FLAG_ANONYMOUS,
+          new FormalParameters(),
+          "",
+          stmts
+      );
+    }
+  |
+    anns = AnnotationsOpt()
+    mods = ModifiersOpt()
+    m = MemberAfterPreamble(anns, mods)
+    { return m; }
+  )
+}
+
+MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String> mods) :
+{
+  Token nameTok;
+  Type t;
+  int flags;
+  FormalParameters params;
+  Types throwsTypes;
+  BaseStatement stmts;
+  BaseElementValue defaultAnnotationValue;
+  String descriptor;
+  MemberDeclaration nested;
+  BaseFieldDeclarator fds;
+  Set<String> typeParameterNames;
+  BaseTypeParameter typeParameters;
+  boolean pushedTypeParameters;
+}
+{
+  (
+    /* Generic method / generic constructor: <T> ... */
+    LOOKAHEAD(<LT>)
+    {
+      typeParameterNames = new HashSet<>();
+      pushedTypeParameters = false;
+    }
+    typeParameters = TypeParametersOpt(typeParameterNames)
+    {
+      if (!typeParameterNames.isEmpty())
+      {
+        pushTypeParameterScope(typeParameterNames);
+        pushedTypeParameters = true;
+      }
+    }
+    (
+      /* Generic constructor: <T> C(...) { ... } */
+      LOOKAHEAD(<IDENTIFIER> <LPAREN>)
+      nameTok = <IDENTIFIER>
+      params = FormalParameterListOpt()
+      (
+        <THROWS> throwsTypes = TypeList()
+      |
+        { throwsTypes = null; }
+      )
+      stmts = BlockAsStatements()
+      {
+        flags = flagsOf(mods);
+        descriptor = "";
+        if (pushedTypeParameters)
+        {
+          popTypeParameterScope();
+        }
+        return new ConstructorDeclaration(anns, flags, typeParameters, params, throwsTypes, descriptor, stmts);
+      }
+    |
+      /* Generic method: <T> R m(...) ... */
+      t = TypeRef()
+      nameTok = <IDENTIFIER>
+      params = FormalParameterListOpt()
+      (
+        <THROWS> throwsTypes = TypeList()
+      |
+        { throwsTypes = null; }
+      )
+      (
+        stmts = BlockAsStatements()
+        {
+          defaultAnnotationValue = null;
+        }
+      |
+        (
+          <DEFAULT_KW> defaultAnnotationValue = ElementValue()
+        |
+          { defaultAnnotationValue = null; }
+        )
+        <SEMI>
+        { stmts = null; }
+      )
+      {
+        flags = flagsOf(mods);
+        descriptor = "";
+        if (pushedTypeParameters)
+        {
+          popTypeParameterScope();
+        }
+        return new MethodDeclaration(anns, flags, nameTok.image, typeParameters, t, params, throwsTypes, descriptor, stmts, defaultAnnotationValue);
+      }
+    )
+  |
+    /* Non-generic constructor */
+    LOOKAHEAD(<IDENTIFIER> <LPAREN>)
+    nameTok = <IDENTIFIER>
+    params = FormalParameterListOpt()
+    (
+      <THROWS> throwsTypes = TypeList()
+    |
+      { throwsTypes = null; }
+    )
+    stmts = BlockAsStatements()
+    {
+      flags = flagsOf(mods);
+      descriptor = "";
+      return new ConstructorDeclaration(anns, flags, null, params, throwsTypes, descriptor, stmts);
+    }
+  |
+    /* Record compact constructor:  Rec { ... }  or  Rec throws X { ... } */
+    LOOKAHEAD(<IDENTIFIER> (<THROWS> | <LBRACE>))
+    nameTok = <IDENTIFIER>
+    {
+      params = new FormalParameters();
+    }
+    (
+      <THROWS> throwsTypes = TypeList()
+    |
+      { throwsTypes = null; }
+    )
+    stmts = BlockAsStatements()
+    {
+      flags = flagsOf(mods);
+      descriptor = "";
+      return new RecordConstructorDeclaration(anns, flags, null, params, throwsTypes, descriptor, stmts);
+    }
+  |
+    /*
+      Method or field (non-generic).
+      We must not use LOOKAHEAD(TypeRef() ...) because lookahead does not run the
+      right-angle splitting actions for >> / >>> inside nested generics.
+    */
+    t = TypeRef()
+    (
+      /* Method */
+      LOOKAHEAD(<IDENTIFIER> <LPAREN>)
+      nameTok = <IDENTIFIER>
+      params = FormalParameterListOpt()
+      (
+        <THROWS> throwsTypes = TypeList()
+      |
+        { throwsTypes = null; }
+      )
+      (
+        stmts = BlockAsStatements()
+        {
+          defaultAnnotationValue = null;
+        }
+      |
+        (
+          <DEFAULT_KW> defaultAnnotationValue = ElementValue()
+        |
+          { defaultAnnotationValue = null; }
+        )
+        <SEMI>
+        { stmts = null; }
+      )
+      {
+        flags = flagsOf(mods);
+        descriptor = "";
+        return new MethodDeclaration(anns, flags, nameTok.image, null, t, params, throwsTypes, descriptor, stmts, defaultAnnotationValue);
+      }
+    |
+      /* Field */
+      fds = FieldDeclaratorList()
+      <SEMI>
+      {
+        flags = flagsOf(mods);
+        return new FieldDeclaration(anns, flags, t, fds);
+      }
+    )
+  |
+    /* Nested type */
+    LOOKAHEAD(<CLASS> | <INTERFACE> | <ENUM> | <RECORD> | <AT_INTERFACE>)
+    nested = TypeDeclarationAfterPreamble(anns, mods)
+    {
+      return (MemberDeclaration) nested;
+    }
+  )
+}
+
+BaseAnnotationReference AnnotationsOpt() :
+{
+  AnnotationReference a;
+  AnnotationReferences<AnnotationReference> list = null;
+  int count = 0;
+}
+{
+  (
+    a = Annotation()
+    {
+      if (count == 0)
+      {
+        list = new AnnotationReferences<>();
+      }
+      list.add(a);
+      count++;
+    }
+  )*
+  {
+    if (count == 0)
+    {
+      return null;
+    }
+    if (count == 1)
+    {
+      return list.get(0);
+    }
+    return list;
+  }
+}
+
+AnnotationReference Annotation() :
+{
+  ObjectType type;
+  BaseElementValue value = null;
+  BaseElementValuePair pairs = null;
+}
+{
+  < AT> 
+  type = AnnotationType()
+  (
+    <LPAREN>
+    (
+      LOOKAHEAD(< IDENTIFIER> <ASSIGN>)
+      pairs = ElementValuePairs()
+    | 
+      value = ElementValue()
+    )?
+    <RPAREN>
+  )?
+  {
+    if (value != null && pairs != null)
+    {
+      return new AnnotationReference(type, value, pairs);
+    }
+    if (pairs != null)
+    {
+      return new AnnotationReference(type, pairs);
+    }
+    if (value != null)
+    {
+      return new AnnotationReference(type, value);
+    }
+    return new AnnotationReference(type);
+  }
+}
+
+ObjectType AnnotationType() :
+{
+  String qn;
+}
+{
+  qn = QualifiedName()
+  {
+    return objectTypeFromQualified(qn);
+  }
+}
+
+BaseElementValuePair ElementValuePairs() :
+{
+  ElementValuePair p;
+  ElementValuePairs list = null;
+  int count = 0;
+}
+{
+  p = ElementValuePair()
+  {
+    list = new ElementValuePairs();
+    list.add(p);
+    count = 1;
+  }
+  (
+    < COMMA> 
+    p = ElementValuePair()
+    {
+      list.add(p);
+      count++;
+    }
+  )*
+  {
+    if (count == 1)
+    {
+      return list.get(0);
+    }
+    return list;
+  }
+}
+
+ElementValuePair ElementValuePair() :
+{
+  Token nameTok;
+  BaseElementValue v;
+}
+{
+  nameTok = < IDENTIFIER> 
+  < ASSIGN> 
+  v = ElementValue()
+  {
+    return new ElementValuePair(nameTok.image, v);
+  }
+}
+
+BaseElementValue ElementValueArrayInitializer() :
+{
+  BaseElementValue first = null;
+  BaseElementValue next;
+  ElementValues list = null;
+  int count = 0;
+}
+{
+  <LBRACE>
+  (
+    first = ElementValue()
+    {
+      count = 1;
+    }
+    (
+      <COMMA> 
+      next = ElementValue()
+      {
+        if (count == 1)
+        {
+          list = new ElementValues();
+          list.add(first);
+        }
+        list.add(next);
+        count++;
+      }
+    )*
+    (<COMMA>)?
+  )?
+  <RBRACE>
+  {
+    if (count == 0)
+    {
+      return new ElementValueArrayInitializerElementValue();
+    }
+    if (count == 1)
+    {
+      return new ElementValueArrayInitializerElementValue(first);
+    }
+    return new ElementValueArrayInitializerElementValue(list);
+  }
+}
+
+BaseElementValue ElementValue() :
+{
+  Expression e;
+  AnnotationReference a;
+  BaseElementValue arr;
+}
+{
+  (
+    LOOKAHEAD(<AT>)
+    a = Annotation()
+    {
+      return new AnnotationElementValue(a);
+    }
+  | 
+    LOOKAHEAD(<LBRACE>)
+    arr = ElementValueArrayInitializer()
+    {
+      return arr;
+    }
+  | 
+    e = Expression()
+    {
+      return new ExpressionElementValue(e);
+    }
+  )
+}
+
+List<String> ModifiersOpt() :
+{
+  List<String> mods = new ArrayList<>();
+  Token t;
+}
+{
+  (
+    (
+      t = <PUBLIC>
+    | t = <PRIVATE>
+    | t = <PROTECTED>
+    | t = <STATIC>
+    | t = <FINAL>
+    | t = <ABSTRACT>
+    | t = <NATIVE>
+    | t = <VOLATILE>
+    | t = <TRANSIENT>
+    | t = <STRICTFP>
+    | t = <SYNCHRONIZED>
+    | t = <DEFAULT_KW>
+    | t = <SEALED>
+    | t = <NON_SEALED>
+    )
+    {
+      mods.add(t.image);
+    }
+  )*
+  {
+    return mods;
+  }
+}
+
+int ArrayDimsOpt() :
+{
+  int dim = 0;
+}
+{
+  (<LBRACKET> <RBRACKET>
+  {
+    dim++;
+  }
+  )*
+  {
+    return dim;
+  }
+}
+
+PrimitiveType PrimitiveTypeBase() :
+{
+  Token t;
+}
+{
+  (
+    t = <BOOLEAN_KW>
+    {
+      return PrimitiveType.TYPE_BOOLEAN;
+    }
+  | t = <BYTE_KW>
+    {
+      return PrimitiveType.TYPE_BYTE;
+    }
+  | t = <SHORT_KW>
+    {
+      return PrimitiveType.TYPE_SHORT;
+    }
+  | t = <CHAR_KW>
+    {
+      return PrimitiveType.TYPE_CHAR;
+    }
+  | t = <INT_KW>
+    {
+      return PrimitiveType.TYPE_INT;
+    }
+  | t = <LONG_KW>
+    {
+      return PrimitiveType.TYPE_LONG;
+    }
+  | t = <FLOAT_KW>
+    {
+      return PrimitiveType.TYPE_FLOAT;
+    }
+  | t = <DOUBLE_KW>
+    {
+      return PrimitiveType.TYPE_DOUBLE;
+    }
+  )
+}
+
+Type TypeRef() :
+{
+  Token t;
+  Type base;
+  PrimitiveType pt;
+  int dim;
+  AnnotationReference ignoredTypeUseAnnotation;
+}
+{
+  /* Type-use annotations (ignored in AST) */
+  ( LOOKAHEAD(<AT>) ignoredTypeUseAnnotation = Annotation() )*
+
+  (
+    LOOKAHEAD(PrimitiveTypeBase())
+    pt = PrimitiveTypeBase()
+    {
+      base = pt;
+      dim = 0;
+    }
+  |
+    t = <VOID>
+    {
+      base = PrimitiveType.TYPE_VOID;
+      dim = 0;
+    }
+  |
+    base = ReferenceType()
+    {
+      dim = 0;
+    }
+  )
+  (
+    <LBRACKET> <RBRACKET>
+    {
+      dim++;
+    }
+  )*
+  {
+    if (dim == 0)
+    {
+      return base;
+    }
+    if (base instanceof Type)
+    {
+      Type baseType = (Type) base;
+      return baseType.createType(dim);
+    }
+    return base;
+  }
+}
+
+Type ReferenceType() :
+{
+  String qn;
+  String internalName;
+  String simpleName;
+  BaseTypeArgument targs;
+}
+{
+  qn = QualifiedName() 
+  targs = TypeArgumentsOpt()
+  {
+    if (targs == null && qn.indexOf('.') < 0 && isTypeParameterName(qn))
+    {
+      return new GenericType(qn);
+    }
+    internalName = qn.replace('.', '/');
+    simpleName = (qn.indexOf('.') >= 0) ? qn.substring(qn.lastIndexOf('.') + 1) : qn;
+    if (targs != null)
+    {
+      return new ObjectType(internalName, qn, simpleName, targs);
+    }
+    return new ObjectType(internalName, qn, simpleName);
+  }
+}
+
+ObjectType InstantiationType(final AtomicBoolean diamondPossible) :
+{
+  String qn;
+  String internalName;
+  String simpleName;
+  BaseTypeArgument targs;
+}
+{
+  qn = QualifiedName()
+  (
+    LOOKAHEAD(<LT>)
+    targs = TypeArgumentsOpt()
+  |
+    {
+      targs = null;
+    }
+  )
+  {
+    diamondPossible.set(targs == DiamondTypeArgument.DIAMOND);
+    internalName = qn.replace('.', '/');
+    simpleName = (qn.indexOf('.') >= 0) ? qn.substring(qn.lastIndexOf('.') + 1) : qn;
+    if (targs != null)
+    {
+      return new ObjectType(internalName, qn, simpleName, targs);
+    }
+    return new ObjectType(internalName, qn, simpleName);
+  }
+}
+
+String QualifiedName() :
+{
+  Token t;
+  StringBuilder sb = new StringBuilder();
+}
+{
+  t = <IDENTIFIER>
+  {
+    sb.append(t.image);
+  }
+  (
+    LOOKAHEAD(<DOT> <IDENTIFIER>)
+    <DOT> t = <IDENTIFIER>
+    {
+      sb.append('.').append(t.image);
+    }
+  )*
+  {
+    return sb.toString();
+  }
+}
+
+Types TypeList() :
+{
+  Types list = new Types();
+  Type t;
+  Types ts;
+}
+{
+  t = TypeRef()
+  {
+    list.add(t);
+  }
+  (
+    <COMMA> t = TypeRef()
+    {
+      list.add(t);
+    }
+  )*
+  {
+    ts = new Types(list.size());
+    ts.addAll(list);
+    return ts;
+  }
+}
+
+FormalParameters FormalParameterListOpt() :
+{
+  FormalParameters fps = new FormalParameters();
+  FormalParameter fp;
+}
+{
+  <LPAREN>
+  (
+    fp = FormalParameterOne()
+    {
+      fps.add(fp);
+    }
+    (
+      <COMMA> fp = FormalParameterOne()
+      {
+        fps.add(fp);
+      }
+    )*
+  )?
+  <RPAREN>
+  {
+    return fps;
+  }
+}
+
+FormalParameter FormalParameterOne() :
+{
+  BaseAnnotationReference anns;
+  List<String> mods;
+  Type t;
+  Token nameTok;
+  boolean varargs = false;
+  int dims;
+  FormalParameter fp;
+}
+{
+  anns = AnnotationsOpt() 
+  mods = ModifiersOpt() 
+  t = TypeRef() 
+  (<DOT> <DOT> <DOT>
+  {
+    varargs = true;
+  }
+  )? 
+  nameTok = <IDENTIFIER> 
+  dims = ArrayDimsOpt()
+  {
+    if (varargs && dims > 0)
+    {
+      throw new ParseException("Array declarator brackets are not allowed after a varargs parameter name");
+    }
+    if (varargs)
+    {
+      t = t.createType(t.getDimension() + 1);
+    }
+    fp = new FormalParameter(anns, t, varargs, nameTok.image);
+    if (mods != null && mods.contains("final"))
+    {
+      fp.setFinal(true);
+    }
+    return fp;
+  }
+}
+
+BaseFieldDeclarator FieldDeclaratorList() :
+{
+  FieldDeclarator first;
+  FieldDeclarator next;
+  FieldDeclarators list;
+}
+{
+  first = FieldDeclaratorOne()
+  (
+    <COMMA> 
+    next = FieldDeclaratorOne()
+    {
+      list = new FieldDeclarators(first, next);
+    }
+    (
+      <COMMA> 
+      next = FieldDeclaratorOne()
+      {
+        list.add(next);
+      }
+    )*
+    {
+      return list;
+    }
+  |
+    {
+      return first;
+    }
+  )
+}
+
+FieldDeclarator FieldDeclaratorOne() :
+{
+  Token nameTok;
+  VariableInitializer init;
+  int dims;
+  FieldDeclarator d;
+}
+{
+  nameTok = <IDENTIFIER> 
+  dims = ArrayDimsOpt()
+  (
+    <ASSIGN> init = VariableInitializer()
+    {
+      d = new FieldDeclarator(nameTok.image, init);
+      d.setDimension(dims);
+      return d;
+    }
+  |
+    {
+      d = new FieldDeclarator(nameTok.image);
+      d.setDimension(dims);
+      return d;
+    }
+  )
+}
+
+VariableInitializer VariableInitializer() :
+{
+  Expression e;
+  Type t;
+  ArrayVariableInitializer avi;
+  List<VariableInitializer> inits;
+  VariableInitializer vi;
+}
+{
+  LOOKAHEAD(<LBRACE>)
+  {
+    t = TYPE_UNDEFINED_OBJECT;
+    avi = new ArrayVariableInitializer(t);
+    inits = new ArrayList<>();
+  }
+  <LBRACE>
+  (
+    vi = VariableInitializer()
+    {
+      inits.add(vi);
+    }
+    (
+      <COMMA> vi = VariableInitializer()
+      {
+        inits.add(vi);
+      }
+    )*
+    (<COMMA>)?
+  )?
+  <RBRACE>
+  {
+    avi.addAll(inits);
+    return avi;
+  }
+| 
+  e = Expression()
+  {
+    return new ExpressionVariableInitializer(e);
+  }
+}
+
+/* -------------------- STATEMENTS -------------------- */
+
+void StatementStart() :
+{}
+{
+  <LBRACE>
+| <SEMI>
+| <RETURN>
+| <THROW>
+| <YIELD>
+| <IF>
+| <WHILE>
+| <DO>
+| <FOR>
+| <TRY>
+| <SWITCH>
+| <BREAK>
+| <CONTINUE>
+| <ASSERT>
+| <SYNCHRONIZED>
+| <AT> /* annotations before local variable declarations */
+  /* statement-expression starters */
+| <NEW>
+| <THIS>
+| <SUPER>
+| <LPAREN>
+| <INC>
+| <DEC>
+| <IDENTIFIER>
+  /* local variable declaration starters (TypeRef begins with these too) */
+| <BOOLEAN_KW>
+| <BYTE_KW>
+| <SHORT_KW>
+| <CHAR_KW>
+| <INT_KW>
+| <LONG_KW>
+| <FLOAT_KW>
+| <DOUBLE_KW>
+}
+
+BaseStatement BlockAsStatements() :
+{
+  List<Statement> list;
+}
+{
+  <LBRACE> 
+  list = BlockStatementsUntilRbrace() 
+  <RBRACE>
+  {
+    return toBaseStatement(list);
+  }
+}
+
+List<Statement> BlockStatementsUntilRbrace() :
+{
+  Statements list = new Statements();
+  Statement st;
+  BaseStatement inner;
+}
+{
+  {
+    while (getToken(1).kind != RBRACE)
+    {
+      if (getToken(1).kind == LBRACE)
+      {
+        inner = BlockAsStatements();
+        appendBaseStatement(list, inner);
+      }
+      else
+      {
+        st = StatementNoBlock();
+        if (st != null)
+        {
+          list.add(st);
+        }
+      }
+    }
+  }
+  {
+    return list;
+  }
+}
+
+Statement Statement() :
+{
+  Statement st;
+}
+{
+  st = StatementNoBlock()
+  {
+    return st;
+  }
+}
+
+Statement StatementNoBlock() :
+{
+  Token t;
+  Expression e;
+  Expression e2;
+  BaseStatement s1;
+  BaseStatement s2;
+  Statements s3;
+  Type ty;
+  Token nameTok;
+  Token labelTok;
+  BaseAnnotationReference localAnns;
+  List<String> mods;
+  LocalVariableDeclarators decls;
+  LocalVariableDeclarationStatement decl;
+  ForInitResult initRes;
+  BaseExpression update;
+  Expression cond;
+  ForStatement forStatement;
+  ForEachStatement forEachStatement;
+  Statement body;
+  Statement labeled;
+  List<SwitchStatement.Block> blocks;
+  DefaultList<TryStatement.Resource> resources;
+  DefaultList<TryStatement.CatchClause> catches;
+  BaseStatement fin;
+  int ln;
+}
+{
+  (
+    t = <SEMI>
+    {
+      return null;
+    }
+  | 
+    /* Labeled statement: label: <statement-or-block> */
+    LOOKAHEAD(<IDENTIFIER> <COLON>)
+    labelTok = <IDENTIFIER> <COLON> 
+    s1 = StatementAsStatements()
+    {
+      return new LabelStatement(labelTok.image, s1);
+    }
+  | 
+    /* Labeled statement: outer: for (...) ... */
+    LOOKAHEAD(<IDENTIFIER> <COLON>)
+    labelTok = <IDENTIFIER> <COLON> 
+    labeled = StatementNoBlock()
+    {
+      if (labeled == null)
+      {
+        labeled = NoStatement.NO_STATEMENT;
+      }
+      return new LabelStatement(labelTok.image, labeled);
+    }
+  | 
+    t = <RETURN>
+    (
+      LOOKAHEAD(<SEMI>)
+      <SEMI>
+      {
+        return ReturnStatement.RETURN;
+      }
+    | 
+      e = Expression() 
+      <SEMI>
+      {
+        return new ReturnExpressionStatement(consumeLineNumber(t), e);
+      }
+    )
+  | 
+    t = <THROW> e = Expression() <SEMI>
+    {
+      return new ThrowStatement(e);
+    }
+  | 
+    t = <YIELD> e = Expression() <SEMI>
+    {
+      return new YieldExpressionStatement(consumeLineNumber(t), e);
+    }
+  | 
+    t = <IF> <LPAREN> e = Expression() <RPAREN> 
+    s1 = StatementAsStatements()
+    (
+      <ELSE> s2 = StatementAsStatements()
+      {
+        return new IfElseStatement(e, s1, s2);
+      }
+    |
+      {
+        return new IfStatement(e, s1);
+      }
+    )
+  | 
+    t = <WHILE> <LPAREN> e = Expression() <RPAREN> 
+    s1 = StatementAsStatements()
+    {
+      return new WhileStatement(e, s1);
+    }
+  | 
+    t = <DO> 
+    s1 = StatementAsStatements() 
+    <WHILE> <LPAREN> e = Expression() <RPAREN> <SEMI>
+    {
+      return new DoWhileStatement(e, s1);
+    }
+  | 
+    t = <FOR> <LPAREN>
+    (
+      LOOKAHEAD( { isEnhancedForAhead() } )
+      localAnns = AnnotationsOpt() 
+      mods = ModifiersOpt() 
+      ty = TypeRef() 
+      nameTok = <IDENTIFIER> 
+      <COLON> 
+      e = Expression() 
+      <RPAREN> 
+      s1 = StatementAsStatements()
+      {
+        forEachStatement = new ForEachStatement(ty, nameTok.image, e, s1);
+	    if (mods != null && mods.contains("final"))
+	    {
+	      forEachStatement.setFinal(true);
+	    }
+	    return forEachStatement;
+      }
+    | 
+      initRes = ForInitOpt() 
+      <SEMI>
+      (
+        cond = Expression()
+      |
+        {
+          cond = NoExpression.NO_EXPRESSION;
+        }
+      )
+      <SEMI> 
+      update = ForUpdateOpt() 
+      <RPAREN> 
+      s1 = StatementAsStatements()
+      {
+        forStatement = new ForStatement(initRes.init(), cond, update, s1);
+        if (initRes.declaration() != null)
+        {
+          forStatement.setDeclaration(initRes.declaration());
+          forStatement.setInit(null);
+        }
+        return forStatement;
+      }
+    )
+  | 
+    t = <SWITCH> 
+    <LPAREN> e = Expression() <RPAREN> 
+    blocks = SwitchStatementBlocks()
+    {
+      return new SwitchStatement(e, blocks);
+    }
+  | 
+    t = <TRY>
+    (
+      LOOKAHEAD(<LPAREN>)
+      resources = TryResources() 
+      s1 = BlockAsStatements() 
+      catches = CatchClausesOpt()
+      (
+        fin = FinallyOpt()
+      |
+        {
+          fin = null;
+        }
+      )
+      {
+        return new TryStatement(resources, s1, catches, fin);
+      }
+    | 
+      s1 = BlockAsStatements() 
+      catches = CatchClausesOpt()
+      (
+        fin = FinallyOpt()
+      |
+        {
+          fin = null;
+        }
+      )
+      {
+        return new TryStatement(s1, catches, fin);
+      }
+    )
+  | 
+    t = <SYNCHRONIZED> <LPAREN> e = Expression() <RPAREN> 
+    s1 = BlockAsStatements()
+    {
+      return new SynchronizedStatement(e, s1);
+    }
+  | 
+    t = <ASSERT> 
+    e = Expression()
+    (
+      <COLON> e2 = Expression()
+      { /* keep going */ }
+    |
+      {
+        e2 = null;
+      }
+    )
+    <SEMI>
+    {
+      return new AssertStatement(e, e2);
+    }
+  | 
+    t = <BREAK>
+    (
+      nameTok = <IDENTIFIER> <SEMI>
+      {
+        return new BreakStatement(nameTok.image);
+      }
+    | 
+      <SEMI>
+      {
+        return BreakStatement.BREAK;
+      }
+    )
+  | 
+    t = <CONTINUE>
+    (
+      nameTok = <IDENTIFIER> <SEMI>
+      {
+        return new ContinueStatement(nameTok.image);
+      }
+    | 
+      <SEMI>
+      {
+        return ContinueStatement.CONTINUE;
+      }
+    )
+  | 
+    LOOKAHEAD(<AT> <IDENTIFIER>)
+    localAnns = AnnotationsOpt() 
+    mods = ModifiersOpt() 
+    ty = TypeRef() 
+    decls = LocalVariableDeclaratorList(ty) 
+    <SEMI>
+    {
+      /* we parse localAnns to accept the syntax, but the model does not store it */
+      decl = new LocalVariableDeclarationStatement(ty, decls);
+      if (mods != null && mods.contains("final"))
+      {
+        decl.setFinal(true);
+      }
+      return decl;
+    }
+  | 
+    LOOKAHEAD( { isLocalVariableDeclarationAhead() } )
+    mods = ModifiersOpt() 
+    ty = TypeRef() 
+    decls = LocalVariableDeclaratorList(ty) 
+    <SEMI>
+    {
+      decl = new LocalVariableDeclarationStatement(ty, decls);
+      if (mods != null && mods.contains("final"))
+      {
+        decl.setFinal(true);
+      }
+      return decl;
+    }
+  | 
+    e = Expression() <SEMI>
+    {
+      return new ExpressionStatement(e);
+    }
+  )
+}
+
+BaseStatement StatementAsStatements() :
+{
+  Statement st;
+}
+{
+  (
+    LOOKAHEAD(<LBRACE>)
+    {
+      return BlockAsStatements();
+    }
+  | 
+    st = StatementNoBlock()
+    {
+      return Optional.ofNullable(st).orElse(NoStatement.NO_STATEMENT);
+    }
+  )
+}
+
+ForInitResult ForInitOpt() :
+{
+  LocalVariableDeclaration decl;
+  BaseExpression init;
+}
+{
+  (
+    LOOKAHEAD(TypeRef() <IDENTIFIER> (<ASSIGN> | <COMMA> | <SEMI> | <LBRACKET>))
+    decl = ForInitLocalVariableDeclaration()
+    {
+      return new ForInitResult(decl, null);
+    }
+  | 
+    init = ExpressionListAsBaseExpression()
+    {
+      return new ForInitResult(null, init);
+    }
+  )?
+  {
+    return new ForInitResult(null, new Expressions());
+  }
+}
+
+BaseExpression ForUpdateOpt() :
+{
+  BaseExpression upd = new Expressions();
+}
+{
+  (
+    upd = ExpressionListAsBaseExpression()
+  )?
+  {
+    return upd;
+  }
+}
+
+BaseExpression ExpressionListAsBaseExpression() :
+{
+  Expressions list = new Expressions();
+  Expression e;
+}
+{
+  e = Expression()
+  {
+    list.add(e);
+  }
+  (
+    <COMMA> e = Expression()
+    {
+      list.add(e);
+    }
+  )*
+  {
+    return toBaseExpression(list);
+  }
+}
+
+LocalVariableDeclaration ForInitLocalVariableDeclaration() :
+{
+  Type type;
+  Token name;
+  VariableInitializer vi;
+  LocalVariableDeclarators decls = new LocalVariableDeclarators(DEFAULT_CAPACITY);
+  int ln;
+  int dims;
+  LocalVariableDeclarator d;
+  BaseAnnotationReference anns;
+  List<String> mods;
+}
+{
+  anns = AnnotationsOpt() 
+  mods = ModifiersOpt() 
+  type = TypeRef() 
+  name = <IDENTIFIER> 
+  dims = ArrayDimsOpt()
+  {
+    ln = consumeLineNumber(name);
+    vi = null;
+  }
+  (
+    <ASSIGN> vi = VariableInitializer()
+  )?
+  {
+    d = new LocalVariableDeclarator(ln, name.image, vi);
+    d.setDimension(dims);
+    decls.add(d);
+  }
+  (
+    <COMMA> 
+    name = <IDENTIFIER> 
+    dims = ArrayDimsOpt()
+    {
+      ln = consumeLineNumber(name);
+      vi = null;
+    }
+    (
+      <ASSIGN> vi = VariableInitializer()
+    )?
+    {
+      d = new LocalVariableDeclarator(ln, name.image, vi);
+      d.setDimension(dims);
+      decls.add(d);
+    }
+  )*
+  {
+    LocalVariableDeclaration decl = new LocalVariableDeclaration(type, decls);
+    if (mods != null && mods.contains("final"))
+    {
+      decl.setFinal(true);
+    }
+    return decl;
+  }
+}
+
+LocalVariableDeclarators LocalVariableDeclaratorList(Type declaredType) :
+{
+  LocalVariableDeclarators list = new LocalVariableDeclarators(DEFAULT_CAPACITY);
+  LocalVariableDeclarator d;
+}
+{
+  d = LocalVariableDeclaratorOne()
+  {
+    list.add(d);
+  }
+  (
+    <COMMA> d = LocalVariableDeclaratorOne()
+    {
+      list.add(d);
+    }
+  )*
+  {
+    return list;
+  }
+}
+
+LocalVariableDeclarator LocalVariableDeclaratorOne() :
+{
+  Token nameTok;
+  VariableInitializer init;
+  int ln;
+  int dims;
+  LocalVariableDeclarator d;
+}
+{
+  nameTok = <IDENTIFIER> 
+  dims = ArrayDimsOpt()
+  (
+    <ASSIGN> init = VariableInitializer()
+    {
+      ln = consumeLineNumber(nameTok);
+      d = new LocalVariableDeclarator(ln, nameTok.image, init);
+      d.setDimension(dims);
+      return d;
+    }
+  |
+    {
+      ln = consumeLineNumber(nameTok);
+      d = new LocalVariableDeclarator(ln, nameTok.image, null);
+      d.setDimension(dims);
+      return d;
+    }
+  )
+}
+
+/* -------------------- SWITCH STATEMENT (inner classes) -------------------- */
+
+List<SwitchStatement.Block> SwitchStatementBlocks() :
+{
+  List<SwitchStatement.Block> blocks = new ArrayList<SwitchStatement.Block >();
+  SwitchStatement.Block b;
+}
+{
+  <LBRACE>
+  (
+    LOOKAHEAD(SwitchStatementLabelStart())
+    b = SwitchStatementBlockOne()
+    {
+      if (b != null)
+      {
+        blocks.add(b);
+      }
+    }
+  )*
+  <RBRACE>
+  {
+    return blocks;
+  }
+}
+
+void SwitchStatementLabelStart() :
+{}
+{
+  <CASE>
+| <DEFAULT_KW>
+}
+
+SwitchStatement.Block SwitchStatementBlockOne() :
+{
+  List<SwitchStatement.Label> labels;
+  BaseStatement body;
+  SwitchStatement.Block result;
+}
+{
+  labels = SwitchStatementLabels()
+  (
+    <COLON> 
+    body = SwitchGroupStatements()
+    {
+      if (labels.size() == 1)
+      {
+        result = new SwitchStatement.LabelBlock(labels.get(0), body);
+      }
+      else
+      {
+        result = new SwitchStatement.MultiLabelsBlock(labels, body);
+      }
+    }
+  | 
+    <ARROW> 
+    body = SwitchArrowBodyAsStatements()
+    {
+      if (labels.size() == 1)
+      {
+        result = new SwitchStatement.LabelBlock(labels.get(0), body);
+      }
+      else
+      {
+        result = new SwitchStatement.MultiLabelsBlock(labels, body);
+      }
+    }
+  )
+  {
+    return result;
+  }
+}
+
+BaseStatement SwitchArrowBodyAsStatements() :
+{
+  BaseStatement st;
+  Statement s;
+}
+{
+  (
+    LOOKAHEAD(<LBRACE>)
+    st = BlockAsStatements()
+  | 
+    s = StatementNoBlock()
+    {
+      st = Optional.ofNullable(s).orElse(NoStatement.NO_STATEMENT);
+    }
+  )
+  {
+    return st;
+  }
+}
+
+List<SwitchStatement.Label> SwitchStatementLabels() :
+{
+  List<SwitchStatement.Label> labels = new ArrayList<>();
+  Expression e;
+}
+{
+  (
+    <CASE> 
+    e = ConditionalExpression()
+    {
+      labels.add(new SwitchStatement.ExpressionLabel(e));
+    }
+    (
+      <COMMA> 
+      e = ConditionalExpression()
+      {
+        labels.add(new SwitchStatement.ExpressionLabel(e));
+      }
+    )*
+  | 
+    <DEFAULT_KW>
+    {
+      labels.add(SwitchStatement.DEFAULT_LABEL);
+    }
+  )
+  {
+    return labels;
+  }
+}
+
+BaseStatement SwitchGroupStatements() :
+{
+  Statements list = new Statements();
+  Statement st;
+  BaseStatement block;
+}
+{
+  (
+    LOOKAHEAD(StatementStart())
+    (
+      LOOKAHEAD(<LBRACE>)
+      block = BlockAsStatements()
+      {
+        appendBaseStatement(list, block);
+      }
+    | 
+      st = StatementNoBlock()
+      {
+        if (st != null) list.add(st);
+      }
+    )
+  )*
+  {
+    return toBaseStatement(list);
+  }
+}
+
+/* -------------------- TRY (inner classes) -------------------- */
+
+DefaultList<TryStatement.Resource> TryResources() :
+{
+  List<TryStatement.Resource> list = new ArrayList<>();
+  TryStatement.Resource r;
+}
+{
+  <LPAREN> 
+  r = TryResourceOne()
+  {
+    list.add(r);
+  }
+  (
+    <SEMI> r = TryResourceOne()
+    {
+      list.add(r);
+    }
+  )*
+  (<SEMI>)? 
+  <RPAREN>
+  {
+    DefaultList<TryStatement.Resource> dl = new DefaultList<>(list.size());
+    dl.addAll(list);
+    return dl;
+  }
+}
+
+TryStatement.Resource TryResourceOne() :
+{
+  Type t;
+  Token nameTok;
+  Expression e;
+  ObjectType ot;
+  BaseAnnotationReference anns;
+  List<String> mods;
+}
+{
+  anns = AnnotationsOpt() 
+  mods = ModifiersOpt() 
+  t = TypeRef()
+  nameTok = <IDENTIFIER> 
+  <ASSIGN> 
+  e = Expression()
+  {
+    ot = (t instanceof ObjectType) ? (ObjectType) t : TYPE_UNDEFINED_OBJECT;
+    TryStatement.Resource res = new TryStatement.Resource(ot, nameTok.image, e);
+    if (mods != null && mods.contains("final"))
+    {
+      res.setFinal(true);
+    }
+    return res;
+  }
+}
+
+DefaultList<TryStatement.CatchClause> CatchClausesOpt() :
+{
+  List<TryStatement.CatchClause> list = new ArrayList<>();
+  TryStatement.CatchClause c;
+}
+{
+  (
+    c = CatchClauseOne()
+    {
+      list.add(c);
+    }
+  )*
+  {
+    DefaultList<TryStatement.CatchClause> dl = new DefaultList<>(list.size());
+    dl.addAll(list);
+    return dl;
+  }
+}
+
+TryStatement.CatchClause CatchClauseOne() :
+{
+  Token catchTok;
+  Type firstType;
+  Type nextType;
+  ObjectType ot;
+  Token nameTok;
+  BaseStatement s;
+  int ln;
+  List<Type> extraTypes;
+  TryStatement.CatchClause cc;
+  BaseAnnotationReference anns;
+  List<String> mods;
+}
+{
+  catchTok = <CATCH>
+  <LPAREN>
+    anns = AnnotationsOpt() 
+    mods = ModifiersOpt() 
+    firstType = TypeRef()
+    {
+      extraTypes = new ArrayList<>(2);
+    }
+    (
+      <BAR>
+      nextType = TypeRef()
+      {
+        extraTypes.add(nextType);
+      }
+    )*
+    nameTok = <IDENTIFIER>
+  <RPAREN>
+  s = BlockAsStatements()
+  {
+    ln = consumeLineNumber(catchTok);
+
+    ot = (firstType instanceof ObjectType) ? (ObjectType) firstType : TYPE_UNDEFINED_OBJECT;
+    cc = new TryStatement.CatchClause(ln, ot, nameTok.image, s);
+    if (mods != null && mods.contains("final"))
+    {
+      cc.setFinal(true);
+    }
+
+    if (extraTypes != null && !extraTypes.isEmpty()) {
+      for (Type ti : extraTypes) {
+        if (ti instanceof ObjectType) {
+          cc.addType((ObjectType) ti);
+        }
+      }
+    }
+
+    return cc;
+  }
+}
+
+BaseStatement FinallyOpt() :
+{
+  BaseStatement s;
+}
+{
+  <FINALLY> s = BlockAsStatements()
+  {
+    return s;
+  }
+}
+
+/* -------------------- EXPRESSIONS (includes SwitchExpression inner classes) -------------------- */
+
+Expression Expression() :
+{
+  Expression e;
+}
+{
+  (
+    LOOKAHEAD(LambdaParametersLookahead())
+    e = LambdaExpression()
+  | 
+    LOOKAHEAD(LambdaSingleParamLookahead())
+    e = LambdaExpression()
+  | 
+    e = AssignmentExpression()
+  )
+  {
+    return e;
+  }
+}
+
+Expression AssignmentExpression() :
+{
+  Expression left;
+  Token op;
+  Expression right;
+  int ln;
+}
+{
+  left = ConditionalExpression()
+  (
+    op = AssignmentOperator() 
+    right = AssignmentExpression()
+    {
+      ln = consumeLineNumber(op);
+      left = new BinaryOperatorExpression(ln, TYPE_UNDEFINED_OBJECT, left, op.image, right);
+    }
+  )?
+  {
+    return left;
+  }
+}
+
+List<String> LambdaParameterNamesOpt() :
+{
+  List<String> names = new ArrayList<>();
+  Token nameTok;
+}
+{
+  (
+    LOOKAHEAD(<RPAREN>)
+    {
+      return names;
+    }
+  | 
+    nameTok = <IDENTIFIER>
+    {
+      names.add(nameTok.image);
+    }
+    (
+      <COMMA> 
+      nameTok = <IDENTIFIER>
+      {
+        names.add(nameTok.image);
+      }
+    )*
+    {
+      return names;
+    }
+  )
+}
+
+Token AssignmentOperator() :
+{
+  Token t;
+}
+{
+  (
+    t = <ASSIGN>
+  | t = <PLUS_ASSIGN>
+  | t = <MINUS_ASSIGN>
+  | t = <STAR_ASSIGN>
+  | t = <SLASH_ASSIGN>
+  | t = <PERCENT_ASSIGN>
+  | t = <AND_ASSIGN>
+  | t = <OR_ASSIGN>
+  | t = <XOR_ASSIGN>
+  | t = <LSHIFT_ASSIGN>
+  | t = <RSHIFT_ASSIGN>
+  | t = <URSHIFT_ASSIGN>
+  )
+  {
+    return t;
+  }
+}
+
+Expression ConditionalExpression() :
+{
+  Expression c;
+  Expression t;
+  Expression f;
+  Token q;
+  int ln;
+}
+{
+  c = OrExpression()
+  (
+    q = <QUESTION> 
+    t = Expression() 
+    <COLON> 
+    f = Expression()
+    {
+      ln = consumeLineNumber(q);
+      return new TernaryOperatorExpression(ln, TYPE_UNDEFINED_OBJECT, c, t, f);
+    }
+  )?
+  {
+    return c;
+  }
+}
+
+Expression OrExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+}
+{
+  e = AndExpression()
+  (
+    op = <OROR> 
+    r = AndExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression AndExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+}
+{
+  e = BitOrExpression()
+  (
+    op = <ANDAND> 
+    r = BitOrExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression BitOrExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+}
+{
+  e = BitXorExpression()
+  (
+    op = <BAR> 
+    r = BitXorExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression BitXorExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+}
+{
+  e = BitAndExpression()
+  (
+    op = <CARET> 
+    r = BitAndExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression BitAndExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+}
+{
+  e = EqualityExpression()
+  (
+    op = <AMP> 
+    r = EqualityExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression EqualityExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+}
+{
+  e = RelationalExpression()
+  (
+    (
+      op = <EQ>
+    | op = <NE>
+    )
+    r = RelationalExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression RelationalExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+  Type t;
+  int ln;
+  Token instanceOfVariableName = null;
+}
+{
+  e = ShiftExpression()
+  (
+    (
+      op = <LT>
+    | op = <LE>
+    | op = <GT>
+    | op = <GE>
+    )
+    r = ShiftExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  | 
+    op = <INSTANCEOF> 
+    t = TypeRef() 
+    (instanceOfVariableName = <IDENTIFIER>)?
+    {
+      ln = consumeLineNumber(op);
+      e = new InstanceOfExpression(ln, e, t, instanceOfVariableName == null ? null : instanceOfVariableName.image);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression ShiftExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+}
+{
+  e = AdditiveExpression()
+  (
+    (
+      op = <LSHIFT>
+    | op = <RSHIFT>
+    | op = <URSHIFT>
+    )
+    r = AdditiveExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression AdditiveExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+}
+{
+  e = MultiplicativeExpression()
+  (
+    (
+      op = <PLUS>
+    | op = <MINUS>
+    )
+    r = MultiplicativeExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression MultiplicativeExpression() :
+{
+  Expression e;
+  Expression r;
+  Token op;
+}
+{
+  e = UnaryExpression()
+  (
+    (
+      op = <STAR>
+    | op = <SLASH>
+    | op = <PERCENT>
+    )
+    r = UnaryExpression()
+    {
+      e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
+    }
+  )*
+  {
+    return e;
+  }
+}
+
+Expression UnaryExpression() :
+{
+  Token op;
+  Expression e;
+  Type t;
+  int ln;
+}
+{
+  (
+    (
+      op = <BANG>
+    | op = <TILDE>
+    | op = <PLUS>
+    | op = <MINUS>
+    | op = <INC>
+    | op = <DEC>
+    )
+    e = UnaryExpression()
+    {
+      ln = consumeLineNumber(op);
+      return new PreOperatorExpression(ln, op.image, e);
+    }
+  | 
+    LOOKAHEAD( { isCastAhead() } )
+    op = <LPAREN> t = TypeRef() <RPAREN> e = UnaryExpression()
+    {
+      ln = consumeLineNumber(op);
+      return new CastExpression(ln, t, e, true, false);
+    }
+  | 
+    e = PostfixExpression()
+    {
+      return e;
+    }
+  )
+}
+
+Expression PostfixExpression() :
+{
+  Expression e;
+  Expression idx;
+  BaseExpression args;
+  Token op;
+  Token nameTok;
+  int ln;
+  Token mr;
+  Token id;
+  BaseTypeArgument explicitTypeArgs;
+  Expression beforeDotExpression;
+}
+{
+  e = PrimaryExpression()
+  (
+    <LBRACKET> idx = Expression() <RBRACKET>
+    {
+      e = new ArrayExpression(consumeLineNumber(getToken(0)), e, idx);
+    }
+  |
+    (
+      op = <INC>
+    | op = <DEC>
+    )
+    {
+      e = new PostOperatorExpression(consumeLineNumber(op), e, op.image);
+    }
+  | 
+    <DOT>
+    {
+      beforeDotExpression = e;
+    }
+    (
+      LOOKAHEAD(<NEW>)
+      e = NewExpressionAfterDot(beforeDotExpression)
+    |
+      (
+        LOOKAHEAD(<LT>)
+        explicitTypeArgs = TypeArgumentsOpt()
+      |
+        {
+          explicitTypeArgs = null;
+        }
+      )
+      nameTok = <IDENTIFIER>
+      (
+        LOOKAHEAD(<LPAREN>)
+        args = ArgumentsAsExpressions()
+        {
+          ln = consumeLineNumber(nameTok);
+          e = new MethodInvocationExpression(ln, TYPE_UNDEFINED_OBJECT, e, "", nameTok.image, "", args, null);
+          if (explicitTypeArgs != null)
+          {
+            ((MethodInvocationExpression) e).setNonWildcardTypeArguments(explicitTypeArgs);
+          }
+        }
+      |
+        {
+          ln = consumeLineNumber(nameTok);
+          if ("length".equals(nameTok.image))
+          {
+            e = new LengthExpression(ln, e);
+          }
+          else
+          {
+            e = new FieldReferenceExpression(ln, TYPE_UNDEFINED_OBJECT, e, "", nameTok.image, "");
+          }
+        }
+      )
+    | 
+      <SUPER>
+      {
+        ln = consumeLineNumber(getToken(0));
+        e = new QualifiedSuperExpression(ln, TYPE_UNDEFINED_OBJECT);
+      }
+    | 
+      <CLASS>
+      {
+        e = new TypeReferenceDotClassExpression(consumeLineNumber(getToken(0)), TYPE_UNDEFINED_OBJECT);
+      }
+    | mr = <METHOD_REF>
+      (
+        (
+          LOOKAHEAD(<LT>)
+          explicitTypeArgs = TypeArgumentsOpt()
+        |
+          {
+            explicitTypeArgs = null;
+          }
+        )
+        <NEW>
+        {
+          e = new ConstructorReferenceExpression(consumeLineNumber(mr), TYPE_UNDEFINED_OBJECT, TYPE_UNDEFINED_OBJECT, "");
+        }
+      |
+        (
+          LOOKAHEAD(<LT>)
+          explicitTypeArgs = TypeArgumentsOpt()
+        |
+          {
+            explicitTypeArgs = null;
+          }
+        )
+        id = <IDENTIFIER>
+        {
+          e = new MethodReferenceExpression(
+          consumeLineNumber(mr), 
+          TYPE_UNDEFINED_OBJECT, 
+          e, 
+          "", 
+          id.image, 
+          ""
+          );
+        }
+      )
+    )
+  )*
+  {
+    return e;
+  }
+}
+
+Expression PrimaryExpression() :
+{
+  Token t;
+  Token id;
+  Token mr;
+  BaseExpression args;
+  Expression e;
+  ObjectType ot;
+  int ln;
+  String qn;
+  Type typeRef;
+}
+{
+  (
+    LOOKAHEAD(TypeRef() <METHOD_REF>)
+    e = TypeMethodReferencePrimary()
+    {
+      return e;
+    }
+  |
+    LOOKAHEAD(QualifiedName() <DOT> <THIS>)
+    qn = QualifiedName() <DOT> t = <THIS>
+    {
+      ln = consumeLineNumber(t);
+      ot = objectTypeFromQualified(qn);
+      return new ThisExpression(ln, ot);
+    }
+  |
+    LOOKAHEAD(QualifiedName() <DOT> <SUPER>)
+    qn = QualifiedName() <DOT> t = <SUPER>
+    {
+      ln = consumeLineNumber(t);
+      ot = objectTypeFromQualified(qn);
+      return new QualifiedSuperExpression(ln, ot);
+    }
+  |
+    LOOKAHEAD(TypeRef() <DOT> <CLASS>)
+    typeRef = TypeRef() <DOT> t = <CLASS>
+    {
+      ln = consumeLineNumber(t);
+      return new TypeReferenceDotClassExpression(ln, typeRef);
+    }
+  |
+    LOOKAHEAD(<SWITCH>)
+    e = SwitchExpressionPrimary()
+    {
+      return e;
+    }
+  |
+    t = <INT_LITERAL>
+    {
+      return new IntegerConstantExpression(consumeLineNumber(t), PrimitiveType.TYPE_INT, parseIntLiteral(t.image));
+    }
+  |
+    t = <LONG_LITERAL>
+    {
+      return new LongConstantExpression(consumeLineNumber(t), parseLongLiteral(t.image));
+    }
+  |
+    t = <FLOAT_LITERAL>
+    {
+      return new FloatConstantExpression(consumeLineNumber(t), parseFloatLiteral(t.image));
+    }
+  |
+    t = <DOUBLE_LITERAL>
+    {
+      return new DoubleConstantExpression(consumeLineNumber(t), parseDoubleLiteral(t.image));
+    }
+  |
+    t = <CHAR_LITERAL>
+    {
+      return new IntegerConstantExpression(consumeLineNumber(t), PrimitiveType.TYPE_CHAR, parseCharLiteral(t.image));
+    }
+  |
+    t = <STRING_LITERAL>
+    {
+      return new StringConstantExpression(consumeLineNumber(t), parseStringLiteral(t.image));
+    }
+  |
+    t = <TEXT_BLOCK_LITERAL>
+    {
+      return new StringConstantExpression(consumeLineNumber(t), parseTextBlockLiteral(t.image));
+    }
+  |
+    t = <TRUE>
+    {
+      return new BooleanExpression(consumeLineNumber(t), true);
+    }
+  |
+    t = <FALSE>
+    {
+      return new BooleanExpression(consumeLineNumber(t), false);
+    }
+  |
+    t = <NULL>
+    {
+      return new NullExpression(consumeLineNumber(t), TYPE_UNDEFINED_OBJECT);
+    }
+  |
+    /* instance method reference: this::log */
+    LOOKAHEAD(<THIS> <METHOD_REF>)
+    t = <THIS> mr = <METHOD_REF>
+    (
+      LOOKAHEAD(<LT>)
+      TypeArgumentsOpt()
+    |
+      {
+        /* keep going */
+      }
+    )
+    id = <IDENTIFIER>
+    {
+      ln = consumeLineNumber(t);
+      e = new ThisExpression(ln, TYPE_UNDEFINED_OBJECT);
+      return new MethodReferenceExpression(ln, TYPE_UNDEFINED_OBJECT, e, "", id.image, "");
+    }
+  |
+    /* instance method reference: super::log */
+    LOOKAHEAD(<SUPER> <METHOD_REF>)
+    t = <SUPER> mr = <METHOD_REF>
+    (
+      LOOKAHEAD(<LT>)
+      TypeArgumentsOpt()
+    |
+      {
+        /* keep going */
+      }
+    )
+    id = <IDENTIFIER>
+    {
+      ln = consumeLineNumber(t);
+      e = new SuperExpression(ln, TYPE_UNDEFINED_OBJECT);
+      return new MethodReferenceExpression(ln, TYPE_UNDEFINED_OBJECT, e, "", id.image, "");
+    }
+  |
+    LOOKAHEAD(<THIS> <LPAREN>)
+    t = <THIS> args = ArgumentsAsExpressions()
+    {
+      return new ConstructorInvocationExpression(consumeLineNumber(t), TYPE_UNDEFINED_OBJECT, "", args, false);
+    }
+  |
+    LOOKAHEAD(<SUPER> <LPAREN>)
+    t = <SUPER> args = ArgumentsAsExpressions()
+    {
+      return new SuperConstructorInvocationExpression(consumeLineNumber(t), TYPE_UNDEFINED_OBJECT, "", args, false);
+    }
+  |
+    t = <THIS>
+    {
+      return new ThisExpression(consumeLineNumber(t), TYPE_UNDEFINED_OBJECT);
+    }
+  |
+    t = <SUPER>
+    {
+      return new SuperExpression(consumeLineNumber(t), TYPE_UNDEFINED_OBJECT);
+    }
+  |
+    t = <LPAREN> e = Expression() <RPAREN>
+    {
+      return new ParenthesesExpression(consumeLineNumber(t), e);
+    }
+  |
+    LOOKAHEAD(<NEW>)
+    e = NewExpressionPrimary()
+    {
+      return e;
+    }
+  |
+    LOOKAHEAD(<IDENTIFIER> <LPAREN>)
+    id = <IDENTIFIER>
+    args = ArgumentsAsExpressions()
+    {
+      ln = consumeLineNumber(id);
+      return new MethodInvocationExpression(
+      ln,
+      TYPE_UNDEFINED_OBJECT,
+      NoExpression.NO_EXPRESSION,
+      currentTypeInternalNameOrFallback(),
+      id.image,
+      "",
+      args,
+      null
+      );
+    }
+  |
+    id = <IDENTIFIER>
+    {
+      return new LocalVariableReferenceExpression(consumeLineNumber(id), TYPE_UNDEFINED_OBJECT, id.image);
+    }
+  )
+}
+
+Expression TypeMethodReferencePrimary() :
+{
+  Type ty;
+  Token mr;
+  Token id;
+  int ln;
+  ObjectType ot;
+  Expression qualifier;
+}
+{
+  ty = TypeRef() 
+  mr = <METHOD_REF>
+  {
+    ln = consumeLineNumber(mr);
+    ot = (ty instanceof ObjectType) ? (ObjectType) ty : TYPE_UNDEFINED_OBJECT;
+    qualifier = (ty instanceof ObjectType) 
+    ? new ObjectTypeReferenceExpression(ln, (ObjectType) ty, true) 
+    : NoExpression.NO_EXPRESSION;
+  }
+  (
+    <NEW>
+    {
+      return new ConstructorReferenceExpression(
+      ln, 
+      TYPE_UNDEFINED_OBJECT, 
+      ot, 
+      ""
+      );
+    }
+  | 
+    id = <IDENTIFIER>
+    {
+      return new MethodReferenceExpression(
+      ln, 
+      TYPE_UNDEFINED_OBJECT, 
+      qualifier, 
+      "", 
+      id.image, 
+      ""
+      );
+    }
+  )
+}
+
+Expression SwitchExpressionPrimary() :
+{
+  Token sw;
+  Expression selector;
+  List<SwitchExpression.Rule> rules = new ArrayList<>();
+  SwitchExpression.Rule r;
+  int ln;
+}
+{
+  sw = <SWITCH> 
+  <LPAREN> selector = Expression() <RPAREN> 
+  <LBRACE>
+  (
+    r = SwitchExpressionRule()
+    {
+      rules.add(r);
+    }
+  )*
+  <RBRACE>
+  {
+    ln = consumeLineNumber(sw);
+    return new SwitchExpression(ln, selector, rules, TYPE_UNDEFINED_OBJECT);
+  }
+}
+
+SwitchExpression.Rule SwitchExpressionRule() :
+{
+  List<SwitchExpression.Label> labels;
+  Expression expr;
+  BaseStatement stmts;
+  Statement throwStmt;
+}
+{
+  labels = SwitchExpressionLabels() 
+  <ARROW>
+  (
+    LOOKAHEAD(<LBRACE>)
+    stmts = BlockAsStatements()
+    {
+      if (stmts instanceof YieldExpressionStatement)
+      {
+        return new SwitchExpression.RuleExpression(labels, ((YieldExpressionStatement) stmts).getExpression());
+      }
+      return new SwitchExpression.RuleStatement(labels, stmts);
+    }
+  | 
+    LOOKAHEAD(<THROW>)
+    throwStmt = ThrowStatement()
+    {
+      return new SwitchExpression.RuleStatement(labels, throwStmt);
+    }
+  | 
+    expr = Expression() 
+    <SEMI>
+    {
+      return new SwitchExpression.RuleExpression(labels, expr);
+    }
+  )
+}
+
+Statement ThrowStatement() :
+{
+  Token t;
+  Expression e;
+}
+{
+  t = <THROW> 
+  e = Expression() 
+  <SEMI>
+  {
+    return new ThrowStatement(e);
+  }
+}
+
+List<SwitchExpression.Label> SwitchExpressionLabels() :
+{
+  List<SwitchExpression.Label> labels = new ArrayList<>();
+  Expression e;
+}
+{
+  (
+    <CASE> 
+    e = ConditionalExpression()
+    {
+      labels.add(new SwitchExpression.ExpressionLabel(e));
+    }
+    (
+      <COMMA> 
+      e = ConditionalExpression()
+      {
+        labels.add(new SwitchExpression.ExpressionLabel(e));
+      }
+    )*
+  | 
+    <DEFAULT_KW>
+    {
+      labels.add(SwitchExpression.DEFAULT_LABEL);
+    }
+  )
+  {
+    return labels;
+  }
+}
+
+Expression NewExpressionPrimary() :
+{
+  Token nw;
+  Type t;
+  PrimitiveType pt;
+  Expressions dims;
+  int emptyDims;
+  VariableInitializer init;
+  ArrayVariableInitializer arrayInit;
+  BaseExpression args;
+  BodyDeclaration body;
+  int ln;
+  String anonInternal;
+  NewExpression newExpression;
+}
+{
+  nw = <NEW>
+  (
+    /* new int[] { ... } / new char[][] { ... } / ... */
+    LOOKAHEAD( PrimitiveTypeBase() ( <LBRACKET> <RBRACKET> )+ <LBRACE> )
+    pt = PrimitiveTypeBase()
+    emptyDims = NewArrayEmptyDims()
+    init = VariableInitializer()
+    {
+      ln = consumeLineNumber(nw);
+      arrayInit = (ArrayVariableInitializer) init;
+      return new NewInitializedArray(ln, pt.createType(emptyDims), arrayInit);
+    }
+  |
+    /* new Foo[] { ... } / new Foo[][] { ... } / ... */
+    LOOKAHEAD( ReferenceType() ( <LBRACKET> <RBRACKET> )+ <LBRACE> )
+    t = ReferenceType()
+    emptyDims = NewArrayEmptyDims()
+    init = VariableInitializer()
+    {
+      ln = consumeLineNumber(nw);
+      arrayInit = (ArrayVariableInitializer) init;
+      return new NewInitializedArray(ln, t.createType(emptyDims), arrayInit);
+    }
+  |
+    /* new int[1] / new char[2] / ... */
+    LOOKAHEAD( PrimitiveTypeBase() <LBRACKET> )
+    pt = PrimitiveTypeBase()
+    dims = NewArrayDimensions()
+    {
+      ln = consumeLineNumber(nw);
+      return new NewArray(ln, pt.createType(dims.size()), dims);
+    }
+  |
+    /* new Foo[1] / new Foo[1][2] / ... */
+    LOOKAHEAD( ReferenceType() <LBRACKET> )
+    t = ReferenceType()
+    dims = NewArrayDimensions()
+    {
+      ln = consumeLineNumber(nw);
+      return new NewArray(ln, t.createType(dims.size()), dims);
+    }
+  |
+    /* new Foo(...) / new Foo(...) { ... } */
+    t = ReferenceType()
+    args = ArgumentsAsExpressions()
+    (
+      LOOKAHEAD(<LBRACE>)
+      {
+        anonInternal = nextAnonymousInternalName();
+        body = ClassBody(anonInternal);
+      }
+    |
+      { body = null; }
+    )
+    {
+      ln = consumeLineNumber(nw);
+      newExpression = new NewExpression(ln, (ObjectType) t, "", body, false, false);
+      newExpression.setParameters(args);
+      return newExpression;
+    }
+  )
+}
+
+int NewArrayEmptyDims() :
+{
+  int dim = 0;
+}
+{
+  ( <LBRACKET> <RBRACKET> { dim++; } )+
+  { return dim; }
+}
+
+Expression NewExpressionAfterDot(final Expression beforeDotExpression) :
+{
+  Token tNew;
+  BaseExpression args;
+  BodyDeclaration anonBody;
+  String anonInternal;
+  NewExpression newExpression;
+  ObjectType ot;
+  AtomicBoolean diamondPossible;
+  int ln;
+}
+{
+  tNew = <NEW>
+  {
+    diamondPossible = new AtomicBoolean(false);
+  }
+  ot = InstantiationType(diamondPossible) 
+  args = ArgumentsAsExpressions()
+  (
+    LOOKAHEAD(<LBRACE>)
+    {
+      anonInternal = nextAnonymousInternalName();
+    }
+    anonBody = ClassBody(anonInternal)
+    {
+      ln = consumeLineNumber(tNew);
+      newExpression = new NewExpression(ln, ot, "", anonBody, false, diamondPossible.get());
+      newExpression.setParameters(args);
+      newExpression.setQualifier(beforeDotExpression);
+      return newExpression;
+    }
+  |
+    {
+      ln = consumeLineNumber(tNew);
+      newExpression = new NewExpression(ln, ot, "", false, diamondPossible.get());
+      newExpression.setParameters(args);
+      newExpression.setQualifier(beforeDotExpression);
+      return newExpression;
+    }
+  )
+}
+
+Expressions NewArrayDimensions() :
+{
+  Expressions dims = new Expressions();
+  Expression e;
+}
+{
+  (
+    <LBRACKET> 
+    e = Expression()
+    {
+      dims.add(e);
+    }
+    <RBRACKET>
+  )+
+  {
+    Expressions es = new Expressions(dims.size());
+    es.addAll(dims);
+    return es;
+  }
+}
+
+BaseExpression ArgumentsAsExpressions() :
+{
+  Expressions args = new Expressions();
+  Expression e;
+}
+{
+  <LPAREN>
+  [
+    e = Expression()
+    {
+      args.add(e);
+    }
+    (
+      <COMMA> e = Expression()
+      {
+        args.add(e);
+      }
+    )*
+  ]
+  <RPAREN>
+  {
+    return args;
+  }
+}
+
+void LambdaSingleParamLookahead() :
+{}
+{
+  <IDENTIFIER> <ARROW>
+}
+
+void LambdaParametersLookahead() :
+{}
+{
+  <LPAREN>
+  (
+    <IDENTIFIER> (<COMMA> <IDENTIFIER>)*
+  )?
+  <RPAREN> <ARROW>
+}
+
+Expression LambdaExpression() :
+{
+  Token nameTok;
+  Token arrowTok;
+  List<String> parameterNames;
+  BaseStatement bodyStatements;
+  Expression bodyExpression;
+  int lineNumber;
+}
+{
+  (
+    nameTok = <IDENTIFIER> 
+    arrowTok = <ARROW>
+    {
+      parameterNames = new ArrayList<>();
+      parameterNames.add(nameTok.image);
+      lineNumber = consumeLineNumber(arrowTok);
+    }
+  | 
+    <LPAREN> 
+    parameterNames = LambdaParameterNamesOpt() 
+    <RPAREN> 
+    arrowTok = <ARROW>
+    {
+      lineNumber = consumeLineNumber(arrowTok);
+    }
+  )
+  (
+    LOOKAHEAD(<LBRACE>)
+    bodyStatements = BlockAsStatements()
+  | 
+    bodyExpression = Expression()
+    {
+      bodyStatements = new ReturnExpressionStatement(lineNumber, bodyExpression);
+    }
+  )
+  {
+    return new LambdaIdentifiersExpression(
+    lineNumber, 
+    TYPE_UNDEFINED_OBJECT, 
+    TYPE_UNDEFINED_OBJECT, 
+    parameterNames, 
+    bodyStatements
+    );
+  }
+}
+
+BaseTypeParameter TypeParametersOpt(Set<String> declaredNames) :
+{
+  TypeParameter tp;
+  TypeParameter first = null;
+  TypeParameters list = null;
+  Token gtTok;
+}
+{
+  (
+    <LT>
+    {
+      onTypeArgStart();
+    }
+    tp = TypeParameterDecl(declaredNames)
+    {
+      first = tp;
+    }
+    (
+      <COMMA>
+      tp = TypeParameterDecl(declaredNames)
+      {
+        if (list == null) {
+          list = new TypeParameters();
+          list.add(first);
+        }
+        list.add(tp);
+      }
+    )*
+    gtTok = RightAngleToken()
+    {
+      onTypeArgEnd();
+      return (list == null) ? first : list;
+    }
+  )
+|
+  {
+    declaredNames.clear();
+    return null;
+  }
+}
+
+TypeParameter TypeParameterDecl(Set<String> declaredNames) :
+{
+  Token id;
+  BaseType bounds;
+}
+{
+  id = <IDENTIFIER>
+  (
+    <EXTENDS> 
+    bounds = TypeBoundList()
+  |
+    {
+      bounds = null;
+    }
+  )
+  {
+    declaredNames.add(id.image);
+    if (bounds != null)
+    {
+      return new TypeParameterWithTypeBounds(id.image, bounds);
+    }
+    return new TypeParameter(id.image);
+  }
+}
+
+BaseType TypeBoundList() :
+{
+  Type t;
+  Type first;
+  Types list = null;
+}
+{
+  t = TypeRef()
+  {
+    first = t;
+  }
+  (
+    <AMP> 
+    t = TypeRef()
+    {
+      if (list == null)
+      {
+        list = new Types();
+        list.add(first);
+      }
+      list.add(t);
+    }
+  )*
+  {
+    return list == null ? first : list;
+  }
+}
+
+BaseTypeArgument TypeArgumentsOpt() :
+{
+  TypeArgument a;
+  TypeArgument first = null;
+  TypeArguments list = null;
+  Token gtTok;
+}
+{
+  (
+    <LT>
+    {
+      onTypeArgStart();
+    }
+    (
+      LOOKAHEAD(<GT>)
+      gtTok = <GT>
+      {
+        onTypeArgEnd();
+        return DiamondTypeArgument.DIAMOND;
+      }
+    |
+      a = TypeArgumentOne()
+      {
+        first = a;
+      }
+      (
+        <COMMA>
+        a = TypeArgumentOne()
+        {
+          if (list == null) {
+            list = new TypeArguments();
+            list.add(first);
+          }
+          list.add(a);
+        }
+      )*
+      gtTok = RightAngleToken()
+      {
+        onTypeArgEnd();
+        return (list == null) ? first : list;
+      }
+    )
+  )
+|
+  {
+    return null;
+  }
+}
+
+TypeArgument TypeArgumentOne() :
+{
+  Type t;
+  BaseAnnotationReference anns;
+}
+{
+  anns = AnnotationsOpt() /* parsed, intentionally ignored */
+  (
+    <QUESTION>
+    (
+      <EXTENDS> t = TypeRef()
+    | 
+      <SUPER> t = TypeRef()
+    |
+      {
+        t = null;
+      }
+    )
+    {
+      return WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT;
+    }
+  | 
+    t = TypeRef()
+    {
+      return t;
+    }
+  )
+}
+
+Token RightAngleToken() :
+{
+  Token t;
+}
+{
+    t = <GT>     { return t; }
+  | t = <RSHIFT> { splitShiftTokenAsRightAngles(t, 2); return t; }
+  | t = <URSHIFT>{ splitShiftTokenAsRightAngles(t, 3); return t; }
+}

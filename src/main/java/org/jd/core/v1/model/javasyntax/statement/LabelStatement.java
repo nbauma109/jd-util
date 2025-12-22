@@ -7,10 +7,12 @@
 
 package org.jd.core.v1.model.javasyntax.statement;
 
-public record LabelStatement(String label, Statement statement) implements Statement {
+public record LabelStatement(String label, BaseStatement statement) implements Statement {
 
     @Override
-    public boolean isLabelStatement() { return true; }
+    public boolean isLabelStatement() {
+        return true;
+    }
 
     @Override
     public void accept(StatementVisitor visitor) {

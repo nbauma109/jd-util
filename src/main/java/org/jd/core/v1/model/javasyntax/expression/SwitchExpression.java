@@ -3,7 +3,10 @@ package org.jd.core.v1.model.javasyntax.expression;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public final class SwitchExpression extends AbstractLineNumberExpression {
     public static final DefaultLabel DEFAULT_LABEL = new DefaultLabel();
@@ -56,6 +59,8 @@ public final class SwitchExpression extends AbstractLineNumberExpression {
     }
 
     public static final class DefaultLabel implements Label {
+        protected DefaultLabel() {}
+
         @Override
         public void accept(ExpressionVisitor visitor) {
             visitor.visit(this);
@@ -68,7 +73,6 @@ public final class SwitchExpression extends AbstractLineNumberExpression {
     }
 
     public static final class ExpressionLabel implements Label {
-
         private Expression expression;
 
         public ExpressionLabel(Expression expression) {
@@ -107,18 +111,27 @@ public final class SwitchExpression extends AbstractLineNumberExpression {
      * case A -> expr
      */
     public static final class RuleExpression implements Rule {
-
         private final List<Label> labels;
+        private final Expression whenCondition;
         private Expression expression;
 
-        public RuleExpression(List<Label> labels, Expression expression) {
-            this.labels = labels;
-            this.expression = expression;
+        public RuleExpression(final List<Label> labels, final Expression expression) {
+            this(labels, NoExpression.NO_EXPRESSION, expression);
+        }
+
+        public RuleExpression(final List<Label> labels, final Expression whenCondition, final Expression expression) {
+            this.labels = Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(labels, "labels")));
+            this.whenCondition = Objects.requireNonNull(whenCondition, "whenCondition");
+            this.expression = Objects.requireNonNull(expression, "expression");
         }
 
         @Override
         public List<Label> getLabels() {
             return labels;
+        }
+
+        public Expression getWhenCondition() {
+            return whenCondition;
         }
 
         public Expression getExpression() {
@@ -145,13 +158,22 @@ public final class SwitchExpression extends AbstractLineNumberExpression {
      * must contain YieldExpressionStatement
      */
     public static final class RuleStatement implements Rule {
-
         private final List<Label> labels;
+        private final Expression whenCondition;
         private final BaseStatement statements;
 
         public RuleStatement(List<Label> labels, BaseStatement statements) {
-            this.labels = labels;
-            this.statements = statements;
+            this(labels, NoExpression.NO_EXPRESSION, statements);
+        }
+
+        public RuleStatement(List<Label> labels, Expression whenCondition, BaseStatement statements) {
+            this.labels = Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(labels, "labels")));
+            this.whenCondition = Objects.requireNonNull(whenCondition, "whenCondition");
+            this.statements = Objects.requireNonNull(statements, "statements");
+        }
+
+        public Expression getWhenCondition() {
+            return whenCondition;
         }
 
         @Override

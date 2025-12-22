@@ -26,10 +26,10 @@ public interface StatementVisitor {
     void visit(ReturnStatement statement);
     void visit(Statements statement);
     void visit(SwitchStatement statement);
-    void visit(SwitchStatement.DefaultLabel statement);
-    void visit(SwitchStatement.ExpressionLabel statement);
-    void visit(SwitchStatement.LabelBlock statement);
-    void visit(SwitchStatement.MultiLabelsBlock statement);
+    void visit(SwitchStatement.DefaultLabel defaultLabel);
+    void visit(SwitchStatement.ExpressionLabel expressionLabel);
+    void visit(SwitchStatement.LabelBlock labelBlock);
+    void visit(SwitchStatement.MultiLabelsBlock multiLabelsBlock);
     void visit(SynchronizedStatement statement);
     void visit(ThrowStatement statement);
     void visit(TryStatement statement);

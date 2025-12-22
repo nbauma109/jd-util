@@ -28,7 +28,7 @@ public class AnnotationReference implements BaseAnnotationReference {
         this(type, null, elementValuePairs);
     }
 
-    protected AnnotationReference(ObjectType type, BaseElementValue elementValue, BaseElementValuePair elementValuePairs) {
+    public AnnotationReference(ObjectType type, BaseElementValue elementValue, BaseElementValuePair elementValuePairs) {
         this.type = type;
         this.elementValue = elementValue;
         this.elementValuePairs = elementValuePairs;

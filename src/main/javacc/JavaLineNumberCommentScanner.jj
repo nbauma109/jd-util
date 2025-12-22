@@ -1,0 +1,194 @@
+/*
+ * Copyright (c) 2025 GPLv3
+ * This project is distributed under the GPLv3 license.
+ * This is a Copyleft license that gives the user the right to use,
+ * copy and modify the code freely for non-commercial purposes.
+ */
+
+options {
+  JAVA_UNICODE_ESCAPE = true;
+  UNICODE_INPUT = true;
+}
+
+PARSER_BEGIN(JavaLineNumberCommentScanner)
+
+package org.jd.core.v1.parser;
+
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+
+public class JavaLineNumberCommentScanner {
+
+  public static Map<Integer, Integer> scan(final String source) throws ParseException {
+    final JavaLineNumberCommentScanner p =
+        new JavaLineNumberCommentScanner(new StringReader(source == null ? "" : source));
+    return p.ScanAll();
+  }
+
+  private static Integer parseNumericComment(final String image) {
+    if (image == null) {
+      return null;
+    }
+
+    final String body = stripCommentDelimiters(image).trim();
+    if (body.isEmpty()) {
+      return null;
+    }
+
+    for (int i = 0; i < body.length(); i++) {
+      final char c = body.charAt(i);
+      if (!Character.isDigit(c) && !Character.isWhitespace(c)) {
+        return null;
+      }
+    }
+
+    int i = 0;
+    while (i < body.length() && Character.isWhitespace(body.charAt(i))) {
+      i++;
+    }
+    if (i >= body.length()) {
+      return null;
+    }
+    int j = i;
+    while (j < body.length() && Character.isDigit(body.charAt(j))) {
+      j++;
+    }
+
+    try {
+      return Integer.valueOf(body.substring(i, j));
+    } catch (final NumberFormatException ex) {
+      return null;
+    }
+  }
+
+  private static String stripCommentDelimiters(final String image) {
+    if (image.startsWith("//")) {
+      return image.substring(2);
+    }
+    if (image.startsWith("/*")) {
+      String s = image.substring(2);
+      if (s.endsWith("*/")) {
+        s = s.substring(0, s.length() - 2);
+      }
+      return s;
+    }
+    return image;
+  }
+
+}
+
+PARSER_END(JavaLineNumberCommentScanner)
+
+SKIP : { " " | "\t" | "\f" | "\r" | "\n" }
+
+TOKEN : {
+  < LINE_COMMENT: "//" (~["\r","\n"])* >
+| < BLOCK_COMMENT: "/*" ( ~["*"] | "*" ~["/"] )* "*/" >
+
+| < STRING_LITERAL:
+      "\""
+      ( "\\\"" | "\\\\" | "\\n" | "\\r" | "\\t" | ~["\"","\\","\r","\n"] )*
+      "\""
+  >
+| < CHAR_LITERAL:
+      "'"
+      ( "\\'" | "\\\\" | "\\n" | "\\r" | "\\t" | ~["'","\\","\r","\n"] )
+      "'"
+  >
+
+| < ANY_CHAR: ~[] >
+}
+
+Map<Integer, Integer> ScanAll() :
+{
+  Map<Integer, Integer> map = new HashMap<>();
+  Token t;
+  int currentLine = 1;
+  boolean codeSeenOnLine = false;
+  Integer pendingForNextCodeLine = null;
+  Integer numeric;
+}
+{
+  (
+    t = <LINE_COMMENT>
+    {
+      if (t.beginLine != currentLine) {
+        currentLine = t.beginLine;
+        codeSeenOnLine = false;
+      }
+
+      numeric = JavaLineNumberCommentScanner.parseNumericComment(t.image);
+      if (numeric != null) {
+        if (codeSeenOnLine) {
+          map.put(Integer.valueOf(currentLine), numeric);
+          pendingForNextCodeLine = null;
+        } else {
+          pendingForNextCodeLine = numeric;
+        }
+      }
+    }
+  |
+    t = <BLOCK_COMMENT>
+    {
+      if (t.beginLine != currentLine) {
+        currentLine = t.beginLine;
+        codeSeenOnLine = false;
+      }
+
+      numeric = JavaLineNumberCommentScanner.parseNumericComment(t.image);
+      if (numeric != null) {
+        if (codeSeenOnLine) {
+          map.put(Integer.valueOf(currentLine), numeric);
+          pendingForNextCodeLine = null;
+        } else {
+          pendingForNextCodeLine = numeric;
+        }
+      }
+    }
+  |
+    t = <STRING_LITERAL>
+    {
+      if (t.beginLine != currentLine) {
+        currentLine = t.beginLine;
+        codeSeenOnLine = false;
+      }
+
+      if (pendingForNextCodeLine != null && !codeSeenOnLine) {
+        map.put(Integer.valueOf(currentLine), pendingForNextCodeLine);
+        pendingForNextCodeLine = null;
+      }
+      codeSeenOnLine = true;
+    }
+  |
+    t = <CHAR_LITERAL>
+    {
+      if (t.beginLine != currentLine) {
+        currentLine = t.beginLine;
+        codeSeenOnLine = false;
+      }
+
+      if (pendingForNextCodeLine != null && !codeSeenOnLine) {
+        map.put(Integer.valueOf(currentLine), pendingForNextCodeLine);
+        pendingForNextCodeLine = null;
+      }
+      codeSeenOnLine = true;
+    }
+  |
+    t = <ANY_CHAR>
+    {
+      if (t.beginLine != currentLine) {
+        currentLine = t.beginLine;
+        codeSeenOnLine = false;
+      }
+
+      if (pendingForNextCodeLine != null && !codeSeenOnLine) {
+        map.put(Integer.valueOf(currentLine), pendingForNextCodeLine);
+        pendingForNextCodeLine = null;
+      }
+      codeSeenOnLine = true;
+    }
+  )*
+  <EOF>
+  { return map; }
+}

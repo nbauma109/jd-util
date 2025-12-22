@@ -13,13 +13,19 @@ import org.jd.core.v1.model.javasyntax.type.Type;
 public class InstanceOfExpression extends AbstractLineNumberExpression {
     private Expression expression;
     private final Type instanceOfType;
+    private final String variableName;
 
-    public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType) {
+    public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType, String variableName) {
         super(lineNumber);
         this.setExpression(expression);
         this.instanceOfType = instanceOfType;
+        this.variableName = variableName;
     }
 
+    public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType) {
+        this(lineNumber, expression, instanceOfType, null);
+    }
+    
     @Override
     public Expression getExpression() {
         return expression;
@@ -42,6 +48,10 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
     public int getPriority() {
         return 8;
     }
+    
+    public String getVariableName() {
+        return variableName;
+    }
 
     @Override
     public void accept(ExpressionVisitor visitor) {
@@ -50,6 +60,6 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new InstanceOfExpression(lineNumber, expression, instanceOfType);
+        return new InstanceOfExpression(lineNumber, expression, instanceOfType, variableName);
     }
 }

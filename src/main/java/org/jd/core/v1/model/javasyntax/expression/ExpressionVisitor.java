@@ -41,10 +41,10 @@ public interface ExpressionVisitor {
     void visit(SuperConstructorInvocationExpression expression);
     void visit(SuperExpression expression);
     void visit(SwitchExpression expression);
-    void visit(SwitchExpression.DefaultLabel label);
-    void visit(SwitchExpression.ExpressionLabel label);
-    void visit(SwitchExpression.RuleExpression rule);
-    void visit(SwitchExpression.RuleStatement rule);
+    void visit(SwitchExpression.DefaultLabel defaultLabel);
+    void visit(SwitchExpression.ExpressionLabel expressionLabel);
+    void visit(SwitchExpression.RuleExpression ruleExpression);
+    void visit(SwitchExpression.RuleStatement ruleStatement);
     void visit(TernaryOperatorExpression expression);
     void visit(ThisExpression expression);
     void visit(TypeReferenceDotClassExpression expression);

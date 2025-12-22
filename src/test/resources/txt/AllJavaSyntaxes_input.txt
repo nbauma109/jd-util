@@ -1,0 +1,758 @@
+package demo;
+
+import java.io.*;
+import java.lang.annotation.*;
+import java.math.BigDecimal;
+import java.nio.file.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.*;
+import java.util.stream.Stream;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList<E>
+        implements Serializable, Comparable<E>, Iterable<E> {
+
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("all")
+    private static volatile transient char CHARS[] = { 'A', 'B' };
+    private static volatile transient char CHARS2[] = new char[] { 'A', 'B' }; 
+
+    private static final AtomicInteger COUNTER = new AtomicInteger();
+
+    static {
+        //Thread.yield();
+        final int x = 1;
+        int y = 2;
+        @SuppressWarnings("unused")
+        int z = (x + y) + (x + y);
+        init();
+    }
+
+    @interface A {
+        int number() default 42;
+
+        String[] names() default { "a", "b" };
+
+        Class<?> clazz() default Object.class;
+    }
+
+    @Deprecated(forRemoval = true, since = "11")
+    @SuppressWarnings("all")
+    void deprecatedMethod() {}
+
+    private static void init() {
+        COUNTER.incrementAndGet();
+    }
+
+    @SafeVarargs
+    @SuppressWarnings("all")
+    protected final <T> CharSequence[] methodReferencesAndLambdas(T... arguments) {
+        Stream.of(arguments).forEach(System.out::println);
+        Stream.of(arguments).forEach(this::log);
+        return Stream.of(arguments).map(Object::toString).toArray(CharSequence[]::new);
+    }
+
+    void classicFor(String[] arguments) {
+        for (int index = 0; index < arguments.length; index++) {
+            log(arguments[index]);
+        }
+        for (int index = 0; index < arguments.length; index++)
+            log(arguments[index]);
+    }
+
+    void whileLoop(String[] arguments) {
+        int index = 0;
+        while (index < arguments.length) {
+            log(arguments[index++]);
+        }
+        index = 0;
+        while (index < arguments.length)
+            log(arguments[index++]);
+    }
+
+    void doWhileLoop(String[] arguments) {
+        int index = 0;
+        do {
+            log(arguments[index++]);
+        } while (index < arguments.length);
+        index = 0;
+        do
+            log(arguments[index++]);
+        while (index < arguments.length);
+    }
+
+    void lambdaAndOptional() {
+        Supplier<String> supplier = () -> "value";
+        Function<String, Integer> function = String::length;
+        Optional.ofNullable(supplier.get()).map(function).ifPresent(length -> log("length=" + length));
+    }
+
+    void unTypedLambdaParams(List<String> list) {
+        list.sort((a, b) -> b.compareTo(a));
+        list.sort((a, b) -> {
+            log("Comparing a and b");
+            return b.compareTo(a);
+        });
+    }
+    
+    synchronized void synchronizedMethod() throws Exception, Error {
+        log("synchronized");
+    }
+
+    void tryCatchFinally() {
+        try {
+            if (COUNTER.get() < 0) {
+                throw new IllegalStateException();
+            }
+        } catch (final RuntimeException exception) {
+            log(exception.getClass().getSimpleName());
+        } finally {
+            log("finally");
+        }
+    }
+
+    void tryWithResources(Path path) {
+        String line;
+        try (final BufferedReader br = Files.newBufferedReader(path, UTF_8)) {
+            while ((line = br.readLine()) != null) {
+                log(line);
+            }
+        } catch (IOException exception) {
+            log(exception.getMessage());
+        }
+    }
+
+    void tryWith2Resources(File file) {
+        String line;
+        try (FileReader fr = new FileReader(file); final BufferedReader br = new BufferedReader(fr)) {
+            while ((line = br.readLine()) != null) {
+                log(line);
+            }
+        } catch (IOException exception) {
+            log(exception.getMessage());
+        }
+    }
+    
+    void assertions(int value) {
+        assert value >= 0 : "negative";
+    }
+
+    void boxingAndNumbers() {
+        Integer boxed = 1;
+        int primitive = boxed;
+        BigDecimal decimal = BigDecimal.valueOf(primitive);
+        log(decimal.toPlainString());
+    }
+
+    void instanceofPattern(Object object) {
+        if (object instanceof String text && !text.isEmpty()) {
+            log(text);
+        }
+    }
+
+    void enumSwitch(Day day) {
+        switch (day) {
+        case MONDAY, TUESDAY -> log("weekday");
+        default -> log("other");
+        }
+    }
+
+    public String expressionSwitch(int value) {
+        return switch (value) {
+        case 0 -> "zero";
+        case 1 -> "one";
+        default -> throw new IllegalArgumentException();
+        };
+    }
+
+    @Override
+    public int compareTo(E other) {
+        return Comparator.<E>naturalOrder().compare(null, other);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), COUNTER.get());
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public boolean equals(Object object) {
+        if (this == object)
+            return true;
+        if (!super.equals(object) || getClass() != object.getClass())
+            return false;
+        return true;
+    }
+
+    public abstract void log(Object argument);
+
+    interface Named {
+        String name();
+    }
+
+    interface Identified {
+        long id();
+    }
+
+    static class Entity implements Named, Identified, Comparable<Entity> {
+
+        private long id;
+        private String name;
+
+        Entity(long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public long id() {
+            return id;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, name);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Entity other = (Entity) obj;
+            return id == other.id && Objects.equals(name, other.name);
+        }
+
+        @Override
+        public int compareTo(Entity other) {
+            return Long.compare(this.id, other.id);
+        }
+    }
+
+    static <T extends Named & Identified & Comparable<T>> T intersectionBound(T value) {
+        return value;
+    }
+
+    sealed interface Shape permits Circle, Rectangle, SpecialShape {
+        double area();
+    }
+
+    static final class Circle implements Shape {
+        private final double radius;
+
+        Circle(double radius) {
+            this.radius = radius;
+        }
+
+        @Override
+        public double area() {
+            return Math.PI * radius * radius;
+        }
+    }
+
+    static final class Rectangle implements Shape {
+        private final double width;
+        private final double height;
+
+        Rectangle(double width, double height) {
+            this.width = width;
+            this.height = height;
+        }
+
+        @Override
+        public double area() {
+            return width * height;
+        }
+    }
+
+    non-sealed interface SpecialShape extends Shape {}
+
+    @SuppressWarnings("all")
+    static abstract sealed class Result<T> permits Success, Failure {
+        private Result() {}
+    }
+
+    static non-sealed class Success<T> extends Result<T> {
+        private final T value;
+
+        Success(T value) {
+            this.value = value;
+        }
+
+        T value() {
+            return value;
+        }
+    }
+
+    static non-sealed class Failure<T> extends Result<T> {
+        private final Exception exception;
+
+        Failure(Exception exception) {
+            this.exception = exception;
+        }
+
+        Exception exception() {
+            return exception;
+        }
+    }
+
+//    <T> String handleResult(Result<T> result) {
+//        return switch (result) {
+//        case Success<T> success -> "success:" + success.value();
+//        case Failure<T> failure -> "failure:" + failure.exception().getClass().getSimpleName();
+//        };
+//    }
+
+    class Inner {
+
+        Inner() throws Exception, Error {
+            log("Inner constructor");
+        }
+
+        void anonymousClass() {
+            new Thread(new Runnable() {
+                private static final long CONSTANT = 1L;
+                int index;
+
+                {
+                    index = -1;
+                }
+
+                @Override
+                public void run() {
+                    log("index=" + index + ",constant=" + CONSTANT);
+                }
+            }).start();
+        }
+
+        void lambda() {
+            new Thread(() -> log("Inner.lambda")).start();
+        }
+        
+        void lambdaBlock() {
+            new Thread(() -> {
+                log("Inner.lambda 1");
+                log("Inner.lambda 2");
+            }).start();
+        }
+    }
+
+    strictfp record Rec(String s, List<String> l) {
+        public Rec {
+            s = s == null ? "" : s;
+            l = l == null ? List.of() : List.copyOf(l);
+        }
+    }
+
+    enum Day implements Serializable {
+        MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ ElementType.TYPE, ElementType.METHOD })
+    @interface Marker {}
+
+    static <T> T genericMethod(T value) {
+        return value;
+    }
+
+    transient Callable<String> callable = () -> "callable";
+
+    void labeledLoops() {
+        outer: for (int i = 0; i < 3; i++) {
+            inner: for (int j = 0; j < 3; j++) {
+                if (i == j)
+                    continue outer;
+                if (i + j > 3)
+                    break inner;
+            }
+        }
+    }
+
+    void labeledBlock() {
+        block: {
+            if (COUNTER.get() >= 0) {
+                break block;
+            }
+            log("unreachable");
+        }
+    }
+
+    void localVar() {
+        var number = 123;
+        var text = "text";
+        var list = new ArrayList<String>();
+        log(text + number + list.size());
+    }
+
+    void multiCatch() throws Exception {
+        try {
+            throw new IOException();
+        } catch (IOException | RuntimeException exception) {
+            throw exception;
+        }
+    }
+
+    void suppressed() throws Exception {
+        Exception primary = new Exception("primary");
+        Exception secondary = new Exception("secondary");
+        primary.addSuppressed(secondary);
+        throw primary;
+    }
+
+    String throwExpression(Integer value) {
+        return Optional.ofNullable(value).map(Object::toString).orElseThrow(() -> new IllegalArgumentException());
+    }
+
+    void synchronizedBlock() {
+        synchronized (this) {
+            log("sync");
+        }
+    }
+
+    static class GenericConstructor {
+        <T> GenericConstructor(T value) {}
+    }
+
+    <T extends Exception & Serializable> void intersectionThrows() throws T {}
+
+    void wildcard(List<?> list) {
+        capture(list);
+    }
+
+    private <T> void capture(List<T> list) {
+        for (T element : list) {
+            log(String.valueOf(element));
+        }
+    }
+
+    interface AdvancedInterface {
+
+        default String defaultMethod() {
+            return privateHelper();
+        }
+
+        static String staticMethod() {
+            return "static";
+        }
+
+        private String privateHelper() {
+            return "private";
+        }
+    }
+
+    @Repeatable(Tags.class)
+    @interface Tag {
+        String value();
+    }
+
+    @interface Tags {
+        Tag[] value();
+    }
+
+    @Tag("one")
+    @Tag("two")
+    class Tagged {}
+
+    @Target(ElementType.TYPE_USE)
+    @interface TypeUse {}
+
+    void typeUse() {
+        @TypeUse
+        String value = "x";
+        List<@TypeUse String> list = List.of(value);
+        log(list.get(0));
+    }
+
+    @SuppressWarnings("all")
+    void arrays() {
+        int[] empty = {};
+        int[] a123 = { 1, 2, 3 };
+        String[][] b = { { "a" }, { "b" } };
+        String[][] b2 = new String[][] { { "a" }, { "b" } };
+        int[] a = new int[1];
+        int[] d, e[];
+        int[] f = { 0, 1 }, g[] = { { 1, 2, 3}, { 4, 5, 6 } };
+    }
+
+    void literals() {
+        float f = 1.0f;
+        char ch = '\u0041';
+        double d = 1e3;
+        long underscore = 1_000_000L;
+        int bin = 0b1010;
+        int hex = 0xFF;
+        log("" + bin + hex + underscore + f + d + ch);
+    }
+
+    void textBlock() {
+        String text = """
+                line1
+                line2
+                """;
+        log(text);
+    }
+
+    int switchYield(int i) {
+        return switch (i) {
+        case 0 -> {
+            log("before yield");
+            yield 10;
+        }
+        default -> {
+            log("before yield");
+            yield -1;
+        }
+        };
+    }
+
+    static abstract class Base {
+        String value() {
+            return "base";
+        }
+    }
+
+    class Derived extends Base {
+
+        Derived() {
+            this("x");
+        }
+
+        Derived(String s) {
+            super();
+        }
+
+        @Override
+        String value() {
+            return super.value();
+        }
+
+        void qualifiedThis() {
+            AllJavaSyntaxes.this.log("qualified");
+        }
+    }
+
+    strictfp enum Operation {
+        ADD {
+            @Override
+            int apply(int a, int b) {
+                return a + b;
+            }
+        },
+        SUB {
+            @Override
+            int apply(int a, int b) {
+                return a - b;
+            }
+        };
+
+        native int apply(int a, int b);
+    }
+
+    @SuppressWarnings("all")
+    void allOperators() {
+
+        int a = 10;
+        int b = 3;
+        int add = a + b;
+        int sub = a - b;
+        int mul = a * b;
+        int div = a / b;
+        int mod = a % b;
+        int pos = +a;
+        int neg = -a;
+        int preInc = ++a;
+        int preDec = --a;
+        int postInc = a++;
+        int postDec = a--;
+        boolean not = !false;
+        int bitNot = ~a;
+        boolean lt = a < b;
+        boolean gt = a > b;
+        boolean le = a <= b;
+        boolean ge = a >= b;
+        boolean eq = a == b;
+        boolean ne = a != b;
+        boolean and = true && false;
+        boolean or = true || false;
+        int bitAnd = a & b;
+        int bitOr = a | b;
+        int bitXor = a ^ b;
+        int leftShift = a << 1;
+        int rightShift = a >> 1;
+        int unsignedShift = a >>> 1;
+        int c = 0;
+        c += a;
+        c -= a;
+        c *= a;
+        c /= a;
+        c %= a;
+        c &= a;
+        c |= a;
+        c ^= a;
+        c <<= 1;
+        c >>= 1;
+        c >>>= 1;
+        int ternary = a > b ? a : b;
+        boolean isString = "x" instanceof String;
+        long widened = a;
+        int narrowed = (int) widened;
+        Object object = new Object();
+        int[] array = new int[3];
+        int element = array[0];
+        log(String.valueOf(element));
+        int length = array.length;
+        Class<?> clazz = String.class;
+        Function<String, Integer> lengthRef = String::length;
+        Supplier<Integer> lambda = () -> 42;
+        AllJavaSyntaxes.this.log("this");
+        super.size();
+        Comparator<String> cmp = String::compareTo;
+        int[][] matrix = new int[1][1];
+        int value = matrix[0].length;
+        Runnable runnable = () -> log("run");
+        Supplier<ArrayList<String>> ctorRef = ArrayList::new;
+        int yielded = switch (a) {
+        case 0 -> 0;
+        default -> {
+            yield 1;
+        }
+        };
+        assert yielded >= 0;
+        RuntimeException exception = new RuntimeException();
+        String text = exception == null ? "ok" : "error";
+        for (int i = 0, j = 10; i < j; i++, j--) {
+            log(i + ":" + j);
+        }
+    }
+
+    class Outer {
+
+        int value = 1;
+
+        class Inner {
+            Inner() {
+                log("Inner");
+            }
+
+            class Deep {
+                Deep() {
+                    log("Deep");
+                }
+            }
+        }
+
+        static class StaticNested {
+            @SuppressWarnings("all")
+            StaticNested() {
+                System.out.println("StaticNested");
+            }
+        }
+    }
+
+    @SuppressWarnings("all")
+    void qualifiedNew(Outer outer) {
+
+        Outer.Inner i1 = outer.new Inner();
+        Outer.Inner.Deep d1 = outer.new Inner().new Deep();
+        Outer.Inner i2 = (outer).new Inner();
+        Outer.Inner i3 = this.new Outer().new Inner();
+        Outer.Inner i4 = outer.new Inner() {
+        };
+        AllJavaSyntaxes.Outer.StaticNested s2 = new AllJavaSyntaxes.Outer.StaticNested();
+    }
+
+    void diamondAnonymous() {
+        Comparator<String> c = new Comparator<>() {
+            @Override
+            public int compare(String a, String b) {
+                return a.compareTo(b);
+            }
+        };
+        log(String.valueOf(c.compare("a", "b")));
+    }
+
+    void emptyStatement(boolean flag) {
+        ;
+        while (flag)
+            ;
+    }
+
+    class SuperOuter {
+        String value() {
+            return "outer";
+        }
+    }
+
+    class SuperInner extends SuperOuter {
+        class Deep {
+            String value() {
+                return SuperInner.super.value();
+            }
+        }
+    }
+
+    void multiDimVarargs(int[]... values) {
+        log(String.valueOf(values.length));
+    }
+
+    strictfp double strict(double a, double b) {
+        return a / b;
+    }
+
+    static strictfp class StrictClass {
+        double value() {
+            return 1.0 / 3.0;
+        }
+    }
+
+    void chainedAssignment() {
+        int a, b, c;
+        a = b = c = 10;
+        log(String.valueOf(a + b + c));
+    }
+
+    void parameterAnnotation(@Deprecated String value) {
+        log(value);
+    }
+
+    List<?> list;
+    List<Class<?>> list2;
+    List<?> getList() { return null; }
+    native List<?> getNativeList();
+    native List<Class<?>> getNativeClassList();
+    List<Class<?>> getClassList() { return null; }
+
+    void forMap(Map<String, List<String>> map) {
+        for (@SuppressWarnings("unused") final Entry<String, List<String>> entry : map.entrySet()) {
+            System.out.println(entry);
+        }
+    }
+
+    void forMap2(Map<String, List<String>> map) {
+        for (final Map.Entry<String, List<String>> entry : map.entrySet()) {
+            System.out.println(entry);
+        }
+    }
+
+    <T> void testCastGeneric(Object o) {
+        T t = (T)o;
+        List<ServiceLoader<T>> action;
+        action = (List<ServiceLoader<T>>) o;
+    }
+}
+

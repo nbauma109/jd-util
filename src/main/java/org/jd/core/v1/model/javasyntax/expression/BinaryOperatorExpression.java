@@ -23,6 +23,34 @@ public class BinaryOperatorExpression extends AbstractLineNumberTypeExpression {
         this.priority = priority;
     }
 
+    public BinaryOperatorExpression(int lineNumber, Type type, Expression leftExpression, String operator, Expression rightExpression) {
+        this(lineNumber, type, leftExpression, operator, rightExpression, computePriority(operator));
+    }
+
+    private static int computePriority(String operator) {
+        if (operator == null) {
+            return 0;
+        }
+        return switch (operator) {
+            case "*", "/", "%" -> 5;
+            case "+", "-" -> 6;
+            case "<<", ">>", ">>>" -> 7;
+            case "<", "<=", ">", ">=", "instanceof" -> 8;
+            case "==", "!=" -> 9;
+            case "&" -> 10;
+            case "^" -> 11;
+            case "|" -> 12;
+            case "&&" -> 13;
+            case "||" -> 14;
+
+            case "=", "+=", "-=", "*=", "/=", "%=",
+                 "<<=", ">>=", ">>>=",
+                 "&=", "^=", "|=" -> 16;
+
+            default -> 0;
+        };
+    }
+
     @Override
     public Expression getLeftExpression() {
         return leftExpression;

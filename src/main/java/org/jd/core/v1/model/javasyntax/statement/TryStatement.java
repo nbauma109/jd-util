@@ -59,11 +59,20 @@ public class TryStatement implements Statement {
         private final ObjectType type;
         private final String name;
         private Expression expression;
+        private boolean fina1;
 
         public Resource(ObjectType type, String name, Expression expression) {
             this.type = type;
             this.name = name;
             this.expression = expression;
+        }
+
+        public boolean isFinal() {
+            return fina1;
+        }
+
+        public void setFinal(boolean fina1) {
+            this.fina1 = fina1;
         }
 
         public ObjectType getType() {

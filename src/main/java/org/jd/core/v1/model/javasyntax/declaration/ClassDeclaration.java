@@ -20,10 +20,14 @@ public class ClassDeclaration extends InterfaceDeclaration {
     }
 
     public ClassDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, ObjectType superType, BaseType interfaces, BodyDeclaration bodyDeclaration) {
-        super(annotationReferences, flags, internalName, name, typeParameters, interfaces, bodyDeclaration);
-        this.superType = superType;
+        this(annotationReferences, flags, internalName, name, typeParameters, superType, interfaces, null, bodyDeclaration);
     }
 
+    public ClassDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, ObjectType superType, BaseType interfaces, BaseType permittedSubclasses, BodyDeclaration bodyDeclaration) {
+        super(annotationReferences, flags, internalName, name, typeParameters, interfaces, permittedSubclasses, bodyDeclaration);
+        this.superType = superType;
+    }
+    
     public ObjectType getSuperType() {
         return superType;
     }
