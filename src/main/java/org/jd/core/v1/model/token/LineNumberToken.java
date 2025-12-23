@@ -8,7 +8,7 @@
 package org.jd.core.v1.model.token;
 
 /**
- * Must be create between StartStatementToken and EndStatementToken
+ * Must be created between StartStatementToken and EndStatementToken
  */
 public record LineNumberToken(int lineNumber) implements Token {
 
