@@ -8,6 +8,9 @@
 Common utilities for Java bytecode analysis and type bindings used by jd-core projects, and java source parser/realigner/formatter
 
 ```java
+import org.apache.bcel.classfile.Method;
+import org.jd.core.v1.loader.ClassPathLoader;
+import org.jd.core.v1.model.classfile.ClassFile;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.parser.JavaParseResult;
 import org.jd.core.v1.parser.JdJavaSourceParser;
@@ -15,11 +18,16 @@ import org.jd.core.v1.parser.ParseException;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.TypeTypes;
+import org.jd.core.v1.service.deserializer.classfile.ClassFileDeserializer;
 import org.jd.core.v1.util.ParserRealigner;
+
+import java.io.IOException;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class Sample {
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) throws ParseException, IOException {
         /*
          * Inspect type
          */
@@ -31,6 +39,21 @@ public class Sample {
         System.out.println("Super type : " + typeTypes.getSuperType());
         MethodTypes methodTypes = typeMaker.makeMethodTypes("java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
         System.out.println("Parameter types : " + methodTypes.getParameterTypes());
+
+        /*
+         * Class deserializer 
+         */
+        ClassPathLoader classPathLoader = new ClassPathLoader();
+        ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
+        ClassFile classFile = classFileDeserializer.loadClassFile(classPathLoader, "java/util/HashMap");
+        Optional<Method> method = Stream.of(classFile.getMethods()).filter(m -> m.getName().equals("put")).findFirst();
+        if (method.isPresent()) {
+            typeTypes = typeMaker.parseClassFileSignature(classFile);
+            System.out.println("Implemented interfaces : " + typeTypes.getInterfaces());
+            System.out.println("Super type : " + typeTypes.getSuperType());
+            methodTypes = typeMaker.parseMethodSignature(classFile, method.get());
+            System.out.println("Parameter types : " + methodTypes.getParameterTypes());
+        }
         
         /*
          * Parse and realign
