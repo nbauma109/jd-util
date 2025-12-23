@@ -2,7 +2,6 @@ package org.jd.core.v1.util;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.classfile.ClassFile;
 import org.jd.core.v1.service.deserializer.classfile.ClassFileDeserializer;
 import org.junit.Test;
@@ -219,12 +218,15 @@ public class ByteCodeUtilTest {
 
     @Test
     public void testJumpTo() throws Exception {
-        ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
-        ClassFile classFile = classFileDeserializer.loadClassFile(new ClassPathLoader(), "org/apache/commons/io/FileSystemUtils");
-        Method[] methods = classFile.getMethods();
-        byte[] code = methods[11].getCode().getCode();
-        assertFalse(ByteCodeUtil.jumpTo(code, 95, 98));
-        assertTrue(ByteCodeUtil.jumpTo(code, 98, 98));
+        try (InputStream in = getClass().getResourceAsStream("/jar/commons-io-2.16.0.jar")) {
+            ZipLoader loader = new ZipLoader(in);
+            ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
+            ClassFile classFile = classFileDeserializer.loadClassFile(loader, "org/apache/commons/io/FileSystemUtils");
+            Method[] methods = classFile.getMethods();
+            byte[] code = methods[11].getCode().getCode();
+            assertFalse(ByteCodeUtil.jumpTo(code, 95, 98));
+            assertTrue(ByteCodeUtil.jumpTo(code, 98, 98));
+        }
     }
 
     @Test
