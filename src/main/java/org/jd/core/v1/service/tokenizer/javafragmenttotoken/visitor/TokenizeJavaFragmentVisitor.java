@@ -610,9 +610,6 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
 
         @Override
         public void visit(LineNumberToken token) {
-            if (token.lineNumber() != Printer.UNKNOWN_LINE_NUMBER) {
-                throw new IllegalArgumentException("LineNumberToken cannot have a known line number. Uses 'LineNumberTokensFragment' instead");
-            }
         }
 
         @Override
