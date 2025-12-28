@@ -82,6 +82,10 @@ public class ClassFile {
         return javaClass.isClass();
     }
 
+    public final boolean isRecord() {
+        return javaClass.isRecord();
+    }
+
     public final int getAccessFlags() {
         return javaClass.getAccessFlags();
     }
