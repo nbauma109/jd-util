@@ -60,6 +60,33 @@ public class JdJavaSourceParser
   private Deque<TypeContext> typeContextStack = new ArrayDeque<>();
   private int anonymousCounter;
 
+  private int switchExpressionDepth;
+
+  private void enterSwitchExpression()
+  {
+    switchExpressionDepth++;
+  }
+
+  private void exitSwitchExpression()
+  {
+    if (switchExpressionDepth > 0)
+    {
+      switchExpressionDepth--;
+    }
+  }
+
+  private boolean isInSwitchExpression()
+  {
+    return switchExpressionDepth > 0;
+  }
+
+
+  private boolean isIdentifierKind(final int kind)
+  {
+    return kind == IDENTIFIER || kind == YIELD || kind == RECORD;
+  }
+
+
   private int consumeLineNumber(Token anchor)
   {
     int physical = anchor.beginLine;
@@ -210,7 +237,7 @@ public class JdJavaSourceParser
     }
   
     final Token name = getToken(afterType);
-    if (name.kind != IDENTIFIER) {
+    if (!isIdentifierKind(name.kind)) {
       return false;
     }
   
@@ -244,7 +271,7 @@ public class JdJavaSourceParser
     }
     i++; // '@'
   
-    if (getToken(i).kind != IDENTIFIER) {
+    if (!isIdentifierKind(getToken(i).kind)) {
       return -1;
     }
     i = scanQualifiedName(i);
@@ -277,12 +304,12 @@ public class JdJavaSourceParser
   
   private int scanQualifiedName(final int startIndex) {
     int i = startIndex;
-    if (getToken(i).kind != IDENTIFIER) {
+    if (!isIdentifierKind(getToken(i).kind)) {
       return -1;
     }
     i++;
     while (getToken(i).kind == DOT) {
-      if (getToken(i + 1).kind != IDENTIFIER) {
+      if (!isIdentifierKind(getToken(i + 1).kind)) {
         return -1;
       }
       i += 2;
@@ -296,7 +323,7 @@ public class JdJavaSourceParser
   
     if (isPrimitiveTypeToken(k) || k == VOID) {
       i++;
-    } else if (k == IDENTIFIER) {
+    } else if (isIdentifierKind(k)) {
       i = scanQualifiedName(i);
       if (i < 0) {
         return -1;
@@ -409,7 +436,7 @@ public class JdJavaSourceParser
 
     if (isPrimitiveTypeToken(first)) {
       index++;
-    } else if (first.kind == IDENTIFIER) {
+    } else if (isIdentifierKind(first.kind)) {
       index = skipQualifiedNameWithTypeArgumentsAhead(index);
       if (index < 0) {
         return false;
@@ -421,7 +448,7 @@ public class JdJavaSourceParser
     index = skipArrayDimsAhead(index);
 
     final Token varName = getToken(index);
-    if (varName == null || varName.kind != IDENTIFIER) {
+    if (varName == null || !isIdentifierKind(varName.kind)) {
       return false;
     }
     index++;
@@ -436,7 +463,7 @@ public class JdJavaSourceParser
     int index = skipTypeUseAnnotationsAhead(startIndex);
   
     Token t = getToken(index);
-    if (t == null || t.kind != IDENTIFIER) {
+    if (t == null || !isIdentifierKind(t.kind)) {
       return -1;
     }
     index++;
@@ -458,7 +485,7 @@ public class JdJavaSourceParser
       index = skipTypeUseAnnotationsAhead(index);
   
       t = getToken(index);
-      if (t == null || t.kind != IDENTIFIER) {
+      if (t == null || !isIdentifierKind(t.kind)) {
         return -1;
       }
       index++;
@@ -534,7 +561,7 @@ public class JdJavaSourceParser
       index++;
   
       Token t = getToken(index);
-      if (t == null || t.kind != IDENTIFIER) {
+      if (t == null || !isIdentifierKind(t.kind)) {
         return -1;
       }
       index++;
@@ -542,7 +569,7 @@ public class JdJavaSourceParser
       while (true) {
         final Token dot = getToken(index);
         final Token id = getToken(index + 1);
-        if (dot != null && id != null && dot.kind == DOT && id.kind == IDENTIFIER) {
+        if (dot != null && id != null && dot.kind == DOT && isIdentifierKind(id.kind)) {
           index += 2;
         } else {
           break;
@@ -578,7 +605,7 @@ public class JdJavaSourceParser
     while (tok.kind == AT) {
       i++;
       tok = getToken(i);
-      if (tok.kind != IDENTIFIER) {
+      if (!isIdentifierKind(tok.kind)) {
         return false;
       }
 
@@ -587,7 +614,7 @@ public class JdJavaSourceParser
       while (tok.kind == DOT) {
         i++;
         tok = getToken(i);
-        if (tok.kind != IDENTIFIER) {
+        if (!isIdentifierKind(tok.kind)) {
           return false;
         }
         i++;
@@ -639,7 +666,7 @@ public class JdJavaSourceParser
     if (isPrimitiveTypeToken(first)) {
       primitiveCast = true;
       index++;
-    } else if (first.kind == IDENTIFIER) {
+    } else if (isIdentifierKind(first.kind)) {
       primitiveCast = false;
       index = skipQualifiedNameWithTypeArgumentsAhead(index);
       if (index < 0) {
@@ -683,7 +710,7 @@ public class JdJavaSourceParser
       return true;
     }
   
-    if (k == IDENTIFIER) {
+    if (isIdentifierKind(k)) {
       return true;
     }
   
@@ -1025,6 +1052,21 @@ TOKEN :
 
 /* -------------------- PARSER -------------------- */
 
+Token IdentifierToken() :
+{
+  Token t;
+}
+{
+  (
+    t = <IDENTIFIER>
+  | t = <YIELD>
+  | t = <RECORD>
+  )
+  {
+    return t;
+  }
+}
+
 JavaParseResult CompilationUnitResult() :
 {
   JavaImport imp;
@@ -1136,7 +1178,7 @@ TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<
 }
 {
   (
-    <CLASS> nameTok = <IDENTIFIER>
+    <CLASS> nameTok = IdentifierToken()
     {
       simpleName = nameTok.image;
       internalName = computeInternalName(simpleName);
@@ -1193,7 +1235,7 @@ TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<
       return new ClassDeclaration(anns, flags, internalName, simpleName, typeParameters, (ObjectType) superType, interfaces, permittedClasses, body);
     }
   | 
-    <INTERFACE> nameTok = <IDENTIFIER>
+    <INTERFACE> nameTok = IdentifierToken()
     {
       simpleName = nameTok.image;
       internalName = computeInternalName(simpleName);
@@ -1244,7 +1286,7 @@ TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<
       return new InterfaceDeclaration(anns, flags, internalName, simpleName, typeParameters, interfaces, permittedClasses, body);
     }
   | 
-    <ENUM> nameTok = <IDENTIFIER>
+    <ENUM> nameTok = IdentifierToken()
     {
       simpleName = nameTok.image;
       internalName = computeInternalName(simpleName);
@@ -1267,7 +1309,7 @@ TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<
       return new EnumDeclaration(anns, flags, internalName, simpleName, interfaces, enumConstants, body);
     }
   | 
-    <RECORD> nameTok = <IDENTIFIER>
+    <RECORD> nameTok = IdentifierToken()
     {
       simpleName = nameTok.image;
       internalName = computeInternalName(simpleName);
@@ -1303,7 +1345,7 @@ TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<
       return new RecordDeclaration(anns, flags, internalName, simpleName, typeParameters, recordComponents, interfaces, body);
     }
   | 
-    <AT_INTERFACE> nameTok = <IDENTIFIER>
+    <AT_INTERFACE> nameTok = IdentifierToken()
     {
       simpleName = nameTok.image;
       internalName = computeInternalName(simpleName);
@@ -1354,7 +1396,7 @@ RecordDeclaration.RecordComponent RecordComponent() :
 {
   anns = AnnotationsOpt() 
   t = TypeRef() 
-  nameTok = <IDENTIFIER>
+  nameTok = IdentifierToken()
   {
     return new RecordDeclaration.RecordComponent(anns, t, nameTok.image);
   }
@@ -1414,7 +1456,7 @@ BodyDeclaration EnumBody(String enumInternalName, List<EnumDeclaration.Constant>
 void EnumConstantStart() :
 {}
 {
-  <IDENTIFIER>
+  IdentifierToken()
 }
 
 void EnumConstants(String enumInternalName, List<EnumDeclaration.Constant> constantsOut) :
@@ -1450,7 +1492,7 @@ EnumDeclaration.Constant EnumConstant(String enumInternalName, int index) :
   String anonInternalName;
 }
 {
-  nameTok = <IDENTIFIER>
+  nameTok = IdentifierToken()
   {
     ln = consumeLineNumber(nameTok);
     args = null;
@@ -1542,8 +1584,8 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
     }
     (
       /* Generic constructor: <T> C(...) { ... } */
-      LOOKAHEAD(<IDENTIFIER> <LPAREN>)
-      nameTok = <IDENTIFIER>
+      LOOKAHEAD(IdentifierToken() <LPAREN>)
+      nameTok = IdentifierToken()
       params = FormalParameterListOpt()
       (
         <THROWS> throwsTypes = TypeList()
@@ -1563,7 +1605,7 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
     |
       /* Generic method: <T> R m(...) ... */
       t = TypeRef()
-      nameTok = <IDENTIFIER>
+      nameTok = IdentifierToken()
       params = FormalParameterListOpt()
       (
         <THROWS> throwsTypes = TypeList()
@@ -1596,8 +1638,8 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
     )
   |
     /* Non-generic constructor */
-    LOOKAHEAD(<IDENTIFIER> <LPAREN>)
-    nameTok = <IDENTIFIER>
+    LOOKAHEAD(IdentifierToken() <LPAREN>)
+    nameTok = IdentifierToken()
     params = FormalParameterListOpt()
     (
       <THROWS> throwsTypes = TypeList()
@@ -1612,8 +1654,8 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
     }
   |
     /* Record compact constructor:  Rec { ... }  or  Rec throws X { ... } */
-    LOOKAHEAD(<IDENTIFIER> (<THROWS> | <LBRACE>))
-    nameTok = <IDENTIFIER>
+    LOOKAHEAD(IdentifierToken() (<THROWS> | <LBRACE>))
+    nameTok = IdentifierToken()
     {
       params = new FormalParameters();
     }
@@ -1629,6 +1671,13 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
       return new RecordConstructorDeclaration(anns, flags, null, params, throwsTypes, descriptor, stmts);
     }
   |
+    /* Nested type */
+    LOOKAHEAD(<CLASS> | <INTERFACE> | <ENUM> | <RECORD> | <AT_INTERFACE>)
+    nested = TypeDeclarationAfterPreamble(anns, mods)
+    {
+      return (MemberDeclaration) nested;
+    }
+  |
     /*
       Method or field (non-generic).
       We must not use LOOKAHEAD(TypeRef() ...) because lookahead does not run the
@@ -1637,8 +1686,8 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
     t = TypeRef()
     (
       /* Method */
-      LOOKAHEAD(<IDENTIFIER> <LPAREN>)
-      nameTok = <IDENTIFIER>
+      LOOKAHEAD(IdentifierToken() <LPAREN>)
+      nameTok = IdentifierToken()
       params = FormalParameterListOpt()
       (
         <THROWS> throwsTypes = TypeList()
@@ -1673,13 +1722,6 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
         return new FieldDeclaration(anns, flags, t, fds);
       }
     )
-  |
-    /* Nested type */
-    LOOKAHEAD(<CLASS> | <INTERFACE> | <ENUM> | <RECORD> | <AT_INTERFACE>)
-    nested = TypeDeclarationAfterPreamble(anns, mods)
-    {
-      return (MemberDeclaration) nested;
-    }
   )
 }
 
@@ -1726,7 +1768,7 @@ AnnotationReference Annotation() :
   (
     <LPAREN>
     (
-      LOOKAHEAD(< IDENTIFIER> <ASSIGN>)
+      LOOKAHEAD(IdentifierToken() <ASSIGN>)
       pairs = ElementValuePairs()
     | 
       value = ElementValue()
@@ -1797,7 +1839,7 @@ ElementValuePair ElementValuePair() :
   BaseElementValue v;
 }
 {
-  nameTok = < IDENTIFIER> 
+  nameTok = IdentifierToken() 
   < ASSIGN> 
   v = ElementValue()
   {
@@ -2074,13 +2116,13 @@ String QualifiedName() :
   StringBuilder sb = new StringBuilder();
 }
 {
-  t = <IDENTIFIER>
+  t = IdentifierToken()
   {
     sb.append(t.image);
   }
   (
-    LOOKAHEAD(<DOT> <IDENTIFIER>)
-    <DOT> t = <IDENTIFIER>
+    LOOKAHEAD(<DOT> IdentifierToken())
+    <DOT> t = IdentifierToken()
     {
       sb.append('.').append(t.image);
     }
@@ -2158,7 +2200,7 @@ FormalParameter FormalParameterOne() :
     varargs = true;
   }
   )? 
-  nameTok = <IDENTIFIER> 
+  nameTok = IdentifierToken() 
   dims = ArrayDimsOpt()
   {
     if (varargs && dims > 0)
@@ -2217,7 +2259,7 @@ FieldDeclarator FieldDeclaratorOne() :
   FieldDeclarator d;
 }
 {
-  nameTok = <IDENTIFIER> 
+  nameTok = IdentifierToken() 
   dims = ArrayDimsOpt()
   (
     <ASSIGN> init = VariableInitializer()
@@ -2304,7 +2346,7 @@ void StatementStart() :
 | <LPAREN>
 | <INC>
 | <DEC>
-| <IDENTIFIER>
+| IdentifierToken()
   /* local variable declaration starters (TypeRef begins with these too) */
 | <BOOLEAN_KW>
 | <BYTE_KW>
@@ -2406,16 +2448,16 @@ Statement StatementNoBlock() :
     }
   | 
     /* Labeled statement: label: <statement-or-block> */
-    LOOKAHEAD(<IDENTIFIER> <COLON>)
-    labelTok = <IDENTIFIER> <COLON> 
+    LOOKAHEAD(IdentifierToken() <COLON>)
+    labelTok = IdentifierToken() <COLON> 
     s1 = StatementAsStatements()
     {
       return new LabelStatement(labelTok.image, s1);
     }
   | 
     /* Labeled statement: outer: for (...) ... */
-    LOOKAHEAD(<IDENTIFIER> <COLON>)
-    labelTok = <IDENTIFIER> <COLON> 
+    LOOKAHEAD(IdentifierToken() <COLON>)
+    labelTok = IdentifierToken() <COLON> 
     labeled = StatementNoBlock()
     {
       if (labeled == null)
@@ -2444,7 +2486,8 @@ Statement StatementNoBlock() :
     {
       return new ThrowStatement(e);
     }
-  | 
+  |
+    LOOKAHEAD( { isInSwitchExpression() && getToken(1).kind == YIELD } )
     t = <YIELD> e = Expression() <SEMI>
     {
       return new YieldExpressionStatement(consumeLineNumber(t), e);
@@ -2482,7 +2525,7 @@ Statement StatementNoBlock() :
       localAnns = AnnotationsOpt() 
       mods = ModifiersOpt() 
       ty = TypeRef() 
-      nameTok = <IDENTIFIER> 
+      nameTok = IdentifierToken() 
       <COLON> 
       e = Expression() 
       <RPAREN> 
@@ -2581,7 +2624,7 @@ Statement StatementNoBlock() :
   | 
     t = <BREAK>
     (
-      nameTok = <IDENTIFIER> <SEMI>
+      nameTok = IdentifierToken() <SEMI>
       {
         return new BreakStatement(nameTok.image);
       }
@@ -2594,7 +2637,7 @@ Statement StatementNoBlock() :
   | 
     t = <CONTINUE>
     (
-      nameTok = <IDENTIFIER> <SEMI>
+      nameTok = IdentifierToken() <SEMI>
       {
         return new ContinueStatement(nameTok.image);
       }
@@ -2605,7 +2648,7 @@ Statement StatementNoBlock() :
       }
     )
   | 
-    LOOKAHEAD(<AT> <IDENTIFIER>)
+    LOOKAHEAD(<AT> IdentifierToken())
     localAnns = AnnotationsOpt() 
     mods = ModifiersOpt() 
     ty = TypeRef() 
@@ -2667,7 +2710,7 @@ ForInitResult ForInitOpt() :
 }
 {
   (
-    LOOKAHEAD(TypeRef() <IDENTIFIER> (<ASSIGN> | <COMMA> | <SEMI> | <LBRACKET>))
+    LOOKAHEAD(TypeRef() IdentifierToken() (<ASSIGN> | <COMMA> | <SEMI> | <LBRACKET>))
     decl = ForInitLocalVariableDeclaration()
     {
       return new ForInitResult(decl, null);
@@ -2733,7 +2776,7 @@ LocalVariableDeclaration ForInitLocalVariableDeclaration() :
   anns = AnnotationsOpt() 
   mods = ModifiersOpt() 
   type = TypeRef() 
-  name = <IDENTIFIER> 
+  name = IdentifierToken() 
   dims = ArrayDimsOpt()
   {
     ln = consumeLineNumber(name);
@@ -2749,7 +2792,7 @@ LocalVariableDeclaration ForInitLocalVariableDeclaration() :
   }
   (
     <COMMA> 
-    name = <IDENTIFIER> 
+    name = IdentifierToken() 
     dims = ArrayDimsOpt()
     {
       ln = consumeLineNumber(name);
@@ -2804,7 +2847,7 @@ LocalVariableDeclarator LocalVariableDeclaratorOne() :
   LocalVariableDeclarator d;
 }
 {
-  nameTok = <IDENTIFIER> 
+  nameTok = IdentifierToken() 
   dims = ArrayDimsOpt()
   (
     <ASSIGN> init = VariableInitializer()
@@ -3014,7 +3057,7 @@ TryStatement.Resource TryResourceOne() :
   anns = AnnotationsOpt() 
   mods = ModifiersOpt() 
   t = TypeRef()
-  nameTok = <IDENTIFIER> 
+  nameTok = IdentifierToken() 
   <ASSIGN> 
   e = Expression()
   {
@@ -3077,7 +3120,7 @@ TryStatement.CatchClause CatchClauseOne() :
         extraTypes.add(nextType);
       }
     )*
-    nameTok = <IDENTIFIER>
+    nameTok = IdentifierToken()
   <RPAREN>
   s = BlockAsStatements()
   {
@@ -3168,13 +3211,13 @@ List<String> LambdaParameterNamesOpt() :
       return names;
     }
   | 
-    nameTok = <IDENTIFIER>
+    nameTok = IdentifierToken()
     {
       names.add(nameTok.image);
     }
     (
       <COMMA> 
-      nameTok = <IDENTIFIER>
+      nameTok = IdentifierToken()
       {
         names.add(nameTok.image);
       }
@@ -3382,7 +3425,7 @@ Expression RelationalExpression() :
   | 
     op = <INSTANCEOF> 
     t = TypeRef() 
-    (instanceOfVariableName = <IDENTIFIER>)?
+    (instanceOfVariableName = IdentifierToken())?
     {
       ln = consumeLineNumber(op);
       e = new InstanceOfExpression(ln, e, t, instanceOfVariableName == null ? null : instanceOfVariableName.image);
@@ -3546,7 +3589,7 @@ Expression PostfixExpression() :
           explicitTypeArgs = null;
         }
       )
-      nameTok = <IDENTIFIER>
+      nameTok = IdentifierToken()
       (
         LOOKAHEAD(<LPAREN>)
         args = ArgumentsAsExpressions()
@@ -3605,7 +3648,7 @@ Expression PostfixExpression() :
             explicitTypeArgs = null;
           }
         )
-        id = <IDENTIFIER>
+        id = IdentifierToken()
         {
           e = new MethodReferenceExpression(
           consumeLineNumber(mr), 
@@ -3734,7 +3777,7 @@ Expression PrimaryExpression() :
         /* keep going */
       }
     )
-    id = <IDENTIFIER>
+    id = IdentifierToken()
     {
       ln = consumeLineNumber(t);
       e = new ThisExpression(ln, TYPE_UNDEFINED_OBJECT);
@@ -3752,7 +3795,7 @@ Expression PrimaryExpression() :
         /* keep going */
       }
     )
-    id = <IDENTIFIER>
+    id = IdentifierToken()
     {
       ln = consumeLineNumber(t);
       e = new SuperExpression(ln, TYPE_UNDEFINED_OBJECT);
@@ -3792,8 +3835,8 @@ Expression PrimaryExpression() :
       return e;
     }
   |
-    LOOKAHEAD(<IDENTIFIER> <LPAREN>)
-    id = <IDENTIFIER>
+    LOOKAHEAD(IdentifierToken() <LPAREN>)
+    id = IdentifierToken()
     args = ArgumentsAsExpressions()
     {
       ln = consumeLineNumber(id);
@@ -3809,7 +3852,7 @@ Expression PrimaryExpression() :
       );
     }
   |
-    id = <IDENTIFIER>
+    id = IdentifierToken()
     {
       return new LocalVariableReferenceExpression(consumeLineNumber(id), TYPE_UNDEFINED_OBJECT, id.image);
     }
@@ -3846,7 +3889,7 @@ Expression TypeMethodReferencePrimary() :
       );
     }
   | 
-    id = <IDENTIFIER>
+    id = IdentifierToken()
     {
       return new MethodReferenceExpression(
       ln, 
@@ -3897,8 +3940,12 @@ SwitchExpression.Rule SwitchExpressionRule() :
   <ARROW>
   (
     LOOKAHEAD(<LBRACE>)
+    {
+      enterSwitchExpression();
+    }
     stmts = BlockAsStatements()
     {
+      exitSwitchExpression();
       if (stmts instanceof YieldExpressionStatement)
       {
         return new SwitchExpression.RuleExpression(labels, ((YieldExpressionStatement) stmts).getExpression());
@@ -4143,7 +4190,7 @@ BaseExpression ArgumentsAsExpressions() :
 void LambdaSingleParamLookahead() :
 {}
 {
-  <IDENTIFIER> <ARROW>
+  IdentifierToken() <ARROW>
 }
 
 void LambdaParametersLookahead() :
@@ -4151,7 +4198,7 @@ void LambdaParametersLookahead() :
 {
   <LPAREN>
   (
-    <IDENTIFIER> (<COMMA> <IDENTIFIER>)*
+    IdentifierToken() (<COMMA> IdentifierToken())*
   )?
   <RPAREN> <ARROW>
 }
@@ -4167,7 +4214,7 @@ Expression LambdaExpression() :
 }
 {
   (
-    nameTok = <IDENTIFIER> 
+    nameTok = IdentifierToken() 
     arrowTok = <ARROW>
     {
       parameterNames = new ArrayList<>();
@@ -4250,7 +4297,7 @@ TypeParameter TypeParameterDecl(Set<String> declaredNames) :
   BaseType bounds;
 }
 {
-  id = <IDENTIFIER>
+  id = IdentifierToken()
   (
     <EXTENDS> 
     bounds = TypeBoundList()

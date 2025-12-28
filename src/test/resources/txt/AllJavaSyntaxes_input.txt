@@ -25,7 +25,9 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     private static final AtomicInteger COUNTER = new AtomicInteger();
 
     static {
-        //Thread.yield();
+        Object record = null;
+        double yield = 0;
+        Thread.yield();
         final int x = 1;
         int y = 2;
         @SuppressWarnings("unused")
