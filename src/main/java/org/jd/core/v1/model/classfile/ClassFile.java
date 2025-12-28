@@ -15,7 +15,6 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.classfile.Utility;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.apache.bcel.Const.ACC_MODULE;
 import static org.apache.bcel.Const.CONSTANT_Class;
@@ -139,9 +138,8 @@ public class ClassFile {
         return javaClass.getAnnotationEntries();
     }
 
-    @SuppressWarnings("unchecked")
     public <T extends Attribute> T getAttribute(byte tag) {
-        return (T) Stream.of(javaClass.getAttributes()).filter(a -> a.getTag() == tag).findAny().orElse(null);
+        return javaClass.getAttribute(tag);
     }
 
     public boolean isAInnerClass() {
