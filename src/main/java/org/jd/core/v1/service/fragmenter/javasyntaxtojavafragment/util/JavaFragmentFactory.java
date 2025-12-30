@@ -56,7 +56,7 @@ public final class JavaFragmentFactory {
     }
 
     public static void addEndSingleStatementMethodBody(List<Fragment> fragments, StartBodyFragment start) {
-        fragments.add(new EndBodyFragment(0, 1, 1, 8, "End single statement method body", start));
+        fragments.add(new EndBodyFragment(0, 1, 1, 6, "End single statement method body", start));
     }
 
     public static void addEndMethodBody(List<Fragment> fragments, StartBodyFragment start) {
@@ -184,7 +184,7 @@ public final class JavaFragmentFactory {
     }
 
     public static StartBodyFragment addStartSingleStatementMethodBody(List<Fragment> fragments) {
-        StartBodyFragment fragment = new StartBodyFragment(0, 1, 2, 9, "Start single statement method body");
+        StartBodyFragment fragment = new StartBodyFragment(0, 1, 2, 7, "Start single statement method body");
         fragments.add(fragment);
         return fragment;
     }

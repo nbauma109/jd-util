@@ -1,0 +1,9 @@
+/*   */ package test;
+/*   */
+/*   */ public class Compact {
+/*   */   boolean b() {
+/* 5 */     return true; }
+/* 6 */   int i() { return 0; }
+/* 7 */   String s() { return ""; }
+/*   */
+/*   */ }

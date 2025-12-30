@@ -335,6 +335,7 @@ public class StatementVisitor extends ExpressionVisitor {
         tokens = new Tokens();
         tokens.add(ELSE);
 
+        StartSingleStatementBlockFragment singleStatementElseBlock = null;
         if (statementList.isIfElseStatement()) {
             tokens.add(TextToken.SPACE);
             tokens.add(IF);
@@ -368,11 +369,19 @@ public class StatementVisitor extends ExpressionVisitor {
             } else {
                 fragments.addTokensFragment(tokens);
 
-                JavaFragmentFactory.addStartStatementsBlock(fragments, group);
+                if (statementList.isList()) {
+                    JavaFragmentFactory.addStartStatementsBlock(fragments, group);
+                } else {
+                    singleStatementElseBlock = JavaFragmentFactory.addStartSingleStatementBlock(fragments);
+                }
 
                 elseStatements.accept(this);
             }
-            JavaFragmentFactory.addEndStatementsBlock(fragments, group);
+            if (singleStatementElseBlock == null) {
+                JavaFragmentFactory.addEndStatementsBlock(fragments, group);
+            } else {
+                JavaFragmentFactory.addEndSingleStatementBlock(fragments, singleStatementElseBlock);
+            }
         }
     }
 

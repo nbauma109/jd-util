@@ -1,0 +1,12 @@
+package test;
+
+public class IfElse {
+              public void method1(boolean flag) {
+/*   7 */         if (flag) {
+/*   8 */             System.out.println("Test.method1 if");
+                  } else {
+/*  10 */             System.out.println("Test.method1 else");
+                  }
+/*  11 */         System.out.println("Test.method1 end");
+              }
+}

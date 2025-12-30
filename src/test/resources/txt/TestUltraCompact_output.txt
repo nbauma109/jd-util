@@ -6,9 +6,9 @@
 /*   6 */     log("Test.method1 start");
 /*   7 */     if (flag) {
 /*   8 */       log("Test.method1 if");
-/*     */     } else {
+/*     */     } else
 /*  10 */       log("Test.method1 else");
-/*  11 */     }  log("Test.method1 end");
+/*  11 */     log("Test.method1 end");
 /*     */   }
 /*     */
 /*     */   public void method2() {
@@ -126,10 +126,10 @@
 /*     */     }
 /*     */
 /*     */     public boolean equals(Object o) {
-/* 129 */       throw new UnsupportedOperationException("equals");
-/* 130 */     } public int hashCode() { throw new UnsupportedOperationException("hashCode"); } public String toString() {
-/* 131 */       throw new UnsupportedOperationException("toString");
-/*     */     } }
+/* 129 */       throw new UnsupportedOperationException("equals"); }
+/* 130 */     public int hashCode() { throw new UnsupportedOperationException("hashCode"); }
+/* 131 */     public String toString() { throw new UnsupportedOperationException("toString"); }
+/*     */      }
 /*     */
 /*     */   public void method5() {
 /* 135 */     log("Test.method5");

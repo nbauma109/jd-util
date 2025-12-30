@@ -47,6 +47,21 @@ public class ParserRealignerTest implements DefaultTest {
     }
 
     @Test
+    public void testRealignUltraCompactMini() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/TestUltraCompactMini_input.txt", "/txt/TestUltraCompactMini_output.txt");
+    }
+
+    @Test
+    public void testRealignCompactFor() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/TestCompactFor_input.txt", "/txt/TestCompactFor_output.txt");
+    }
+
+    @Test
+    public void testRealignCompactIfElse() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/TestCompactIfElse_input.txt", "/txt/TestCompactIfElse_output.txt");
+    }
+
+    @Test
     public void testParseAllJavaSyntaxes() throws IOException, URISyntaxException, ParseException {
         testParseRealign("/txt/AllJavaSyntaxes_input.txt", "/txt/AllJavaSyntaxes_output.txt");
     }

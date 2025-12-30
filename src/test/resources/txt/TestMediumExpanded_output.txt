@@ -6,8 +6,8 @@
 /*   6 */     log("Test.method1 start");
 /*   7 */     if (flag) {
 /*   8 */       log("Test.method1 if");
-/*     */     } else {
-/*     */
+/*     */     }
+/*     */     else {
 /*  11 */       log("Test.method1 else");
 /*     */     }
 /*  13 */     log("Test.method1 end");
@@ -132,11 +132,11 @@
 /*     */     }
 /*     */
 /*     */
-/*     */     public void method3() {
+/*     */     public void method3()
+/*     */     {
 /*     */       new Thread(() -> log("Inner3.method3")).start();
 /*     */     }
 /*     */   }
-/*     */
 /*     */
 /*     */   class Inner4
 /*     */   {
@@ -167,8 +167,8 @@
 /*     */
 /*     */
 /*     */
-/*     */
-/*     */   public void method5() {
+/*     */   public void method5()
+/*     */   {
 /* 172 */     log("Test.method5");
 /*     */   }
 /*     */

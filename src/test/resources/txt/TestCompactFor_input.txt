@@ -1,0 +1,9 @@
+package test;
+
+public class For {
+    public static void main(String[] args) {
+        for (String arg : args) {
+/* 6 */     System.out.println(arg);
+        }
+    }
+}
