@@ -1,0 +1,928 @@
+/*     */ package org.jd.core.test;
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ public class TryCatchFinally
+/*     */ {
+/*     */   public void methodTryCatch() {
+/*  10 */     before();
+/*     */     
+/*     */     try {
+/*  13 */       inTry();
+/*  14 */       if (this == null)
+/*  15 */         inTry(); 
+/*  16 */     } catch (RuntimeException e) {
+/*  17 */       e.printStackTrace();
+/*  18 */       inCatch1();
+/*     */     } 
+/*     */     
+/*  21 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchCatch() {
+/*  25 */     before();
+/*     */     
+/*     */     try {
+/*  28 */       inTry();
+/*  29 */     } catch (RuntimeException e) {
+/*  30 */       inCatch1();
+/*  31 */       e.printStackTrace();
+/*  32 */     } catch (Exception exception) {
+/*  33 */       inCatch2();
+/*     */     } 
+/*     */     
+/*  36 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchCatchOneExitInTry() {
+/*  40 */     before();
+/*     */     
+/*     */     try {
+/*  43 */       inTry();
+/*  44 */     } catch (RuntimeException runtimeException) {
+/*  45 */       inCatch1();
+/*  46 */       throw new RuntimeException();
+/*  47 */     } catch (Exception exception) {
+/*  48 */       inCatch2();
+/*     */       
+/*     */       return;
+/*     */     } 
+/*  52 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchCatchOneExitInFirstCatch() {
+/*  56 */     before();
+/*     */     
+/*     */     try {
+/*  59 */       inTry();
+/*     */       return;
+/*  61 */     } catch (RuntimeException runtimeException) {
+/*  62 */       inCatch1();
+/*  63 */     } catch (Exception exception) {
+/*  64 */       inCatch2();
+/*     */       
+/*     */       return;
+/*     */     } 
+/*  68 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchCatchOneExitInLastCatch() {
+/*  72 */     before();
+/*     */     
+/*     */     try {
+/*  75 */       inTry();
+/*     */       return;
+/*  77 */     } catch (RuntimeException runtimeException) {
+/*  78 */       inCatch1();
+/*     */       return;
+/*  80 */     } catch (Exception exception) {
+/*  81 */       inCatch2();
+/*     */ 
+/*     */       
+/*  84 */       after();
+/*     */       return;
+/*     */     } 
+/*     */   } public void methodTrySwitchFinally() throws Exception {
+/*  88 */     System.out.println("start");
+/*     */     
+/*     */     try {
+/*  91 */       System.out.println("in try");
+/*     */       
+/*  93 */       switch ((int)(System.currentTimeMillis() & 0xFL)) {
+/*     */         case 0:
+/*  95 */           System.out.println("0");
+/*     */           break;
+/*     */         default:
+/*  98 */           System.out.println("default");
+/*     */           break;
+/*     */       } 
+/*     */     } finally {
+/* 102 */       System.out.println("in finally");
+/*     */     } 
+/*     */     
+/* 105 */     System.out.println("end");
+/*     */   }
+/*     */   
+/*     */   public void methodTryFinally1() {
+/* 109 */     before();
+/*     */     
+/*     */     try {
+/* 112 */       inTry();
+/*     */     } finally {
+/* 114 */       inFinally();
+/*     */     } 
+/*     */     
+/* 117 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryFinally2() {
+/* 121 */     before();
+/*     */     
+/*     */     try {
+/* 124 */       inTry();
+/*     */       return;
+/*     */     } finally {
+/* 127 */       inFinally();
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public void methodTryFinally3() {
+/* 132 */     before();
+/*     */     
+/*     */     try {
+/* 135 */       inTry();
+/* 136 */       throw new RuntimeException();
+/*     */     } finally {
+/* 138 */       inFinally();
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public long methodTryCatchFinallyReturn() {
+/* 143 */     before();
+/*     */     
+/*     */     try {
+/* 146 */       inTry();
+/*     */       
+/* 148 */       return 
+/* 149 */         System.currentTimeMillis();
+/* 150 */     } catch (RuntimeException runtimeException) {
+/* 151 */       inCatch1();
+/*     */       
+/* 153 */       return 
+/* 154 */         System.currentTimeMillis();
+/*     */     } finally {
+/* 156 */       inFinally();
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public long methodTryFinallyReturn() {
+/* 161 */     before();
+/*     */     
+/*     */     try {
+/* 164 */       inTry();
+/*     */       
+/* 166 */       return System.currentTimeMillis();
+/*     */     } finally {
+/* 168 */       inFinally();
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public void methodTryFinally4() {
+/* 173 */     before();
+/*     */     
+/*     */     try {
+/* 176 */       inTry();
+/* 177 */       if (this == null)
+/*     */         return; 
+/*     */     } finally {
+/* 180 */       inFinally();
+/* 181 */       System.out.println("ee");
+/*     */     } 
+/*     */     
+/* 184 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodEmptyTryCatch() {
+/* 188 */     before();
+/*     */     
+/*     */     try {
+/* 191 */       System.out.println("try");
+/* 192 */     } catch (RuntimeException runtimeException) {}
+/*     */ 
+/*     */ 
+/*     */     
+/* 196 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodEmptyTryFinally() {
+/* 200 */     before();
+/*     */ 
+/*     */     
+/* 203 */     System.out.println("try");
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */     
+/* 208 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchFinally1() {
+/* 212 */     before();
+/*     */     
+/*     */     try {
+/* 215 */       inTry();
+/* 216 */     } catch (RuntimeException runtimeException) {
+/* 217 */       inCatch1();
+/*     */     } finally {
+/* 219 */       inFinally();
+/*     */     } 
+/*     */     
+/* 222 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchFinally2() {
+/* 226 */     before();
+/*     */     
+/*     */     try {
+/* 229 */       inTry();
+/* 230 */     } catch (RuntimeException runtimeException) {
+/* 231 */       inCatch1();
+/* 232 */       if (this == null)
+/*     */         return; 
+/* 234 */       inCatch2();
+/*     */     } finally {
+/* 236 */       inFinally();
+/* 237 */       System.out.println("ee");
+/*     */     } 
+/*     */     
+/* 240 */     after();
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatchFinally3() {
+/* 244 */     before();
+/*     */     
+/*     */     try {
+/* 247 */       inTry();
+/* 248 */     } catch (RuntimeException runtimeException) {
+/* 249 */       inCatch1();
+/* 250 */     } catch (Exception exception) {
+/* 251 */       inCatch2();
+/* 252 */       return 1;
+/*     */     } finally {
+/* 254 */       inFinally();
+/*     */     } 
+/*     */ 
+/*     */     
+/* 258 */     after();
+/* 259 */     return 2;
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatchFinally4() {
+/* 263 */     before();
+/*     */     
+/*     */     try {
+/* 266 */       inTry();
+/* 267 */       throw new Exception();
+/* 268 */     } catch (Exception exception) {
+/* 269 */       inCatch2();
+/*     */     } finally {
+/* 271 */       inFinally();
+/*     */     } 
+/*     */     
+/* 274 */     after();
+/* 275 */     return 2;
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchFinally5() throws Exception {
+/* 279 */     System.out.println("start");
+/*     */     
+/*     */     try {
+/* 282 */       System.out.println("in try");
+/*     */       
+/* 284 */       if (this != null)
+/*     */       {
+/* 286 */         if (this == null) {
+/* 287 */           throw new RuntimeException();
+/*     */         }
+/*     */       }
+/*     */       return;
+/* 291 */     } catch (RuntimeException runtimeException) {
+/* 292 */       System.out.println("in catch");
+/*     */       
+/* 294 */       if (this == null)
+/*     */         return; 
+/* 296 */       if (this == null) {
+/* 297 */         throw new RuntimeException();
+/*     */       }
+/* 299 */       System.out.println("in catch");
+/*     */     } finally {
+/* 301 */       System.out.println("in finally");
+/*     */     } 
+/*     */     
+/* 304 */     System.out.println("end");
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatchFinallyInTryCatchFinally() throws Exception {
+/* 308 */     System.out.println("start");
+/*     */     
+/* 310 */     int i = 1;
+/* 311 */     int j = 1;
+/*     */ 
+/*     */     
+/* 314 */     try { System.out.println("in try");
+/*     */       
+/*     */       try {
+/* 317 */         System.out.println("in inner try");
+/*     */         
+/* 319 */         if (this == null) {
+/* 320 */           System.out.println("before throw in inner try");
+/* 321 */           throw new RuntimeException();
+/*     */         } 
+/*     */         
+/* 324 */         return j;
+/* 325 */       } catch (RuntimeException runtimeException) {
+/* 326 */         System.out.println("in catch in inner try");
+/*     */         
+/* 328 */         if (this == null) {
+/* 329 */           throw new RuntimeException();
+/*     */         }
+/* 331 */         System.out.println("in catch in inner try");
+/*     */       } finally {
+/* 333 */         for (int m = 0; m < 10; m++) {
+/* 334 */           System.out.println("in finally in inner try");
+/*     */         }
+/*     */       } 
+/* 337 */       System.out.println("in try");
+/*     */       
+/*     */       try {
+/* 340 */         System.out.println("in inner try");
+/*     */         
+/* 342 */         if (this == null) {
+/* 343 */           System.out.println("before throw in inner try");
+/* 344 */           throw new RuntimeException();
+/*     */         } 
+/*     */         
+/* 347 */         return j;
+/* 348 */       } catch (RuntimeException runtimeException) {
+/* 349 */         System.out.println("in catch in inner try");
+/*     */         
+/* 351 */         if (this == null) {
+/* 352 */           throw new RuntimeException();
+/*     */         }
+/* 354 */         System.out.println("in catch in inner try");
+/*     */       } finally {
+/* 356 */         for (int m = 0; m < 10; m++) {
+/* 357 */           System.out.println("in finally in inner try");
+/*     */         }
+/*     */       }  }
+/*     */     finally
+/*     */     
+/* 362 */     { for (int m = 0; m < 10; m++)
+/* 363 */         System.out.println("in finally");  }  for (int k = 0; k < 10; k++) System.out.println("in finally");
+/*     */ 
+/*     */     
+/* 366 */     System.out.println("end");
+/*     */     
+/* 368 */     return i + j;
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchCatchFinally() {
+/* 372 */     before();
+/*     */     
+/*     */     try {
+/* 375 */       inTry();
+/* 376 */     } catch (RuntimeException runtimeException) {
+/* 377 */       inCatch1();
+/* 378 */     } catch (Exception exception) {
+/* 379 */       inCatch2();
+/*     */     } finally {
+/* 381 */       inFinally();
+/*     */     } 
+/*     */     
+/* 384 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchCatchCatchFinally() {
+/* 388 */     before();
+/*     */     
+/*     */     try {
+/* 391 */       inTry();
+/* 392 */     } catch (ClassCastException classCastException) {
+/* 393 */       inCatch1();
+/* 394 */     } catch (RuntimeException runtimeException) {
+/* 395 */       inCatch2();
+/* 396 */     } catch (Exception exception) {
+/* 397 */       inCatch3();
+/*     */     } finally {
+/* 399 */       inFinally();
+/*     */     } 
+/* 401 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryTryReturnFinallyFinally() {
+/* 405 */     before();
+/*     */     
+/*     */     try {
+/*     */       try {
+/* 409 */         inTryA();
+/*     */         return;
+/*     */       } finally {
+/* 412 */         inFinallyA();
+/*     */       } 
+/*     */     } finally {
+/* 415 */       inFinally();
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public void methodTryTryReturnFinallyCatchFinally() {
+/* 420 */     before();
+/*     */ 
+/*     */     
+/*     */     try { try {
+/* 424 */         inTry();
+/*     */         return;
+/*     */       } finally {
+/* 427 */         inFinally();
+/*     */       }  }
+/* 429 */     catch (ClassCastException classCastException)
+/*     */     { try {
+/* 431 */         inTryA();
+/*     */         return;
+/*     */       } finally {
+/* 434 */         inFinallyA();
+/*     */       }  }
+/* 436 */     catch (RuntimeException runtimeException) {  }
+/* 437 */     catch (Exception exception)
+/*     */     { try {
+/* 439 */         inTryC();
+/*     */         return;
+/*     */       } finally {
+/* 442 */         inFinallyC();
+/*     */       }  }
+/*     */     finally
+/* 445 */     { inFinally(); }
+/*     */   
+/*     */   }
+/*     */   
+/*     */   public void methodTryTryFinallyFinallyTryFinally() {
+/* 450 */     before();
+/*     */     
+/*     */     try {
+/*     */       try {
+/* 454 */         inTry();
+/*     */       } finally {
+/* 456 */         inFinally();
+/*     */       } 
+/*     */     } finally {
+/*     */       
+/* 460 */       try { inTryC(); }
+/*     */       finally
+/* 462 */       { inFinallyC(); }  inFinallyC();
+/*     */     } 
+/*     */   }
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */   
+/*     */   public void methodTryTryFinallyFinallyTryFinallyReturn() {
+/* 470 */     before();
+/*     */ 
+/*     */     
+/*     */     try { 
+/* 474 */       try { inTry();
+/* 475 */         if (this == null)
+/*     */         
+/*     */         { 
+/* 478 */           inFinally();
+/* 479 */           if (this == null); } else { inFinally(); if (this != null)
+/*     */             return;  }
+/*     */          }
+/*     */       finally { Exception exception = null; }
+/*     */        }
+/* 484 */     finally { try { inTryC();
+/* 485 */         if (this == null)
+/*     */           return;  }
+/*     */       finally
+/* 488 */       { inFinallyC();
+/* 489 */         if (this == null) return;  }  inFinallyC(); if (this == null) {
+/*     */         return;
+/*     */       } }
+/*     */   
+/*     */   }
+/*     */ 
+/*     */ 
+/*     */   
+/*     */   public void methodIfIfTryCatch() {
+/* 498 */     if (this == null) {
+/* 499 */       if (this != null) {
+/* 500 */         System.out.println("if if");
+/*     */         
+/*     */         try {
+/* 503 */           System.out.println("if if try");
+/* 504 */         } catch (Exception e) {
+/* 505 */           e.printStackTrace();
+/* 506 */           throw new RuntimeException(e.getMessage());
+/*     */         } 
+/*     */       } else {
+/* 509 */         System.out.println("if else");
+/*     */       } 
+/*     */     }
+/*     */   }
+/*     */   
+/*     */   public void methodIfIfTryFinally() {
+/* 515 */     if (this == null) {
+/* 516 */       if (this != null) {
+/* 517 */         System.out.println("if if");
+/*     */         
+/*     */         try {
+/* 520 */           System.out.println("if if try");
+/*     */         } finally {
+/* 522 */           System.out.println("if if finally");
+/*     */         } 
+/*     */       } else {
+/* 525 */         System.out.println("if else");
+/*     */       } 
+/*     */     }
+/*     */   }
+/*     */   
+/*     */   public Object testBug155(Object paramObject) {
+/*     */     try {
+/* 532 */       if (paramObject != null)
+/* 533 */         return paramObject; 
+/* 534 */     } catch (Exception exception) {}
+/*     */ 
+/*     */     
+/* 537 */     return paramObject;
+/*     */   }
+/*     */   
+/*     */   public void testBugLdapUtil(int paramInt) {
+/* 541 */     System.out.println("a");
+/*     */     
+/* 543 */     if (paramInt < 0 && paramInt > 4) {
+/*     */       try {
+/* 545 */         if (paramInt == 0) {
+/* 546 */           System.out.println("b");
+/*     */         } else {
+/* 548 */           System.out.println("c");
+/*     */         } 
+/* 550 */       } catch (RuntimeException runtimeException) {
+/* 551 */         System.out.println("d");
+/*     */       } 
+/*     */     }
+/*     */     
+/* 555 */     if (paramInt < 2 && paramInt < 6) {
+/* 556 */       System.out.println("e");
+/*     */     }
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatch2() {
+/* 561 */     before();
+/*     */     
+/*     */     try {
+/* 564 */       inTry();
+/* 565 */       return 1;
+/* 566 */     } catch (RuntimeException e) {
+/* 567 */       e.printStackTrace();
+/* 568 */       inCatch1();
+/* 569 */       return 2;
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatch3() {
+/* 574 */     before();
+/*     */     
+/*     */     try {
+/* 577 */       inTry();
+/* 578 */       return 1;
+/* 579 */     } catch (RuntimeException e) {
+/* 580 */       e.printStackTrace();
+/* 581 */       inCatch1();
+/*     */ 
+/*     */       
+/* 584 */       return 2;
+/*     */     } 
+/*     */   }
+/*     */   public int methodTryCatch4() {
+/* 588 */     before();
+/*     */     
+/*     */     try {
+/* 591 */       inTry();
+/* 592 */       throw new RuntimeException("t");
+/* 593 */     } catch (RuntimeException e) {
+/* 594 */       e.printStackTrace();
+/* 595 */       inCatch1();
+/* 596 */       return 2;
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatch5() {
+/* 601 */     before();
+/*     */ 
+/*     */     
+/* 604 */     return 1;
+/*     */   }
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */   
+/*     */   public int methodTryCatchCatch2() {
+/* 614 */     before();
+/*     */     
+/*     */     try {
+/* 617 */       inTry();
+/* 618 */       return 1;
+/* 619 */     } catch (RuntimeException runtimeException) {
+/* 620 */       inCatch1();
+/* 621 */       return 2;
+/* 622 */     } catch (Exception exception) {
+/* 623 */       inCatch2();
+/* 624 */       return 3;
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchCatch3() {
+/* 629 */     before();
+/*     */     
+/*     */     try {
+/* 632 */       inTry();
+/* 633 */       throw new RuntimeException("t");
+/* 634 */     } catch (RuntimeException runtimeException) {
+/* 635 */       inCatch1();
+/* 636 */       throw new RuntimeException("1");
+/* 637 */     } catch (Exception exception) {
+/* 638 */       inCatch2();
+/* 639 */       throw new RuntimeException("2");
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatchCatch4() {
+/* 644 */     before();
+/*     */     
+/*     */     try {
+/* 647 */       inTry();
+/* 648 */       throw new RuntimeException("t");
+/* 649 */     } catch (RuntimeException runtimeException) {
+/* 650 */       inCatch1();
+/* 651 */       throw new RuntimeException("1");
+/* 652 */     } catch (Exception exception) {
+/* 653 */       inCatch2();
+/* 654 */       return 3;
+/*     */     } 
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatchCatch5() {
+/* 659 */     before();
+/*     */     
+/*     */     try {
+/* 662 */       inTry();
+/* 663 */     } catch (RuntimeException runtimeException) {
+/* 664 */       return 1;
+/* 665 */     } catch (Exception exception) {
+/* 666 */       inCatch2();
+/*     */     } 
+/*     */     
+/* 669 */     after();
+/* 670 */     return 2;
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatchCatch6() {
+/* 674 */     before();
+/*     */     
+/*     */     try {
+/* 677 */       inTry();
+/* 678 */     } catch (RuntimeException runtimeException) {
+/* 679 */       inCatch1();
+/* 680 */     } catch (Exception exception) {
+/* 681 */       return 1;
+/*     */     } 
+/*     */     
+/* 684 */     after();
+/* 685 */     return 2;
+/*     */   }
+/*     */   
+/*     */   public void methodTryFinally() {
+/* 689 */     before();
+/*     */     
+/*     */     try {
+/* 692 */       inTry();
+/*     */     } finally {
+/* 694 */       inFinally();
+/*     */     } 
+/*     */     
+/* 697 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodEmptyTryCatch2() {
+/* 701 */     before();
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */     
+/* 708 */     after();
+/*     */   }
+/*     */   
+/*     */   public void methodTryCatchFinally() {
+/* 712 */     before();
+/*     */     
+/*     */     try {
+/* 715 */       inTry();
+/* 716 */     } catch (RuntimeException runtimeException) {
+/* 717 */       inCatch1();
+/*     */     } finally {
+/* 719 */       inFinally();
+/*     */     } 
+/*     */     
+/* 722 */     after();
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatchCatchFinally3() {
+/* 726 */     before();
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */     
+/*     */     try {
+/* 735 */       inTry();
+/* 736 */     } catch (RuntimeException runtimeException) {
+/* 737 */       return 1;
+/* 738 */     } catch (Exception exception) {
+/* 739 */       return 2;
+/*     */     } finally {
+/* 741 */       inFinally();
+/*     */     } 
+/*     */     
+/* 744 */     after();
+/* 745 */     return 3;
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatchCatchCatchFinally3() {
+/* 749 */     before();
+/*     */     
+/*     */     try {
+/* 752 */       inTry();
+/* 753 */     } catch (ClassCastException classCastException) {
+/* 754 */       return 1;
+/* 755 */     } catch (RuntimeException runtimeException) {
+/* 756 */       return 2;
+/* 757 */     } catch (Exception exception) {
+/* 758 */       inCatch3();
+/*     */     } finally {
+/* 760 */       inFinally();
+/*     */     } 
+/*     */     
+/* 763 */     after();
+/* 764 */     return 3;
+/*     */   }
+/*     */   
+/*     */   public int methodTryCatchCatchCatchFinally4() {
+/* 768 */     before();
+/*     */     
+/*     */     try {
+/* 771 */       inTry();
+/* 772 */     } catch (ClassCastException classCastException) {
+/* 773 */       inCatch1();
+/* 774 */     } catch (RuntimeException runtimeException) {
+/* 775 */       return 1;
+/* 776 */     } catch (Exception exception) {
+/* 777 */       return 2;
+/*     */     } finally {
+/* 779 */       inFinally();
+/*     */     } 
+/*     */     
+/* 782 */     after();
+/* 783 */     return 3;
+/*     */   }
+/*     */   
+/*     */   public void complexMethodTryCatchCatchFinally() {
+/* 787 */     before();
+/*     */     
+/*     */     try {
+/*     */       try {
+/* 791 */         inTry();
+/* 792 */       } catch (RuntimeException runtimeException) {
+/* 793 */         inCatch1();
+/* 794 */       } catch (Exception exception) {
+/* 795 */         inCatch2();
+/*     */       } finally {
+/* 797 */         inFinally();
+/*     */       } 
+/* 799 */     } catch (RuntimeException runtimeException) {
+/*     */       try {
+/* 801 */         inTryA();
+/* 802 */       } catch (RuntimeException runtimeException1) {
+/* 803 */         inCatch1A();
+/* 804 */       } catch (Exception exception) {
+/* 805 */         inCatch2A();
+/*     */       } finally {
+/* 807 */         inFinallyA();
+/*     */       } 
+/* 809 */     } catch (Exception exception) {
+/*     */       try {
+/* 811 */         inTryB();
+/* 812 */       } catch (RuntimeException runtimeException) {
+/* 813 */         inCatch1B();
+/* 814 */       } catch (Exception exception1) {
+/* 815 */         inCatch2B();
+/*     */       } finally {
+/* 817 */         inFinallyB();
+/*     */       } 
+/*     */     } finally {
+/*     */       
+/* 821 */       try { inTryC(); }
+/* 822 */       catch (RuntimeException runtimeException)
+/* 823 */       { inCatch1C(); }
+/* 824 */       catch (Exception exception)
+/* 825 */       { inCatch2C(); }
+/*     */       finally
+/* 827 */       { inFinallyC(); }  inFinallyC();
+/*     */     } 
+/*     */   }
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */   
+/*     */   public void complexMethodTryFinally() throws Exception {
+/*     */     try {
+/* 836 */       System.out.println("1");
+/*     */       
+/*     */       try {
+/* 839 */         System.out.println("2");
+/* 840 */       } catch (Exception e) {
+/*     */         try {
+/* 842 */           System.out.println("3");
+/* 843 */         } catch (Exception exception) {
+/* 844 */           throw new Exception("Rebuild failed: " + e.getMessage() + "; Original message: " + exception.getMessage());
+/*     */         } 
+/*     */       } 
+/*     */       
+/*     */       try {
+/* 849 */         System.out.println("4");
+/* 850 */       } catch (RuntimeException runtimeException) {
+/* 851 */         System.out.println("5");
+/*     */       } 
+/*     */       
+/* 854 */       System.out.println("6");
+/*     */       
+/*     */       try {
+/* 857 */         System.out.println("7");
+/* 858 */       } catch (Exception exception) {}
+/*     */     } finally {
+/*     */       
+/*     */       try {
+/* 862 */         System.out.println("8");
+/* 863 */       } catch (Exception e) {
+/* 864 */         throw e;
+/*     */       } 
+/*     */     } 
+/*     */   }
+/*     */ 
+/*     */   
+/*     */   public void complexMethodTryCatchCatchFinally3() throws Exception {
+/*     */     try {
+/* 872 */       System.out.println("1");
+/*     */       
+/*     */       try {
+/* 875 */         System.out.println("2");
+/* 876 */       } catch (Exception exception) {
+/* 877 */         System.out.println("3");
+/*     */       } 
+/*     */     } finally {
+/* 880 */       System.out.println("8");
+/*     */     } 
+/*     */   }
+/*     */ 
+/*     */ 
+/*     */ 
+/*     */   
+/*     */   public boolean subContentEquals(String paramString) {
+/* 888 */     return (paramString == null);
+/*     */   }
+/*     */   
+/*     */   private void before() {}
+/*     */   
+/*     */   private void inTry() {}
+/*     */   
+/*     */   private void inCatch1() {}
+/*     */   
+/*     */   private void inCatch2() {}
+/*     */   
+/*     */   private void inCatch3() {}
+/*     */   
+/*     */   private void inFinally() {}
+/*     */   
+/*     */   private void inTryA() {}
+/*     */   
+/*     */   private void inCatch1A() {}
+/*     */   
+/*     */   private void inCatch2A() {}
+/*     */   
+/*     */   private void inFinallyA() {}
+/*     */   
+/*     */   private void inTryB() {}
+/*     */   
+/*     */   private void inCatch1B() {}
+/*     */   
+/*     */   private void inCatch2B() {}
+/*     */   
+/*     */   private void inFinallyB() {}
+/*     */   
+/*     */   private void inTryC() {}
+/*     */   
+/*     */   private void inCatch1C() {}
+/*     */   
+/*     */   private void inCatch2C() {}
+/*     */   
+/*     */   private void inFinallyC() {}
+/*     */   
+/*     */   private void after() {}
+/*     */ }

@@ -67,6 +67,11 @@ public class ParserRealignerTest implements DefaultTest {
     }
 
     @Test
+    public void testParseTryCatchFinally370() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/TryCatchFinally370_input.txt", "/txt/TryCatchFinally370_output.txt");
+    }
+
+    @Test
     public void testParsePackageInfo() throws Exception {
         assertNotNull(JdJavaSourceParser.parse("package a.b;"));
         assertNotNull(JdJavaSourceParser.parse("""
