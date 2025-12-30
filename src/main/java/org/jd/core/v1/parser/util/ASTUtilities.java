@@ -11,14 +11,9 @@ import org.jd.core.v1.model.javasyntax.declaration.BaseTypeDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.MemberDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.TypeDeclarations;
 import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
-import org.jd.core.v1.model.javasyntax.expression.BinaryOperatorExpression;
-import org.jd.core.v1.model.javasyntax.expression.ConstructorInvocationExpression;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 import org.jd.core.v1.model.javasyntax.expression.Expressions;
-import org.jd.core.v1.model.javasyntax.expression.MethodInvocationExpression;
 import org.jd.core.v1.model.javasyntax.expression.NoExpression;
-import org.jd.core.v1.model.javasyntax.expression.PostOperatorExpression;
-import org.jd.core.v1.model.javasyntax.expression.PreOperatorExpression;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
 import org.jd.core.v1.model.javasyntax.statement.NoStatement;
 import org.jd.core.v1.model.javasyntax.statement.Statement;
@@ -66,45 +61,6 @@ public class ASTUtilities {
             return list.get(0);
         }
         return new Expressions(list);
-    }
-
-    public static void appendBaseExpression(List<Expression> out, BaseExpression be) {
-        if (be == null) {
-            return;
-        }
-        if (be instanceof NoExpression) {
-            return;
-        }
-        if (be instanceof Expressions e) {
-            out.addAll(e);
-            return;
-        }
-        if (be instanceof Expression e) {
-            out.add(e);
-        }
-    }
-
-    public static boolean isStatementExpression(Expression e) {
-        if (e == null) {
-            return false;
-        }
-        if (e instanceof MethodInvocationExpression) {
-            return true;
-        }
-        if (e instanceof ConstructorInvocationExpression) {
-            return true;
-        }
-        if (e instanceof PostOperatorExpression) {
-            return true;
-        }
-        if (e instanceof PreOperatorExpression) {
-            return true;
-        }
-        if (e instanceof BinaryOperatorExpression bo) {
-            String op = bo.getOperator();
-            return op != null && op.endsWith("=");
-        }
-        return false;
     }
 
     public static BaseTypeDeclaration toBaseTypeDeclaration(List<MemberDeclaration> topLevelTypes)
