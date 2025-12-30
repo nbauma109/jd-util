@@ -1,12 +1,40 @@
 package test;
 
 public class IfElse {
-              public void method1(boolean flag) {
+              public void method1(boolean flag, boolean flag2) {
 /*   7 */         if (flag) {
 /*   8 */             System.out.println("Test.method1 if");
-                  } else {
+                  } else if (flag2) {
 /*  10 */             System.out.println("Test.method1 else");
+                  } else {
+/*  12 */             System.out.println("Test.method1 else");
                   }
-/*  11 */         System.out.println("Test.method1 end");
+/*  13 */         System.out.println("Test.method1 end");
+              }
+              public void method2(boolean flag, boolean flag2) {
+/*  16 */         if (flag) {
+/*  17 */             System.out.println("Test.method1 if");
+                  } else if (flag2) {
+/*  19 */             System.out.println("Test.method1 else");
+                  } else {
+/*  21 */             System.out.println("Test.method1 else");
+/*  22 */             System.out.println("Test.method1 else");
+                  }
+              }
+              public void method3(boolean flag, boolean flag2) {
+/*  26 */         if (flag) {
+/*  27 */             System.out.println("Test.method1 if");
+                  } else if (flag2) {
+/*  29 */             System.out.println("Test.method1 else");
+                  }
+/*  30 */         System.out.println("Test.method1 end");
+              }
+              public void method4(boolean flag, boolean flag2) {
+/*  33 */         if (flag) {
+/*  34 */             System.out.println("Test.method1 if");
+                  } else if (flag2) {
+/*  36 */             System.out.println("Test.method1 else");
+/*  37 */             System.out.println("Test.method1 else");
+                  }
               }
 }
