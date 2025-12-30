@@ -95,15 +95,15 @@
                   }
           
                   public boolean equals(Object o) {
-                      throw new UnsupportedOperationException("equals");
+/* 198 */             throw new UnsupportedOperationException("equals");
                   }
           
                   public int hashCode() {
-                      throw new UnsupportedOperationException("hashCode");
+/* 204 */             throw new UnsupportedOperationException("hashCode");
                   }
           
                   public String toString() {
-                      throw new UnsupportedOperationException("toString");
+/* 210 */             throw new UnsupportedOperationException("toString");
                   }
               }
           

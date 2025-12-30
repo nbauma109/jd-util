@@ -1,48 +1,48 @@
 /*     */ package test;
-/*     */ 
-/*     */ 
-/*     */ 
+/*     */
+/*     */
+/*     */
 /*     */ public abstract class TestFullyExpanded
 /*     */ {
 /*     */   public void method1(boolean flag) {
 /*   8 */     log("Test.method1 start");
 /*   9 */     if (flag) {
-/*     */       
+/*     */
 /*  11 */       log("Test.method1 if");
 /*     */     }
 /*     */     else {
-/*     */       
+/*     */
 /*  15 */       log("Test.method1 else");
-/*     */     } 
+/*     */     }
 /*  17 */     log("Test.method1 end");
 /*     */   }
-/*     */ 
-/*     */   
+/*     */
+/*     */
 /*     */   public void method2() {
 /*  22 */     log("Test.method2 start");
-/*     */     
+/*     */
 /*     */     try {
 /*  25 */       log("Test.method2 try");
 /*     */     }
 /*     */     catch (Exception e) {
-/*     */       
+/*     */
 /*  29 */       log("Test.method2 catch");
 /*     */     }
 /*     */     finally {
-/*     */       
+/*     */
 /*  33 */       log("Test.method2 finally");
-/*     */     } 
+/*     */     }
 /*  35 */     log("Test.method2 end");
 /*     */   }
-/*     */ 
-/*     */   
+/*     */
+/*     */
 /*     */   class Inner1
 /*     */   {
 /*     */     public Inner1() {
 /*  42 */       log("Inner1 constructor");
 /*     */     }
-/*     */ 
-/*     */     
+/*     */
+/*     */
 /*     */     public void method1(boolean flag) {
 /*  47 */       log("Inner1.method1 start");
 /*  48 */       while (flag)
@@ -51,20 +51,20 @@
 /*     */       }
 /*  52 */       log("Inner1.method1 end");
 /*     */     }
-/*     */ 
-/*     */     
+/*     */
+/*     */
 /*     */     public void method2(boolean flag) {
 /*  57 */       log("Inner1.method2 start");
-/*     */       
+/*     */
 /*     */       do {
 /*  60 */         log("Inner1.method2 do while");
 /*     */       } while (flag);
-/*     */       
+/*     */
 /*  63 */       log("Inner1.method2 end");
 /*     */     }
 /*     */   }
-/*     */ 
-/*     */   
+/*     */
+/*     */
 /*     */   public void method3(int[] arr) {
 /*  69 */     log("Test.method3 start");
 /*  70 */     for (int i = 0; i < arr.length; ++i)
@@ -73,81 +73,81 @@
 /*     */     }
 /*  74 */     log("Test.method3 end");
 /*     */   }
-/*     */ 
-/*     */   
+/*     */
+/*     */
 /*     */   public void method4(int i) {
 /*  79 */     log("Test.method4 start");
 /*  80 */     switch (i) {
-/*     */ 
-/*     */       
+/*     */
+/*     */
 /*     */       case 0:
 /*  84 */         log("Test.method4 case 0");
 /*     */         break;
-/*     */ 
-/*     */       
+/*     */
+/*     */
 /*     */       case 1:
 /*  89 */         log("Test.method4 case 1");
 /*     */         break;
-/*     */ 
-/*     */       
+/*     */
+/*     */
 /*     */       case 2:
 /*  94 */         log("Test.method4 case 2");
 /*     */         break;
-/*     */ 
-/*     */       
+/*     */
+/*     */
 /*     */       case 3:
 /*  99 */         log("Test.method4 case 3");
 /*     */         break;
-/*     */ 
-/*     */       
+/*     */
+/*     */
 /*     */       default:
 /* 104 */         log("Test.method4 default");
-/*     */     } 
-/*     */ 
-/*     */     
+/*     */     }
+/*     */
+/*     */
 /* 108 */     log("Test.method4 end");
 /*     */   }
-/*     */ 
-/*     */   
+/*     */
+/*     */
 /*     */   public String method5(int i) {
 /* 113 */     log("Test.method5 start");
 /* 114 */     String s = switch (i) {
 /*     */         case 0 -> "Test.method5 case 0";
-/*     */ 
-/*     */ 
-/*     */ 
-/*     */         
+/*     */
+/*     */
+/*     */
+/*     */
 /*     */         case 1 -> "Test.method5 case 1";
-/*     */ 
-/*     */ 
-/*     */ 
-/*     */         
+/*     */
+/*     */
+/*     */
+/*     */
 /*     */         case 2 -> "Test.method5 case 2";
-/*     */ 
-/*     */ 
-/*     */ 
-/*     */         
+/*     */
+/*     */
+/*     */
+/*     */
 /*     */         case 3 -> "Test.method5 case 3";
-/*     */ 
-/*     */ 
-/*     */ 
-/*     */         
+/*     */
+/*     */
+/*     */
+/*     */
 /*     */         default -> throw new IllegalArgumentException();
 /*     */       };
 /* 137 */     return "return:" + s;
 /*     */   }
-/*     */ 
-/*     */ 
-/*     */   
+/*     */
+/*     */
+/*     */
 /*     */   class Inner3
 /*     */   {
 /*     */     public Inner3() {
 /* 145 */       log("Inner3 constructor");
 /*     */     }
-/*     */ 
-/*     */ 
-/*     */ 
-/*     */     
+/*     */
+/*     */
+/*     */
+/*     */
 /*     */     public void method1() {
 /*     */       new Thread(new Runnable()
 /*     */           {
@@ -157,71 +157,71 @@
 /*     */             }
 /*     */           }).start();
 /*     */     }
-/*     */ 
-/*     */ 
-/*     */     
+/*     */
+/*     */
+/*     */
 /*     */     public void method2() {
 /*     */       new Thread(() -> {
 /* 165 */             log("Inner3.method2a");
 /* 166 */             log("Inner3.method2b");
 /*     */           }).start();
 /*     */     }
-/*     */ 
-/*     */ 
-/*     */ 
-/*     */     
+/*     */
+/*     */
+/*     */
+/*     */
 /*     */     public void method3() {
 /*     */       new Thread(() -> log("Inner3.method3")).start();
 /*     */     }
 /*     */   }
-/*     */ 
-/*     */ 
-/*     */ 
-/*     */   
+/*     */
+/*     */
+/*     */
+/*     */
 /*     */   class Inner4
 /*     */   {
 /*     */     public Inner4() {
 /* 184 */       log("Inner4 constructor");
 /*     */     }
-/*     */ 
-/*     */     
+/*     */
+/*     */
 /*     */     public void method1() {
 /* 189 */       log("Inner4.method1");
 /*     */     }
-/*     */ 
-/*     */     
+/*     */
+/*     */
 /*     */     public void method2() {
 /* 194 */       log("Inner4.method2");
 /*     */     }
-/*     */ 
-/*     */ 
-/*     */     
+/*     */
 /*     */     public boolean equals(Object o) {
-/*     */       throw new UnsupportedOperationException("equals");
+/* 198 */       throw new UnsupportedOperationException("equals");
 /*     */     }
-/*     */ 
-/*     */ 
-/*     */     
+/*     */
+/*     */
+/*     */
 /*     */     public int hashCode() {
-/*     */       throw new UnsupportedOperationException("hashCode");
+/* 204 */       throw new UnsupportedOperationException("hashCode");
 /*     */     }
-/*     */ 
-/*     */ 
-/*     */     
+/*     */
+/*     */
+/*     */
 /*     */     public String toString() {
-/*     */       throw new UnsupportedOperationException("toString");
+/* 210 */       throw new UnsupportedOperationException("toString");
 /*     */     }
 /*     */   }
-/*     */ 
-/*     */   
+/*     */
+/*     */
+/*     */
+/*     */
 /*     */   public void method5() {
 /* 218 */     log("Test.method5");
 /*     */   }
-/*     */ 
-/*     */   
+/*     */
+/*     */
 /*     */   public void method6() {
 /* 223 */     log("Test.method6");
 /*     */   }
-/*     */   
+/*     */
 /*     */   public abstract void log(String var1);
 /*     */ }
