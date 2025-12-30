@@ -476,7 +476,7 @@
 /*     */         
 /*     */         { 
 /* 478 */           inFinally();
-/* 479 */           if (this == null){} } else { inFinally(); if (this != null)
+/* 479 */           if (this == null); } else { inFinally(); if (this != null)
 /*     */             return;  }
 /*     */          }
 /*     */       finally { Exception exception = null; }

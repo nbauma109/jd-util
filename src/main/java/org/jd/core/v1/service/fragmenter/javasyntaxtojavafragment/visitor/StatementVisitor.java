@@ -27,6 +27,7 @@ import org.jd.core.v1.model.javasyntax.statement.IfStatement;
 import org.jd.core.v1.model.javasyntax.statement.LabelStatement;
 import org.jd.core.v1.model.javasyntax.statement.LambdaExpressionStatement;
 import org.jd.core.v1.model.javasyntax.statement.LocalVariableDeclarationStatement;
+import org.jd.core.v1.model.javasyntax.statement.NoStatement;
 import org.jd.core.v1.model.javasyntax.statement.ReturnExpressionStatement;
 import org.jd.core.v1.model.javasyntax.statement.ReturnStatement;
 import org.jd.core.v1.model.javasyntax.statement.Statement;
@@ -279,7 +280,7 @@ public class StatementVisitor extends ExpressionVisitor {
 
         BaseStatement stmt = statement.getStatements();
 
-        if (stmt == null) {
+        if (stmt == null || stmt == NoStatement.NO_STATEMENT) {
             fragments.add(TokensFragment.SEMICOLON);
         } else {
             Fragments tmp = fragments;

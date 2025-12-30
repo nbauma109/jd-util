@@ -2695,11 +2695,6 @@ BaseStatement StatementAsStatements() :
     {
       return BlockAsStatements();
     }
-  |
-    LOOKAHEAD(<RBRACE>)
-    {
-      return NoStatement.NO_STATEMENT;
-    }
   | 
     st = StatementNoBlock()
     {
