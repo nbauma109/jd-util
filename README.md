@@ -32,12 +32,10 @@ public class Sample {
          * Inspect type
          */
         TypeMaker typeMaker = new TypeMaker();
-        ObjectType objectType =
-                typeMaker.makeFromInternalTypeName("java/util/Map");
+        ObjectType objectType = typeMaker.makeFromInternalTypeName("java/util/Map");
         System.out.println("Inner types : " + objectType.getInnerTypeNames());
 
-        TypeTypes typeTypes =
-                typeMaker.makeTypeTypes("java/util/HashMap");
+        TypeTypes typeTypes = typeMaker.makeTypeTypes("java/util/HashMap");
         System.out.println("Implemented interfaces : " + typeTypes.getInterfaces());
         System.out.println("Super type : " + typeTypes.getSuperType());
 
@@ -53,8 +51,7 @@ public class Sample {
          * Class deserializer
          */
         ClassPathLoader classPathLoader = new ClassPathLoader();
-        ClassFileDeserializer classFileDeserializer =
-                new ClassFileDeserializer();
+        ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
         ClassFile classFile =
                 classFileDeserializer.loadClassFile(
                         classPathLoader,
@@ -71,11 +68,7 @@ public class Sample {
             System.out.println("Implemented interfaces : " + typeTypes.getInterfaces());
             System.out.println("Super type : " + typeTypes.getSuperType());
 
-            methodTypes =
-                    typeMaker.parseMethodSignature(
-                            classFile,
-                            method.get()
-                    );
+            methodTypes = typeMaker.parseMethodSignature(classFile, method.get());
             System.out.println("Parameter types : " + methodTypes.getParameterTypes());
         }
 
