@@ -846,5 +846,20 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         static final int A = 0;
     }
 
+    boolean booleanTernaryOp1(boolean flag) {
+      return flag ? true : false;
+    }  
+
+    boolean booleanTernaryOp2(boolean flag) {
+      return !flag ? false : true;
+    }  
+
+    boolean booleanTernaryOp3(boolean flag) {
+      return flag ? false : true;
+    }  
+
+    boolean booleanTernaryOp4(boolean flag) {
+      return !flag ? true : false;
+    }  
 }
 

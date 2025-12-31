@@ -845,4 +845,20 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     @SuppressWarnings("unused")
     static final int A = 0;
   }
+
+  boolean booleanTernaryOp1(boolean flag) {
+    return flag;
+  }
+
+  boolean booleanTernaryOp2(boolean flag) {
+    return !!flag;
+  }
+
+  boolean booleanTernaryOp3(boolean flag) {
+    return !flag;
+  }
+
+  boolean booleanTernaryOp4(boolean flag) {
+    return !flag;
+  }
 }
