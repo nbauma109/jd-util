@@ -14,14 +14,21 @@ import java.util.stream.Stream;
 
 public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList<E> implements Serializable, Comparable<E>, Iterable<E> {
   private static final long serialVersionUID = 1L;
-  
+
   @SuppressWarnings("all")
   private static volatile transient char CHARS[] = { 'A', 'B' };
-  
+
   private static volatile transient char CHARS2[] = new char[] { 'A', 'B' };
-  
+
+  char[] alphabet = {
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+      'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+      'u', 'v', 'w', 'x', 'y', 'z' };
+
   private static final AtomicInteger COUNTER = new AtomicInteger();
-  
+
+  protected int i = 0, j = 1, k = 2;
+
   static {
     Object record = null;
     double yield = 0;
@@ -31,23 +38,50 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     int z = (x + y) + (x + y);
     init();
   }
-  
+
+  static {
+    enum LocalEnum {
+
+    };
+    record LocalRecord() {};
+    interface LocalInterface {};
+    class LocalClass {};
+  }
+
+  public AllJavaSyntaxes() {
+    enum LocalEnum {
+
+    };
+    record LocalRecord() {};
+    interface LocalInterface {};
+    class LocalClass {};
+  }
+
+  void methodWithLocalTypes() {
+    enum LocalEnum {
+
+    };
+    record LocalRecord() {};
+    interface LocalInterface {};
+    class LocalClass {};
+  }
+
   @interface A {
     int number() default 42;
-    
+
     String[] names() default {"a", "b"};
-    
+
     Class<?> clazz() default Object.class;
   }
-  
+
   @Deprecated(forRemoval = true, since = "11")
   @SuppressWarnings("all")
   void deprecatedMethod() {}
-  
+
   private static void init() {
     COUNTER.incrementAndGet();
   }
-  
+
   @SafeVarargs
   @SuppressWarnings("all")
   protected final <T> CharSequence[] methodReferencesAndLambdas(T... arguments) {
@@ -55,23 +89,23 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     Stream.of(arguments).forEach(this::log);
     return Stream.of(arguments).map(Object::toString).toArray(CharSequence[]::new);
   }
-  
+
   void classicFor(String[] arguments) {
     for (int index = 0; index < arguments.length; index++)
-      log(arguments[index]); 
+      log(arguments[index]);
     for (int index = 0; index < arguments.length; index++)
-      log(arguments[index]); 
+      log(arguments[index]);
   }
-  
+
   void whileLoop(String[] arguments) {
     int index = 0;
     while (index < arguments.length)
-      log(arguments[index++]); 
+      log(arguments[index++]);
     index = 0;
     while (index < arguments.length)
-      log(arguments[index++]); 
+      log(arguments[index++]);
   }
-  
+
   void doWhileLoop(String[] arguments) {
     int index = 0;
     do {
@@ -82,13 +116,13 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
       log(arguments[index++]);
     } while (index < arguments.length);
   }
-  
+
   void lambdaAndOptional() {
     Supplier<String> supplier = () -> "value";
     Function<String, Integer> function = String::length;
     Optional.ofNullable(supplier.get()).map(function).ifPresent(length -> log("length=" + length));
   }
-  
+
   void unTypedLambdaParams(List<String> list) {
     list.sort((a, b) -> b.compareTo(a));
     list.sort((a, b) -> {
@@ -96,58 +130,58 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
           return b.compareTo(a);
         });
   }
-  
+
   synchronized void synchronizedMethod() throws Exception, Error {
     log("synchronized");
   }
-  
+
   void tryCatchFinally() {
     try {
       if (COUNTER.get() < 0)
-        throw new IllegalStateException(); 
+        throw new IllegalStateException();
     } catch (final RuntimeException exception) {
       log(exception.getClass().getSimpleName());
     } finally {
       log("finally");
-    } 
+    }
   }
-  
+
   void tryWithResources(Path path) {
     String line;
     try (final BufferedReader br = Files.newBufferedReader(path, UTF_8)) {
       while ((line = br.readLine()) != null)
-        log(line); 
+        log(line);
     } catch (IOException exception) {
       log(exception.getMessage());
-    } 
+    }
   }
-  
+
   void tryWith2Resources(File file) {
     String line;
     try(FileReader fr = new FileReader(file); final BufferedReader br = new BufferedReader(fr)) {
       while ((line = br.readLine()) != null)
-        log(line); 
+        log(line);
     } catch (IOException exception) {
       log(exception.getMessage());
-    } 
+    }
   }
-  
+
   void assertions(int value) {
     assert value >= 0 : "negative";
   }
-  
+
   void boxingAndNumbers() {
     Integer boxed = 1;
     int primitive = boxed;
     BigDecimal decimal = BigDecimal.valueOf(primitive);
     log(decimal.toPlainString());
   }
-  
+
   void instanceofPattern(Object object) {
     if (object instanceof String text && !text.isEmpty())
-      log(text); 
+      log(text);
   }
-  
+
   void enumSwitch(Day day) {
     switch (day) {
       case MONDAY:
@@ -155,9 +189,9 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         log("weekday");
       default:
         log("other");
-    } 
+    }
   }
-  
+
   public String expressionSwitch(int value) {
     return switch (value) {
         case 0 -> "zero";
@@ -165,174 +199,200 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         default -> throw new IllegalArgumentException();
       };
   }
-  
+
   @Override
   public int compareTo(E other) {
     return Comparator.<E>naturalOrder().compare(null, other);
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), COUNTER.get());
   }
-  
+
   @Override
   @SuppressWarnings("all")
   public boolean equals(Object object) {
     if (this == object)
-      return true; 
+      return true;
     if (!super.equals(object) || getClass() != object.getClass())
-      return false; 
+      return false;
     return true;
   }
-  
+
   public abstract void log(Object argument);
-  
+
   interface Named {
     String name();
   }
-  
+
   interface Identified {
     long id();
   }
-  
-  static class Entity implements Named, Identified, Comparable<Entity> {
+
+  @interface Quality {
+    enum Level {
+      LOW, MIDDLE, HIGH;
+    }
+
+    Level value();
+  }
+
+  @interface Name {
+    String salutation() default "";
+
+    String value();
+
+    String last() default "";
+  }
+
+  @interface Author {
+    Name value();
+
+    Name[] contributors() default {};
+  }
+
+  @Quality(Quality.Level.HIGH)
+  @Author(value = @Name(salutation = "Mr", value = "Donald", last = "Duck"), contributors = {@Name("Huey"), @Name("Dewey"), @Name("Louie")})
+  protected static class Entity implements Named, Identified, Comparable<Entity> {
     private long id;
-    
+
     private String name;
-    
-    Entity(long id, String name) {
+
+    Entity(final long id, final String name) {
       this.id = id;
       this.name = name;
     }
-    
+
+    Entity() {}
+
     @Override
     public String name() {
       return name;
     }
-    
+
     @Override
     public long id() {
       return id;
     }
-    
+
     @Override
     public int hashCode() {
       return Objects.hash(id, name);
     }
-    
+
     @Override
     public boolean equals(Object obj) {
       if (this == obj)
-        return true; 
+        return true;
       if (obj == null)
-        return false; 
+        return false;
       if (getClass() != obj.getClass())
-        return false; 
+        return false;
       Entity other = (Entity)obj;
       return id == other.id && Objects.equals(name, other.name);
     }
-    
+
     @Override
     public int compareTo(Entity other) {
       return Long.compare(this.id, other.id);
     }
   }
-  
+
   static <T extends Named & Identified & Comparable<T>> T intersectionBound(T value) {
     return value;
   }
-  
+
   sealed interface Shape permits Circle, Rectangle, SpecialShape {
     double area();
   }
-  
+
   static final class Circle implements Shape {
     private final double radius;
-    
+
     Circle(double radius) {
       this.radius = radius;
     }
-    
+
     @Override
     public double area() {
       return Math.PI * radius * radius;
     }
   }
-  
+
   static final class Rectangle implements Shape {
     private final double width;
-    
+
     private final double height;
-    
+
     Rectangle(double width, double height) {
       this.width = width;
       this.height = height;
     }
-    
+
     @Override
     public double area() {
       return width * height;
     }
   }
-  
+
   non-sealed interface SpecialShape extends Shape {}
-  
+
   @SuppressWarnings("all")
   static abstract sealed class Result<T> permits Success, Failure {
     private Result() {}
   }
-  
+
   static non-sealed class Success<T> extends Result<T> {
     private final T value;
-    
+
     Success(T value) {
       this.value = value;
     }
-    
+
     T value() {
       return value;
     }
   }
-  
+
   static non-sealed class Failure<T> extends Result<T> {
     private final Exception exception;
-    
+
     Failure(Exception exception) {
       this.exception = exception;
     }
-    
+
     Exception exception() {
       return exception;
     }
   }
-  
-  class Inner {
+
+  private class Inner {
     Inner() throws Exception, Error {
       log("Inner constructor");
     }
-    
+
     void anonymousClass() {
       new Thread(new Runnable() {
             private static final long CONSTANT = 1L;
-            
+
             int index;
-            
+
             {
               index = -1;
             }
-            
+
             @Override
             public void run() {
               log("index=" + index + ",constant=" + CONSTANT);
             }
           }).start();
     }
-    
+
     void lambda() {
       new Thread(() -> log("Inner.lambda")).start();
     }
-    
+
     void lambdaBlock() {
       new Thread(() -> {
             log("Inner.lambda 1");
@@ -340,130 +400,149 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
           }).start();
     }
   }
-  
-  strictfp record Rec(String s, List<String> l) {
+
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.PARAMETER, ElementType.RECORD_COMPONENT})
+  public @interface Sensitive {
+    String value();
+  }
+
+  strictfp record Rec(@Sensitive("C0") String s, @Sensitive("C1") List<String> l) implements Serializable {
     public Rec {
       s = (s == null) ? "" : s;
       l = (l == null) ? List.of() : List.copyOf(l);
     }
   }
-  
+
+  record EmptyRecord() {}
+
+  record Point(int x, int y) {}
+
+  record GenericPoint<X, Y>(X x, Y y) {}
+
   enum Day implements Serializable {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY;
   }
-  
+
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.TYPE, ElementType.METHOD})
   @interface Marker {}
-  
+
   static <T> T genericMethod(T value) {
     return value;
   }
-  
+
   transient Callable<String> callable = () -> "callable";
-  
+
   void labeledLoops() {
     outer: for (int i = 0; i < 3; i++) {
       inner: for (int j = 0; j < 3; j++) {
         if (i == j)
-          continue outer; 
+          continue outer;
         if (i + j > 3)
-          break inner; 
-      } 
-    } 
+          break inner;
+      }
+    }
   }
-  
+
   void labeledBlock() {
     block:  {
       if (COUNTER.get() >= 0)
-        break block; 
+        break block;
       log("unreachable");
-    } 
+    }
   }
-  
+
   void localVar() {
     var number = 123;
     var text = "text";
     var list = new ArrayList<String>();
     log(text + number + list.size());
   }
-  
+
   void multiCatch() throws Exception {
     try {
       throw new IOException();
     } catch (IOException|RuntimeException exception) {
       throw exception;
-    } 
+    }
   }
-  
+
   void suppressed() throws Exception {
     Exception primary = new Exception("primary");
     Exception secondary = new Exception("secondary");
     primary.addSuppressed(secondary);
     throw primary;
   }
-  
+
   String throwExpression(Integer value) {
     return Optional.ofNullable(value).map(Object::toString).orElseThrow(() -> new IllegalArgumentException());
   }
-  
+
   void synchronizedBlock() {
     synchronized (this) {
       log("sync");
-    } 
+    }
   }
-  
+
   static class GenericConstructor {
     <T> GenericConstructor(T value) {}
   }
-  
+
   <T extends Exception & Serializable> void intersectionThrows() throws T {}
-  
+
   void wildcard(List<?> list) {
     capture(list);
   }
-  
+
   private <T> void capture(List<T> list) {
-    for (T element : list)
-      log(String.valueOf(element)); 
+    for (final T element : list)
+      log(String.valueOf(element));
   }
-  
+
+  void forIter(List<String> list) {
+    for (final Iterator<String> iterator = list.iterator(); iterator.hasNext(); ) {
+      String element = iterator.next();
+      System.out.println(element);
+    }
+  }
+
   interface AdvancedInterface {
     default String defaultMethod() {
       return privateHelper();
     }
-    
+
     static String staticMethod() {
       return "static";
     }
-    
+
     private String privateHelper() {
       return "private";
     }
   }
-  
+
   @Repeatable(Tags.class)
   @interface Tag {
     String value();
   }
-  
+
   @interface Tags {
     Tag[] value();
   }
-  
+
   @Tag("one")
   @Tag("two")
   class Tagged {}
-  
+
   @Target(ElementType.TYPE_USE)
   @interface TypeUse {}
-  
+
   void typeUse() {
     String value = "x";
     List<String> list = List.of(value);
     log(list.get(0));
   }
-  
+
   @SuppressWarnings("all")
   void arrays() {
     int[] empty = {};
@@ -474,7 +553,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     int[] d, e[];
     int[] f = { 0, 1 }, g[] = { { 1, 2, 3 }, { 4, 5, 6 } };
   }
-  
+
   void literals() {
     float f = 1.0F;
     char ch = 'A';
@@ -484,50 +563,50 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     int hex = 255;
     log("" + bin + hex + underscore + f + d + ch);
   }
-  
+
   void textBlock() {
     String text = "line1\nline2\n";
     log(text);
   }
-  
+
   int switchYield(int i) {
     return switch (i) {
         case 0 ->  {
           log("before yield");
           yield 10;
-        } 
+        }
         default ->  {
           log("before yield");
           yield -1;
-        } 
+        }
       };
   }
-  
+
   static abstract class Base {
     String value() {
       return "base";
     }
   }
-  
+
   class Derived extends Base {
     Derived() {
       this("x");
     }
-    
+
     Derived(String s) {
       super();
     }
-    
+
     @Override
     String value() {
       return super.value();
     }
-    
+
     void qualifiedThis() {
       log("qualified");
     }
   }
-  
+
   strictfp enum Operation {
     ADD {
       @Override
@@ -541,10 +620,10 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         return a - b;
       }
     };
-    
+
     native int apply(int a, int b);
   }
-  
+
   @SuppressWarnings("all")
   void allOperators() {
     int a = 10;
@@ -615,24 +694,24 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     RuntimeException exception = new RuntimeException();
     String text = (exception == null) ? "ok" : "error";
     for (int i = 0, j = 10; i < j; i++, j--)
-      log(i + ":" + j); 
+      log(i + ":" + j);
   }
-  
+
   class Outer {
     int value = 1;
-    
+
     class Inner {
       Inner() {
         log("Inner");
       }
-      
+
       class Deep {
         Deep() {
           log("Deep");
         }
       }
     }
-    
+
     static class StaticNested {
       @SuppressWarnings("all")
       StaticNested() {
@@ -640,7 +719,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
       }
     }
   }
-  
+
   @SuppressWarnings("all")
   void qualifiedNew(Outer outer) {
     Outer.Inner i1 = outer.new Inner();
@@ -648,11 +727,11 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     Outer.Inner i2 = (outer).new Inner();
     Outer.Inner i3 = this.new Outer().new Inner();
     Outer.Inner i4 = outer.new Inner() {
-      
+
       };
     AllJavaSyntaxes.Outer.StaticNested s2 = new AllJavaSyntaxes.Outer.StaticNested();
   }
-  
+
   void diamondAnonymous() {
     Comparator<String> c = new Comparator<>() {
         @Override
@@ -662,17 +741,17 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
       };
     log(String.valueOf(c.compare("a", "b")));
   }
-  
+
   void emptyStatement(boolean flag) {
     while (flag);
   }
-  
+
   class SuperOuter {
     String value() {
       return "outer";
     }
   }
-  
+
   class SuperInner extends SuperOuter {
     class Deep {
       String value() {
@@ -680,60 +759,90 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
       }
     }
   }
-  
+
   void multiDimVarargs(int[]... values) {
     log(String.valueOf(values.length));
   }
-  
+
   strictfp double strict(double a, double b) {
     return a / b;
   }
-  
+
   static strictfp class StrictClass {
     double value() {
       return 1.0D / 3.0D;
     }
   }
-  
+
   void chainedAssignment() {
     int a, b, c;
     a = b = c = 10;
     log(String.valueOf(a + b + c));
   }
-  
+
   void parameterAnnotation(@Deprecated String value) {
     log(value);
   }
-  
+
   List<?> list;
-  
+
   List<Class<?>> list2;
-  
+
   List<?> getList() {
     return null;
   }
-  
+
   native List<?> getNativeList();
-  
+
   native List<Class<?>> getNativeClassList();
-  
+
   List<Class<?>> getClassList() {
     return null;
   }
-  
+
   void forMap(Map<String, List<String>> map) {
     for (final Entry<String, List<String>> entry : map.entrySet())
-      System.out.println(entry); 
+      System.out.println(entry);
   }
-  
+
   void forMap2(Map<String, List<String>> map) {
     for (final Map.Entry<String, List<String>> entry : map.entrySet())
-      System.out.println(entry); 
+      System.out.println(entry);
   }
-  
+
   <T> void testCastGeneric(Object o) {
     T t = (T)o;
     List<ServiceLoader<T>> action;
     action = (List<ServiceLoader<T>>)o;
+  }
+
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
+  public @interface Value {
+    boolean z() default true;
+
+    byte b() default 1;
+
+    short s() default 1;
+
+    int i() default 1;
+
+    long l() default 1L;
+
+    float f() default 1.0F;
+
+    double d() default 1.0D;
+
+    String str() default "str";
+
+    Class<?> clazz() default Object.class;
+  }
+
+  protected void ping(@Deprecated Writer writer, @Deprecated @Value(str = "localhost") @SuppressWarnings("all") String host, long timeout) throws java.net.UnknownHostException, UnsatisfiedLinkError {}
+
+  enum EmptyEnum {
+    ;
+    @SuppressWarnings("unused")
+    static final int A = 0;
   }
 }

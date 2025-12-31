@@ -37,4 +37,8 @@ public class BodyDeclaration implements Declaration {
     public void accept(DeclarationVisitor visitor) {
         visitor.visit(this);
     }
+
+    public boolean isEmpty() {
+        return memberDeclarations == null || memberDeclarations.size() == 0;
+    }
 }

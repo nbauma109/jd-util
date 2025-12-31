@@ -4,12 +4,21 @@ module com.example.platform {
   requires static java.compiler;
 
   exports com.example.platform.api;
-  exports com.example.platform.internal to java.logging;
+  exports com.example.platform.internal to
+    java.logging,
+    java.management;
 
-  opens com.example.platform.model;
-  opens com.example.platform.persistence to java.sql;
+  opens com.example.platform.model to
+    java.sql,
+    java.xml;
+  opens com.example.platform.internal to java.xml;
 
   uses java.sql.Driver;
+  uses java.sql.RowSetFactory;
+  uses java.lang.System.LoggerFinder;
 
-  provides java.sql.Driver with com.example.platform.impl.ExampleSqlDriver;
+  provides java.sql.Driver with
+    com.example.platform.impl.ExampleSqlDriver,
+    com.example.platform.impl.FallbackSqlDriver;
+  provides java.sql.RowSetFactory with com.example.platform.impl.ExampleRowSetFactory;
 }

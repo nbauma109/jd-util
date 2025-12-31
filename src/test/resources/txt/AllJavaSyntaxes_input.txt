@@ -21,8 +21,13 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     @SuppressWarnings("all")
     private static volatile transient char CHARS[] = { 'A', 'B' };
     private static volatile transient char CHARS2[] = new char[] { 'A', 'B' }; 
+    char[] alphabet = {
+        'a','b','c','d','e','f','g','h','i','j','k','l','m',
+        'n','o','p','q','r','s','t','u','v','w','x','y','z'
+    };
 
     private static final AtomicInteger COUNTER = new AtomicInteger();
+    protected int i=0, j=1, k=2;
 
     static {
         Object record = null;
@@ -33,6 +38,27 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         @SuppressWarnings("unused")
         int z = (x + y) + (x + y);
         init();
+    }
+
+    static {
+        enum LocalEnum {}
+        record LocalRecord() {}
+        interface LocalInterface {}
+        class LocalClass {}
+    }
+    
+    public AllJavaSyntaxes() {
+        enum LocalEnum {}
+        record LocalRecord() {}
+        interface LocalInterface {}
+        class LocalClass {}
+    }
+
+    void methodWithLocalTypes() {
+        enum LocalEnum {}
+        record LocalRecord() {}
+        interface LocalInterface {}
+        class LocalClass {}
     }
 
     @interface A {
@@ -202,15 +228,35 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         long id();
     }
 
-    static class Entity implements Named, Identified, Comparable<Entity> {
+    @interface Quality {
+      enum Level { LOW, MIDDLE, HIGH }
+      Level value();
+    }
+
+    @interface Name {
+      String salutation() default ""; // Salutation
+      String value();                 // First name
+      String last() default "";       // Last name
+    }
+
+    @interface Author {
+      Name value();
+      Name[] contributors() default {};
+    }
+
+    @Quality(Quality.Level.HIGH)
+    @Author(value=@Name(salutation="Mr", value="Donald", last="Duck"), contributors={@Name("Huey"), @Name("Dewey"), @Name("Louie")})
+    protected static class Entity implements Named, Identified, Comparable<Entity> {
 
         private long id;
         private String name;
 
-        Entity(long id, String name) {
+        Entity(final long id, final String name) {
             this.id = id;
             this.name = name;
         }
+
+        Entity() {}
 
         @Override
         public String name() {
@@ -319,7 +365,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
 //        };
 //    }
 
-    class Inner {
+    private class Inner {
 
         Inner() throws Exception, Error {
             log("Inner constructor");
@@ -353,12 +399,24 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         }
     }
 
-    strictfp record Rec(String s, List<String> l) {
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.PARAMETER, ElementType.RECORD_COMPONENT})
+    public @interface Sensitive {
+        String value();
+    }
+
+    strictfp record Rec(@Sensitive("C0") String s, @Sensitive("C1") List<String> l) implements Serializable {
         public Rec {
             s = s == null ? "" : s;
             l = l == null ? List.of() : List.copyOf(l);
         }
     }
+
+    record EmptyRecord() {}
+
+    record Point(int x, int y) {}
+
+    record GenericPoint<X, Y>(X x, Y y) {}
 
     enum Day implements Serializable {
         MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
@@ -437,8 +495,15 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     }
 
     private <T> void capture(List<T> list) {
-        for (T element : list) {
+        for (final T element : list) {
             log(String.valueOf(element));
+        }
+    }
+
+    void forIter(List<String> list) {
+        for (final Iterator<String> iterator = list.iterator(); iterator.hasNext();) {
+            String element = iterator.next();
+            System.out.println(element);
         }
     }
 
@@ -756,5 +821,30 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         List<ServiceLoader<T>> action;
         action = (List<ServiceLoader<T>>) o;
     }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
+    public @interface Value {
+        boolean  z()     default true;
+        byte     b()     default 1;
+        short    s()     default 1;
+        int      i()     default 1;
+        long     l()     default 1L;
+        float    f()     default 1.0F;
+        double   d()     default 1.0D;
+        String   str()   default "str";
+        Class<?> clazz() default Object.class;
+    }
+
+    protected void ping(@Deprecated Writer writer, @Deprecated @Value(str="localhost") @SuppressWarnings("all") String host, long timeout) throws java.net.UnknownHostException, UnsatisfiedLinkError {
+        // ...
+    }
+
+    enum EmptyEnum {
+        ;
+        @SuppressWarnings("unused")
+        static final int A = 0;
+    }
+
 }
 
