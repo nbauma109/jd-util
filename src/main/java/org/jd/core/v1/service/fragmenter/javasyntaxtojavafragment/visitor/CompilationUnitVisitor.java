@@ -71,6 +71,7 @@ import org.jd.core.v1.model.token.ReferenceToken;
 import org.jd.core.v1.model.token.StartBlockToken;
 import org.jd.core.v1.model.token.StartMarkerToken;
 import org.jd.core.v1.model.token.TextToken;
+import org.jd.core.v1.model.token.Token;
 import org.jd.core.v1.parser.util.ASTUtilities;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
 
@@ -1462,12 +1463,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             tokens.add(STRICTFP);
             tokens.add(TextToken.SPACE);
         }
-        if ((flags & ACC_SYNTHETIC) != 0) {
-            tokens.add(StartMarkerToken.COMMENT);
-            tokens.add(COMMENT_SYNTHETIC);
-            tokens.add(EndMarkerToken.COMMENT);
-            tokens.add(TextToken.SPACE);
-        }
+        addSyntheticComment(flags);
         if ((flags & FLAG_SEALED) != 0) {
             tokens.add(SEALED);
             tokens.add(TextToken.SPACE);
@@ -1507,12 +1503,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             tokens.add(TRANSIENT);
             tokens.add(TextToken.SPACE);
         }
-        if ((flags & ACC_SYNTHETIC) != 0) {
-            tokens.add(StartMarkerToken.COMMENT);
-            tokens.add(COMMENT_SYNTHETIC);
-            tokens.add(EndMarkerToken.COMMENT);
-            tokens.add(TextToken.SPACE);
-        }
+        addSyntheticComment(flags);
     }
 
     protected void buildTokensForMethodAccessFlags(int flags) {
@@ -1540,12 +1531,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             tokens.add(SYNCHRONIZED);
             tokens.add(TextToken.SPACE);
         }
-        if ((flags & ACC_BRIDGE) != 0) {
-            tokens.add(StartMarkerToken.COMMENT);
-            tokens.add(COMMENT_BRIDGE);
-            tokens.add(EndMarkerToken.COMMENT);
-            tokens.add(TextToken.SPACE);
-        }
+        addBridgeComment(flags);
         if ((flags & ACC_NATIVE) != 0) {
             tokens.add(NATIVE);
             tokens.add(TextToken.SPACE);
@@ -1558,16 +1544,30 @@ public class CompilationUnitVisitor extends StatementVisitor {
             tokens.add(STRICT);
             tokens.add(TextToken.SPACE);
         }
-        if ((flags & ACC_SYNTHETIC) != 0) {
-            tokens.add(StartMarkerToken.COMMENT);
-            tokens.add(COMMENT_SYNTHETIC);
-            tokens.add(EndMarkerToken.COMMENT);
-            tokens.add(TextToken.SPACE);
-        }
+        addSyntheticComment(flags);
         if ((flags & FLAG_DEFAULT) != 0) {
             tokens.add(DEFAULT);
             tokens.add(TextToken.SPACE);
         }
+    }
+
+    private void addBridgeComment(int flags) {
+        if ((flags & ACC_BRIDGE) != 0) {
+            addComment(COMMENT_BRIDGE);
+        }
+    }
+
+    private void addSyntheticComment(int flags) {
+        if ((flags & ACC_SYNTHETIC) != 0) {
+            addComment(COMMENT_SYNTHETIC);
+        }
+    }
+    
+    private void addComment(Token comment) {
+        tokens.add(StartMarkerToken.COMMENT);
+        tokens.add(comment);
+        tokens.add(EndMarkerToken.COMMENT);
+        tokens.add(TextToken.SPACE);
     }
 
     protected class AnnotationVisitor extends AbstractJavaSyntaxVisitor {
