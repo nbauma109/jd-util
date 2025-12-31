@@ -560,9 +560,9 @@ public class CompilationUnitVisitor extends StatementVisitor {
                     } else {
                         tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
                         fragments.addTokensFragment(tokens);
-    
+
                         formalParameters.accept(this);
-    
+
                         tokens = new Tokens();
                         tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
                     }
@@ -1562,7 +1562,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             addComment(COMMENT_SYNTHETIC);
         }
     }
-    
+
     private void addComment(Token comment) {
         tokens.add(StartMarkerToken.COMMENT);
         tokens.add(comment);
