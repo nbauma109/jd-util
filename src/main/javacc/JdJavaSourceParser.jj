@@ -83,7 +83,10 @@ public class JdJavaSourceParser
 
   private boolean isIdentifierKind(final int kind)
   {
-    return kind == IDENTIFIER || kind == YIELD || kind == RECORD;
+    return kind == IDENTIFIER || kind == YIELD || kind == RECORD
+      || kind == MODULE || kind == OPEN || kind == REQUIRES || kind == TRANSITIVE
+      || kind == EXPORTS || kind == OPENS || kind == USES || kind == PROVIDES
+      || kind == TO || kind == WITH;
   }
 
 
@@ -924,6 +927,16 @@ TOKEN :
 | < INTERFACE : "interface" >
 | < ENUM : "enum" >
 | < RECORD : "record" >
+| < MODULE : "module" >
+| < OPEN : "open" >
+| < REQUIRES : "requires" >
+| < TRANSITIVE : "transitive" >
+| < EXPORTS : "exports" >
+| < OPENS : "opens" >
+| < USES : "uses" >
+| < PROVIDES : "provides" >
+| < TO : "to" >
+| < WITH : "with" >
 | < AT : "@" >
 | < AT_INTERFACE : "@interface" >
 | < EXTENDS : "extends" >
@@ -1061,6 +1074,16 @@ Token IdentifierToken() :
     t = <IDENTIFIER>
   | t = <YIELD>
   | t = <RECORD>
+  | t = <MODULE>
+  | t = <OPEN>
+  | t = <REQUIRES>
+  | t = <TRANSITIVE>
+  | t = <EXPORTS>
+  | t = <OPENS>
+  | t = <USES>
+  | t = <PROVIDES>
+  | t = <TO>
+  | t = <WITH>
   )
   {
     return t;
@@ -1175,6 +1198,17 @@ TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<
   Set<String> typeParameterNames;
   BaseTypeParameter typeParameters;
   boolean pushedTypeParams;
+  String moduleName;
+  int moduleFlags;
+  ModuleDeclaration.ModuleInfo moduleInfo;
+  ModuleDeclaration.PackageInfo packageInfo;
+  ModuleDeclaration.ServiceInfo serviceInfo;
+  String useTypeName;
+  List<ModuleDeclaration.ModuleInfo> moduleRequires;
+  List<ModuleDeclaration.PackageInfo> moduleExports;
+  List<ModuleDeclaration.PackageInfo> moduleOpens;
+  List<String> moduleUses;
+  List<ModuleDeclaration.ServiceInfo> moduleProvides;
 }
 {
   (
@@ -1359,8 +1393,183 @@ TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<
       typeContextStack.pop();
       return new AnnotationDeclaration(anns, flags, internalName, simpleName, null, body);
     }
+  |
+    (
+      {
+        moduleFlags = 0;
+      }
+      (<OPEN>
+      {
+        moduleFlags |= ACC_OPEN;
+      }
+      )?
+      <MODULE> moduleName = QualifiedName()
+      <LBRACE>
+      {
+        moduleRequires = new ArrayList<>();
+        moduleExports = new ArrayList<>();
+        moduleOpens = new ArrayList<>();
+        moduleUses = new ArrayList<>();
+        moduleProvides = new ArrayList<>();
+      }
+      (
+        LOOKAHEAD(<REQUIRES>) moduleInfo = RequiresDirective()
+        {
+          moduleRequires.add(moduleInfo);
+        }
+      |
+        LOOKAHEAD(<EXPORTS>) packageInfo = ExportsDirective()
+        {
+          moduleExports.add(packageInfo);
+        }
+      |
+        LOOKAHEAD(<OPENS>) packageInfo = OpensDirective()
+        {
+          moduleOpens.add(packageInfo);
+        }
+      |
+        LOOKAHEAD(<USES>) useTypeName = UsesDirective()
+        {
+          moduleUses.add(useTypeName);
+        }
+      |
+        LOOKAHEAD(<PROVIDES>) serviceInfo = ProvidesDirective()
+        {
+          moduleProvides.add(serviceInfo);
+        }
+      )*
+      <RBRACE>
+      {
+        return new ModuleDeclaration(moduleFlags, "module-info", moduleName, null,
+          moduleRequires, moduleExports, moduleOpens, moduleUses, moduleProvides);
+      }
+    )
+
   )
 }
+
+
+ModuleDeclaration.ModuleInfo RequiresDirective() :
+{
+  int flags = 0;
+  String module;
+}
+{
+  <REQUIRES>
+  (
+    <TRANSITIVE>
+    {
+      flags |= ACC_TRANSITIVE;
+    }
+  |
+    <STATIC>
+    {
+      flags |= ACC_STATIC_PHASE;
+    }
+  )*
+  module = QualifiedName()
+  <SEMI>
+  {
+    return new ModuleDeclaration.ModuleInfo(module, flags, null);
+  }
+}
+
+ModuleDeclaration.PackageInfo ExportsDirective() :
+{
+  String pkg;
+  List<String> targets;
+}
+{
+  <EXPORTS> pkg = QualifiedName()
+  (
+    <TO> targets = ModuleNameList()
+  |
+    {
+      targets = null;
+    }
+  )
+  <SEMI>
+  {
+    return new ModuleDeclaration.PackageInfo(pkg.replace('.', '/'), 0, targets);
+  }
+}
+
+ModuleDeclaration.PackageInfo OpensDirective() :
+{
+  String pkg;
+  List<String> targets;
+}
+{
+  <OPENS> pkg = QualifiedName()
+  (
+    <TO> targets = ModuleNameList()
+  |
+    {
+      targets = null;
+    }
+  )
+  <SEMI>
+  {
+    return new ModuleDeclaration.PackageInfo(pkg.replace('.', '/'), 0, targets);
+  }
+}
+
+String UsesDirective() :
+{
+  String typeName;
+}
+{
+  <USES> typeName = QualifiedName() <SEMI>
+  {
+    return typeName.replace('.', '/');
+  }
+}
+
+ModuleDeclaration.ServiceInfo ProvidesDirective() :
+{
+  String serviceType;
+  String implType;
+  List<String> implTypes = new ArrayList<>();
+}
+{
+  <PROVIDES> serviceType = QualifiedName()
+  <WITH> implType = QualifiedName()
+  {
+    implTypes.add(implType.replace('.', '/'));
+  }
+  (
+    <COMMA> implType = QualifiedName()
+    {
+      implTypes.add(implType.replace('.', '/'));
+    }
+  )*
+  <SEMI>
+  {
+    return new ModuleDeclaration.ServiceInfo(serviceType.replace('.', '/'), implTypes);
+  }
+}
+
+List<String> ModuleNameList() :
+{
+  List<String> list = new ArrayList<>();
+  String name;
+}
+{
+  name = QualifiedName()
+  {
+    list.add(name);
+  }
+  (
+    <COMMA> name = QualifiedName()
+    {
+      list.add(name);
+    }
+  )*
+  {
+    return list;
+  }
+}
+
 
 List<RecordDeclaration.RecordComponent> RecordHeader() :
 {

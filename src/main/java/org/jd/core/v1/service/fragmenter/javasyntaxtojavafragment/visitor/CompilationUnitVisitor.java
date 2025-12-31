@@ -85,6 +85,7 @@ import static org.apache.bcel.Const.ACC_PRIVATE;
 import static org.apache.bcel.Const.ACC_PROTECTED;
 import static org.apache.bcel.Const.ACC_PUBLIC;
 import static org.apache.bcel.Const.ACC_STATIC;
+import static org.apache.bcel.Const.ACC_STATIC_PHASE;
 import static org.apache.bcel.Const.ACC_STRICT;
 import static org.apache.bcel.Const.ACC_SYNCHRONIZED;
 import static org.apache.bcel.Const.ACC_SYNTHETIC;
@@ -1091,7 +1092,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
     protected void visitModuleDeclaration(ModuleDeclaration.ModuleInfo moduleInfo) {
         tokens.add(REQUIRES);
 
-        if ((moduleInfo.flags() & ACC_STATIC) != 0) {
+        if ((moduleInfo.flags() & ACC_STATIC_PHASE) != 0) {
             tokens.add(TextToken.SPACE);
             tokens.add(STATIC);
         }
