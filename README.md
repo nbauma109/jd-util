@@ -32,42 +32,79 @@ public class Sample {
          * Inspect type
          */
         TypeMaker typeMaker = new TypeMaker();
-        ObjectType ot = typeMaker.makeFromInternalTypeName("java/util/Map");
-        System.out.println("Inner types : " + ot.getInnerTypeNames());
-        TypeTypes typeTypes = typeMaker.makeTypeTypes("java/util/HashMap");
+        ObjectType objectType =
+                typeMaker.makeFromInternalTypeName("java/util/Map");
+        System.out.println("Inner types : " + objectType.getInnerTypeNames());
+
+        TypeTypes typeTypes =
+                typeMaker.makeTypeTypes("java/util/HashMap");
         System.out.println("Implemented interfaces : " + typeTypes.getInterfaces());
         System.out.println("Super type : " + typeTypes.getSuperType());
-        MethodTypes methodTypes = typeMaker.makeMethodTypes("java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+        MethodTypes methodTypes =
+                typeMaker.makeMethodTypes(
+                        "java/util/HashMap",
+                        "put",
+                        "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"
+                );
         System.out.println("Parameter types : " + methodTypes.getParameterTypes());
 
         /*
-         * Class deserializer 
+         * Class deserializer
          */
         ClassPathLoader classPathLoader = new ClassPathLoader();
-        ClassFileDeserializer classFileDeserializer = new ClassFileDeserializer();
-        ClassFile classFile = classFileDeserializer.loadClassFile(classPathLoader, "java/util/HashMap");
-        Optional<Method> method = Stream.of(classFile.getMethods()).filter(m -> m.getName().equals("put")).findFirst();
+        ClassFileDeserializer classFileDeserializer =
+                new ClassFileDeserializer();
+        ClassFile classFile =
+                classFileDeserializer.loadClassFile(
+                        classPathLoader,
+                        "java/util/HashMap"
+                );
+
+        Optional<Method> method =
+                Stream.of(classFile.getMethods())
+                        .filter(m -> m.getName().equals("put"))
+                        .findFirst();
+
         if (method.isPresent()) {
             typeTypes = typeMaker.parseClassFileSignature(classFile);
             System.out.println("Implemented interfaces : " + typeTypes.getInterfaces());
             System.out.println("Super type : " + typeTypes.getSuperType());
-            methodTypes = typeMaker.parseMethodSignature(classFile, method.get());
+
+            methodTypes =
+                    typeMaker.parseMethodSignature(
+                            classFile,
+                            method.get()
+                    );
             System.out.println("Parameter types : " + methodTypes.getParameterTypes());
         }
-        
+
         /*
          * Parse and realign
          */
-        JavaParseResult parsedSource = JdJavaSourceParser.parse("package demo; public class HelloWorld { public static void main(String[] args) { /* 5 */ System.out.println(\"Hello world!\"); } }");
+        JavaParseResult parsedSource =
+                JdJavaSourceParser.parse(
+                        "package demo; public class HelloWorld { "
+                                + "public static void main(String[] args) { "
+                                + "/* 5 */ System.out.println(\"Hello world!\"); "
+                                + "} }"
+                );
+
         ParserRealigner parserRealigner = new ParserRealigner();
         String output = parserRealigner.format(parsedSource);
         System.out.println(output);
-        
+
         /*
          * Just realign
          */
-        System.out.println(parserRealigner.realign("package demo; public class HelloWorld { public static void main(String[] args) { /* 5 */ System.out.println(\"Hello world!\"); } }"));
+        System.out.println(
+                parserRealigner.realign(
+                        "package demo; public class HelloWorld { "
+                                + "public static void main(String[] args) { "
+                                + "/* 5 */ System.out.println(\"Hello world!\"); "
+                                + "} }"
+                )
+        );
     }
-
 }
 ```
