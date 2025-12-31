@@ -173,16 +173,20 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
                 restoreContext();
 
-                if (fragmentCount2 == fragments.size()) {
-                    fragments.subList(fragmentCount1, fragmentCount2).clear();
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
-                } else {
-                    JavaFragmentFactory.addEndTypeBody(fragments, start);
-                }
+                addEndBodyFragment(start, fragmentCount1, fragmentCount2);
             }
 
             fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
+        }
+    }
+
+    private void addEndBodyFragment(StartBodyFragment start, int fragmentCount1, int fragmentCount2) {
+        if (fragmentCount2 == fragments.size()) {
+            fragments.subList(fragmentCount1, fragmentCount2).clear();
+            tokens.add(TextToken.SPACE);
+            tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
+        } else {
+            JavaFragmentFactory.addEndTypeBody(fragments, start);
         }
     }
 
@@ -370,13 +374,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
                 bodyDeclaration.accept(this);
                 restoreContext();
 
-                if (fragmentCount2 == fragments.size()) {
-                    fragments.subList(fragmentCount1, fragmentCount2).clear();
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
-                } else {
-                    JavaFragmentFactory.addEndTypeBody(fragments, start);
-                }
+                addEndBodyFragment(start, fragmentCount1, fragmentCount2);
             }
 
             fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
@@ -456,13 +454,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             bodyDeclaration.accept(this);
             restoreContext();
 
-            if (fragmentCount2 == fragments.size()) {
-                fragments.subList(fragmentCount1, fragmentCount2).clear();
-                tokens.add(TextToken.SPACE);
-                tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
-            } else {
-                JavaFragmentFactory.addEndTypeBody(fragments, start);
-            }
+            addEndBodyFragment(start, fragmentCount1, fragmentCount2);
         }
 
         fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
@@ -988,13 +980,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
                 bodyDeclaration.accept(this);
                 restoreContext();
 
-                if (fragmentCount2 == fragments.size()) {
-                    fragments.subList(fragmentCount1, fragmentCount2).clear();
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
-                } else {
-                    JavaFragmentFactory.addEndTypeBody(fragments, start);
-                }
+                addEndBodyFragment(start, fragmentCount1, fragmentCount2);
             }
 
             fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
