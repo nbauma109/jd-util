@@ -733,8 +733,13 @@ public class ExpressionVisitor extends TypeVisitor {
             }
 
             if (be1.isFalse() && be2.isTrue()) {
-                tokens.add(TextToken.EXCLAMATION);
-                printTernaryOperatorExpression(expression.getCondition());
+                if (expression.getCondition() instanceof PreOperatorExpression preOp && "!".equals(preOp.getOperator())) {
+                    // bypass double-negation
+                    printTernaryOperatorExpression(preOp.getExpression());
+                } else {
+                    tokens.add(TextToken.EXCLAMATION);
+                    printTernaryOperatorExpression(expression.getCondition());
+                }
                 return;
             }
         }

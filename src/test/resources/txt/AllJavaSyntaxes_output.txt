@@ -851,7 +851,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
   }
 
   boolean booleanTernaryOp2(boolean flag) {
-    return !!flag;
+    return flag;
   }
 
   boolean booleanTernaryOp3(boolean flag) {
