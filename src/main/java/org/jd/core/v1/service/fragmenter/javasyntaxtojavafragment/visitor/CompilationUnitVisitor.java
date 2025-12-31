@@ -71,6 +71,7 @@ import org.jd.core.v1.model.token.ReferenceToken;
 import org.jd.core.v1.model.token.StartBlockToken;
 import org.jd.core.v1.model.token.StartMarkerToken;
 import org.jd.core.v1.model.token.TextToken;
+import org.jd.core.v1.parser.util.ASTUtilities;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
 
 import java.util.Iterator;
@@ -148,7 +149,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             BaseFieldDeclarator annotationDeclaratorList = declaration.getAnnotationDeclarators();
             BodyDeclaration bodyDeclaration = declaration.getBodyDeclaration();
 
-            if (annotationDeclaratorList == null && bodyDeclaration == null) {
+            if (annotationDeclaratorList == null && ASTUtilities.isEmpty(bodyDeclaration)) {
                 tokens.add(TextToken.SPACE);
                 tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
             } else {
@@ -355,7 +356,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             BodyDeclaration bodyDeclaration = declaration.getBodyDeclaration();
 
-            if (bodyDeclaration == null) {
+            if (ASTUtilities.isEmpty(bodyDeclaration)) {
                 tokens.add(TextToken.SPACE);
                 tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
             } else {
@@ -441,7 +442,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
         BodyDeclaration bodyDeclaration = declaration.getBodyDeclaration();
 
-        if (bodyDeclaration == null) {
+        if (ASTUtilities.isEmpty(bodyDeclaration)) {
             tokens.add(TextToken.SPACE);
             tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
         } else {
@@ -560,16 +561,18 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
                 BaseFormalParameter formalParameters = declaration.getFormalParameters();
 
-                if (formalParameters == null) {
-                    tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
-                } else if (!(declaration instanceof RecordConstructorDeclaration)) {
-                    tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
-                    fragments.addTokensFragment(tokens);
-
-                    formalParameters.accept(this);
-
-                    tokens = new Tokens();
-                    tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
+                if (!(declaration instanceof RecordConstructorDeclaration)) {
+                    if (formalParameters == null || formalParameters.size() == 0) {
+                        tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
+                    } else {
+                        tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
+                        fragments.addTokensFragment(tokens);
+    
+                        formalParameters.accept(this);
+    
+                        tokens = new Tokens();
+                        tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
+                    }
                 }
 
                 BaseType exceptionTypes = declaration.getExceptionTypes();
@@ -971,7 +974,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             fragments.addTokensFragment(tokens);
 
             BodyDeclaration bodyDeclaration = declaration.getBodyDeclaration();
-            if (bodyDeclaration == null) {
+            if (ASTUtilities.isEmpty(bodyDeclaration)) {
                 tokens.add(TextToken.SPACE);
                 tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
             } else {

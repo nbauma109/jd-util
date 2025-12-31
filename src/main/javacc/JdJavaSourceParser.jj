@@ -248,6 +248,37 @@ public class JdJavaSourceParser
     return nextKind == ASSIGN || nextKind == COMMA || nextKind == SEMI || nextKind == LBRACKET;
   }
   
+  private boolean isLocalTypeDeclarationAhead() {
+    int i = 1;
+
+    i = skipLeadingAnnotations(i);
+    if (i < 0) {
+      return false;
+    }
+
+    while (true) {
+      switch (getToken(i).kind) {
+        case PUBLIC:
+        case PROTECTED:
+        case PRIVATE:
+        case STATIC:
+        case ABSTRACT:
+        case FINAL:
+        case STRICTFP:
+        case SEALED:
+        case NON_SEALED:
+          i++;
+          break;
+        default:
+          return getToken(i).kind == CLASS
+              || getToken(i).kind == INTERFACE
+              || getToken(i).kind == ENUM
+              || getToken(i).kind == RECORD
+              || getToken(i).kind == AT_INTERFACE;
+      }
+    }
+  }
+
   private int skipFinalModifier(final int startIndex) {
     int i = startIndex;
     if (getToken(i).kind == FINAL) {
@@ -2547,7 +2578,23 @@ void StatementStart() :
 | <CONTINUE>
 | <ASSERT>
 | <SYNCHRONIZED>
-| <AT> /* annotations before local variable declarations */
+| <AT> /* annotations before local variable declarations and local type declarations */
+  /* local type declaration starters */
+| <CLASS>
+| <INTERFACE>
+| <ENUM>
+| <RECORD>
+| <AT_INTERFACE>
+  /* modifiers before local declarations */
+| <PUBLIC>
+| <PROTECTED>
+| <PRIVATE>
+| <STATIC>
+| <ABSTRACT>
+| <FINAL>
+| <STRICTFP>
+| <SEALED>
+| <NON_SEALED>
   /* statement-expression starters */
 | <NEW>
 | <THIS>
@@ -2643,6 +2690,7 @@ Statement StatementNoBlock() :
   ForEachStatement forEachStatement;
   Statement body;
   Statement labeled;
+  TypeDeclaration typeDecl;
   List<SwitchStatement.Block> blocks;
   DefaultList<TryStatement.Resource> resources;
   DefaultList<TryStatement.CatchClause> catches;
@@ -2857,6 +2905,14 @@ Statement StatementNoBlock() :
       }
     )
   | 
+    LOOKAHEAD( { isLocalTypeDeclarationAhead() } )
+    localAnns = AnnotationsOpt()
+    mods = ModifiersOpt()
+    typeDecl = TypeDeclarationAfterPreamble(localAnns, mods)
+    {
+      return new TypeDeclarationStatement(typeDecl);
+    }
+  | 
     LOOKAHEAD(<AT> IdentifierToken())
     localAnns = AnnotationsOpt() 
     mods = ModifiersOpt() 
@@ -2919,7 +2975,7 @@ ForInitResult ForInitOpt() :
 }
 {
   (
-    LOOKAHEAD(TypeRef() IdentifierToken() (<ASSIGN> | <COMMA> | <SEMI> | <LBRACKET>))
+    LOOKAHEAD(AnnotationsOpt() ModifiersOpt() TypeRef() IdentifierToken() (<ASSIGN> | <COMMA> | <SEMI> | <LBRACKET>))
     decl = ForInitLocalVariableDeclaration()
     {
       return new ForInitResult(decl, null);

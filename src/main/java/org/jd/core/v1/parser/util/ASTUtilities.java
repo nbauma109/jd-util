@@ -8,6 +8,7 @@
 package org.jd.core.v1.parser.util;
 
 import org.jd.core.v1.model.javasyntax.declaration.BaseTypeDeclaration;
+import org.jd.core.v1.model.javasyntax.declaration.BodyDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.MemberDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.TypeDeclarations;
 import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
@@ -75,5 +76,9 @@ public class ASTUtilities {
         TypeDeclarations decls = new TypeDeclarations();
         decls.addAll(topLevelTypes);
         return decls;
+    }
+
+    public static boolean isEmpty(BodyDeclaration bodyDeclaration) {
+        return bodyDeclaration == null || bodyDeclaration.isEmpty();
     }
 }

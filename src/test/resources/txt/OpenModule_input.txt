@@ -1,0 +1,12 @@
+open module com.example.platform {
+  requires java.sql;
+  requires transitive java.xml;
+  requires static java.compiler;
+
+  exports com.example.platform.api;
+  exports com.example.platform.internal to java.logging;
+
+  uses java.sql.Driver;
+
+  provides java.sql.Driver with com.example.platform.impl.ExampleSqlDriver;
+}

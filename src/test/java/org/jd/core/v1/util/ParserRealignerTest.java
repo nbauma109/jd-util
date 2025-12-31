@@ -77,6 +77,16 @@ public class ParserRealignerTest implements DefaultTest {
     }
 
     @Test
+    public void testParseOuter() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/Outer_input.txt", "/txt/Outer_output.txt");
+    }
+
+    @Test
+    public void testParseOpenModule() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/OpenModule_input.txt", "/txt/OpenModule_output.txt");
+    }
+
+    @Test
     public void testParsePackageInfo() throws Exception {
         assertNotNull(JdJavaSourceParser.parse("package a.b;"));
         assertNotNull(JdJavaSourceParser.parse("""
