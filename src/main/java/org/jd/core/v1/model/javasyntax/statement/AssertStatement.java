@@ -35,4 +35,9 @@ public class AssertStatement implements Statement {
     public void accept(StatementVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "assert " + condition + " : " + message;
+    }
 }

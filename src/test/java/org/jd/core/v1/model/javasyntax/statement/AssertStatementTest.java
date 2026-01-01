@@ -31,5 +31,13 @@ public class AssertStatementTest {
         TestVisitor visitor = new TestVisitor();
         assertStatement.accept(visitor);
         assertEquals(1, visitor.getAssertStatementCount());
+
+        // Test toString
+        assertEquals(
+            "assert IntegerConstantExpression{type=PrimitiveType{primitive=maybe_boolean}, value=0}"
+                    + " : "
+                    + "StringConstantExpression{\"Assertion failed\"}",
+            assertStatement.toString()
+        );
     }
 }
