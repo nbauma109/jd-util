@@ -34,9 +34,10 @@ public class AssertStatementTest {
 
         // Test toString
         assertEquals(
-            "assert IntegerConstantExpression{type=PrimitiveType{primitive=maybe_boolean}, value=0}"
-                    + " : "
-                    + "StringConstantExpression{\"Assertion failed\"}",
+            """
+                assert IntegerConstantExpression{type=PrimitiveType{primitive=maybe_boolean}, value=0}\
+                 : \
+                StringConstantExpression{"Assertion failed"}""",
             assertStatement.toString()
         );
     }
