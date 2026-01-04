@@ -627,7 +627,19 @@ public class ExpressionVisitor extends TypeVisitor {
             storeContext();
             currentType = typeMaker.makeFromInternalTypeName(bodyDeclaration.getInternalTypeName());
             currentTypeName = ot.getName();
+            boolean ief = inExpressionFlag;
+            boolean ivmf = inVarArgMethod;
+            boolean ivpf = inVarArgParam;
+            int ptc = parameterTypeCount;
+            inExpressionFlag = false;
+            inVarArgMethod = false;
+            inVarArgParam = false;
+            parameterTypeCount = 0;
             bodyDeclaration.accept(this);
+            inExpressionFlag = ief;
+            inVarArgMethod = ivmf;
+            inVarArgParam = ivpf;
+            parameterTypeCount = ptc;
 
             if (! tokens.isEmpty()) {
                 tokens = new Tokens();
@@ -666,7 +678,19 @@ public class ExpressionVisitor extends TypeVisitor {
     @Override
     public void visit(ParenthesesExpression expression) {
         tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
+        boolean ief = inExpressionFlag;
+        boolean ivmf = inVarArgMethod;
+        boolean ivpf = inVarArgParam;
+        int ptc = parameterTypeCount;
+        inExpressionFlag = false;
+        inVarArgMethod = false;
+        inVarArgParam = false;
+        parameterTypeCount = 0;
         expression.getExpression().accept(this);
+        inExpressionFlag = ief;
+        inVarArgMethod = ivmf;
+        inVarArgParam = ivpf;
+        parameterTypeCount = ptc;
         tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
     }
 
@@ -827,18 +851,20 @@ public class ExpressionVisitor extends TypeVisitor {
 
     @Override
     public void visit(SwitchExpression.RuleExpression expression) {
-        expression.getLabels().forEach(l -> l.accept(this));
+        writeSwitchExpressionLabels(expression.getLabels());
         expression.getExpression().accept(this);
         tokens.add(TextToken.SEMICOLON);
+        fragments.addTokensFragment(tokens);
+        tokens = new Tokens();
     }
 
     @Override
     public void visit(SwitchExpression.RuleStatement statement) {
-        statement.getLabels().forEach(l -> l.accept(this));
+        writeSwitchExpressionLabels(statement.getLabels());
+        fragments.addTokensFragment(tokens);
+        tokens = new Tokens();
         if (statement.getStatements().isList()) {
             Group start = JavaFragmentFactory.addStartStatementsBlock(fragments);
-
-            tokens = new Tokens();
 
             statement.getStatements().accept(this);
 
@@ -869,6 +895,33 @@ public class ExpressionVisitor extends TypeVisitor {
 
         tokens.add(TextToken.SPACE_ARROW_SPACE);
         fragments.addTokensFragment(tokens);
+        tokens = new Tokens();
+    }
+
+    private void writeSwitchExpressionLabels(List<SwitchExpression.Label> labels) {
+        tokens = new Tokens();
+
+        boolean hasCase = labels.stream().anyMatch(label -> label instanceof SwitchExpression.ExpressionLabel);
+        if (hasCase) {
+            tokens.add(CASE);
+            tokens.add(TextToken.SPACE);
+        }
+
+        for (int i = 0; i < labels.size(); i++) {
+            SwitchExpression.Label label = labels.get(i);
+            if (label instanceof SwitchExpression.ExpressionLabel l) {
+                Expression labelExpression = l.getExpression();
+                labelExpression.accept(this);
+            } else {
+                tokens.add(DEFAULT);
+            }
+
+            if (i < labels.size() - 1) {
+                tokens.add(TextToken.COMMA_SPACE);
+            }
+        }
+
+        tokens.add(TextToken.SPACE_ARROW_SPACE);
     }
 
     protected void storeContext() {
@@ -888,7 +941,7 @@ public class ExpressionVisitor extends TypeVisitor {
     }
 
     protected void visit(Expression parent, Expression child, boolean alwaysUseParenthesis) {
-        if (parent.getPriority() < child.getPriority() || parent.getPriority() == 14 && child.getPriority() == 13 || alwaysUseParenthesis) {
+        if (!(child instanceof LambdaIdentifiersExpression) && (parent.getPriority() < child.getPriority() || parent.getPriority() == 14 && child.getPriority() == 13 || alwaysUseParenthesis)) {
             tokens.add(TextToken.LEFTROUNDBRACKET);
             child.accept(this);
             tokens.add(TextToken.RIGHTROUNDBRACKET);

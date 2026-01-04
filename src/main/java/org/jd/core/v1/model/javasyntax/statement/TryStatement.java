@@ -60,11 +60,20 @@ public class TryStatement implements Statement {
         private final String name;
         private Expression expression;
         private boolean fina1;
+        private final boolean expressionOnly;
 
         public Resource(ObjectType type, String name, Expression expression) {
             this.type = type;
             this.name = name;
             this.expression = expression;
+            this.expressionOnly = false;
+        }
+
+        public Resource(Expression expression) {
+            this.type = ObjectType.TYPE_UNDEFINED_OBJECT;
+            this.name = null;
+            this.expression = expression;
+            this.expressionOnly = true;
         }
 
         public boolean isFinal() {
@@ -81,6 +90,10 @@ public class TryStatement implements Statement {
 
         public String getName() {
             return name;
+        }
+
+        public boolean isExpressionOnly() {
+            return expressionOnly;
         }
 
         @Override

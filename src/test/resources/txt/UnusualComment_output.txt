@@ -1,0 +1,3 @@
+class UnusualCommment {
+  int hash;
+}

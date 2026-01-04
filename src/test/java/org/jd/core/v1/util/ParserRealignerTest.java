@@ -67,6 +67,11 @@ public class ParserRealignerTest implements DefaultTest {
     }
 
     @Test
+    public void testParseUnusualComment() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/UnusualComment_input.txt", "/txt/UnusualComment_output.txt");
+    }
+    
+    @Test
     public void testParseTryCatchFinally370() throws IOException, URISyntaxException, ParseException {
         testParseRealign("/txt/TryCatchFinally370_input.txt", "/txt/TryCatchFinally370_output.txt");
     }
@@ -109,6 +114,91 @@ public class ParserRealignerTest implements DefaultTest {
     @Test
     public void testParseMultiTopLevelTypes() throws Exception {
         testParseRealign("/txt/MultiTopLevelTypes_input.txt", "/txt/MultiTopLevelTypes_output.txt");
+    }
+
+    @Test
+    public void testParseTopLevelSemicolon() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/TopLevelSemicolon_input.txt", "/txt/TopLevelSemicolon_output.txt");
+    }
+
+    @Test
+    public void testParseMethodReferenceExpression() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/MethodReferenceExpression_input.txt", "/txt/MethodReferenceExpression_output.txt");
+    }
+
+    @Test
+    public void testParseAnnotatedModifiers() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/AnnotatedModifiers_input.txt", "/txt/AnnotatedModifiers_output.txt");
+    }
+
+    @Test
+    public void testParseEnumAnnotatedConstants() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/EnumAnnotatedConstants_input.txt", "/txt/EnumAnnotatedConstants_output.txt");
+    }
+
+    @Test
+    public void testParseEnumKeywordConstants() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/EnumKeywordConstants_input.txt", "/txt/EnumKeywordConstants_output.txt");
+    }
+
+    @Test
+    public void testParseFloatDoubleZeroLiteral() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/FloatDoubleZeroLiteral_input.txt", "/txt/FloatDoubleZeroLiteral_output.txt");
+    }
+
+    @Test
+    public void testParseIntHexOverflow() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/IntHexOverflow_input.txt", "/txt/IntHexOverflow_output.txt");
+    }
+
+    @Test
+    public void testParseRecordIdentifierCall() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/RecordIdentifierCall_input.txt", "/txt/RecordIdentifierCall_output.txt");
+    }
+
+    @Test
+    public void testParseForInitWildcard() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/ForInitWildcard_input.txt", "/txt/ForInitWildcard_output.txt");
+    }
+
+    @Test
+    public void testParseAnonymousClassArgumentComma() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/AnonymousClassArgumentComma_input.txt", "/txt/AnonymousClassArgumentComma_output.txt");
+    }
+
+    @Test
+    public void testParseParenthesesExpressionInArgs() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/ParenthesesExpressionInArgs_input.txt", "/txt/ParenthesesExpressionInArgs_output.txt");
+    }
+
+    @Test
+    public void testParseElseEmptyStatement() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/ElseEmptyStatement_input.txt", "/txt/ElseEmptyStatement_output.txt");
+    }
+
+    @Test
+    public void testParseTryCatchEmptyBlock() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/TryCatchEmptyBlock_input.txt", "/txt/TryCatchEmptyBlock_output.txt");
+    }
+
+    @Test
+    public void testParseLargeNumericCommentIgnored() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/LargeNumericCommentIgnored_input.txt", "/txt/LargeNumericCommentIgnored_output.txt");
+    }
+
+    @Test
+    public void testParseSwitchExpressionLabels() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/SwitchExpressionLabels_input.txt", "/txt/SwitchExpressionLabels_output.txt");
+    }
+
+    @Test
+    public void testParseLineCommentEof() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/LineCommentEof_input.txt", "/txt/LineCommentEof_output.txt");
+    }
+
+    @Test
+    public void testParseTryStatementEmptyBlocks() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/TryStatementEmptyBlocks_input.txt", "/txt/TryStatementEmptyBlocks_output.txt");
     }
 
     private void testParseRealign(String inputName, String outputName)

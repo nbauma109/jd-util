@@ -238,7 +238,7 @@ public class StatementVisitor extends ExpressionVisitor {
         tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
         fragments.addTokensFragment(tokens);
 
-        if (statements == null) {
+        if (statements == null || statements.size() == 0) {
             tokens.add(TextToken.SEMICOLON);
         } else {
             Fragments tmp = fragments;
@@ -280,7 +280,7 @@ public class StatementVisitor extends ExpressionVisitor {
 
         BaseStatement stmt = statement.getStatements();
 
-        if (stmt == null || stmt == NoStatement.NO_STATEMENT) {
+        if (stmt == null || stmt == NoStatement.NO_STATEMENT || stmt.size() == 0) {
             fragments.add(TokensFragment.SEMICOLON);
         } else {
             Fragments tmp = fragments;
@@ -327,6 +327,14 @@ public class StatementVisitor extends ExpressionVisitor {
     }
 
     protected void visitElseStatements(BaseStatement elseStatements, StartStatementsBlockFragment.Group group) {
+        if (elseStatements == null || elseStatements == NoStatement.NO_STATEMENT) {
+            tokens = new Tokens();
+            tokens.add(ELSE);
+            fragments.addTokensFragment(tokens);
+            fragments.add(TokensFragment.SEMICOLON);
+            return;
+        }
+
         BaseStatement statementList = elseStatements;
 
         if (elseStatements.isList() && elseStatements.size() == 1) {
@@ -635,6 +643,11 @@ public class StatementVisitor extends ExpressionVisitor {
 
         tokens.addLineNumberToken(expression);
 
+        if (resource.isExpressionOnly()) {
+            expression.accept(this);
+            return;
+        }
+
         if (resource.isFinal()) {
             tokens.add(FINAL);
             tokens.add(TextToken.SPACE);
@@ -652,6 +665,7 @@ public class StatementVisitor extends ExpressionVisitor {
     protected void visitTryStatement(TryStatement statement, StartStatementsBlockFragment.Group group) {
         int fragmentCount1 = fragments.size();
         int fragmentCount2 = fragmentCount1;
+        boolean lastBlockStartBeforeCount = true;
 
         statement.getTryStatements().accept(this);
 
@@ -695,6 +709,7 @@ public class StatementVisitor extends ExpressionVisitor {
                 fragmentCount1 = fragments.size();
                 JavaFragmentFactory.addStartStatementsBlock(fragments, group);
                 fragmentCount2 = fragments.size();
+                lastBlockStartBeforeCount = false;
                 cc.getStatements().accept(this);
             }
         }
@@ -709,11 +724,21 @@ public class StatementVisitor extends ExpressionVisitor {
             fragmentCount1 = fragments.size();
             JavaFragmentFactory.addStartStatementsBlock(fragments, group);
             fragmentCount2 = fragments.size();
+            lastBlockStartBeforeCount = false;
             statement.getFinallyStatements().accept(this);
         }
 
         if (fragmentCount2 == fragments.size()) {
-            fragments.subList(fragmentCount1, fragmentCount2).clear();
+            // No statements emitted: remove the block scaffolding before emitting "{}".
+            if (lastBlockStartBeforeCount) {
+                // For the initial try block, the start fragments were added before fragmentCount1
+                // (StartStatementsTryBlockFragment + spacer), hence the -2 to remove both.
+                int startIndex = Math.max(0, fragmentCount1 - 2);
+                fragments.subList(startIndex, fragmentCount1).clear();
+            } else {
+                // For catch/finally, the empty block start spans fragmentCount1..fragmentCount2.
+                fragments.subList(fragmentCount1, fragmentCount2).clear();
+            }
             tokens.add(TextToken.SPACE);
             tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
         } else {

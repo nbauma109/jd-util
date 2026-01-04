@@ -1,0 +1,5 @@
+class FloatDoubleZeroLiteral {
+  double d = 0.0D;
+  
+  float f = 0.0F;
+}

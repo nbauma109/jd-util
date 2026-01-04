@@ -5,6 +5,8 @@ import java.lang.annotation.*;
 import java.math.BigDecimal;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.*;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
@@ -82,6 +84,12 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     COUNTER.incrementAndGet();
   }
 
+  private void varArgs() {
+    test(new Object[] { 0, 1 }, new Object[] { 0, 1 });
+  }
+
+  public abstract void test(Object[] o1, Object... o2);
+
   @SafeVarargs
   @SuppressWarnings("all")
   protected final <T> CharSequence[] methodReferencesAndLambdas(T... arguments) {
@@ -90,11 +98,16 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     return Stream.of(arguments).map(Object::toString).toArray(CharSequence[]::new);
   }
 
+  void emptyIf(boolean flag) {
+    if (flag);
+  }
+
   void classicFor(String[] arguments) {
     for (int index = 0; index < arguments.length; index++)
       log(arguments[index]);
     for (int index = 0; index < arguments.length; index++)
       log(arguments[index]);
+    for (int index = 0; index < arguments.length; index++);
   }
 
   void whileLoop(String[] arguments) {
@@ -104,6 +117,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     index = 0;
     while (index < arguments.length)
       log(arguments[index++]);
+    while (index < arguments.length);
   }
 
   void doWhileLoop(String[] arguments) {
@@ -129,6 +143,16 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
           log("Comparing a and b");
           return b.compareTo(a);
         });
+  }
+
+  void doPriviledged(boolean flag) {
+    ((Runnable)() -> {
+
+        }).run();
+    AccessController.doPrivileged((PrivilegedAction<Void>)() -> {
+          if (flag);
+          return null;
+        }, null, null);
   }
 
   synchronized void synchronizedMethod() throws Exception, Error {
@@ -157,6 +181,16 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
   }
 
   void tryWith2Resources(File file) {
+    String line;
+    try(FileReader fr = new FileReader(file); final BufferedReader br = new BufferedReader(fr)) {
+      while ((line = br.readLine()) != null)
+        log(line);
+    } catch (IOException exception) {
+      log(exception.getMessage());
+    }
+  }
+
+  void tryWith2ResourcesTrailingSemiColumn(File file) {
     String line;
     try(FileReader fr = new FileReader(file); final BufferedReader br = new BufferedReader(fr)) {
       while ((line = br.readLine()) != null)

@@ -1,0 +1,8 @@
+class SwitchExpressionLabels {
+    int test(int v) {
+        return switch (v) {
+            case 1, 2 -> 3;
+            default -> 4;
+        };
+    }
+}

@@ -1,0 +1,7 @@
+class ParenthesesExpressionInArgs {
+  void call(Object a, Object b) {}
+  
+  void test(Object x, Object y) {
+    call((new Object[] { x }), y);
+  }
+}

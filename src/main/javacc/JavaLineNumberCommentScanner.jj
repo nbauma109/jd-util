@@ -56,7 +56,11 @@ public class JavaLineNumberCommentScanner {
     }
 
     try {
-      return Integer.valueOf(body.substring(i, j));
+      int value = Integer.parseInt(body.substring(i, j));
+      if (value >= 100000) {
+        return null;
+      }
+      return value;
     } catch (final NumberFormatException ex) {
       return null;
     }

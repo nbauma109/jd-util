@@ -1,0 +1,3 @@
+class AnnotatedModifiers {
+    public @Deprecated static final int VALUE = 1;
+}

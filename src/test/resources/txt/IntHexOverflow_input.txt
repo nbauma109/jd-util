@@ -1,0 +1,3 @@
+class IntHexOverflow {
+    int value = 0x80000000;
+}

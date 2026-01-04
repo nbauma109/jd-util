@@ -697,8 +697,10 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
 
     @Override
     public void visit(TryStatement.Resource statement) {
-        BaseType type = statement.getType();
-        type.accept(this);
+        if (!statement.isExpressionOnly()) {
+            BaseType type = statement.getType();
+            type.accept(this);
+        }
         statement.getExpression().accept(this);
     }
 
