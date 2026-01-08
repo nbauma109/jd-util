@@ -9,6 +9,7 @@ package org.jd.core.v1.model.javasyntax.statement;
 
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
+import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.util.DefaultList;
 
 public class TryStatement implements Statement {
@@ -56,13 +57,13 @@ public class TryStatement implements Statement {
     }
 
     public static class Resource implements Statement {
-        private final ObjectType type;
+        private final Type type;
         private final String name;
         private Expression expression;
         private boolean fina1;
         private final boolean expressionOnly;
 
-        public Resource(ObjectType type, String name, Expression expression) {
+        public Resource(Type type, String name, Expression expression) {
             this.type = type;
             this.name = name;
             this.expression = expression;
@@ -70,7 +71,7 @@ public class TryStatement implements Statement {
         }
 
         public Resource(Expression expression) {
-            this.type = ObjectType.TYPE_UNDEFINED_OBJECT;
+            this.type = expression.getType();
             this.name = null;
             this.expression = expression;
             this.expressionOnly = true;
@@ -84,7 +85,7 @@ public class TryStatement implements Statement {
             this.fina1 = fina1;
         }
 
-        public ObjectType getType() {
+        public Type getType() {
             return type;
         }
 
