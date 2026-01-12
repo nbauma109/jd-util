@@ -201,6 +201,16 @@ public class ParserRealignerTest implements DefaultTest {
         testParseRealign("/txt/TryStatementEmptyBlocks_input.txt", "/txt/TryStatementEmptyBlocks_output.txt");
     }
 
+    @Test
+    public void testParseTryResourcesAutoCloseable() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/TryResourcesAutoCloseable_input.txt", "/txt/TryResourcesAutoCloseable_output.txt");
+    }
+
+    @Test
+    public void testParseTryResourcesGeneric() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/TryResourcesGeneric_input.txt", "/txt/TryResourcesGeneric_output.txt");
+    }
+
     private void testParseRealign(String inputName, String outputName)
             throws IOException, URISyntaxException, ParseException {
         String input = toString(getClass().getResource(inputName));

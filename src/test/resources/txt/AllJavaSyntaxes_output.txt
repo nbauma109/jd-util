@@ -182,7 +182,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
 
   void tryWith2Resources(File file) {
     String line;
-    try(FileReader fr = new FileReader(file); final BufferedReader br = new BufferedReader(fr)) {
+    try (FileReader fr = new FileReader(file); final BufferedReader br = new BufferedReader(fr)) {
       while ((line = br.readLine()) != null)
         log(line);
     } catch (IOException exception) {
@@ -192,7 +192,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
 
   void tryWith2ResourcesTrailingSemiColumn(File file) {
     String line;
-    try(FileReader fr = new FileReader(file); final BufferedReader br = new BufferedReader(fr)) {
+    try (FileReader fr = new FileReader(file); final BufferedReader br = new BufferedReader(fr)) {
       while ((line = br.readLine()) != null)
         log(line);
     } catch (IOException exception) {

@@ -613,13 +613,9 @@ public class StatementVisitor extends ExpressionVisitor {
         } else {
             int size = resources.size();
 
-            assert size > 0;
-
             tokens = new Tokens();
             tokens.add(TRY);
-            if (size == 1) {
-                tokens.add(TextToken.SPACE);
-            }
+            tokens.add(TextToken.SPACE);
             tokens.add(StartBlockToken.START_RESOURCES_BLOCK);
 
             resources.get(0).accept(this);

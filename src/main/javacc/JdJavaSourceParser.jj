@@ -3573,8 +3573,7 @@ TryStatement.Resource TryResourceOne() :
     <ASSIGN> 
     e = Expression()
     {
-      ot = (t instanceof ObjectType) ? (ObjectType) t : TYPE_UNDEFINED_OBJECT;
-      TryStatement.Resource res = new TryStatement.Resource(ot, nameTok.image, e);
+      TryStatement.Resource res = new TryStatement.Resource(t, nameTok.image, e);
       if (mods != null && mods.contains("final"))
       {
         res.setFinal(true);

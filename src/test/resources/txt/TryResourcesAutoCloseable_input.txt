@@ -1,0 +1,38 @@
+
+public class TryResourcesAutoCloseable {
+    void tryResources() {
+        try (AutoCloseable t = getResource()) {
+            System.out.println(t);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void tryResources(AutoCloseable t) {
+        try (t) {
+            System.out.println(t);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    void tryResources(AutoCloseable t1, AutoCloseable t2) {
+        try (t1; t2) {
+            System.out.println(t1);
+            System.out.println(t2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    void tryResourcesMixed(AutoCloseable t1, AutoCloseable t2) {
+        try (t1; t2; AutoCloseable t = getResource()) {
+            System.out.println(t1);
+            System.out.println(t2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    native AutoCloseable getResource();
+}
