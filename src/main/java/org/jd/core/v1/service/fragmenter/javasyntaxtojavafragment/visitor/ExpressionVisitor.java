@@ -53,6 +53,7 @@ import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperConstructorInvocationExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperExpression;
 import org.jd.core.v1.model.javasyntax.expression.SwitchExpression;
+import org.jd.core.v1.model.javasyntax.expression.SwitchExpression.ExpressionLabel;
 import org.jd.core.v1.model.javasyntax.expression.SwitchExpression.Rule;
 import org.jd.core.v1.model.javasyntax.expression.TernaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
@@ -901,7 +902,7 @@ public class ExpressionVisitor extends TypeVisitor {
     private void writeSwitchExpressionLabels(List<SwitchExpression.Label> labels) {
         tokens = new Tokens();
 
-        boolean hasCase = labels.stream().anyMatch(label -> label instanceof SwitchExpression.ExpressionLabel);
+        boolean hasCase = labels.stream().anyMatch(ExpressionLabel.class::isInstance);
         if (hasCase) {
             tokens.add(CASE);
             tokens.add(TextToken.SPACE);
