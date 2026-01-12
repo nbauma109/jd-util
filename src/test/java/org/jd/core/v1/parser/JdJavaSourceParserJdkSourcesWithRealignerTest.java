@@ -57,9 +57,7 @@ public class JdJavaSourceParserJdkSourcesWithRealignerTest {
                     JdJavaSourceParser.parse(realigned);
                     reparsedFiles++;
                     System.out.println("DONE (" + reparsedFiles + ")");
-                } catch (ParseException ex) {
-                    throw buildAssertionErrorWithAnnotatedSource(sourcesZip, name, source, ex);
-                } catch (RuntimeException ex) {
+                } catch (ParseException | RuntimeException ex) {
                     throw buildAssertionErrorWithAnnotatedSource(sourcesZip, name, source, ex);
                 }
             }

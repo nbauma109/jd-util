@@ -70,7 +70,7 @@ public class ParserRealignerTest implements DefaultTest {
     public void testParseUnusualComment() throws IOException, URISyntaxException, ParseException {
         testParseRealign("/txt/UnusualComment_input.txt", "/txt/UnusualComment_output.txt");
     }
-    
+
     @Test
     public void testParseTryCatchFinally370() throws IOException, URISyntaxException, ParseException {
         testParseRealign("/txt/TryCatchFinally370_input.txt", "/txt/TryCatchFinally370_output.txt");

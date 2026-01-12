@@ -212,7 +212,6 @@ public class TextUtilities {
             try {
                 return Long.parseLong(digits, radix);
             } catch (NumberFormatException ex) {
-                return Long.parseUnsignedLong(digits, radix);
             }
         }
         return Long.parseUnsignedLong(digits, radix);
