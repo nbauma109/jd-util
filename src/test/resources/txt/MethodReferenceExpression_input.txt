@@ -1,0 +1,4 @@
+import java.util.function.Supplier;
+class MethodReferenceExpression {
+    Supplier<String> supplier = "x"::toString;
+}

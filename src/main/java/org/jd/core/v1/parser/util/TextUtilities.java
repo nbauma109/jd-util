@@ -172,7 +172,12 @@ public class TextUtilities {
             start = 0;
         }
 
-        return Integer.parseInt(s.substring(start), radix);
+        final String digits = s.substring(start);
+        long value = Long.parseLong(digits, radix);
+        if (value > 0xFFFFFFFFL || value < Integer.MIN_VALUE) {
+            throw new NumberFormatException("Integer literal out of range: " + image);
+        }
+        return (int) value;
     }
 
     public static long parseLongLiteral(final String image) {
@@ -202,7 +207,15 @@ public class TextUtilities {
             start = 0;
         }
 
-        return Long.parseLong(s.substring(start), radix);
+        final String digits = s.substring(start);
+        if (radix == 10) {
+            try {
+                return Long.parseLong(digits, radix);
+            } catch (NumberFormatException ex) {
+                return Long.parseUnsignedLong(digits, radix);
+            }
+        }
+        return Long.parseUnsignedLong(digits, radix);
     }
 
     public static float parseFloatLiteral(final String image) {

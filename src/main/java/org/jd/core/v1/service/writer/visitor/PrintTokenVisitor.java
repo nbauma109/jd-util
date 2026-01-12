@@ -174,6 +174,10 @@ public class PrintTokenVisitor implements TokenVisitor {
     }
 
     protected int searchLineNumber() {
+        if (tokens == null || tokens.isEmpty()) {
+            return UNKNOWN_LINE_NUMBER;
+        }
+
         // Backward search
         searchLineNumberVisitor.reset();
 

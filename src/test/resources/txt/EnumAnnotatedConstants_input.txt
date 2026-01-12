@@ -1,0 +1,6 @@
+enum EnumAnnotatedConstants {
+    @Deprecated A("x"),
+    B("y"),
+    ;
+    EnumAnnotatedConstants(String v) {}
+}

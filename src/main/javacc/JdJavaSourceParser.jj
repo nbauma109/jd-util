@@ -86,7 +86,7 @@ public class JdJavaSourceParser
     return kind == IDENTIFIER || kind == YIELD || kind == RECORD
       || kind == MODULE || kind == OPEN || kind == REQUIRES || kind == TRANSITIVE
       || kind == EXPORTS || kind == OPENS || kind == USES || kind == PROVIDES
-      || kind == TO || kind == WITH;
+      || kind == TO || kind == WITH || kind == SEALED || kind == PERMITS;
   }
 
 
@@ -247,6 +247,27 @@ public class JdJavaSourceParser
     final int nextKind = getToken(afterType + 1).kind;
     return nextKind == ASSIGN || nextKind == COMMA || nextKind == SEMI || nextKind == LBRACKET;
   }
+
+  private boolean isSwitchPatternLabelAhead() {
+    int i = 1;
+    i = skipLeadingAnnotations(i);
+    if (i < 0) {
+      return false;
+    }
+    i = skipFinalModifier(i);
+    i = skipLeadingAnnotations(i);
+    if (i < 0) {
+      return false;
+    }
+
+    final int afterType = scanTypeLikePrefix(i);
+    if (afterType < 0) {
+      return false;
+    }
+
+    final Token name = getToken(afterType);
+    return isIdentifierKind(name.kind);
+  }
   
   private boolean isLocalTypeDeclarationAhead() {
     int i = 1;
@@ -270,13 +291,84 @@ public class JdJavaSourceParser
           i++;
           break;
         default:
-          return getToken(i).kind == CLASS
-              || getToken(i).kind == INTERFACE
-              || getToken(i).kind == ENUM
-              || getToken(i).kind == RECORD
-              || getToken(i).kind == AT_INTERFACE;
+          int kind = getToken(i).kind;
+          if (kind == CLASS || kind == INTERFACE || kind == ENUM || kind == RECORD || kind == AT_INTERFACE) {
+            return isIdentifierKind(getToken(i + 1).kind);
+          }
+          return false;
       }
     }
+  }
+
+  private int scanLambdaExplicitParameter(final int startIndex) {
+    int i = startIndex;
+
+    i = skipLeadingAnnotations(i);
+    if (i < 0) {
+      return -1;
+    }
+
+    while (getToken(i).kind == FINAL) {
+      i++;
+      i = skipLeadingAnnotations(i);
+      if (i < 0) {
+        return -1;
+      }
+    }
+
+    i = scanTypeLikePrefix(i);
+    if (i < 0) {
+      return -1;
+    }
+
+    if (getToken(i).kind == DOT
+        && getToken(i + 1).kind == DOT
+        && getToken(i + 2).kind == DOT) {
+      i += 3;
+    }
+
+    if (!isIdentifierKind(getToken(i).kind)) {
+      return -1;
+    }
+    i++;
+
+    i = skipArrayDimsAhead(i);
+    return i;
+  }
+
+  private boolean isLambdaExplicitParameterAhead() {
+    return scanLambdaExplicitParameter(1) >= 0;
+  }
+
+  private boolean isLambdaExplicitParameterListAhead() {
+    int i = 1;
+    if (getToken(i).kind != LPAREN) {
+      return false;
+    }
+    i++;
+
+    if (getToken(i).kind == RPAREN) {
+      return getToken(i + 1).kind == ARROW;
+    }
+
+    i = scanLambdaExplicitParameter(i);
+    if (i < 0) {
+      return false;
+    }
+
+    while (getToken(i).kind == COMMA) {
+      i++;
+      i = scanLambdaExplicitParameter(i);
+      if (i < 0) {
+        return false;
+      }
+    }
+
+    return getToken(i).kind == RPAREN && getToken(i + 1).kind == ARROW;
+  }
+
+  private boolean isArrayDimExpressionAhead() {
+    return getToken(1).kind == LBRACKET && getToken(2).kind != RBRACKET;
   }
 
   private int skipFinalModifier(final int startIndex) {
@@ -544,7 +636,7 @@ public class JdJavaSourceParser
   
     while (true) {
       t = getToken(index);
-      if (t == null) {
+      if (t == null || t.kind == 0) {
         return -1;
       }
   
@@ -564,6 +656,35 @@ public class JdJavaSourceParser
         return index;
       }
     }
+  }
+
+  private boolean isTryResourceDeclarationAhead() {
+    int i = 1;
+
+    i = skipLeadingAnnotations(i);
+    if (i < 0) {
+      return false;
+    }
+
+    while (getToken(i).kind == FINAL) {
+      i++;
+      i = skipLeadingAnnotations(i);
+      if (i < 0) {
+        return false;
+      }
+    }
+
+    i = scanTypeLikePrefix(i);
+    if (i < 0) {
+      return false;
+    }
+
+    if (!isIdentifierKind(getToken(i).kind)) {
+      return false;
+    }
+    i++;
+
+    return getToken(i).kind == ASSIGN;
   }
   
   private int skipArrayDimsAhead(final int startIndex) {
@@ -712,6 +833,31 @@ public class JdJavaSourceParser
   
     index = skipArrayDimsAhead(index);
   
+    if (!primitiveCast) {
+      Token amp = getToken(index);
+      while (amp != null && amp.kind == AMP) {
+        index++;
+
+        index = skipTypeUseAnnotationsAhead(index);
+        if (index < 0) {
+          return false;
+        }
+
+        final Token boundFirst = getToken(index);
+        if (boundFirst == null || !isIdentifierKind(boundFirst.kind)) {
+          return false;
+        }
+
+        index = skipQualifiedNameWithTypeArgumentsAhead(index);
+        if (index < 0) {
+          return false;
+        }
+
+        index = skipArrayDimsAhead(index);
+        amp = getToken(index);
+      }
+    }
+
     final Token rp = getToken(index);
     if (rp == null || rp.kind != RPAREN) {
       return false;
@@ -791,21 +937,34 @@ SKIP :
       "\r\n"
     | "\r"
     | "\n"
-    )
+    )?
   >
 }
 
-< DEFAULT, IN_TYPE_ARGS >
+< DEFAULT >
 SKIP :
 {
-  < BLOCK_COMMENT :
-    "/*"
-    (
-      ~[ "*" ]
-    | "*" ~[ "/" ]
-    )*
-    "*/"
-  >
+  "/*" : IN_BLOCK_COMMENT
+}
+
+< IN_TYPE_ARGS >
+SKIP :
+{
+  "/*" : IN_BLOCK_COMMENT_IN_TYPE_ARGS
+}
+
+< IN_BLOCK_COMMENT >
+SKIP :
+{
+  "*/" : DEFAULT
+| < ~[] >
+}
+
+< IN_BLOCK_COMMENT_IN_TYPE_ARGS >
+SKIP :
+{
+  "*/" : IN_TYPE_ARGS
+| < ~[] >
 }
 
 /* -------------------- NUMERIC LITERALS -------------------- */
@@ -875,6 +1034,17 @@ TOKEN :
     ( <DECIMAL_FRACTION> ( <EXPONENT> )? )
   | ( <DEC_DIGITS> <EXPONENT> )
   >
+| < #BINARY_EXPONENT :
+    ( "p" | "P" ) ( "+" | "-" )? <DEC_DIGITS>
+  >
+| < #HEX_FLOAT :
+    "0" ( "x" | "X" )
+    (
+      <HEX_DIGITS> ( "." ( <HEX_DIGITS> )? )?
+    | "." <HEX_DIGITS>
+    )
+    <BINARY_EXPONENT>
+  >
 
   /* public numeric tokens */
 | < LONG_LITERAL :
@@ -885,10 +1055,12 @@ TOKEN :
     ( <HEX_INT> | <BIN_INT> | <OCT_INT> | <DEC_INT> )
   >
 | < FLOAT_LITERAL :
-    <DECIMAL_FLOAT> ( "f" | "F" )
+    ( <DECIMAL_FLOAT> | <HEX_FLOAT> ) ( "f" | "F" )
+  | <DEC_INT> ( "f" | "F" )
   >
 | < DOUBLE_LITERAL :
-    <DECIMAL_FLOAT> ( "d" | "D" )?
+    ( <DECIMAL_FLOAT> | <HEX_FLOAT> ) ( "d" | "D" )?
+  | <DEC_INT> ( "d" | "D" )
   >
 }
 
@@ -992,7 +1164,6 @@ TOKEN :
 | < FINALLY : "finally" >
 | < SWITCH : "switch" >
 | < CASE : "case" >
-| < WHEN : "when" >
 | < DEFAULT_KW : "default" >
 | < BREAK : "break" >
 | < CONTINUE : "continue" >
@@ -1115,6 +1286,8 @@ Token IdentifierToken() :
   | t = <PROVIDES>
   | t = <TO>
   | t = <WITH>
+  | t = <SEALED>
+  | t = <PERMITS>
   )
   {
     return t;
@@ -1205,12 +1378,19 @@ TypeDeclaration TopLevelTypeDeclaration() :
   TypeDeclaration td;
 }
 {
-  anns = AnnotationsOpt() 
-  mods = ModifiersOpt() 
-  td = TypeDeclarationAfterPreamble(anns, mods)
-  {
-    return td;
-  }
+  (
+    <SEMI>
+    {
+      return null;
+    }
+  |
+    anns = AnnotationsOpt()
+    mods = ModifiersOpt()
+    td = TypeDeclarationAfterPreamble(anns, mods)
+    {
+      return td;
+    }
+  )
 }
 
 TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<String> mods) :
@@ -1674,8 +1854,8 @@ BodyDeclaration EnumBody(String enumInternalName, List<EnumDeclaration.Constant>
 {
   <LBRACE>
   (
-    LOOKAHEAD(EnumConstantStart())
-    EnumConstants(enumInternalName, constantsOut) 
+    LOOKAHEAD(<AT> | IdentifierToken())
+    EnumConstants(enumInternalName, constantsOut)
     (<SEMI>)?
   )?
   (
@@ -1696,7 +1876,7 @@ BodyDeclaration EnumBody(String enumInternalName, List<EnumDeclaration.Constant>
 void EnumConstantStart() :
 {}
 {
-  IdentifierToken()
+  AnnotationsOpt() IdentifierToken()
 }
 
 void EnumConstants(String enumInternalName, List<EnumDeclaration.Constant> constantsOut) :
@@ -1712,6 +1892,7 @@ void EnumConstants(String enumInternalName, List<EnumDeclaration.Constant> const
     constantsOut.add(c);
   }
   (
+    LOOKAHEAD(<COMMA> (<AT> | IdentifierToken()))
     <COMMA> c = EnumConstant
     (
       enumInternalName, constantsOut.size()
@@ -1732,6 +1913,7 @@ EnumDeclaration.Constant EnumConstant(String enumInternalName, int index) :
   String anonInternalName;
 }
 {
+  AnnotationsOpt()
   nameTok = IdentifierToken()
   {
     ln = consumeLineNumber(nameTok);
@@ -2103,18 +2285,24 @@ BaseElementValue ElementValueArrayInitializer() :
     }
     (
       <COMMA> 
-      next = ElementValue()
-      {
-        if (count == 1)
+      (
+        LOOKAHEAD(<RBRACE>)
         {
-          list = new ElementValues();
-          list.add(first);
+          /* trailing comma */
         }
-        list.add(next);
-        count++;
-      }
+      |
+        next = ElementValue()
+        {
+          if (count == 1)
+          {
+            list = new ElementValues();
+            list.add(first);
+          }
+          list.add(next);
+          count++;
+        }
+      )
     )*
-    (<COMMA>)?
   )?
   <RBRACE>
   {
@@ -2182,6 +2370,11 @@ List<String> ModifiersOpt() :
     )
     {
       mods.add(t.image);
+    }
+  |
+    Annotation()
+    {
+      /* allow annotations between modifiers */
     }
   )*
   {
@@ -2302,6 +2495,9 @@ Type ReferenceType() :
   String internalName;
   String simpleName;
   BaseTypeArgument targs;
+  ObjectType current;
+  Token innerNameTok;
+  BaseTypeArgument innerArgs;
 }
 {
   qn = QualifiedName() 
@@ -2315,9 +2511,33 @@ Type ReferenceType() :
     simpleName = (qn.indexOf('.') >= 0) ? qn.substring(qn.lastIndexOf('.') + 1) : qn;
     if (targs != null)
     {
-      return new ObjectType(internalName, qn, simpleName, targs);
+      current = new ObjectType(internalName, qn, simpleName, targs);
     }
-    return new ObjectType(internalName, qn, simpleName);
+    else
+    {
+      current = new ObjectType(internalName, qn, simpleName);
+    }
+  }
+  (
+    LOOKAHEAD(<DOT> IdentifierToken())
+    <DOT> innerNameTok = IdentifierToken()
+    innerArgs = TypeArgumentsOpt()
+    {
+      String innerName = innerNameTok.image;
+      String innerQualified = current.getQualifiedName() + "." + innerName;
+      String innerInternal = current.getInternalName() + "$" + innerName;
+      if (innerArgs != null)
+      {
+        current = new InnerObjectType(innerInternal, innerQualified, innerName, innerArgs, current);
+      }
+      else
+      {
+        current = new InnerObjectType(innerInternal, innerQualified, innerName, current);
+      }
+    }
+  )*
+  {
+    return current;
   }
 }
 
@@ -2539,12 +2759,19 @@ VariableInitializer VariableInitializer() :
       inits.add(vi);
     }
     (
-      <COMMA> vi = VariableInitializer()
-      {
-        inits.add(vi);
-      }
+      <COMMA>
+      (
+        LOOKAHEAD(<RBRACE>)
+        {
+          /* trailing comma */
+        }
+      |
+        vi = VariableInitializer()
+        {
+          inits.add(vi);
+        }
+      )
     )*
-    (<COMMA>)?
   )?
   <RBRACE>
   {
@@ -2623,6 +2850,9 @@ BaseStatement BlockAsStatements() :
   list = BlockStatementsUntilRbrace() 
   <RBRACE>
   {
+    if (list.isEmpty()) {
+      return (BaseStatement) list;
+    }
     return toBaseStatement(list);
   }
 }
@@ -2975,7 +3205,7 @@ ForInitResult ForInitOpt() :
 }
 {
   (
-    LOOKAHEAD(AnnotationsOpt() ModifiersOpt() TypeRef() IdentifierToken() (<ASSIGN> | <COMMA> | <SEMI> | <LBRACKET>))
+    LOOKAHEAD( { isLocalVariableDeclarationAhead() } )
     decl = ForInitLocalVariableDeclaration()
     {
       return new ForInitResult(decl, null);
@@ -3232,16 +3462,30 @@ List<SwitchStatement.Label> SwitchStatementLabels() :
 {
   (
     <CASE> 
-    e = ConditionalExpression()
-    {
-      labels.add(new SwitchStatement.ExpressionLabel(e));
-    }
     (
-      <COMMA> 
       e = ConditionalExpression()
       {
         labels.add(new SwitchStatement.ExpressionLabel(e));
       }
+    | 
+      <DEFAULT_KW>
+      {
+        labels.add(SwitchStatement.DEFAULT_LABEL);
+      }
+    )
+    (
+      <COMMA> 
+      (
+        e = ConditionalExpression()
+        {
+          labels.add(new SwitchStatement.ExpressionLabel(e));
+        }
+      |
+        <DEFAULT_KW>
+        {
+          labels.add(SwitchStatement.DEFAULT_LABEL);
+        }
+      )
     )*
   | 
     <DEFAULT_KW>
@@ -3295,6 +3539,7 @@ DefaultList<TryStatement.Resource> TryResources() :
     list.add(r);
   }
   (
+    LOOKAHEAD( { getToken(1).kind == SEMI && getToken(2).kind != RPAREN } )
     <SEMI> r = TryResourceOne()
     {
       list.add(r);
@@ -3319,21 +3564,28 @@ TryStatement.Resource TryResourceOne() :
   List<String> mods;
 }
 {
-  anns = AnnotationsOpt() 
-  mods = ModifiersOpt() 
-  t = TypeRef()
-  nameTok = IdentifierToken() 
-  <ASSIGN> 
-  e = Expression()
-  {
-    ot = (t instanceof ObjectType) ? (ObjectType) t : TYPE_UNDEFINED_OBJECT;
-    TryStatement.Resource res = new TryStatement.Resource(ot, nameTok.image, e);
-    if (mods != null && mods.contains("final"))
+  (
+    LOOKAHEAD( { isTryResourceDeclarationAhead() } )
+    anns = AnnotationsOpt() 
+    mods = ModifiersOpt() 
+    t = TypeRef()
+    nameTok = IdentifierToken() 
+    <ASSIGN> 
+    e = Expression()
     {
-      res.setFinal(true);
+      TryStatement.Resource res = new TryStatement.Resource(t, nameTok.image, e);
+      if (mods != null && mods.contains("final"))
+      {
+        res.setFinal(true);
+      }
+      return res;
     }
-    return res;
-  }
+  |
+    e = Expression()
+    {
+      return new TryStatement.Resource(e);
+    }
+  )
 }
 
 DefaultList<TryStatement.CatchClause> CatchClausesOpt() :
@@ -3429,6 +3681,9 @@ Expression Expression() :
 }
 {
   (
+    LOOKAHEAD( { isLambdaExplicitParameterListAhead() } )
+    e = LambdaExpression()
+  | 
     LOOKAHEAD(LambdaParametersLookahead())
     e = LambdaExpression()
   | 
@@ -3453,7 +3708,7 @@ Expression AssignmentExpression() :
   left = ConditionalExpression()
   (
     op = AssignmentOperator() 
-    right = AssignmentExpression()
+    right = Expression()
     {
       ln = consumeLineNumber(op);
       left = new BinaryOperatorExpression(ln, TYPE_UNDEFINED_OBJECT, left, op.image, right);
@@ -3491,6 +3746,71 @@ List<String> LambdaParameterNamesOpt() :
       return names;
     }
   )
+}
+
+List<String> LambdaParametersOpt() :
+{
+  List<String> names;
+}
+{
+  (
+    LOOKAHEAD( { isLambdaExplicitParameterAhead() } )
+    names = LambdaExplicitParameterNamesOpt()
+  |
+    names = LambdaParameterNamesOpt()
+  )
+  {
+    return names;
+  }
+}
+
+List<String> LambdaExplicitParameterNamesOpt() :
+{
+  List<String> names = new ArrayList<>();
+  Token nameTok;
+}
+{
+  (
+    nameTok = LambdaExplicitParameterName()
+    {
+      names.add(nameTok.image);
+    }
+    (
+      <COMMA>
+      nameTok = LambdaExplicitParameterName()
+      {
+        names.add(nameTok.image);
+      }
+    )*
+    {
+      return names;
+    }
+  )
+}
+
+Token LambdaExplicitParameterName() :
+{
+  BaseAnnotationReference anns;
+  List<String> mods;
+  Type t;
+  Token nameTok;
+  boolean varargs = false;
+  int dims;
+}
+{
+  anns = AnnotationsOpt() 
+  mods = ModifiersOpt() 
+  t = TypeRef() 
+  (<DOT> <DOT> <DOT>
+  {
+    varargs = true;
+  }
+  )? 
+  nameTok = IdentifierToken() 
+  dims = ArrayDimsOpt()
+  {
+    return nameTok;
+  }
 }
 
 Token AssignmentOperator() :
@@ -3796,7 +4116,19 @@ Expression UnaryExpression() :
     }
   | 
     LOOKAHEAD( { isCastAhead() } )
-    op = <LPAREN> t = TypeRef() <RPAREN> e = UnaryExpression()
+    op = <LPAREN> t = TypeRef() ( <AMP> TypeRef() )* <RPAREN>
+    (
+      LOOKAHEAD( { isLambdaExplicitParameterListAhead() } )
+      e = LambdaExpression()
+    |
+      LOOKAHEAD(LambdaParametersLookahead())
+      e = LambdaExpression()
+    |
+      LOOKAHEAD(LambdaSingleParamLookahead())
+      e = LambdaExpression()
+    |
+      e = UnaryExpression()
+    )
     {
       ln = consumeLineNumber(op);
       return new CastExpression(ln, t, e, true, false);
@@ -3819,6 +4151,7 @@ Expression PostfixExpression() :
   int ln;
   Token mr;
   Token id;
+  Token superTok;
   BaseTypeArgument explicitTypeArgs;
   Expression beforeDotExpression;
 }
@@ -3836,6 +4169,27 @@ Expression PostfixExpression() :
     )
     {
       e = new PostOperatorExpression(consumeLineNumber(op), e, op.image);
+    }
+  |
+    mr = <METHOD_REF>
+    (
+      LOOKAHEAD(<LT>)
+      explicitTypeArgs = TypeArgumentsOpt()
+    |
+      {
+        explicitTypeArgs = null;
+      }
+    )
+    id = IdentifierToken()
+    {
+      e = new MethodReferenceExpression(
+      consumeLineNumber(mr),
+      TYPE_UNDEFINED_OBJECT,
+      e,
+      "",
+      id.image,
+      ""
+      );
     }
   | 
     <DOT>
@@ -3879,6 +4233,12 @@ Expression PostfixExpression() :
           }
         }
       )
+    | 
+      LOOKAHEAD(<SUPER> <LPAREN>)
+      superTok = <SUPER> args = ArgumentsAsExpressions()
+      {
+        e = new SuperConstructorInvocationExpression(consumeLineNumber(superTok), TYPE_UNDEFINED_OBJECT, "", args, false);
+      }
     | 
       <SUPER>
       {
@@ -3958,6 +4318,12 @@ Expression PrimaryExpression() :
       ln = consumeLineNumber(t);
       ot = objectTypeFromQualified(qn);
       return new ThisExpression(ln, ot);
+    }
+  |
+    LOOKAHEAD(QualifiedName() <DOT> <SUPER> <LPAREN>)
+    qn = QualifiedName() <DOT> t = <SUPER> args = ArgumentsAsExpressions()
+    {
+      return new SuperConstructorInvocationExpression(consumeLineNumber(t), TYPE_UNDEFINED_OBJECT, "", args, false);
     }
   |
     LOOKAHEAD(QualifiedName() <DOT> <SUPER>)
@@ -4254,16 +4620,30 @@ List<SwitchExpression.Label> SwitchExpressionLabels() :
 {
   (
     <CASE> 
-    e = ConditionalExpression()
-    {
-      labels.add(new SwitchExpression.ExpressionLabel(e));
-    }
     (
-      <COMMA> 
       e = ConditionalExpression()
       {
         labels.add(new SwitchExpression.ExpressionLabel(e));
       }
+    | 
+      <DEFAULT_KW>
+      {
+        labels.add(SwitchExpression.DEFAULT_LABEL);
+      }
+    )
+    (
+      <COMMA> 
+      (
+        e = ConditionalExpression()
+        {
+          labels.add(new SwitchExpression.ExpressionLabel(e));
+        }
+      |
+        <DEFAULT_KW>
+        {
+          labels.add(SwitchExpression.DEFAULT_LABEL);
+        }
+      )
     )*
   | 
     <DEFAULT_KW>
@@ -4412,14 +4792,28 @@ Expressions NewArrayDimensions() :
   Expression e;
 }
 {
+  <LBRACKET>
+  e = Expression()
+  {
+    dims.add(e);
+  }
+  <RBRACKET>
   (
-    <LBRACKET> 
+    LOOKAHEAD( { isArrayDimExpressionAhead() } )
+    <LBRACKET>
     e = Expression()
     {
       dims.add(e);
     }
     <RBRACKET>
-  )+
+  )*
+  (
+    LOOKAHEAD(2)
+    <LBRACKET> <RBRACKET>
+    {
+      dims.add(NoExpression.NO_EXPRESSION);
+    }
+  )*
   {
     Expressions es = new Expressions(dims.size());
     es.addAll(dims);
@@ -4488,7 +4882,7 @@ Expression LambdaExpression() :
     }
   | 
     <LPAREN> 
-    parameterNames = LambdaParameterNamesOpt() 
+    parameterNames = LambdaParametersOpt() 
     <RPAREN> 
     arrowTok = <ARROW>
     {

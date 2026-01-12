@@ -1,0 +1,9 @@
+class TryCatchEmptyBlock {
+    void test() {
+        try {
+            int x = 0;
+        } catch (Exception e) {
+        }
+        int y = 1;
+    }
+}

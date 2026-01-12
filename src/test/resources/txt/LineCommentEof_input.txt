@@ -1,0 +1,3 @@
+class LineCommentEof {
+    int x = 1; // end
+}

@@ -1,0 +1,6 @@
+enum EnumAnnotatedConstants {
+  A("x"),
+  B("y");
+  
+  EnumAnnotatedConstants(String v) {}
+}

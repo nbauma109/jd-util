@@ -1,0 +1,12 @@
+class TryStatementEmptyBlocks {
+  void resources() throws Exception {
+    try (java.io.ByteArrayInputStream in = new java.io.ByteArrayInputStream(new byte[0])) {}
+  }
+  
+  void catches() {
+    try {
+      int x = 0;
+    } catch (Exception e) {}
+    int y = 1;
+  }
+}

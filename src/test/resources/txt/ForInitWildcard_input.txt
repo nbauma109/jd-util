@@ -1,0 +1,9 @@
+import java.util.Iterator;
+import java.util.List;
+class ForInitWildcard {
+    void test(List<Class<?>> list) {
+        for (Iterator<Class<?>> it = list.iterator(); it.hasNext(); ) {
+            Class<?> c = it.next();
+        }
+    }
+}

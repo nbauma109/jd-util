@@ -1,0 +1,6 @@
+class AnonymousClassArgumentComma {
+    void call(Object a, int b) {}
+    void test() {
+        call(new Object() { }, 1);
+    }
+}

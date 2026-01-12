@@ -1,0 +1,6 @@
+class ElseEmptyStatement {
+    void test(boolean flag) {
+        if (flag) {
+        } else ;
+    }
+}

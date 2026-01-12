@@ -1,0 +1,7 @@
+class RecordIdentifierCall {
+  void record(int x) {}
+  
+  void test() {
+    record(1);
+  }
+}

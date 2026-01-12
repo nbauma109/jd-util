@@ -1,0 +1,3 @@
+class LargeNumericCommentIgnored {
+    int x = Integer.MAX_VALUE; // 2147483647
+}
