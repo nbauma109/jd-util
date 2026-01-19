@@ -216,6 +216,11 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
       log(text);
   }
 
+  void instanceofPatternFinal(Object object) {
+    if (object instanceof final String text && !text.isEmpty())
+      log(text);
+  }
+
   void enumSwitch(Day day) {
     switch (day) {
       case MONDAY:

@@ -108,6 +108,7 @@ public class ExpressionVisitor extends TypeVisitor {
     public static final KeywordToken NULL = new KeywordToken("null");
     public static final KeywordToken THIS = new KeywordToken("this");
     public static final KeywordToken TRUE = new KeywordToken("true");
+    public static final KeywordToken FINAL = new KeywordToken("final");
 
     protected static final int UNKNOWN_LINE_NUMBER = Printer.UNKNOWN_LINE_NUMBER;
 
@@ -346,6 +347,11 @@ public class ExpressionVisitor extends TypeVisitor {
         tokens.add(TextToken.SPACE);
         tokens.add(INSTANCEOF);
         tokens.add(TextToken.SPACE);
+
+        if (expression.isFinal()) {
+            tokens.add(FINAL);
+            tokens.add(TextToken.SPACE);
+        }
 
         BaseType type = expression.getInstanceOfType();
 

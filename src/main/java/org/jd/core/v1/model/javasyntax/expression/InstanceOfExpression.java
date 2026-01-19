@@ -14,16 +14,18 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
     private Expression expression;
     private final Type instanceOfType;
     private final String variableName;
+    private final boolean isFinal;
 
-    public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType, String variableName) {
+    public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType, String variableName, boolean isFinal) {
         super(lineNumber);
         this.setExpression(expression);
         this.instanceOfType = instanceOfType;
         this.variableName = variableName;
+        this.isFinal = isFinal;
     }
 
     public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType) {
-        this(lineNumber, expression, instanceOfType, null);
+        this(lineNumber, expression, instanceOfType, null, false);
     }
 
     @Override
@@ -49,6 +51,10 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
         return 8;
     }
 
+    public boolean isFinal() {
+        return isFinal;
+    }
+
     public String getVariableName() {
         return variableName;
     }
@@ -60,6 +66,6 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new InstanceOfExpression(lineNumber, expression, instanceOfType, variableName);
+        return new InstanceOfExpression(lineNumber, expression, instanceOfType, variableName, isFinal);
     }
 }

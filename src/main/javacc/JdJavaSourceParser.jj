@@ -1595,8 +1595,7 @@ TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<
       simpleName = nameTok.image;
       internalName = computeInternalName(simpleName);
       qualifiedName = computeQualifiedName(simpleName);
-      flags = (flagsOf(mods)
-    | 0x2000);
+      flags = (flagsOf(mods) | 0x2000);
       typeContextStack.push(new TypeContext(internalName, qualifiedName));
     }
     body = ClassBody(internalName)
@@ -3993,6 +3992,7 @@ Expression RelationalExpression() :
   Type t;
   int ln;
   Token instanceOfVariableName = null;
+  List<String> mods;
 }
 {
   e = ShiftExpression()
@@ -4008,12 +4008,13 @@ Expression RelationalExpression() :
       e = new BinaryOperatorExpression(consumeLineNumber(op), TYPE_UNDEFINED_OBJECT, e, op.image, r);
     }
   | 
-    op = <INSTANCEOF> 
+    op = <INSTANCEOF>
+    mods = ModifiersOpt() 
     t = TypeRef() 
     (instanceOfVariableName = IdentifierToken())?
     {
       ln = consumeLineNumber(op);
-      e = new InstanceOfExpression(ln, e, t, instanceOfVariableName == null ? null : instanceOfVariableName.image);
+      e = new InstanceOfExpression(ln, e, t, instanceOfVariableName == null ? null : instanceOfVariableName.image, mods != null && mods.contains("final"));
     }
   )*
   {
