@@ -1,5 +1,5 @@
 /** unusual javadoc comment **/
-class UnusualCommment {
+class UnusualComment {
     /* block comment */
     int hash;
 }

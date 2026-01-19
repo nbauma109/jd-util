@@ -1,3 +1,3 @@
-class UnusualCommment {
+class UnusualComment {
   int hash;
 }
