@@ -145,7 +145,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         });
   }
 
-  void doPriviledged(boolean flag) {
+  void doPrivileged(boolean flag) {
     ((Runnable)() -> {
 
         }).run();
