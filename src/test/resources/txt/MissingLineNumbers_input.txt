@@ -1,0 +1,32 @@
+package demo;
+
+import java.util.Map;
+import java.util.Map.Entry;
+
+public class MissingLineNumbers {
+
+    void tryCatchFinally() {
+        try {
+            System.out.println("try");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+/* 20 */    System.out.println("finally");
+        }
+    }
+
+    void forEach(Map<String, Integer> map) {
+        for (Entry<String, Integer> entry : map.entrySet()) {
+/* 30 */    System.out.println(entry);
+        }
+    }
+
+    void tryCatch() {
+        try {
+            System.out.println("try");
+        } catch (Exception e) {
+/* 10 */    e.printStackTrace();
+        }
+    }
+
+}

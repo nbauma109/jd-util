@@ -211,6 +211,11 @@ public class ParserRealignerTest implements DefaultTest {
         testParseRealign("/txt/TryResourcesGeneric_input.txt", "/txt/TryResourcesGeneric_output.txt");
     }
 
+    @Test
+    public void testMissingLineNumbers() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/MissingLineNumbers_input.txt", "/txt/MissingLineNumbers_output.txt");
+    }
+
     private void testParseRealign(String inputName, String outputName)
             throws IOException, URISyntaxException, ParseException {
         String input = toString(getClass().getResource(inputName));

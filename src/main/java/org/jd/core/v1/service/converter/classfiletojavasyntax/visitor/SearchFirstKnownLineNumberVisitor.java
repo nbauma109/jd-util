@@ -323,6 +323,9 @@ public class SearchFirstKnownLineNumberVisitor extends AbstractJavaSyntaxVisitor
     @Override
     public void visit(ForEachStatement statement) {
         statement.getExpression().accept(this);
+        if (lineNumber == -1) {
+            safeAccept(statement.getStatements());
+        }
     }
 
     @Override
@@ -404,6 +407,12 @@ public class SearchFirstKnownLineNumberVisitor extends AbstractJavaSyntaxVisitor
             acceptListStatement(statement.getResources());
         } else {
             statement.getTryStatements().accept(this);
+        }
+        if (lineNumber == -1) {
+            safeAcceptListStatement(statement.getCatchClauses());
+        }
+        if (lineNumber == -1) {
+            safeAccept(statement.getFinallyStatements());
         }
     }
 
