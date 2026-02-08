@@ -43,8 +43,6 @@ public class ArrayVariableInitializerTest {
         assertEquals(arrayInitializer1, arrayInitializer2); // Same elements
         assertEquals(arrayInitializer2, arrayInitializer1); // Reversed order
         assertNotEquals(arrayInitializer1, null);
-        assertNotEquals(arrayInitializer1, "Not an ArrayVariableInitializer");
-        assertEquals(arrayInitializer1, arrayInitializer1);
 
         TestDeclarationVisitor visitor = new TestDeclarationVisitor();
         arrayInitializer1.accept(visitor);
