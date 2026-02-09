@@ -5,7 +5,7 @@
 [![Coverage Status](https://codecov.io/gh/nbauma109/jd-util/branch/master/graph/badge.svg)](https://app.codecov.io/gh/nbauma109/jd-util)
 
 # jd-util
-Common utilities for Java bytecode analysis and type bindings used by jd-core projects, and java source parser/realigner/formatter
+Common utilities for Java bytecode analysis and type bindings used by [jd-core](https://github.com/nbauma109/jd-core) projects, and java source parser/realigner/formatter
 
 ```java
 import org.apache.bcel.classfile.Method;
