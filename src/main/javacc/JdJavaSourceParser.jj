@@ -247,27 +247,6 @@ public class JdJavaSourceParser
     final int nextKind = getToken(afterType + 1).kind;
     return nextKind == ASSIGN || nextKind == COMMA || nextKind == SEMI || nextKind == LBRACKET;
   }
-
-  private boolean isSwitchPatternLabelAhead() {
-    int i = 1;
-    i = skipLeadingAnnotations(i);
-    if (i < 0) {
-      return false;
-    }
-    i = skipFinalModifier(i);
-    i = skipLeadingAnnotations(i);
-    if (i < 0) {
-      return false;
-    }
-
-    final int afterType = scanTypeLikePrefix(i);
-    if (afterType < 0) {
-      return false;
-    }
-
-    final Token name = getToken(afterType);
-    return isIdentifierKind(name.kind);
-  }
   
   private boolean isLocalTypeDeclarationAhead() {
     int i = 1;
