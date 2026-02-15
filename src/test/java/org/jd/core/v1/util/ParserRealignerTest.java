@@ -222,6 +222,11 @@ public class ParserRealignerTest implements DefaultTest {
     }
 
     @Test
+    public void testParseSwitchPatternMatchingMultiLabelsWhen() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/SwitchPatternMatchingMultiLabelsWhen_input.txt", "/txt/SwitchPatternMatchingMultiLabelsWhen_output.txt");
+    }
+
+    @Test
     public void testParseLineCommentEof() throws IOException, URISyntaxException, ParseException {
         testParseRealign("/txt/LineCommentEof_input.txt", "/txt/LineCommentEof_output.txt");
     }

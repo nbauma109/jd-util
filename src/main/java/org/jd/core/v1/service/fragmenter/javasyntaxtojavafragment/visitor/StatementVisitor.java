@@ -559,18 +559,14 @@ public class StatementVisitor extends ExpressionVisitor {
 
     @Override
     public void visit(SwitchStatement.MultiLabelsBlock statement) {
-        if (statement.getWhenCondition() != NoExpression.NO_EXPRESSION) {
-            writeSwitchStatementWhenLabelHeader(statement.getLabels(), statement.getWhenCondition());
-        } else {
-            Iterator<SwitchStatement.Label> iterator = statement.getLabels().iterator();
+        Iterator<SwitchStatement.Label> iterator = statement.getLabels().iterator();
 
-            if (iterator.hasNext()) {
+        if (iterator.hasNext()) {
+            iterator.next().accept(this);
+
+            while (iterator.hasNext()) {
+                JavaFragmentFactory.addSpacerBetweenSwitchLabels(fragments);
                 iterator.next().accept(this);
-
-                while (iterator.hasNext()) {
-                    JavaFragmentFactory.addSpacerBetweenSwitchLabels(fragments);
-                    iterator.next().accept(this);
-                }
             }
         }
 
@@ -602,12 +598,10 @@ public class StatementVisitor extends ExpressionVisitor {
             }
         }
 
-        if (whenCondition != NoExpression.NO_EXPRESSION) {
-            tokens.add(TextToken.SPACE);
-            tokens.add(WHEN);
-            tokens.add(TextToken.SPACE);
-            whenCondition.accept(this);
-        }
+        tokens.add(TextToken.SPACE);
+        tokens.add(WHEN);
+        tokens.add(TextToken.SPACE);
+        whenCondition.accept(this);
 
         tokens.add(TextToken.COLON);
         fragments.addTokensFragment(tokens);
