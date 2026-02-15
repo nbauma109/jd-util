@@ -7,6 +7,7 @@
 
 package org.jd.core.v1.model.javasyntax.expression;
 
+import org.jd.core.v1.model.javasyntax.pattern.Pattern;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
@@ -102,6 +103,32 @@ public final class SwitchExpression extends AbstractLineNumberExpression {
         @Override
         public String toString() {
             return "ExpressionLabel{" + expression + '}';
+        }
+    }
+
+    public static final class PatternLabel implements Label {
+        private Pattern pattern;
+
+        public PatternLabel(Pattern pattern) {
+            this.pattern = Objects.requireNonNull(pattern, "pattern");
+        }
+
+        public Pattern getPattern() {
+            return pattern;
+        }
+
+        public void setPattern(Pattern pattern) {
+            this.pattern = Objects.requireNonNull(pattern, "pattern");
+        }
+
+        @Override
+        public void accept(ExpressionVisitor visitor) {
+            visitor.visit(this);
+        }
+
+        @Override
+        public String toString() {
+            return "PatternLabel{" + pattern + '}';
         }
     }
 

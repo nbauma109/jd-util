@@ -9,6 +9,7 @@ package org.jd.core.v1.model.javasyntax.statement;
 
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 import org.jd.core.v1.model.javasyntax.expression.NoExpression;
+import org.jd.core.v1.model.javasyntax.pattern.Pattern;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,18 +94,50 @@ public class SwitchStatement implements Statement {
         }
     }
 
+    public static class PatternLabel implements Label {
+        private Pattern pattern;
+
+        public PatternLabel(Pattern pattern) {
+            this.pattern = Objects.requireNonNull(pattern, "pattern");
+        }
+
+        public Pattern getPattern() {
+            return pattern;
+        }
+
+        public void setPattern(Pattern pattern) {
+            this.pattern = Objects.requireNonNull(pattern, "pattern");
+        }
+
+        @Override
+        public void accept(StatementVisitor visitor) {
+            visitor.visit(this);
+        }
+
+        @Override
+        public String toString() {
+            return "PatternLabel{" + pattern + '}';
+        }
+    }
+
     // --- Block --- //
     public abstract static class Block implements Statement {
         protected final BaseStatement statements;
         protected final Expression whenCondition;
+        protected final boolean rule;
 
         protected Block(BaseStatement statements) {
-            this(statements, NoExpression.NO_EXPRESSION);
+            this(statements, NoExpression.NO_EXPRESSION, false);
         }
 
         protected Block(BaseStatement statements, Expression whenCondition) {
+            this(statements, whenCondition, false);
+        }
+
+        protected Block(BaseStatement statements, Expression whenCondition, boolean rule) {
             this.statements = Objects.requireNonNull(statements, "statements");
             this.whenCondition = Objects.requireNonNull(whenCondition, "whenCondition");
+            this.rule = rule;
         }
 
         @Override
@@ -114,6 +147,10 @@ public class SwitchStatement implements Statement {
 
         public Expression getWhenCondition() {
             return whenCondition;
+        }
+
+        public boolean isRule() {
+            return rule;
         }
     }
 
@@ -125,7 +162,11 @@ public class SwitchStatement implements Statement {
         }
 
         public LabelBlock(Label label, Expression whenCondition, BaseStatement statements) {
-            super(statements, whenCondition);
+            this(label, whenCondition, statements, false);
+        }
+
+        public LabelBlock(Label label, Expression whenCondition, BaseStatement statements, boolean rule) {
+            super(statements, whenCondition, rule);
             this.label = Objects.requireNonNull(label, "label");
         }
 
@@ -156,7 +197,11 @@ public class SwitchStatement implements Statement {
 
         public MultiLabelsBlock(List<Label> labels, Expression whenCondition,
                 final BaseStatement statements) {
-            super(statements, whenCondition);
+            this(labels, whenCondition, statements, false);
+        }
+
+        public MultiLabelsBlock(List<Label> labels, Expression whenCondition, final BaseStatement statements, boolean rule) {
+            super(statements, whenCondition, rule);
             this.labels = Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(labels, "labels")));
         }
 

@@ -1,0 +1,7 @@
+class RecordInstanceOfPatternMatching {
+  record Point(int x, int y) {}
+
+  boolean matches(Object o) {
+    return o instanceof Point(int x, int y);
+  }
+}

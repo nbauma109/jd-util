@@ -8,18 +8,24 @@
 package org.jd.core.v1.model.javasyntax.statement;
 
 import org.jd.core.v1.model.javasyntax.expression.Expression;
+import org.jd.core.v1.model.javasyntax.pattern.Pattern;
+import org.jd.core.v1.model.javasyntax.pattern.TypePattern;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
+import java.util.Objects;
+
 public class ForEachStatement implements Statement {
-    protected final Type type;
-    private final String name;
+    protected final Pattern pattern;
     private boolean fina1;
     protected Expression expression;
     private final BaseStatement statements;
 
     public ForEachStatement(Type type, String name, Expression expression, BaseStatement statements) {
-        this.type = type;
-        this.name = name;
+        this(new TypePattern(type, name), expression, statements);
+    }
+
+    public ForEachStatement(Pattern pattern, Expression expression, BaseStatement statements) {
+        this.pattern = Objects.requireNonNull(pattern, "pattern");
         this.setExpression(expression);
         this.statements = statements;
     }
@@ -32,12 +38,16 @@ public class ForEachStatement implements Statement {
         this.fina1 = fina1;
     }
 
+    public Pattern getPattern() {
+        return pattern;
+    }
+
     public Type getType() {
-        return type;
+        return pattern.getType();
     }
 
     public String getName() {
-        return name;
+        return pattern.getVariableName();
     }
 
     @Override

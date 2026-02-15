@@ -1,0 +1,14 @@
+class RecordSwitchPatternMatching {
+    record Point(int x, int y) {}
+
+    static int describe(Object o) {
+        int result;
+        switch (o) {
+            case Point(int x, int y) when x > y -> result = x - y;
+            case Point(int x, int y) -> result = x + y;
+            default -> result = 0;
+        }
+        return result;
+    }
+}
+

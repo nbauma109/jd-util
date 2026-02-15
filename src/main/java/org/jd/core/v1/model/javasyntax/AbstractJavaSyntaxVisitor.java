@@ -71,6 +71,8 @@ import org.jd.core.v1.model.javasyntax.expression.SwitchExpression;
 import org.jd.core.v1.model.javasyntax.expression.TernaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
 import org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression;
+import org.jd.core.v1.model.javasyntax.pattern.Pattern;
+import org.jd.core.v1.model.javasyntax.pattern.RecordPattern;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationElementValue;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReferences;
@@ -350,9 +352,8 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
 
     @Override
     public void visit(InstanceOfExpression expression) {
-        BaseType type = expression.getType();
-        type.accept(this);
         expression.getExpression().accept(this);
+        safeAcceptPattern(expression.getPattern());
     }
 
     @Override
@@ -494,10 +495,16 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
     }
 
     @Override
+    public void visit(SwitchExpression.PatternLabel label) {
+        safeAcceptPattern(label.getPattern());
+    }
+
+    @Override
     public void visit(SwitchExpression.RuleExpression rule) {
         for (SwitchExpression.Label label : rule.getLabels()) {
             label.accept(this);
         }
+        safeAccept(rule.getWhenCondition());
         rule.getExpression().accept(this);
     }
 
@@ -506,6 +513,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
         for (SwitchExpression.Label label : rule.getLabels()) {
             label.accept(this);
         }
+        safeAccept(rule.getWhenCondition());
         safeAccept(rule.getStatements());
     }
 
@@ -583,9 +591,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
 
     @Override
     public void visit(ForEachStatement statement) {
-        BaseType type = statement.getType();
-
-        type.accept(this);
+        safeAcceptPattern(statement.getPattern());
         statement.getExpression().accept(this);
         safeAccept(statement.getStatements());
     }
@@ -658,14 +664,21 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
     }
 
     @Override
+    public void visit(SwitchStatement.PatternLabel statement) {
+        safeAcceptPattern(statement.getPattern());
+    }
+
+    @Override
     public void visit(SwitchStatement.LabelBlock statement) {
         statement.getLabel().accept(this);
+        safeAccept(statement.getWhenCondition());
         statement.getStatements().accept(this);
     }
 
     @Override
     public void visit(SwitchStatement.MultiLabelsBlock statement) {
         safeAcceptListStatement(statement.getLabels());
+        safeAccept(statement.getWhenCondition());
         statement.getStatements().accept(this);
     }
 
@@ -823,6 +836,19 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
         if (list != null) {
             for (Statement statement : list) {
                 statement.accept(this);
+            }
+        }
+    }
+
+    public void safeAcceptPattern(Pattern pattern) {
+        if (pattern == null) {
+            return;
+        }
+        BaseType type = pattern.getType();
+        safeAccept(type);
+        if (pattern instanceof RecordPattern recordPattern) {
+            for (Pattern componentPattern : recordPattern.getComponentPatterns()) {
+                safeAcceptPattern(componentPattern);
             }
         }
     }

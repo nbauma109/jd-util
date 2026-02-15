@@ -7,21 +7,23 @@
 
 package org.jd.core.v1.model.javasyntax.expression;
 
+import org.jd.core.v1.model.javasyntax.pattern.Pattern;
+import org.jd.core.v1.model.javasyntax.pattern.TypePattern;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class InstanceOfExpression extends AbstractLineNumberExpression {
     private Expression expression;
-    private final Type instanceOfType;
-    private final String variableName;
-    private final boolean isFinal;
+    private final Pattern pattern;
 
     public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType, String variableName, boolean isFinal) {
+        this(lineNumber, expression, new TypePattern(instanceOfType, variableName, isFinal));
+    }
+
+    public InstanceOfExpression(int lineNumber, Expression expression, Pattern pattern) {
         super(lineNumber);
         this.setExpression(expression);
-        this.instanceOfType = instanceOfType;
-        this.variableName = variableName;
-        this.isFinal = isFinal;
+        this.pattern = pattern;
     }
 
     public InstanceOfExpression(int lineNumber, Expression expression, Type instanceOfType) {
@@ -38,7 +40,11 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
     }
 
     public Type getInstanceOfType() {
-        return instanceOfType;
+        return pattern.getType();
+    }
+
+    public Pattern getPattern() {
+        return pattern;
     }
 
     @Override
@@ -52,11 +58,11 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
     }
 
     public boolean isFinal() {
-        return isFinal;
+        return pattern instanceof TypePattern typePattern && typePattern.isFinal();
     }
 
     public String getVariableName() {
-        return variableName;
+        return pattern.getVariableName();
     }
 
     @Override
@@ -66,6 +72,6 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new InstanceOfExpression(lineNumber, expression, instanceOfType, variableName, isFinal);
+        return new InstanceOfExpression(lineNumber, expression, pattern);
     }
 }
