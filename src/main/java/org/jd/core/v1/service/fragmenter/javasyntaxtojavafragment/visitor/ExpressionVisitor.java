@@ -53,7 +53,6 @@ import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperConstructorInvocationExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperExpression;
 import org.jd.core.v1.model.javasyntax.expression.SwitchExpression;
-import org.jd.core.v1.model.javasyntax.expression.SwitchExpression.ExpressionLabel;
 import org.jd.core.v1.model.javasyntax.expression.SwitchExpression.Rule;
 import org.jd.core.v1.model.javasyntax.pattern.Pattern;
 import org.jd.core.v1.model.javasyntax.pattern.RecordPattern;
@@ -898,15 +897,7 @@ public class ExpressionVisitor extends TypeVisitor {
     }
 
     @Override
-    public void visit(SwitchExpression.PatternLabel expression) {
-        tokens = new Tokens();
-        tokens.add(CASE);
-        tokens.add(TextToken.SPACE);
-        writePattern(expression.getPattern());
-        tokens.add(TextToken.SPACE_ARROW_SPACE);
-        fragments.addTokensFragment(tokens);
-        tokens = new Tokens();
-    }
+    public void visit(SwitchExpression.PatternLabel expression) {}
 
     private void writeSwitchExpressionLabels(List<SwitchExpression.Label> labels, Expression whenCondition) {
         tokens = new Tokens();
