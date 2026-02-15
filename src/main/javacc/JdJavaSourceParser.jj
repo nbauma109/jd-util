@@ -359,6 +359,17 @@ public class JdJavaSourceParser
     return i;
   }
 
+  private void ensureOnlyFinalModifier(final List<String> mods, final String context) throws ParseException {
+    if (mods == null || mods.isEmpty()) {
+      return;
+    }
+    for (String modifier : mods) {
+      if (!"final".equals(modifier)) {
+        throw new ParseException(context + " only support the 'final' modifier");
+      }
+    }
+  }
+
   private int skipLeadingAnnotations(final int startIndex) {
     int i = startIndex;
     while (getToken(i).kind == AT) {
@@ -2264,6 +2275,10 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
       <SEMI>
       {
         flags = flagsOf(mods);
+        if (t == PrimitiveType.TYPE_VOID)
+        {
+          throw new ParseException("Field type cannot be void");
+        }
         return new FieldDeclaration(anns, flags, t, fds);
       }
     )
@@ -2599,6 +2614,15 @@ Type TypeRef() :
     }
   )*
   {
+    if (base == PrimitiveType.TYPE_VOID)
+    {
+      if (dim > 0)
+      {
+        throw new ParseException("Void type cannot be an array");
+      }
+      return base;
+    }
+
     if (dim == 0)
     {
       return base;
@@ -2609,6 +2633,21 @@ Type TypeRef() :
       return baseType.createType(dim);
     }
     return base;
+  }
+}
+
+Type NonVoidTypeRef() :
+{
+  Type t;
+}
+{
+  t = TypeRef()
+  {
+    if (t == PrimitiveType.TYPE_VOID)
+    {
+      throw new ParseException("Void type is not allowed here");
+    }
+    return t;
   }
 }
 
@@ -2838,7 +2877,10 @@ FormalParameter FormalParameterOne() :
 {
   anns = AnnotationsOpt()
   mods = ModifiersOpt()
-  t = TypeRef()
+  {
+    ensureOnlyFinalModifier(mods, "Parameters");
+  }
+  t = NonVoidTypeRef()
   (<DOT> <DOT> <DOT>
   {
     varargs = true;
@@ -3196,7 +3238,10 @@ Statement StatementNoBlock() :
       LOOKAHEAD( { isEnhancedForAhead() } )
       localAnns = AnnotationsOpt()
       mods = ModifiersOpt()
-      ty = TypeRef()
+      {
+        ensureOnlyFinalModifier(mods, "Local variables");
+      }
+      ty = NonVoidTypeRef()
       (
         LOOKAHEAD(<LPAREN>)
         pattern = RecordPatternAfterType(ty)
@@ -3339,7 +3384,10 @@ Statement StatementNoBlock() :
     LOOKAHEAD(<AT> IdentifierToken())
     localAnns = AnnotationsOpt()
     mods = ModifiersOpt()
-    ty = TypeRef()
+    {
+      ensureOnlyFinalModifier(mods, "Local variables");
+    }
+    ty = NonVoidTypeRef()
     decls = LocalVariableDeclaratorList(ty)
     <SEMI>
     {
@@ -3354,7 +3402,10 @@ Statement StatementNoBlock() :
   |
     LOOKAHEAD( { isLocalVariableDeclarationAhead() } )
     mods = ModifiersOpt()
-    ty = TypeRef()
+    {
+      ensureOnlyFinalModifier(mods, "Local variables");
+    }
+    ty = NonVoidTypeRef()
     decls = LocalVariableDeclaratorList(ty)
     <SEMI>
     {
@@ -3463,7 +3514,10 @@ LocalVariableDeclaration ForInitLocalVariableDeclaration() :
 {
   anns = AnnotationsOpt()
   mods = ModifiersOpt()
-  type = TypeRef()
+  {
+    ensureOnlyFinalModifier(mods, "Local variables");
+  }
+  type = NonVoidTypeRef()
   name = IdentifierToken()
   dims = ArrayDimsOpt()
   {
@@ -3816,7 +3870,10 @@ TryStatement.Resource TryResourceOne() :
     LOOKAHEAD( { isTryResourceDeclarationAhead() } )
     anns = AnnotationsOpt()
     mods = ModifiersOpt()
-    t = TypeRef()
+    {
+      ensureOnlyFinalModifier(mods, "Local variables");
+    }
+    t = NonVoidTypeRef()
     nameTok = IdentifierToken()
     <ASSIGN>
     e = Expression()
@@ -4048,7 +4105,10 @@ Token LambdaExplicitParameterName() :
 {
   anns = AnnotationsOpt()
   mods = ModifiersOpt()
-  t = TypeRef()
+  {
+    ensureOnlyFinalModifier(mods, "Parameters");
+  }
+  t = NonVoidTypeRef()
   (<DOT> <DOT> <DOT>
   {
     varargs = true;

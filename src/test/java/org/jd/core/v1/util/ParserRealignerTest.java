@@ -232,6 +232,84 @@ public class ParserRealignerTest implements DefaultTest {
     }
 
     @Test
+    public void testRejectVoidFieldType() {
+        assertThrows(ParseException.class, () -> JdJavaSourceParser.parse("""
+                class T {
+                  void f;
+                }
+                """));
+    }
+
+    @Test
+    public void testRejectVoidLocalVariableType() {
+        assertThrows(ParseException.class, () -> JdJavaSourceParser.parse("""
+                class T {
+                  void m() {
+                    void x;
+                  }
+                }
+                """));
+    }
+
+    @Test
+    public void testRejectVoidArrayFieldType() {
+        assertThrows(ParseException.class, () -> JdJavaSourceParser.parse("""
+                class T {
+                  void[] f;
+                }
+                """));
+    }
+
+    @Test
+    public void testRejectVoidArrayLocalVariableType() {
+        assertThrows(ParseException.class, () -> JdJavaSourceParser.parse("""
+                class T {
+                  void m() {
+                    void[] x;
+                  }
+                }
+                """));
+    }
+
+    @Test
+    public void testRejectVoidParameterType() {
+        assertThrows(ParseException.class, () -> JdJavaSourceParser.parse("""
+                class T {
+                  void m(void p) {}
+                }
+                """));
+    }
+
+    @Test
+    public void testRejectVoidArrayParameterType() {
+        assertThrows(ParseException.class, () -> JdJavaSourceParser.parse("""
+                class T {
+                  void m(void[] p) {}
+                }
+                """));
+    }
+
+    @Test
+    public void testRejectNonFinalLocalVariableModifier() {
+        assertThrows(ParseException.class, () -> JdJavaSourceParser.parse("""
+                class T {
+                  void m() {
+                    volatile int x;
+                  }
+                }
+                """));
+    }
+
+    @Test
+    public void testRejectNonFinalParameterModifier() {
+        assertThrows(ParseException.class, () -> JdJavaSourceParser.parse("""
+                class T {
+                  void m(volatile int p) {}
+                }
+                """));
+    }
+
+    @Test
     public void testParseLineCommentEof() throws IOException, URISyntaxException, ParseException {
         testParseRealign("/txt/LineCommentEof_input.txt", "/txt/LineCommentEof_output.txt");
     }
