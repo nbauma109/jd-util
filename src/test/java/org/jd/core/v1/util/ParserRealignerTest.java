@@ -227,6 +227,11 @@ public class ParserRealignerTest implements DefaultTest {
     }
 
     @Test
+    public void testParseSwitchExpressionLabelsWhen() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/SwitchExpressionLabelsWhen_input.txt", "/txt/SwitchExpressionLabelsWhen_output.txt");
+    }
+
+    @Test
     public void testParseLineCommentEof() throws IOException, URISyntaxException, ParseException {
         testParseRealign("/txt/LineCommentEof_input.txt", "/txt/LineCommentEof_output.txt");
     }

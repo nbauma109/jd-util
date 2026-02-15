@@ -594,8 +594,6 @@ public class StatementVisitor extends ExpressionVisitor {
                 expressionLabel.getExpression().accept(this);
             } else if (label instanceof SwitchStatement.PatternLabel patternLabel) {
                 writePattern(patternLabel.pattern());
-            } else {
-                tokens.add(DEFAULT);
             }
             if (i < labels.size() - 1) {
                 tokens.add(TextToken.COMMA_SPACE);
