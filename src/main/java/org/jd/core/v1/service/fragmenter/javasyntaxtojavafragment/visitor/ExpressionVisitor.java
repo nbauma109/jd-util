@@ -53,8 +53,10 @@ import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperConstructorInvocationExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperExpression;
 import org.jd.core.v1.model.javasyntax.expression.SwitchExpression;
-import org.jd.core.v1.model.javasyntax.expression.SwitchExpression.ExpressionLabel;
 import org.jd.core.v1.model.javasyntax.expression.SwitchExpression.Rule;
+import org.jd.core.v1.model.javasyntax.pattern.Pattern;
+import org.jd.core.v1.model.javasyntax.pattern.RecordPattern;
+import org.jd.core.v1.model.javasyntax.pattern.TypePattern;
 import org.jd.core.v1.model.javasyntax.expression.TernaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
 import org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression;
@@ -92,6 +94,7 @@ import static org.jd.core.v1.model.javasyntax.type.PrimitiveType.FLAG_CHAR;
 import static org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.visitor.StatementVisitor.SWITCH;
 import static org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.visitor.StatementVisitor.DEFAULT;
 import static org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.visitor.StatementVisitor.CASE;
+import static org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.visitor.StatementVisitor.WHEN;
 
 public class ExpressionVisitor extends TypeVisitor {
 
@@ -347,19 +350,7 @@ public class ExpressionVisitor extends TypeVisitor {
         tokens.add(TextToken.SPACE);
         tokens.add(INSTANCEOF);
         tokens.add(TextToken.SPACE);
-
-        if (expression.isFinal()) {
-            tokens.add(FINAL);
-            tokens.add(TextToken.SPACE);
-        }
-
-        BaseType type = expression.getInstanceOfType();
-
-        type.accept(this);
-        if (expression.getVariableName() != null) {
-            tokens.add(TextToken.SPACE);
-            tokens.add(new TextToken(expression.getVariableName()));
-        }
+        writePattern(expression.getPattern());
     }
 
     @Override
@@ -858,7 +849,7 @@ public class ExpressionVisitor extends TypeVisitor {
 
     @Override
     public void visit(SwitchExpression.RuleExpression expression) {
-        writeSwitchExpressionLabels(expression.getLabels());
+        writeSwitchExpressionLabels(expression.getLabels(), expression.getWhenCondition());
         expression.getExpression().accept(this);
         tokens.add(TextToken.SEMICOLON);
         fragments.addTokensFragment(tokens);
@@ -867,7 +858,7 @@ public class ExpressionVisitor extends TypeVisitor {
 
     @Override
     public void visit(SwitchExpression.RuleStatement statement) {
-        writeSwitchExpressionLabels(statement.getLabels());
+        writeSwitchExpressionLabels(statement.getLabels(), statement.getWhenCondition());
         fragments.addTokensFragment(tokens);
         tokens = new Tokens();
         if (statement.getStatements().isList()) {
@@ -905,10 +896,13 @@ public class ExpressionVisitor extends TypeVisitor {
         tokens = new Tokens();
     }
 
-    private void writeSwitchExpressionLabels(List<SwitchExpression.Label> labels) {
+    @Override
+    public void visit(SwitchExpression.PatternLabel expression) {}
+
+    private void writeSwitchExpressionLabels(List<SwitchExpression.Label> labels, Expression whenCondition) {
         tokens = new Tokens();
 
-        boolean hasCase = labels.stream().anyMatch(ExpressionLabel.class::isInstance);
+        boolean hasCase = labels.stream().anyMatch(label -> !(label instanceof SwitchExpression.DefaultLabel));
         if (hasCase) {
             tokens.add(CASE);
             tokens.add(TextToken.SPACE);
@@ -919,6 +913,8 @@ public class ExpressionVisitor extends TypeVisitor {
             if (label instanceof SwitchExpression.ExpressionLabel l) {
                 Expression labelExpression = l.getExpression();
                 labelExpression.accept(this);
+            } else if (label instanceof SwitchExpression.PatternLabel l) {
+                writePattern(l.pattern());
             } else {
                 tokens.add(DEFAULT);
             }
@@ -928,7 +924,50 @@ public class ExpressionVisitor extends TypeVisitor {
             }
         }
 
+        if (whenCondition != NoExpression.NO_EXPRESSION) {
+            tokens.add(TextToken.SPACE);
+            tokens.add(WHEN);
+            tokens.add(TextToken.SPACE);
+            whenCondition.accept(this);
+        }
+
         tokens.add(TextToken.SPACE_ARROW_SPACE);
+    }
+
+    protected void writePattern(Pattern pattern) {
+        if (pattern instanceof RecordPattern recordPattern) {
+            writeRecordPattern(recordPattern);
+            return;
+        }
+        TypePattern typePattern = (TypePattern) pattern;
+        writeTypePattern(typePattern);
+    }
+
+    protected void writeTypePattern(TypePattern pattern) {
+        if (pattern.fina1()) {
+            tokens.add(FINAL);
+            tokens.add(TextToken.SPACE);
+        }
+        BaseType type = pattern.type();
+        type.accept(this);
+        if (pattern.variableName() != null) {
+            tokens.add(TextToken.SPACE);
+            tokens.add(newTextToken(pattern.variableName()));
+        }
+    }
+
+    protected void writeRecordPattern(RecordPattern pattern) {
+        BaseType type = pattern.type();
+        type.accept(this);
+        tokens.add(TextToken.LEFTROUNDBRACKET);
+        List<Pattern> componentPatterns = pattern.componentPatterns();
+        for (int i = 0; i < componentPatterns.size(); i++) {
+            writePattern(componentPatterns.get(i));
+            if (i < componentPatterns.size() - 1) {
+                tokens.add(TextToken.COMMA_SPACE);
+            }
+        }
+        tokens.add(TextToken.RIGHTROUNDBRACKET);
     }
 
     protected void storeContext() {
@@ -1085,6 +1124,8 @@ public class ExpressionVisitor extends TypeVisitor {
         public void visit(SwitchExpression.DefaultLabel defaultLabel) { ExpressionVisitor.this.visit(defaultLabel); }
         @Override
         public void visit(SwitchExpression.ExpressionLabel expressionLabel) { ExpressionVisitor.this.visit(expressionLabel); }
+        @Override
+        public void visit(SwitchExpression.PatternLabel patternLabel) { ExpressionVisitor.this.visit(patternLabel); }
         @Override
         public void visit(TernaryOperatorExpression expression) { ExpressionVisitor.this.visit(expression); }
         @Override

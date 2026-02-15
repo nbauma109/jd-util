@@ -1,0 +1,14 @@
+import java.util.List;
+
+class RecordEnhancedForPatternMatching {
+    record Point(int x, int y) {}
+
+    int sum(List<Point> points) {
+        int s = 0;
+        for (Point(int x, int y) : points) {
+            s += x + y;
+        }
+        return s;
+    }
+}
+

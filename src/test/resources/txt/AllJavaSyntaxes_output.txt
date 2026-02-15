@@ -406,6 +406,13 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     }
   }
 
+  <T> String handleResult(Result<T> result) {
+    return switch (result) {
+        case Success<T> success -> "success:" + success.value();
+        case Failure<T> failure -> "failure:" + failure.exception().getClass().getSimpleName();
+      };
+  }
+
   private class Inner {
     Inner() throws Exception, Error {
       log("Inner constructor");

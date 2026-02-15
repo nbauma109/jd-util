@@ -43,6 +43,7 @@ public interface ExpressionVisitor {
     void visit(SwitchExpression expression);
     void visit(SwitchExpression.DefaultLabel defaultLabel);
     void visit(SwitchExpression.ExpressionLabel expressionLabel);
+    void visit(SwitchExpression.PatternLabel patternLabel);
     void visit(SwitchExpression.RuleExpression ruleExpression);
     void visit(SwitchExpression.RuleStatement ruleStatement);
     void visit(TernaryOperatorExpression expression);

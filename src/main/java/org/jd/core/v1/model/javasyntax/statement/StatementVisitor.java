@@ -28,6 +28,7 @@ public interface StatementVisitor {
     void visit(SwitchStatement statement);
     void visit(SwitchStatement.DefaultLabel defaultLabel);
     void visit(SwitchStatement.ExpressionLabel expressionLabel);
+    void visit(SwitchStatement.PatternLabel patternLabel);
     void visit(SwitchStatement.LabelBlock labelBlock);
     void visit(SwitchStatement.MultiLabelsBlock multiLabelsBlock);
     void visit(SynchronizedStatement statement);

@@ -60,6 +60,7 @@ import org.jd.core.v1.model.javasyntax.statement.SwitchStatement.DefaultLabel;
 import org.jd.core.v1.model.javasyntax.statement.SwitchStatement.ExpressionLabel;
 import org.jd.core.v1.model.javasyntax.statement.SwitchStatement.LabelBlock;
 import org.jd.core.v1.model.javasyntax.statement.SwitchStatement.MultiLabelsBlock;
+import org.jd.core.v1.model.javasyntax.statement.SwitchStatement.PatternLabel;
 import org.jd.core.v1.model.javasyntax.statement.SynchronizedStatement;
 import org.jd.core.v1.model.javasyntax.statement.ThrowStatement;
 import org.jd.core.v1.model.javasyntax.statement.TryStatement;
@@ -256,6 +257,10 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
     @Override
     public void visit(ExpressionLabel statement) {
         expressionLabelCount++;
+    }
+
+    @Override
+    public void visit(PatternLabel statement) {
     }
 
     @Override

@@ -192,6 +192,46 @@ public class ParserRealignerTest implements DefaultTest {
     }
 
     @Test
+    public void testParseRecordInstanceOfPatternMatching() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/RecordInstanceOfPatternMatching_input.txt", "/txt/RecordInstanceOfPatternMatching_output.txt");
+    }
+
+    @Test
+    public void testParseRecordEnhancedForPatternMatching() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/RecordEnhancedForPatternMatching_input.txt", "/txt/RecordEnhancedForPatternMatching_output.txt");
+    }
+
+    @Test
+    public void testParseSealedSwitch() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/SealedSwitch_input.txt", "/txt/SealedSwitch_output.txt");
+    }
+
+    @Test
+    public void testParseSwitchPatternMatching() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/SwitchPatternMatching_input.txt", "/txt/SwitchPatternMatching_output.txt");
+    }
+
+    @Test
+    public void testParseSwitchPatternMatchingWhen() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/SwitchPatternMatchingWhen_input.txt", "/txt/SwitchPatternMatchingWhen_output.txt");
+    }
+
+    @Test
+    public void testParseRecordSwitchPatternMatching() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/RecordSwitchPatternMatching_input.txt", "/txt/RecordSwitchPatternMatching_output.txt");
+    }
+
+    @Test
+    public void testParseSwitchPatternMatchingMultiLabelsWhen() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/SwitchPatternMatchingMultiLabelsWhen_input.txt", "/txt/SwitchPatternMatchingMultiLabelsWhen_output.txt");
+    }
+
+    @Test
+    public void testParseSwitchExpressionLabelsWhen() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/SwitchExpressionLabelsWhen_input.txt", "/txt/SwitchExpressionLabelsWhen_output.txt");
+    }
+
+    @Test
     public void testParseLineCommentEof() throws IOException, URISyntaxException, ParseException {
         testParseRealign("/txt/LineCommentEof_input.txt", "/txt/LineCommentEof_output.txt");
     }

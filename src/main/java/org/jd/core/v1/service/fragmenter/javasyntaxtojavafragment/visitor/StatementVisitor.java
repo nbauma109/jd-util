@@ -13,6 +13,7 @@ import org.jd.core.v1.model.javafragment.StartStatementsBlockFragment;
 import org.jd.core.v1.model.javafragment.StartStatementsBlockFragment.Group;
 import org.jd.core.v1.model.javafragment.TokensFragment;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
+import org.jd.core.v1.model.javasyntax.expression.NoExpression;
 import org.jd.core.v1.model.javasyntax.statement.AssertStatement;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
 import org.jd.core.v1.model.javasyntax.statement.BreakStatement;
@@ -73,6 +74,7 @@ public class StatementVisitor extends ExpressionVisitor {
     public static final KeywordToken TRANSIENT = new KeywordToken("transient");
     public static final KeywordToken TRY = new KeywordToken("try");
     public static final KeywordToken VOLATILE = new KeywordToken("volatile");
+    public static final KeywordToken WHEN = new KeywordToken("when");
     public static final KeywordToken WHILE = new KeywordToken("while");
     public static final KeywordToken YIELD = new KeywordToken("yield");
 
@@ -221,12 +223,7 @@ public class StatementVisitor extends ExpressionVisitor {
             tokens.add(TextToken.SPACE);
         }
 
-        BaseType type = statement.getType();
-
-        type.accept(this);
-
-        tokens.add(TextToken.SPACE);
-        tokens.add(newTextToken(statement.getName()));
+        writePattern(statement.getPattern());
         tokens.add(TextToken.SPACE_COLON_SPACE);
 
         statement.getExpression().accept(this);
@@ -520,7 +517,11 @@ public class StatementVisitor extends ExpressionVisitor {
 
     @Override
     public void visit(SwitchStatement.LabelBlock statement) {
-        statement.getLabel().accept(this);
+        if (statement.getWhenCondition() != NoExpression.NO_EXPRESSION) {
+            writeSwitchStatementWhenLabelHeader(List.of(statement.getLabel()), statement.getWhenCondition());
+        } else {
+            statement.getLabel().accept(this);
+        }
         JavaFragmentFactory.addSpacerAfterSwitchLabel(fragments);
         statement.getStatements().accept(this);
         JavaFragmentFactory.addSpacerAfterSwitchBlock(fragments);
@@ -547,21 +548,65 @@ public class StatementVisitor extends ExpressionVisitor {
     }
 
     @Override
+    public void visit(SwitchStatement.PatternLabel statement) {
+        tokens = new Tokens();
+        tokens.add(CASE);
+        tokens.add(TextToken.SPACE);
+        writePattern(statement.pattern());
+        tokens.add(TextToken.COLON);
+        fragments.addTokensFragment(tokens);
+    }
+
+    @Override
     public void visit(SwitchStatement.MultiLabelsBlock statement) {
-        Iterator<SwitchStatement.Label> iterator = statement.getLabels().iterator();
+        if (statement.getWhenCondition() != NoExpression.NO_EXPRESSION) {
+            writeSwitchStatementWhenLabelHeader(statement.getLabels(), statement.getWhenCondition());
+        } else {
+            Iterator<SwitchStatement.Label> iterator = statement.getLabels().iterator();
 
-        if (iterator.hasNext()) {
-            iterator.next().accept(this);
-
-            while (iterator.hasNext()) {
-                JavaFragmentFactory.addSpacerBetweenSwitchLabels(fragments);
+            if (iterator.hasNext()) {
                 iterator.next().accept(this);
+
+                while (iterator.hasNext()) {
+                    JavaFragmentFactory.addSpacerBetweenSwitchLabels(fragments);
+                    iterator.next().accept(this);
+                }
             }
         }
 
         JavaFragmentFactory.addSpacerAfterSwitchLabel(fragments);
         statement.getStatements().accept(this);
         JavaFragmentFactory.addSpacerAfterSwitchBlock(fragments);
+    }
+
+    private void writeSwitchStatementWhenLabelHeader(List<SwitchStatement.Label> labels, Expression whenCondition) {
+        tokens = new Tokens();
+
+        boolean hasCase = labels.stream().anyMatch(label -> !(label instanceof SwitchStatement.DefaultLabel));
+        if (hasCase) {
+            tokens.add(CASE);
+            tokens.add(TextToken.SPACE);
+        }
+
+        for (int i = 0; i < labels.size(); i++) {
+            SwitchStatement.Label label = labels.get(i);
+            if (label instanceof SwitchStatement.ExpressionLabel expressionLabel) {
+                expressionLabel.getExpression().accept(this);
+            } else if (label instanceof SwitchStatement.PatternLabel patternLabel) {
+                writePattern(patternLabel.pattern());
+            }
+            if (i < labels.size() - 1) {
+                tokens.add(TextToken.COMMA_SPACE);
+            }
+        }
+
+        tokens.add(TextToken.SPACE);
+        tokens.add(WHEN);
+        tokens.add(TextToken.SPACE);
+        whenCondition.accept(this);
+
+        tokens.add(TextToken.COLON);
+        fragments.addTokensFragment(tokens);
     }
 
     @Override

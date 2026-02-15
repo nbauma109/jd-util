@@ -1,0 +1,12 @@
+class SwitchPatternMatchingWhen {
+    record Point(int x, int y) {}
+
+    static int describe(Object o) {
+        return switch (o) {
+            case Point(int x, int y) when x > y -> x - y;
+            case Point(int x, int y) -> x + y;
+            default -> 0;
+        };
+    }
+}
+
