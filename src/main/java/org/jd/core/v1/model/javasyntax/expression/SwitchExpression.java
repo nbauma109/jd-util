@@ -112,11 +112,6 @@ public final class SwitchExpression extends AbstractLineNumberExpression {
         public void accept(ExpressionVisitor visitor) {
             visitor.visit(this);
         }
-
-        @Override
-        public String toString() {
-            return "PatternLabel{" + pattern + '}';
-        }
     }
 
     // ----------------------------------------------------------------------

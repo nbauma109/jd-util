@@ -14,9 +14,4 @@ public record TypePattern(Type type, String variableName, boolean fina1) impleme
     public TypePattern(Type type, String variableName) {
         this(type, variableName, false);
     }
-
-    @Override
-    public String toString() {
-        return "TypePattern{type=" + type + ", variableName='" + variableName + "'}";
-    }
 }

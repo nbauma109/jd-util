@@ -100,11 +100,6 @@ public class SwitchStatement implements Statement {
         public void accept(StatementVisitor visitor) {
             visitor.visit(this);
         }
-
-        @Override
-        public String toString() {
-            return "PatternLabel{" + pattern + '}';
-        }
     }
 
     // --- Block --- //
@@ -134,10 +129,6 @@ public class SwitchStatement implements Statement {
 
         public Expression getWhenCondition() {
             return whenCondition;
-        }
-
-        public boolean isRule() {
-            return rule;
         }
     }
 
