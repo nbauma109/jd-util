@@ -43,11 +43,11 @@ public class ForEachStatement implements Statement {
     }
 
     public Type getType() {
-        return pattern.getType();
+        return pattern.type();
     }
 
     public String getName() {
-        return pattern.getVariableName();
+        return pattern.variableName();
     }
 
     @Override

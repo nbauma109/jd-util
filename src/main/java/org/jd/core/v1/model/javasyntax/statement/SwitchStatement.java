@@ -94,20 +94,7 @@ public class SwitchStatement implements Statement {
         }
     }
 
-    public static class PatternLabel implements Label {
-        private Pattern pattern;
-
-        public PatternLabel(Pattern pattern) {
-            this.pattern = Objects.requireNonNull(pattern, "pattern");
-        }
-
-        public Pattern getPattern() {
-            return pattern;
-        }
-
-        public void setPattern(Pattern pattern) {
-            this.pattern = Objects.requireNonNull(pattern, "pattern");
-        }
+    public record PatternLabel(Pattern pattern) implements Label {
 
         @Override
         public void accept(StatementVisitor visitor) {

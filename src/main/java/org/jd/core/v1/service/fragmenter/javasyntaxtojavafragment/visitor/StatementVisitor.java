@@ -552,7 +552,7 @@ public class StatementVisitor extends ExpressionVisitor {
         tokens = new Tokens();
         tokens.add(CASE);
         tokens.add(TextToken.SPACE);
-        writePattern(statement.getPattern());
+        writePattern(statement.pattern());
         tokens.add(TextToken.COLON);
         fragments.addTokensFragment(tokens);
     }
@@ -593,7 +593,7 @@ public class StatementVisitor extends ExpressionVisitor {
             if (label instanceof SwitchStatement.ExpressionLabel expressionLabel) {
                 expressionLabel.getExpression().accept(this);
             } else if (label instanceof SwitchStatement.PatternLabel patternLabel) {
-                writePattern(patternLabel.getPattern());
+                writePattern(patternLabel.pattern());
             } else {
                 tokens.add(DEFAULT);
             }

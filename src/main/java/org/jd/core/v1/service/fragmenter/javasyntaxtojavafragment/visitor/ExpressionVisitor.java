@@ -914,7 +914,7 @@ public class ExpressionVisitor extends TypeVisitor {
                 Expression labelExpression = l.getExpression();
                 labelExpression.accept(this);
             } else if (label instanceof SwitchExpression.PatternLabel l) {
-                writePattern(l.getPattern());
+                writePattern(l.pattern());
             } else {
                 tokens.add(DEFAULT);
             }
@@ -944,23 +944,23 @@ public class ExpressionVisitor extends TypeVisitor {
     }
 
     protected void writeTypePattern(TypePattern pattern) {
-        if (pattern.isFinal()) {
+        if (pattern.fina1()) {
             tokens.add(FINAL);
             tokens.add(TextToken.SPACE);
         }
-        BaseType type = pattern.getType();
+        BaseType type = pattern.type();
         type.accept(this);
-        if (pattern.getVariableName() != null) {
+        if (pattern.variableName() != null) {
             tokens.add(TextToken.SPACE);
-            tokens.add(newTextToken(pattern.getVariableName()));
+            tokens.add(newTextToken(pattern.variableName()));
         }
     }
 
     protected void writeRecordPattern(RecordPattern pattern) {
-        BaseType type = pattern.getType();
+        BaseType type = pattern.type();
         type.accept(this);
         tokens.add(TextToken.LEFTROUNDBRACKET);
-        List<Pattern> componentPatterns = pattern.getComponentPatterns();
+        List<Pattern> componentPatterns = pattern.componentPatterns();
         for (int i = 0; i < componentPatterns.size(); i++) {
             writePattern(componentPatterns.get(i));
             if (i < componentPatterns.size() - 1) {
@@ -968,10 +968,6 @@ public class ExpressionVisitor extends TypeVisitor {
             }
         }
         tokens.add(TextToken.RIGHTROUNDBRACKET);
-        if (pattern.getVariableName() != null) {
-            tokens.add(TextToken.SPACE);
-            tokens.add(newTextToken(pattern.getVariableName()));
-        }
     }
 
     protected void storeContext() {

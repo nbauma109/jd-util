@@ -40,7 +40,7 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
     }
 
     public Type getInstanceOfType() {
-        return pattern.getType();
+        return pattern.type();
     }
 
     public Pattern getPattern() {
@@ -55,14 +55,6 @@ public class InstanceOfExpression extends AbstractLineNumberExpression {
     @Override
     public int getPriority() {
         return 8;
-    }
-
-    public boolean isFinal() {
-        return pattern instanceof TypePattern typePattern && typePattern.isFinal();
-    }
-
-    public String getVariableName() {
-        return pattern.getVariableName();
     }
 
     @Override

@@ -10,6 +10,6 @@ package org.jd.core.v1.model.javasyntax.pattern;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public interface Pattern {
-    Type getType();
-    String getVariableName();
+    Type type();
+    String variableName();
 }

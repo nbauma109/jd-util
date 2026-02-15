@@ -9,35 +9,9 @@ package org.jd.core.v1.model.javasyntax.pattern;
 
 import org.jd.core.v1.model.javasyntax.type.Type;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
-public class RecordPattern implements Pattern {
-    private final Type type;
-    private final List<Pattern> componentPatterns;
-    private final String variableName;
-
-    public RecordPattern(Type type, List<Pattern> componentPatterns, String variableName) {
-        this.type = Objects.requireNonNull(type, "type");
-        this.componentPatterns = Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(componentPatterns, "componentPatterns")));
-        this.variableName = variableName;
-    }
-
-    @Override
-    public Type getType() {
-        return type;
-    }
-
-    public List<Pattern> getComponentPatterns() {
-        return componentPatterns;
-    }
-
-    @Override
-    public String getVariableName() {
-        return variableName;
-    }
+public record RecordPattern(Type type, List<Pattern> componentPatterns, String variableName) implements Pattern {
 
     @Override
     public String toString() {

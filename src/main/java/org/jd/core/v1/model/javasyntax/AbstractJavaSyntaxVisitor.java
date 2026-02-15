@@ -496,7 +496,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
 
     @Override
     public void visit(SwitchExpression.PatternLabel label) {
-        safeAcceptPattern(label.getPattern());
+        safeAcceptPattern(label.pattern());
     }
 
     @Override
@@ -665,7 +665,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
 
     @Override
     public void visit(SwitchStatement.PatternLabel statement) {
-        safeAcceptPattern(statement.getPattern());
+        safeAcceptPattern(statement.pattern());
     }
 
     @Override
@@ -844,10 +844,10 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
         if (pattern == null) {
             return;
         }
-        BaseType type = pattern.getType();
+        BaseType type = pattern.type();
         safeAccept(type);
         if (pattern instanceof RecordPattern recordPattern) {
-            for (Pattern componentPattern : recordPattern.getComponentPatterns()) {
+            for (Pattern componentPattern : recordPattern.componentPatterns()) {
                 safeAcceptPattern(componentPattern);
             }
         }
