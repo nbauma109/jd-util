@@ -197,11 +197,6 @@ public class ParserRealignerTest implements DefaultTest {
     }
 
     @Test
-    public void testParseRecordEnhancedForPatternMatching() throws IOException, URISyntaxException, ParseException {
-        testParseRealign("/txt/RecordEnhancedForPatternMatching_input.txt", "/txt/RecordEnhancedForPatternMatching_output.txt");
-    }
-
-    @Test
     public void testParseSealedSwitch() throws IOException, URISyntaxException, ParseException {
         testParseRealign("/txt/SealedSwitch_input.txt", "/txt/SealedSwitch_output.txt");
     }

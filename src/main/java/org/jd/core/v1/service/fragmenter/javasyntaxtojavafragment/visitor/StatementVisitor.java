@@ -223,7 +223,12 @@ public class StatementVisitor extends ExpressionVisitor {
             tokens.add(TextToken.SPACE);
         }
 
-        writePattern(statement.getPattern());
+        BaseType type = statement.getType();
+
+        type.accept(this);
+
+        tokens.add(TextToken.SPACE);
+        tokens.add(newTextToken(statement.getName()));
         tokens.add(TextToken.SPACE_COLON_SPACE);
 
         statement.getExpression().accept(this);
