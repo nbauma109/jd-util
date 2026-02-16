@@ -1,7 +1,7 @@
 class SwitchPatternMatchingMultiLabelsWhen {
     static void describe(Object o) {
         switch (o) {
-            case Integer i, Long l when o != null && o.hashCode() > 0 -> System.out.println(1);
+            case Integer _, Long _ when o != null && o.hashCode() > 0 -> System.out.println(1);
             default -> System.out.println(0);
         }
     }
