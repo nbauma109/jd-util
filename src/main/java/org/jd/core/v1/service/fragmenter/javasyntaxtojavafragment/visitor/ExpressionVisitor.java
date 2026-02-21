@@ -782,14 +782,23 @@ public class ExpressionVisitor extends TypeVisitor {
     }
 
     protected void printTernaryOperatorExpression(Expression expression) {
+        boolean previousInExpressionFlag = inExpressionFlag;
+        boolean previousInVarArgParam = inVarArgParam;
+
         if (expression.getPriority() > 3) {
             tokens.add(TextToken.LEFTROUNDBRACKET);
+            inExpressionFlag = false;
+            inVarArgParam = false;
             expression.accept(this);
             tokens.add(TextToken.RIGHTROUNDBRACKET);
         } else {
-            inVarArgParam = false; // cannot use varargs in ternary op
+            inExpressionFlag = false;
+            inVarArgParam = false;
             expression.accept(this);
         }
+
+        inExpressionFlag = previousInExpressionFlag;
+        inVarArgParam = previousInVarArgParam;
     }
 
     @Override
