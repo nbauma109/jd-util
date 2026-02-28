@@ -8,6 +8,11 @@
 package org.jd.core.v1.util;
 
 import org.apache.commons.io.IOUtils;
+import org.jd.core.v1.model.javasyntax.declaration.InterfaceDeclaration;
+import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
+import org.jd.core.v1.model.javasyntax.reference.AnnotationReferences;
+import org.jd.core.v1.model.javasyntax.type.ObjectType;
+import org.jd.core.v1.parser.JavaParseResult;
 import org.jd.core.v1.parser.JdJavaSourceParser;
 import org.jd.core.v1.parser.ParseException;
 import org.junit.Test;
@@ -15,8 +20,10 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.bcel.Const.ACC_SYNTHETIC;
 import static org.junit.Assert.*;
 
 public class ParserRealignerTest implements DefaultTest {
@@ -109,6 +116,40 @@ public class ParserRealignerTest implements DefaultTest {
                 @com.acme.annotations.Version(major = 1, minor = 2)
                 package com.acme.foo.bar;
                 """));
+    }
+
+    @Test
+    public void testFormatAnnotatedPackageInfo() throws ParseException {
+        AnnotationReferences<AnnotationReference> packageAnnotations = new AnnotationReferences<>(1);
+        packageAnnotations.add(
+                new AnnotationReference(new ObjectType("java/lang/Deprecated", "java.lang.Deprecated", "Deprecated"))
+        );
+
+        InterfaceDeclaration packageInfo = new InterfaceDeclaration(
+                packageAnnotations,
+                ACC_SYNTHETIC,
+                "a/b/package-info",
+                "package-info",
+                null,
+                null,
+                null
+        );
+
+        String realigned = new ParserRealigner().format(new JavaParseResult("a.b", Collections.emptyList(), packageInfo));
+
+        int annotationIndex = realigned.indexOf("@Deprecated");
+        if (annotationIndex < 0) {
+            annotationIndex = realigned.indexOf("@java.lang.Deprecated");
+        }
+
+        int packageIndex = realigned.indexOf("package a.b;");
+
+        assertTrue("Expected package annotation in output, got:\n" + realigned, annotationIndex >= 0);
+        assertTrue("Expected package declaration in output, got:\n" + realigned, packageIndex >= 0);
+        assertTrue("Package annotation should precede package declaration, got:\n" + realigned, annotationIndex < packageIndex);
+        assertFalse("Synthetic package-info type should not be emitted, got:\n" + realigned,
+                realigned.contains("interface package-info"));
+        assertNotNull(JdJavaSourceParser.parse(realigned));
     }
 
     @Test
