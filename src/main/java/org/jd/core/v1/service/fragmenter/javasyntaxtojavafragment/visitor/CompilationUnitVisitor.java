@@ -21,6 +21,7 @@ import org.jd.core.v1.model.javasyntax.declaration.AnnotationDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.ArrayVariableInitializer;
 import org.jd.core.v1.model.javasyntax.declaration.BaseFieldDeclarator;
 import org.jd.core.v1.model.javasyntax.declaration.BaseFormalParameter;
+import org.jd.core.v1.model.javasyntax.declaration.BaseTypeDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.BodyDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.ClassDeclaration;
 import org.jd.core.v1.model.javasyntax.declaration.ConstructorDeclaration;
@@ -486,15 +487,21 @@ public class CompilationUnitVisitor extends StatementVisitor {
         // Add fragment for package
         int index = mainInternalName.lastIndexOf('/');
         if (index != -1) {
-            Tokens tokens = new Tokens();
+            Tokens packageTokens = new Tokens();
 
-            tokens.add(PACKAGE);
-            tokens.add(TextToken.SPACE);
-            tokens.add(newTextToken(mainInternalName.substring(0, index).replace('/', '.')));
-            tokens.add(TextToken.SEMICOLON);
+            BaseAnnotationReference packageAnnotations = extractPackageAnnotations(compilationUnit.typeDeclarations());
+            if (packageAnnotations != null && !packageAnnotations.isEmpty()) {
+                tokens = packageTokens;
+                packageAnnotations.accept(this);
+                packageTokens.add(NewLineToken.NEWLINE_1);
+            }
 
-            fragments.addTokensFragment(tokens);
+            packageTokens.add(PACKAGE);
+            packageTokens.add(TextToken.SPACE);
+            packageTokens.add(newTextToken(mainInternalName.substring(0, index).replace('/', '.')));
+            packageTokens.add(TextToken.SEMICOLON);
 
+            fragments.addTokensFragment(packageTokens);
             JavaFragmentFactory.addSpacerAfterPackage(fragments);
         }
 
@@ -511,6 +518,34 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
         // Visit all compilation unit
         super.visit(compilationUnit);
+    }
+
+    private static BaseAnnotationReference extractPackageAnnotations(BaseTypeDeclaration typeDeclarations) {
+        if (typeDeclarations == null) {
+            return null;
+        }
+
+        if (typeDeclarations instanceof TypeDeclaration typeDeclaration) {
+            return isPackageInfo(typeDeclaration) ? typeDeclaration.getAnnotationReferences() : null;
+        }
+
+        if (!typeDeclarations.isList()) {
+            return null;
+        }
+
+        for (MemberDeclaration memberDeclaration : typeDeclarations.getList()) {
+            if (memberDeclaration instanceof TypeDeclaration typeDeclaration && isPackageInfo(typeDeclaration)) {
+                return typeDeclaration.getAnnotationReferences();
+            }
+        }
+
+        return null;
+    }
+
+    private static boolean isPackageInfo(TypeDeclaration typeDeclaration) {
+        String internalTypeName = typeDeclaration.getInternalTypeName();
+        return "package-info".equals(internalTypeName)
+                || (internalTypeName != null && internalTypeName.endsWith("/package-info"));
     }
 
     @Override
