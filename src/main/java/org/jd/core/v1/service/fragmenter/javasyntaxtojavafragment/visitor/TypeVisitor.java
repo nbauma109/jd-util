@@ -36,9 +36,11 @@ import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import org.jd.core.v1.util.DefaultList;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.apache.bcel.Const.MAJOR_1_5;
 import static org.jd.core.v1.model.javasyntax.type.PrimitiveType.FLAG_BOOLEAN;
@@ -302,6 +304,7 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
 
         int printerType = isInInvokeNew() ? Printer.CONSTRUCTOR : Printer.TYPE;
         String name = ot.getName();
+        boolean useQualifiedTypeName = shouldUseQualifiedTypeName(internalName, name);
         if (packageContainsType(internalPackageName, internalName)) {
             // In the current package
             if (ownerType != null && ownerType.getInnerTypeNames() != null) {
@@ -310,18 +313,137 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
                     return new QualifiedReferenceToken(printerType, internalName, qualifiedName, null, ownerType);
                 }
             }
+            if (useQualifiedTypeName) {
+                return new QualifiedReferenceToken(printerType, internalName, qualifiedName, null, ownerType);
+            }
             return new ReferenceToken(printerType, internalName, name, null, ownerType);
         }
         if (packageContainsType("java/lang/", internalName)) {
             // A 'java.lang' class
             String internalLocalTypeName = internalPackageName + name;
 
-            if (loader.canLoad(internalLocalTypeName)) {
+            if (loader.canLoad(internalLocalTypeName) || useQualifiedTypeName) {
                 return new ReferenceToken(printerType, internalName, qualifiedName, null, ownerType);
             }
             return new ReferenceToken(printerType, internalName, name, null, ownerType);
         }
+        if (useQualifiedTypeName) {
+            return new QualifiedReferenceToken(printerType, internalName, qualifiedName, null, ownerType);
+        }
         return new TypeReferenceToken(importsFragment, printerType, internalName, qualifiedName, name, ownerType);
+    }
+
+    boolean shouldUseQualifiedTypeName(String internalName, String simpleTypeName) {
+        if (simpleTypeName == null) {
+            return false;
+        }
+        if (isUnqualifiedSamePackageInnerType(internalName)) {
+            return true;
+        }
+        if (currentType == null) {
+            return false;
+        }
+        return containsMemberTypeNameInHierarchy(simpleTypeName, currentType.getInternalName(), new HashSet<>());
+    }
+
+    private boolean isUnqualifiedSamePackageInnerType(String internalName) {
+        if (internalName == null || internalName.indexOf('$') == -1 || !packageContainsType(internalPackageName, internalName)) {
+            return false;
+        }
+        if (currentType == null) {
+            return true;
+        }
+        return !isInnerTypeAccessible(internalName, currentType.getInternalName(), new HashSet<>());
+    }
+
+    private boolean isInnerTypeAccessible(String targetInternalTypeName, String fromInternalTypeName, Set<String> visited) {
+        if (targetInternalTypeName == null || fromInternalTypeName == null || !visited.add(fromInternalTypeName)) {
+            return false;
+        }
+        if (sameTopLevelType(targetInternalTypeName, fromInternalTypeName)) {
+            return true;
+        }
+        if (hasLocalInnerType(fromInternalTypeName, targetInternalTypeName)) {
+            return true;
+        }
+
+        TypeMaker.TypeTypes typeTypes = typeMaker.makeTypeTypes(fromInternalTypeName);
+        if (typeTypes == null) {
+            return false;
+        }
+        if (typeTypes.getSuperType() != null
+                && isInnerTypeAccessible(targetInternalTypeName, typeTypes.getSuperType().getInternalName(), visited)) {
+            return true;
+        }
+        if (typeTypes.getInterfaces() != null) {
+            for (BaseType interfaceType : typeTypes.getInterfaces()) {
+                if (isInnerTypeAccessible(targetInternalTypeName, interfaceType.getInternalName(), visited)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean containsMemberTypeNameInHierarchy(String simpleTypeName, String fromInternalTypeName, Set<String> visited) {
+        if (simpleTypeName == null || fromInternalTypeName == null || !visited.add(fromInternalTypeName)) {
+            return false;
+        }
+        if (hasMemberTypeName(fromInternalTypeName, simpleTypeName)) {
+            return true;
+        }
+
+        TypeMaker.TypeTypes typeTypes = typeMaker.makeTypeTypes(fromInternalTypeName);
+        if (typeTypes == null) {
+            return false;
+        }
+        if (typeTypes.getSuperType() != null
+                && containsMemberTypeNameInHierarchy(simpleTypeName, typeTypes.getSuperType().getInternalName(), visited)) {
+            return true;
+        }
+        if (typeTypes.getInterfaces() != null) {
+            for (BaseType interfaceType : typeTypes.getInterfaces()) {
+                if (containsMemberTypeNameInHierarchy(simpleTypeName, interfaceType.getInternalName(), visited)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean hasLocalInnerType(String ownerInternalTypeName, String targetInternalTypeName) {
+        ObjectType objectType = typeMaker.makeFromInternalTypeName(ownerInternalTypeName);
+        Set<String> innerTypeNames = objectType == null ? null : objectType.getInnerTypeNames();
+        return innerTypeNames != null && innerTypeNames.contains(targetInternalTypeName);
+    }
+
+    private boolean hasMemberTypeName(String ownerInternalTypeName, String simpleTypeName) {
+        ObjectType objectType = typeMaker.makeFromInternalTypeName(ownerInternalTypeName);
+        Set<String> innerTypeNames = objectType == null ? null : objectType.getInnerTypeNames();
+
+        if (innerTypeNames == null || innerTypeNames.isEmpty()) {
+            return false;
+        }
+        for (String innerTypeName : innerTypeNames) {
+            if (simpleTypeName.equals(simpleInnerTypeName(innerTypeName))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String simpleInnerTypeName(String internalTypeName) {
+        int index = internalTypeName.lastIndexOf('$');
+        return index == -1 ? internalTypeName : internalTypeName.substring(index + 1);
+    }
+
+    private static boolean sameTopLevelType(String leftInternalTypeName, String rightInternalTypeName) {
+        return topLevelTypeName(leftInternalTypeName).equals(topLevelTypeName(rightInternalTypeName));
+    }
+
+    private static String topLevelTypeName(String internalTypeName) {
+        int index = internalTypeName.indexOf('$');
+        return index == -1 ? internalTypeName : internalTypeName.substring(0, index);
     }
 
     protected boolean isInInvokeNew() {
