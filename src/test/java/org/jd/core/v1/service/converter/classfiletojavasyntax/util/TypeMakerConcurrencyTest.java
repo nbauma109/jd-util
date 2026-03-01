@@ -1,5 +1,6 @@
 package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jd.core.v1.api.loader.Loader;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.Type;
@@ -105,7 +106,7 @@ public class TypeMakerConcurrencyTest {
                 assertTrue("Expected ObjectType", ot instanceof ObjectType);
                 // Accessing the qualified name forces name computation paths too.
                 final String qn = ot.getQualifiedName();
-                assertTrue(qn != null && !qn.isEmpty());
+                assertTrue(StringUtils.isNotEmpty(qn));
                 return null;
             });
         }

@@ -1,0 +1,38 @@
+/*
+ * Copyright (c) 2026 @nbauma109.
+ * This project is distributed under the GPLv3 license.
+ * This is a Copyleft license that gives the user the right to use,
+ * copy and modify the code freely for non-commercial purposes.
+ */
+package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
+
+import java.util.Collection;
+
+import org.jd.core.v1.model.javasyntax.reference.BaseAnnotationReference;
+import org.jd.core.v1.util.Base;
+
+public class Utils {
+
+    private Utils() {
+    }
+
+    public static <T> boolean isEmpty(Base<T> base) {
+        return base == null || base.size() == 0;
+    }
+
+    public static boolean isEmpty(BaseAnnotationReference annotationReferences) {
+        return annotationReferences == null || annotationReferences.isEmpty();
+    }
+
+    public static <T> boolean isEmptyCollection(Collection<T> coll) {
+        return coll == null || coll.isEmpty();
+    }
+
+    public static <T> boolean isSingleton(Base<T> base) {
+        return base != null && !base.isList();
+    }
+
+    public static <T> boolean isList(Base<T> base) {
+        return base != null && base.isList();
+    }
+}

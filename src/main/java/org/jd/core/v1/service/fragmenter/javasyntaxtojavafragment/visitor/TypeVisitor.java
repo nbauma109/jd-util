@@ -32,6 +32,7 @@ import org.jd.core.v1.model.token.LineNumberToken;
 import org.jd.core.v1.model.token.ReferenceToken;
 import org.jd.core.v1.model.token.TextToken;
 import org.jd.core.v1.model.token.Token;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.Utils;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker;
 import org.jd.core.v1.util.DefaultList;
 
@@ -421,7 +422,7 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         ObjectType objectType = typeMaker.makeFromInternalTypeName(ownerInternalTypeName);
         Set<String> innerTypeNames = objectType == null ? null : objectType.getInnerTypeNames();
 
-        if (innerTypeNames == null || innerTypeNames.isEmpty()) {
+        if (Utils.isEmptyCollection(innerTypeNames)) {
             return false;
         }
         for (String innerTypeName : innerTypeNames) {

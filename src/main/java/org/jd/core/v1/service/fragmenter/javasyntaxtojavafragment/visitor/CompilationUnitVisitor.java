@@ -74,6 +74,7 @@ import org.jd.core.v1.model.token.StartMarkerToken;
 import org.jd.core.v1.model.token.TextToken;
 import org.jd.core.v1.model.token.Token;
 import org.jd.core.v1.parser.util.ASTUtilities;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.Utils;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
 
 import java.util.Iterator;
@@ -214,7 +215,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
         if (elementValue == null) {
             BaseElementValuePair elementValuePairs = reference.getElementValuePairs();
 
-            if (elementValuePairs != null && elementValuePairs.size() > 0) {
+            if (!Utils.isEmpty(elementValuePairs)) {
                 tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
                 elementValuePairs.accept(this);
                 tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
@@ -309,7 +310,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             // Build fragments for super type
             BaseType superType = declaration.getSuperType();
-            if (superType != null && !superType.equals(ObjectType.TYPE_OBJECT) && superType.size() > 0) {
+            if (!Utils.isEmpty(superType) && !superType.equals(ObjectType.TYPE_OBJECT)) {
                 fragments.addTokensFragment(tokens);
 
                 JavaFragmentFactory.addSpacerBeforeExtends(fragments);
@@ -325,7 +326,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             // Build fragments for interfaces
             BaseType interfaces = declaration.getInterfaces();
-            if (interfaces != null && interfaces.size() > 0) {
+            if (!Utils.isEmpty(interfaces)) {
                 if (!tokens.isEmpty()) {
                     fragments.addTokensFragment(tokens);
                 }
@@ -343,7 +344,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             // Build fragments for permitted subclasses
             BaseType permittedSubclasses = declaration.getPermittedSubclasses();
-            if (permittedSubclasses != null && permittedSubclasses.size() > 0) {
+            if (!Utils.isEmpty(permittedSubclasses)) {
                 fragments.addTokensFragment(tokens);
 
                 JavaFragmentFactory.addSpacerBeforeImplements(fragments);
@@ -401,7 +402,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
         List<RecordDeclaration.RecordComponent> components = declaration.getComponents();
 
-        if (components == null || components.isEmpty()) {
+        if (Utils.isEmptyCollection(components)) {
             tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
         } else {
             tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
@@ -423,7 +424,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
         BaseType interfaces = declaration.getInterfaces();
 
-        if (interfaces != null && interfaces.size() > 0) {
+        if (!Utils.isEmpty(interfaces)) {
             fragments.addTokensFragment(tokens);
 
             JavaFragmentFactory.addSpacerBeforeImplements(fragments);
@@ -465,7 +466,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
     private void buildTokensForRecordComponent(RecordDeclaration.RecordComponent component) {
         BaseAnnotationReference annotationReferences = component.getAnnotationReferences();
 
-        if (annotationReferences != null && !annotationReferences.isEmpty()) {
+        if (!Utils.isEmpty(annotationReferences)) {
             annotationReferences.accept(this);
             tokens.add(TextToken.SPACE);
         }
@@ -490,7 +491,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             Tokens packageTokens = new Tokens();
 
             BaseAnnotationReference packageAnnotations = extractPackageAnnotations(compilationUnit.typeDeclarations());
-            if (packageAnnotations != null && !packageAnnotations.isEmpty()) {
+            if (!Utils.isEmpty(packageAnnotations)) {
                 tokens = packageTokens;
                 packageAnnotations.accept(this);
                 packageTokens.add(NewLineToken.NEWLINE_1);
@@ -590,7 +591,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
                 BaseFormalParameter formalParameters = declaration.getFormalParameters();
 
                 if (!(declaration instanceof RecordConstructorDeclaration)) {
-                    if (formalParameters == null || formalParameters.size() == 0) {
+                    if (Utils.isEmpty(formalParameters)) {
                         tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
                     } else {
                         tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
@@ -645,7 +646,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
                 restoreContext();
 
                 fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
-            } else if (statements != null && statements.size() > 0) {
+            } else if (!Utils.isEmpty(statements)) {
                 int fragmentCount0 = fragments.size();
                 fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_METHOD_BLOCK);
 
@@ -719,7 +720,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             // Build fragments for interfaces
             BaseType interfaces = declaration.getInterfaces();
-            if (interfaces != null && interfaces.size() > 0) {
+            if (!Utils.isEmpty(interfaces)) {
                 tokens.add(StartBlockToken.START_DECLARATION_OR_STATEMENT_BLOCK);
 
                 fragments.addTokensFragment(tokens);
@@ -747,7 +748,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             List<EnumDeclaration.Constant> constants = declaration.getConstants();
 
-            if (constants != null && !constants.isEmpty()) {
+            if (!Utils.isEmptyCollection(constants)) {
                 emptyConstants = false;
                 int preferredLineNumber = 0;
 
@@ -778,7 +779,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             BodyDeclaration bodyDeclaration = declaration.getBodyDeclaration();
 
             if (bodyDeclaration != null) {
-                if (constants != null && !constants.isEmpty()) {
+                if (!Utils.isEmptyCollection(constants)) {
                     emptyConstants = false;
                     Fragments f = fragments;
 
@@ -913,7 +914,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
     public void visit(FormalParameter declaration) {
         BaseAnnotationReference annotationReferences = declaration.getAnnotationReferences();
 
-        if (annotationReferences != null && !annotationReferences.isEmpty()) {
+        if (!Utils.isEmpty(annotationReferences)) {
             annotationReferences.accept(this);
             tokens.add(TextToken.SPACE);
         }
@@ -968,7 +969,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             // Build fragments for interfaces
             BaseType interfaces = declaration.getInterfaces();
-            if (interfaces != null && interfaces.size() > 0) {
+            if (!Utils.isEmpty(interfaces)) {
                 fragments.addTokensFragment(tokens);
 
                 JavaFragmentFactory.addSpacerBeforeImplements(fragments);
@@ -984,7 +985,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             // Build fragments for permitted subclasses
             BaseType permittedSubclasses = declaration.getPermittedSubclasses();
-            if (permittedSubclasses != null && permittedSubclasses.size() > 0) {
+            if (!Utils.isEmpty(permittedSubclasses)) {
                 fragments.addTokensFragment(tokens);
 
                 JavaFragmentFactory.addSpacerBeforeImplements(fragments);
@@ -1046,7 +1047,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
         tokens = new Tokens();
 
-        if (declaration.getRequires() != null && !declaration.getRequires().isEmpty()) {
+        if (!Utils.isEmptyCollection(declaration.getRequires())) {
             Iterator<ModuleDeclaration.ModuleInfo> iterator = declaration.getRequires().iterator();
             visitModuleDeclaration(iterator.next());
             while (iterator.hasNext()) {
@@ -1056,7 +1057,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             needNewLine = true;
         }
 
-        if (declaration.getExports() != null && !declaration.getExports().isEmpty()) {
+        if (!Utils.isEmptyCollection(declaration.getExports())) {
             if (needNewLine) {
                 tokens.add(NewLineToken.NEWLINE_2);
             }
@@ -1069,7 +1070,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             needNewLine = true;
         }
 
-        if (declaration.getOpens() != null && !declaration.getOpens().isEmpty()) {
+        if (!Utils.isEmptyCollection(declaration.getOpens())) {
             if (needNewLine) {
                 tokens.add(NewLineToken.NEWLINE_2);
             }
@@ -1082,7 +1083,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             needNewLine = true;
         }
 
-        if (declaration.getUses() != null && !declaration.getUses().isEmpty()) {
+        if (!Utils.isEmptyCollection(declaration.getUses())) {
             if (needNewLine) {
                 tokens.add(NewLineToken.NEWLINE_2);
             }
@@ -1095,7 +1096,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             needNewLine = true;
         }
 
-        if (declaration.getProvides() != null && !declaration.getProvides().isEmpty()) {
+        if (!Utils.isEmptyCollection(declaration.getProvides())) {
             if (needNewLine) {
                 tokens.add(NewLineToken.NEWLINE_2);
             }
@@ -1136,7 +1137,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
         tokens.add(TextToken.SPACE);
         tokens.add(new ReferenceToken(Printer.PACKAGE, packageInfo.internalName(), packageInfo.internalName().replace('/', '.')));
 
-        if (packageInfo.moduleInfoNames() != null && !packageInfo.moduleInfoNames().isEmpty()) {
+        if (!Utils.isEmptyCollection(packageInfo.moduleInfoNames())) {
             tokens.add(TextToken.SPACE);
             tokens.add(TO);
 

@@ -6,6 +6,7 @@
  */
 package org.jd.core.v1.model.javasyntax.declaration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jd.core.v1.util.DefaultList;
 
 import static org.apache.bcel.Const.ACC_PUBLIC;
@@ -27,7 +28,7 @@ public class TypeDeclarations extends DefaultList<MemberDeclaration> implements 
         for (MemberDeclaration member : this) {
             if (member instanceof BaseTypeDeclaration btd && (btd.getFlags() & ACC_PUBLIC) != 0) {
                 String internalName = btd.getInternalTypeName();
-                if (internalName != null && !internalName.isEmpty()) {
+                if (StringUtils.isNotEmpty(internalName)) {
                     return internalName;
                 }
             }

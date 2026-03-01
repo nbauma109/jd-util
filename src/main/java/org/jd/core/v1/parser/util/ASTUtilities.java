@@ -20,6 +20,7 @@ import org.jd.core.v1.model.javasyntax.statement.NoStatement;
 import org.jd.core.v1.model.javasyntax.statement.Statement;
 import org.jd.core.v1.model.javasyntax.statement.Statements;
 import org.jd.core.v1.parser.ParseException;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.Utils;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class ASTUtilities {
     }
 
     public static BaseStatement toBaseStatement(List<Statement> list) {
-        if (list == null || list.isEmpty()) {
+        if (Utils.isEmptyCollection(list)) {
             return NoStatement.NO_STATEMENT;
         }
         if (list.size() == 1) {
@@ -55,7 +56,7 @@ public class ASTUtilities {
     }
 
     public static BaseExpression toBaseExpression(List<Expression> list) {
-        if (list == null || list.isEmpty()) {
+        if (Utils.isEmptyCollection(list)) {
             return NoExpression.NO_EXPRESSION;
         }
         if (list.size() == 1) {
@@ -66,7 +67,7 @@ public class ASTUtilities {
 
     public static BaseTypeDeclaration toBaseTypeDeclaration(List<MemberDeclaration> topLevelTypes)
             throws ParseException {
-        if (topLevelTypes == null || topLevelTypes.isEmpty()) {
+        if (Utils.isEmptyCollection(topLevelTypes)) {
             throw new ParseException("No top-level type declaration found");
         }
         if (topLevelTypes.size() == 1) {

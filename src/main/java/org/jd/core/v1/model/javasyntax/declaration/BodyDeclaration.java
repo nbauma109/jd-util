@@ -7,6 +7,8 @@
 
 package org.jd.core.v1.model.javasyntax.declaration;
 
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.Utils;
+
 public class BodyDeclaration implements Declaration {
     private final String internalTypeName;
     protected BaseMemberDeclaration memberDeclarations;
@@ -39,6 +41,6 @@ public class BodyDeclaration implements Declaration {
     }
 
     public boolean isEmpty() {
-        return memberDeclarations == null || memberDeclarations.size() == 0;
+        return Utils.isEmpty(memberDeclarations);
     }
 }

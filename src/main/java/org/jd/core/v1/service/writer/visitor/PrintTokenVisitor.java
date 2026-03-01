@@ -25,6 +25,7 @@ import org.jd.core.v1.model.token.StringConstantToken;
 import org.jd.core.v1.model.token.TextToken;
 import org.jd.core.v1.model.token.Token;
 import org.jd.core.v1.model.token.TokenVisitor;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.Utils;
 
 import java.util.List;
 
@@ -174,7 +175,7 @@ public class PrintTokenVisitor implements TokenVisitor {
     }
 
     protected int searchLineNumber() {
-        if (tokens == null || tokens.isEmpty()) {
+        if (Utils.isEmptyCollection(tokens)) {
             return UNKNOWN_LINE_NUMBER;
         }
 

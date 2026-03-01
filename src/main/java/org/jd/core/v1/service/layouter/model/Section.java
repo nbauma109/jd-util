@@ -11,6 +11,7 @@ import org.jd.core.v1.model.fragment.FlexibleFragment;
 import org.jd.core.v1.service.layouter.util.VisitorsHolder;
 import org.jd.core.v1.service.layouter.visitor.AbstractSearchMovableBlockFragmentVisitor;
 import org.jd.core.v1.service.layouter.visitor.AbstractStoreMovableBlockFragmentIndexVisitorAbstract;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.Utils;
 import org.jd.core.v1.util.DefaultList;
 
 import java.util.Iterator;
@@ -35,7 +36,7 @@ public class Section {
         this.fixedFragment = fixedFragment;
         this.previousSection = previousSection;
 
-        if (flexibleFragments == null || flexibleFragments.isEmpty()) {
+        if (Utils.isEmptyCollection(flexibleFragments)) {
             throw new IllegalArgumentException("Section must contain flexible fragments");
         }
 

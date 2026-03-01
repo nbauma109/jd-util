@@ -49,6 +49,7 @@ import org.jd.core.v1.model.token.StartBlockToken;
 import org.jd.core.v1.model.token.StartMarkerToken;
 import org.jd.core.v1.model.token.TextToken;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.util.Utils;
 
 import java.util.Iterator;
 import java.util.List;
@@ -240,7 +241,7 @@ public class StatementVisitor extends ExpressionVisitor {
         tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
         fragments.addTokensFragment(tokens);
 
-        if (statements == null || statements.size() == 0) {
+        if (Utils.isEmpty(statements)) {
             tokens.add(TextToken.SEMICOLON);
         } else {
             Fragments tmp = fragments;
@@ -282,7 +283,7 @@ public class StatementVisitor extends ExpressionVisitor {
 
         BaseStatement stmt = statement.getStatements();
 
-        if (stmt == null || stmt == NoStatement.NO_STATEMENT || stmt.size() == 0) {
+        if (stmt == NoStatement.NO_STATEMENT || Utils.isEmpty(stmt)) {
             fragments.add(TokensFragment.SEMICOLON);
         } else {
             Fragments tmp = fragments;
