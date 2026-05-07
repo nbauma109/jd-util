@@ -1,0 +1,40 @@
+class UnnamedPatternJdk21 {
+  record Point(int x, int y) {}
+
+  boolean testInstanceOf(Object obj) {
+    return obj instanceof Point(int x, int _);
+  }
+
+  int testSwitch(Object obj) {
+    return switch (obj) {
+        case Point(int x, int _) -> x;
+        case Integer i -> i;
+        default -> 0;
+      };
+  }
+
+  boolean testMultipleUnnamed(Object obj) {
+    return obj instanceof Point(int _, int _);
+  }
+
+  void testCatch() {
+    try {
+      throw new Exception();
+    } catch (Exception _) {
+      System.out.println("Error occurred");
+    }
+  }
+
+  void testForLoop() {
+    for (int _ = 0; _ < 10; _++)
+      System.out.println("Loop");
+  }
+
+  void testTryWithResources() {
+    try (var _ = new java.io.FileInputStream("file.txt")) {
+      System.out.println("Reading file");
+    } catch (Exception e) {
+      System.out.println("Error");
+    }
+  }
+}

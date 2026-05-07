@@ -370,6 +370,11 @@ public class ParserRealignerTest implements DefaultTest {
         testParseRealign("/txt/MissingLineNumbers_input.txt", "/txt/MissingLineNumbers_output.txt");
     }
 
+    @Test
+    public void testUnnamedPatternJdk21() throws IOException, URISyntaxException, ParseException {
+        testParseRealign("/txt/UnnamedPatternJdk21_input.txt", "/txt/UnnamedPatternJdk21_output.txt");
+    }
+
     private void testParseRealign(String inputName, String outputName)
             throws IOException, URISyntaxException, ParseException {
         String input = toString(getClass().getResource(inputName));

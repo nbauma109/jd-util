@@ -1,0 +1,47 @@
+class UnnamedPatternJdk21 {
+    record Point(int x, int y) {}
+
+    // Unnamed pattern in instanceof
+    boolean testInstanceOf(Object obj) {
+        return obj instanceof Point(int x, int _);
+    }
+
+    // Unnamed pattern in switch
+    int testSwitch(Object obj) {
+        return switch (obj) {
+            case Point(int x, int _) -> x;
+            case Integer i -> i;
+            default -> 0;
+        };
+    }
+
+    // Multiple unnamed patterns
+    boolean testMultipleUnnamed(Object obj) {
+        return obj instanceof Point(int _, int _);
+    }
+
+    // Unnamed variable in catch
+    void testCatch() {
+        try {
+            throw new Exception();
+        } catch (Exception _) {
+            System.out.println("Error occurred");
+        }
+    }
+
+    // Unnamed variable in for loop
+    void testForLoop() {
+        for (int _ = 0; _ < 10; _++) {
+            System.out.println("Loop");
+        }
+    }
+
+    // Unnamed variable in try-with-resources
+    void testTryWithResources() {
+        try (var _ = new java.io.FileInputStream("file.txt")) {
+            System.out.println("Reading file");
+        } catch (Exception e) {
+            System.out.println("Error");
+        }
+    }
+}
