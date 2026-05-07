@@ -7,6 +7,51 @@
 # jd-util
 Common utilities for Java bytecode analysis and type bindings used by [jd-core](https://github.com/nbauma109/jd-core) projects, and java source parser/realigner/formatter
 
+## Supported Java Language Features
+
+The Java parser supports language features from **Java 8 through Java 21+**, including:
+
+### Core Features (Java 8+)
+- Lambda expressions and method references
+- Generics and type parameters
+- Annotations and annotation types
+- Enums with complex bodies
+- Try-with-resources
+- Multi-catch exception handling
+- Diamond operator
+
+### Modern Features (Java 9-16)
+- Module system (`module`, `requires`, `exports`, `opens`, `uses`, `provides`)
+- `var` local variable type inference
+
+### Pattern Matching & Records (Java 16-21)
+- **Records** - compact data classes with automatic accessors
+- **Sealed classes** - `sealed`, `non-sealed`, and `permits` keywords
+- **Pattern matching for `instanceof`** - type patterns with variable binding
+- **Pattern matching for `switch`** - comprehensive switch expressions with patterns
+- **Record patterns** - destructuring records in patterns
+- **Guard clauses** - `when` conditions in switch cases
+
+### JDK 21 Finalized Features
+- **Unnamed patterns and variables** - using `_` as a placeholder in:
+  - Pattern matching (e.g., `case Point(int x, int _)`)
+  - Exception handlers (e.g., `catch (Exception _)`)
+  - For loops and try-with-resources
+  - Lambda parameters
+
+### Preview Features (Not Yet Supported)
+- String templates (JDK 21+ preview)
+- Unnamed classes and instance main methods (JDK 21+ preview)
+- Flexible constructor bodies (JDK 24+ preview)
+
+### Testing with JDK Sources
+The project includes test infrastructure to validate parsing against:
+- JDK 17 sources (default)
+- JDK 21 sources (via `-Djdk21.src.zip` property)
+- JDK 25 sources (via `-Djdk25.src.zip` property)
+
+## Usage
+
 ```java
 import org.apache.bcel.classfile.Method;
 import org.jd.core.v1.loader.ClassPathLoader;
