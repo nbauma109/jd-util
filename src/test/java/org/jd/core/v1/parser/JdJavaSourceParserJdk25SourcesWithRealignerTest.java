@@ -178,10 +178,11 @@ public class JdJavaSourceParserJdk25SourcesWithRealignerTest {
         }
 
         // Try common locations
+        String javaHome25 = System.getenv("JAVA_25_HOME");
         Path[] candidates = new Path[]{
                 safePath("/usr/lib/jvm/java-25-openjdk-amd64/lib/src.zip"),
                 safePath("/usr/lib/jvm/java-25/lib/src.zip"),
-                safePath(System.getenv("JAVA_25_HOME") + "/lib/src.zip"),
+                javaHome25 != null ? safePath(javaHome25 + "/lib/src.zip") : null,
         };
 
         for (Path candidate : candidates) {

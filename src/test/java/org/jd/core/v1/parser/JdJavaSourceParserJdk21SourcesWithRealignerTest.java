@@ -175,10 +175,11 @@ public class JdJavaSourceParserJdk21SourcesWithRealignerTest {
         }
 
         // Try common locations
+        String javaHome21 = System.getenv("JAVA_21_HOME");
         Path[] candidates = new Path[]{
                 safePath("/usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip"),
                 safePath("/usr/lib/jvm/java-21/lib/src.zip"),
-                safePath(System.getenv("JAVA_21_HOME") + "/lib/src.zip"),
+                javaHome21 != null ? safePath(javaHome21 + "/lib/src.zip") : null,
         };
 
         for (Path candidate : candidates) {

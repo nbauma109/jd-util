@@ -29,11 +29,15 @@ class UnnamedPatternJdk21 {
         }
     }
 
-    // Unnamed variable in for loop
+    // Unnamed variable in for loop (loop counter not actually used)
     void testForLoop() {
-        for (int _ = 0; _ < 10; _++) {
+        for (int i = 0, _ = initCounter(); i < 10; i++) {
             System.out.println("Loop");
         }
+    }
+
+    private int initCounter() {
+        return 0;
     }
 
     // Unnamed variable in try-with-resources

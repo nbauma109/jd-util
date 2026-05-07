@@ -26,8 +26,12 @@ class UnnamedPatternJdk21 {
   }
 
   void testForLoop() {
-    for (int _ = 0; _ < 10; _++)
+    for (int i = 0, _ = initCounter(); i < 10; i++)
       System.out.println("Loop");
+  }
+
+  private int initCounter() {
+    return 0;
   }
 
   void testTryWithResources() {
