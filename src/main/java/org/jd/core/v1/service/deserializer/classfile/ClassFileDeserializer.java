@@ -45,20 +45,28 @@ public final class ClassFileDeserializer {
             // Load inner types
             if (innerClasses != null) {
                 DefaultList<ClassFile> innerClassFiles = new DefaultList<>();
-                String innerTypePrefix = internalTypeName + '$';
+                // A multi-release-jar lookup key carries a "META-INF/versions/N/" directory prefix that
+                // real bytecode names (from the constant pool, i.e. innerTypeName/outerTypeName below)
+                // never have. Strip it before comparing, but keep it to re-derive the inner class's own
+                // lookup key so it is still resolved from the same versioned directory.
+                int versionedEnd = internalTypeName.startsWith("META-INF/versions/")
+                        ? internalTypeName.indexOf('/', "META-INF/versions/".length()) + 1 : 0;
+                String versionPrefix = internalTypeName.substring(0, versionedEnd);
+                String baseInternalTypeName = internalTypeName.substring(versionedEnd);
+                String innerTypePrefix = baseInternalTypeName + '$';
 
                 for (InnerClass ic : innerClasses.getInnerClasses()) {
                     ConstantPool cp = classFile.getConstantPool();
                     String innerTypeName = cp.getConstantString(ic.getInnerClassIndex(), Const.CONSTANT_Class);
                     String outerTypeName = ic.getOuterClassIndex() == 0 ? null : cp.getConstantString(ic.getOuterClassIndex(), Const.CONSTANT_Class);
 
-                    if (!internalTypeName.equals(innerTypeName) && (internalTypeName.equals(outerTypeName) || innerTypeName.startsWith(innerTypePrefix))) {
-                        ClassFile innerClassFile = loadClassFile(loader, innerTypeName);
+                    if (!baseInternalTypeName.equals(innerTypeName) && (baseInternalTypeName.equals(outerTypeName) || innerTypeName.startsWith(innerTypePrefix))) {
+                        ClassFile innerClassFile = loadClassFile(loader, versionPrefix + innerTypeName);
                         int flags = ic.getInnerAccessFlags();
                         int length;
 
                         if (innerTypeName.startsWith(innerTypePrefix)) {
-                            length = internalTypeName.length() + 1;
+                            length = baseInternalTypeName.length() + 1;
                         } else {
                             length = innerTypeName.indexOf('$') + 1;
                         }
