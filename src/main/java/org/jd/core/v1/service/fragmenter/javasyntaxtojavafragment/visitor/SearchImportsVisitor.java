@@ -405,8 +405,8 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
      * A simple name is shadowed, and must not be imported, when one of this compilation unit's
      * declared supertypes (extends/implements) would bring an unqualified reference of that name
      * into scope instead: either the supertype itself is named that (JLS 6.5.5 gives inherited/
-     * directly-extended member types priority over imports), or the supertype declares (or
-     * inherits) a member type of that name. A reference to a supertype from within its own
+     * directly-extended member types priority over imports), or the supertype declares a member
+     * type of that name. A reference to a supertype from within its own
      * extends/implements clause is not shadowed by itself.
      */
     private boolean isShadowedByInheritedMemberType(String internalTypeName, String typeName) {
@@ -454,6 +454,14 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
         @Override
         public void visit(InterfaceDeclaration declaration) {
             mainTypeNames.add(getTypeName(declaration.getInternalTypeName()));
+            collectSupertypeInternalNames(declaration.getInterfaces());
+            safeAccept(declaration.getBodyDeclaration());
+        }
+
+        @Override
+        public void visit(org.jd.core.v1.model.javasyntax.declaration.RecordDeclaration declaration) {
+            mainTypeNames.add(getTypeName(declaration.getInternalTypeName()));
+            collectSupertypeInternalNames(declaration.getSuperType());
             collectSupertypeInternalNames(declaration.getInterfaces());
             safeAccept(declaration.getBodyDeclaration());
         }

@@ -43,6 +43,7 @@ public class ClassFileDeserializerMultiReleaseTest extends TestCase {
 
     private static Map<String, byte[]> compile() throws IOException {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        assertNotNull("JDK compiler must be available to run this test", compiler);
         Map<String, byte[]> classBytes = new HashMap<>();
 
         JavaFileObject source = new SimpleJavaFileObject(URI.create("string:///test/mrjar/Outer.java"), JavaFileObject.Kind.SOURCE) {
@@ -52,30 +53,31 @@ public class ClassFileDeserializerMultiReleaseTest extends TestCase {
             }
         };
 
-        javax.tools.StandardJavaFileManager standardFileManager = compiler.getStandardFileManager(null, null, null);
-        javax.tools.ForwardingJavaFileManager<javax.tools.StandardJavaFileManager> fileManager =
-                new javax.tools.ForwardingJavaFileManager<>(standardFileManager) {
-            @Override
-            public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling) {
-                return new SimpleJavaFileObject(URI.create("string:///" + className.replace('.', '/') + ".class"), kind) {
-                    @Override
-                    public OutputStream openOutputStream() {
-                        return new ByteArrayOutputStream() {
-                            @Override
-                            public void close() {
-                                classBytes.put(className.replace('.', '/'), toByteArray());
-                            }
-                        };
-                    }
-                };
-            }
-        };
+        try (javax.tools.StandardJavaFileManager standardFileManager = compiler.getStandardFileManager(null, null, null);
+             javax.tools.ForwardingJavaFileManager<javax.tools.StandardJavaFileManager> fileManager =
+                     new javax.tools.ForwardingJavaFileManager<>(standardFileManager) {
+                         @Override
+                         public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling) {
+                             return new SimpleJavaFileObject(URI.create("string:///" + className.replace('.', '/') + ".class"), kind) {
+                                 @Override
+                                 public OutputStream openOutputStream() {
+                                     return new ByteArrayOutputStream() {
+                                         @Override
+                                         public void close() {
+                                             classBytes.put(className.replace('.', '/'), toByteArray());
+                                         }
+                                     };
+                                 }
+                             };
+                         }
+                     }) {
 
-        boolean success = compiler.getTask(null, fileManager, null, null, null, List.of(source)).call();
-        assertTrue("test source must compile", success);
-        assertTrue(classBytes.containsKey("test/mrjar/Outer"));
-        assertTrue(classBytes.containsKey("test/mrjar/Outer$Inner"));
-        return classBytes;
+            boolean success = compiler.getTask(null, fileManager, null, null, null, List.of(source)).call();
+            assertTrue("test source must compile", success);
+            assertTrue(classBytes.containsKey("test/mrjar/Outer"));
+            assertTrue(classBytes.containsKey("test/mrjar/Outer$Inner"));
+            return classBytes;
+        }
     }
 
     private static Loader loaderOf(Map<String, byte[]> entries) {
