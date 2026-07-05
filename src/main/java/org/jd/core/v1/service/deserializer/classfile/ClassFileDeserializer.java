@@ -61,7 +61,13 @@ public final class ClassFileDeserializer {
                     String outerTypeName = ic.getOuterClassIndex() == 0 ? null : cp.getConstantString(ic.getOuterClassIndex(), Const.CONSTANT_Class);
 
                     if (!baseInternalTypeName.equals(innerTypeName) && (baseInternalTypeName.equals(outerTypeName) || innerTypeName.startsWith(innerTypePrefix))) {
-                        ClassFile innerClassFile = loadClassFile(loader, versionPrefix + innerTypeName);
+                        // Prefer the same versioned directory as the outer class, but a multi-release jar
+                        // may only version the outer class while leaving an unchanged inner class at its
+                        // base (unversioned) path; fall back to that base path when the versioned one
+                        // does not actually exist.
+                        String innerLookupKey = versionPrefix.isEmpty() || !loader.canLoad(versionPrefix + innerTypeName)
+                                ? innerTypeName : versionPrefix + innerTypeName;
+                        ClassFile innerClassFile = loader.canLoad(innerLookupKey) ? loadClassFile(loader, innerLookupKey) : null;
                         int flags = ic.getInnerAccessFlags();
                         int length;
 

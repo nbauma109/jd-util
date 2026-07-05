@@ -381,7 +381,7 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
             if (!importsFragment.incCounter(internalTypeName)) {
                 String typeName = getTypeName(internalTypeName);
 
-                if (!importTypeNames.contains(typeName)) {
+                if (!importTypeNames.contains(typeName) && !isShadowedByInheritedMemberType(internalTypeName, typeName)) {
                     if (internalTypeName.startsWith("java/lang/")) {
                         if (internalTypeName.indexOf('/', 10) != -1 && !loader.canLoad(internalPackagePrefix + typeName)) { // 10 = "java/lang/".length()
                             importsFragment.addImport(internalTypeName, type.getQualifiedName());
@@ -392,7 +392,7 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
                             importsFragment.addImport(internalTypeName, type.getQualifiedName());
                             importTypeNames.add(typeName);
                         }
-                    } else if (!localTypeNames.contains(typeName) && !loader.canLoad(internalPackagePrefix + typeName) && !isShadowedByInheritedMemberType(typeName)) {
+                    } else if (!localTypeNames.contains(typeName) && !loader.canLoad(internalPackagePrefix + typeName)) {
                         importsFragment.addImport(internalTypeName, type.getQualifiedName());
                         importTypeNames.add(typeName);
                     }
@@ -402,14 +402,19 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
     }
 
     /**
-     * A simple name that also names a member type of one of this compilation unit's declared
-     * supertypes (extends/implements) is shadowed there: printing it unqualified would resolve to
-     * the inherited member type instead of the imported one, so no import should be registered for
-     * it and every reference must remain fully-qualified.
+     * A simple name is shadowed, and must not be imported, when one of this compilation unit's
+     * declared supertypes (extends/implements) would bring an unqualified reference of that name
+     * into scope instead: either the supertype itself is named that (JLS 6.5.5 gives inherited/
+     * directly-extended member types priority over imports), or the supertype declares (or
+     * inherits) a member type of that name. A reference to a supertype from within its own
+     * extends/implements clause is not shadowed by itself.
      */
-    private boolean isShadowedByInheritedMemberType(String typeName) {
+    private boolean isShadowedByInheritedMemberType(String internalTypeName, String typeName) {
         for (String supertypeInternalName : supertypeInternalNames) {
-            if (loader.canLoad(supertypeInternalName + '$' + typeName)) {
+            if (supertypeInternalName.equals(internalTypeName)) {
+                continue;
+            }
+            if (typeName.equals(getTypeName(supertypeInternalName)) || loader.canLoad(supertypeInternalName + '$' + typeName)) {
                 return true;
             }
         }
