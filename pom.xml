@@ -29,6 +29,7 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <project.scm.id>github.com</project.scm.id>
+    <log4j.version>2.26.1</log4j.version>
   </properties>
 
   <scm>
@@ -205,13 +206,13 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
-      <version>2.26.1</version>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>2.26.1</version>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
