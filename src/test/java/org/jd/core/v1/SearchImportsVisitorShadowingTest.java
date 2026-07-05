@@ -50,7 +50,7 @@ public class SearchImportsVisitorShadowingTest extends TestCase {
         }
     };
 
-    private static String decompile(CompilationUnit compilationUnit, String mainInternalTypeName) throws Exception {
+    private static String decompile(CompilationUnit compilationUnit, String mainInternalTypeName) {
         JavaSyntaxToJavaFragmentProcessor fragmenter = new JavaSyntaxToJavaFragmentProcessor();
         LayoutFragmentProcessor layouter = new LayoutFragmentProcessor();
         JavaFragmentToTokenProcessor tokenizer = new JavaFragmentToTokenProcessor();

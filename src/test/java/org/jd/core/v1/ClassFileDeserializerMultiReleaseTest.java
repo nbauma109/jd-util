@@ -34,12 +34,13 @@ import junit.framework.TestCase;
  */
 public class ClassFileDeserializerMultiReleaseTest extends TestCase {
 
-    private static final String SOURCE =
-            "package test.mrjar;\n" +
-            "public class Outer {\n" +
-            "    public class Inner {\n" +
-            "    }\n" +
-            "}\n";
+    private static final String SOURCE = """
+            package test.mrjar;
+            public class Outer {
+                public class Inner {
+                }
+            }
+            """;
 
     private static Map<String, byte[]> compile() throws IOException {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();

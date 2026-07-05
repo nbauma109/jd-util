@@ -82,12 +82,14 @@ public final class ClassFileDeserializer {
                         }
 
                         if (innerClassFile == null) {
-                            // Inner class not found. Create an empty one.
+                            // Inner class not found. Create an empty one; it wraps no JavaClass, so
+                            // flags cannot be applied to it.
                             innerClassFile = new ClassFile(null);
+                        } else {
+                            innerClassFile.setAccessFlags(flags);
                         }
 
                         innerClassFile.setOuterClassFile(classFile);
-                        innerClassFile.setAccessFlags(flags);
                         innerClassFiles.add(innerClassFile);
                     }
                 }
