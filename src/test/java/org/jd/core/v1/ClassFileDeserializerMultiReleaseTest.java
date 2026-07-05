@@ -126,4 +126,17 @@ public class ClassFileDeserializerMultiReleaseTest extends TestCase {
         assertEquals(1, classFile.getInnerClassFiles().size());
         assertEquals("test/mrjar/Outer$Inner", classFile.getInnerClassFiles().get(0).getInternalTypeName());
     }
+
+    @Test
+    public void testMissingInnerClassIsSkippedRatherThanAddedAsBrokenPlaceholder() throws Exception {
+        Map<String, byte[]> classes = compile();
+        Map<String, byte[]> outerOnly = new HashMap<>();
+        // Neither the versioned nor the base path has the inner class's bytecode.
+        outerOnly.put("META-INF/versions/9/test/mrjar/Outer", classes.get("test/mrjar/Outer"));
+
+        ClassFile classFile = new ClassFileDeserializer().loadClassFile(loaderOf(outerOnly), "META-INF/versions/9/test/mrjar/Outer");
+
+        assertNotNull(classFile);
+        assertTrue(classFile.getInnerClassFiles() == null || classFile.getInnerClassFiles().isEmpty());
+    }
 }

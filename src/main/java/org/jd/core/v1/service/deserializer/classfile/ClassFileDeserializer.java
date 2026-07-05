@@ -67,7 +67,15 @@ public final class ClassFileDeserializer {
                         // does not actually exist.
                         String innerLookupKey = versionPrefix.isEmpty() || !loader.canLoad(versionPrefix + innerTypeName)
                                 ? innerTypeName : versionPrefix + innerTypeName;
-                        ClassFile innerClassFile = loader.canLoad(innerLookupKey) ? loadClassFile(loader, innerLookupKey) : null;
+
+                        if (!loader.canLoad(innerLookupKey)) {
+                            // Inner class not found under either lookup key: skip it rather than adding
+                            // a null-backed placeholder ClassFile, which has no null-safe accessors and
+                            // would fail as soon as a caller walks the inner class list.
+                            continue;
+                        }
+
+                        ClassFile innerClassFile = loadClassFile(loader, innerLookupKey);
                         int flags = ic.getInnerAccessFlags();
                         int length;
 
@@ -81,14 +89,7 @@ public final class ClassFileDeserializer {
                             flags |= ACC_SYNTHETIC;
                         }
 
-                        if (innerClassFile == null) {
-                            // Inner class not found. Create an empty one; it wraps no JavaClass, so
-                            // flags cannot be applied to it.
-                            innerClassFile = new ClassFile(null);
-                        } else {
-                            innerClassFile.setAccessFlags(flags);
-                        }
-
+                        innerClassFile.setAccessFlags(flags);
                         innerClassFile.setOuterClassFile(classFile);
                         innerClassFiles.add(innerClassFile);
                     }
