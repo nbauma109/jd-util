@@ -41,6 +41,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +62,28 @@ import junit.framework.TestCase;
 @SuppressWarnings("all")
 public class TypeMakerTest extends TestCase {
     protected TypeMaker typeMaker = new TypeMaker();
+
+    /**
+     * {@link TypeMaker} caches resolved types in JVM-wide static maps keyed only by internal type
+     * name, without regard to which {@link org.jd.core.v1.api.loader.Loader} resolved them. Other
+     * test methods in this class use the default classpath-backed {@link #typeMaker} field, which
+     * can populate those caches with the real JDK's classes (e.g. java/util/Comparator) ahead of
+     * tests here that need the same name resolved from a bundled JDK 1.7 fixture zip instead.
+     * Clearing the caches before each test keeps this test class order-independent.
+     */
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        for (Field field : TypeMaker.class.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()) && Map.class.isAssignableFrom(field.getType())) {
+                field.setAccessible(true);
+                Object value = field.get(null);
+                if (value instanceof Map<?, ?> map && !"INTERNALNAME_TO_OBJECTPRIMITIVETYPE".equals(field.getName())) {
+                    map.clear();
+                }
+            }
+        }
+    }
 
     protected ObjectType otAbstractUntypedIteratorDecorator = makeObjectType(AbstractUntypedIteratorDecorator.class);
     protected ObjectType otArrayList = makeObjectType(ArrayList.class);

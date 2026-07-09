@@ -53,6 +53,7 @@ import org.jd.core.v1.model.javasyntax.reference.AnnotationElementValue;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
+import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
 
 import java.util.HashSet;
@@ -64,6 +65,10 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
     private final ImportsFragment importsFragment = JavaFragmentFactory.newImportsFragment();
     private int maxLineNumber;
     private final Set<String> localTypeNames = new HashSet<>();
+    // Internal names of the extends/implements supertypes of every type declared in this compilation
+    // unit: a simple name that collides with one of their member types would be misresolved by javac
+    // if printed unqualified, even though it may not clash with anything declared in this file.
+    private final Set<String> supertypeInternalNames = new HashSet<>();
     private final Set<String> internalTypeNames = new HashSet<>();
     private final Set<String> importTypeNames = new HashSet<>();
 
@@ -84,7 +89,7 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
 
     @Override
     public void visit(CompilationUnit compilationUnit) {
-        compilationUnit.typeDeclarations().accept(new TypeVisitor(localTypeNames));
+        compilationUnit.typeDeclarations().accept(new TypeVisitor(localTypeNames, supertypeInternalNames));
         compilationUnit.typeDeclarations().accept(this);
     }
 
@@ -376,7 +381,7 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
             if (!importsFragment.incCounter(internalTypeName)) {
                 String typeName = getTypeName(internalTypeName);
 
-                if (!importTypeNames.contains(typeName)) {
+                if (!importTypeNames.contains(typeName) && !isShadowedByInheritedMemberType(internalTypeName, typeName)) {
                     if (internalTypeName.startsWith("java/lang/")) {
                         if (internalTypeName.indexOf('/', 10) != -1 && !loader.canLoad(internalPackagePrefix + typeName)) { // 10 = "java/lang/".length()
                             importsFragment.addImport(internalTypeName, type.getQualifiedName());
@@ -396,11 +401,33 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
         }
     }
 
+    /**
+     * A simple name is shadowed, and must not be imported, when one of this compilation unit's
+     * declared supertypes (extends/implements) would bring an unqualified reference of that name
+     * into scope instead: either the supertype itself is named that (JLS 6.5.5 gives inherited/
+     * directly-extended member types priority over imports), or the supertype declares a member
+     * type of that name. A reference to a supertype from within its own
+     * extends/implements clause is not shadowed by itself.
+     */
+    private boolean isShadowedByInheritedMemberType(String internalTypeName, String typeName) {
+        for (String supertypeInternalName : supertypeInternalNames) {
+            if (supertypeInternalName.equals(internalTypeName)) {
+                continue;
+            }
+            if (typeName.equals(getTypeName(supertypeInternalName)) || loader.canLoad(supertypeInternalName + '$' + typeName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected static class TypeVisitor extends AbstractJavaSyntaxVisitor {
         private final Set<String> mainTypeNames;
+        private final Set<String> supertypeInternalNames;
 
-        public TypeVisitor(Set<String> mainTypeNames) {
+        public TypeVisitor(Set<String> mainTypeNames, Set<String> supertypeInternalNames) {
             this.mainTypeNames = mainTypeNames;
+            this.supertypeInternalNames = supertypeInternalNames;
         }
 
         @Override
@@ -412,19 +439,42 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
         @Override
         public void visit(ClassDeclaration declaration) {
             mainTypeNames.add(getTypeName(declaration.getInternalTypeName()));
+            collectSupertypeInternalNames(declaration.getSuperType());
+            collectSupertypeInternalNames(declaration.getInterfaces());
             safeAccept(declaration.getBodyDeclaration());
         }
 
         @Override
         public void visit(EnumDeclaration declaration) {
             mainTypeNames.add(getTypeName(declaration.getInternalTypeName()));
+            collectSupertypeInternalNames(declaration.getInterfaces());
             safeAccept(declaration.getBodyDeclaration());
         }
 
         @Override
         public void visit(InterfaceDeclaration declaration) {
             mainTypeNames.add(getTypeName(declaration.getInternalTypeName()));
+            collectSupertypeInternalNames(declaration.getInterfaces());
             safeAccept(declaration.getBodyDeclaration());
+        }
+
+        @Override
+        public void visit(org.jd.core.v1.model.javasyntax.declaration.RecordDeclaration declaration) {
+            mainTypeNames.add(getTypeName(declaration.getInternalTypeName()));
+            collectSupertypeInternalNames(declaration.getSuperType());
+            collectSupertypeInternalNames(declaration.getInterfaces());
+            safeAccept(declaration.getBodyDeclaration());
+        }
+
+        private void collectSupertypeInternalNames(BaseType type) {
+            if (type == null) {
+                return;
+            }
+            for (Type t : type) {
+                if (t instanceof ObjectType ot) {
+                    supertypeInternalNames.add(ot.getInternalName());
+                }
+            }
         }
 
         @Override
