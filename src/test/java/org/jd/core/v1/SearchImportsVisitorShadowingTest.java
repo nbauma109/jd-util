@@ -86,7 +86,7 @@ public class SearchImportsVisitorShadowingTest extends TestCase {
      * externally-imported "Builder" interface must still print fully-qualified.
      */
     @Test
-    public void testShadowedBySupertypeOwnName() throws Exception {
+    public void testShadowedBySupertypeOwnName() {
         ObjectType selfType = new ObjectType("test/shadow/MyBuilder", "test.shadow.MyBuilder", "MyBuilder");
         ObjectType outerBuilderType = new ObjectType("test/shadow/Outer$Builder", "test.shadow.Outer.Builder", "Builder", selfType);
         ObjectType targetType = new ObjectType("test/shadow/Target", "test.shadow.Target", "Target");
