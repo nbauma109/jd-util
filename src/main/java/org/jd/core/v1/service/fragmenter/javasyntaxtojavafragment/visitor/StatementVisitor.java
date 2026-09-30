@@ -12,6 +12,7 @@ import org.jd.core.v1.model.javafragment.StartSingleStatementBlockFragment;
 import org.jd.core.v1.model.javafragment.StartStatementsBlockFragment;
 import org.jd.core.v1.model.javafragment.StartStatementsBlockFragment.Group;
 import org.jd.core.v1.model.javafragment.TokensFragment;
+import org.jd.core.v1.model.javasyntax.declaration.LocalVariableDeclarator;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 import org.jd.core.v1.model.javasyntax.expression.NoExpression;
 import org.jd.core.v1.model.javasyntax.statement.AssertStatement;
@@ -477,17 +478,39 @@ public class StatementVisitor extends ExpressionVisitor {
         fragments.add(TokensFragment.RETURN_SEMICOLON);
     }
 
+    private static boolean isBareDeclaration(Statement statement) {
+        if (statement instanceof LocalVariableDeclarationStatement declaration) {
+            for (LocalVariableDeclarator declarator : declaration.getLocalVariableDeclarators()) {
+                if (declarator.getVariableInitializer() != null) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void visit(Statements list) {
         int size = list.size();
 
         if (size > 0) {
             Iterator<Statement> iterator = list.iterator();
-            iterator.next().accept(this);
+            Statement previous = iterator.next();
+            // Leading run of declarations without initializer (hoisted by the decompiler)
+            boolean leadingDeclarations = isBareDeclaration(previous);
+
+            previous.accept(this);
 
             for (int i = 1; i < size; i++) {
-                JavaFragmentFactory.addSpacerBetweenStatements(fragments);
-                iterator.next().accept(this);
+                if (leadingDeclarations) {
+                    JavaFragmentFactory.addSpacerAfterBareDeclaration(fragments);
+                } else {
+                    JavaFragmentFactory.addSpacerBetweenStatements(fragments);
+                }
+                previous = iterator.next();
+                leadingDeclarations = leadingDeclarations && isBareDeclaration(previous);
+                previous.accept(this);
             }
         }
     }
@@ -688,7 +711,8 @@ public class StatementVisitor extends ExpressionVisitor {
     public void visit(TryStatement.Resource resource) {
         Expression expression = resource.getExpression();
 
-        tokens.addLineNumberToken(expression);
+        // The line of a chain of calls is the line of its last call: start at the line of the first one
+        tokens.addLineNumberToken(firstLineNumberOfReceiverChain(expression));
 
         if (resource.isExpressionOnly()) {
             expression.accept(this);
@@ -707,6 +731,20 @@ public class StatementVisitor extends ExpressionVisitor {
         tokens.add(newTextToken(resource.getName()));
         tokens.add(TextToken.SPACE_EQUAL_SPACE);
         expression.accept(this);
+    }
+
+    private static int firstLineNumberOfReceiverChain(Expression expression) {
+        int lineNumber = expression.getLineNumber();
+        Expression receiver = expression;
+
+        while (receiver != null && receiver.isMethodInvocationExpression()) {
+            receiver = receiver.getExpression();
+
+            if (receiver != null && receiver.getLineNumber() > 0 && (lineNumber <= 0 || receiver.getLineNumber() < lineNumber)) {
+                lineNumber = receiver.getLineNumber();
+            }
+        }
+        return lineNumber;
     }
 
     protected void visitTryStatement(TryStatement statement, StartStatementsBlockFragment.Group group) {

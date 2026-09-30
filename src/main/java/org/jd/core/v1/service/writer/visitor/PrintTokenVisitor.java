@@ -179,6 +179,8 @@ public class PrintTokenVisitor implements TokenVisitor {
             return UNKNOWN_LINE_NUMBER;
         }
 
+        int floatingLineNumber = UNKNOWN_LINE_NUMBER;
+
         // Backward search
         searchLineNumberVisitor.reset();
 
@@ -187,6 +189,9 @@ public class PrintTokenVisitor implements TokenVisitor {
 
             if (searchLineNumberVisitor.lineNumber != UNKNOWN_LINE_NUMBER) {
                 return searchLineNumberVisitor.lineNumber;
+            }
+            if (floatingLineNumber == UNKNOWN_LINE_NUMBER) {
+                floatingLineNumber = searchLineNumberVisitor.floatingLineNumber;
             }
             if (searchLineNumberVisitor.newLineCounter > 0) {
                 break;
@@ -204,26 +209,37 @@ public class PrintTokenVisitor implements TokenVisitor {
             if (searchLineNumberVisitor.lineNumber != UNKNOWN_LINE_NUMBER) {
                 return searchLineNumberVisitor.lineNumber;
             }
+            if (floatingLineNumber == UNKNOWN_LINE_NUMBER) {
+                floatingLineNumber = searchLineNumberVisitor.floatingLineNumber;
+            }
             if (searchLineNumberVisitor.newLineCounter > 0) {
                 break;
             }
         }
 
-        return UNKNOWN_LINE_NUMBER;
+        return floatingLineNumber;
     }
 
     protected static class SearchLineNumberVisitor extends AbstractNopTokenVisitor {
         private int lineNumber;
+        private int floatingLineNumber;
         private int newLineCounter;
 
         public void reset() {
             this.lineNumber = UNKNOWN_LINE_NUMBER;
+            this.floatingLineNumber = UNKNOWN_LINE_NUMBER;
             this.newLineCounter = 0;
         }
 
         @Override
         public void visit(LineNumberToken token) {
-            lineNumber = token.lineNumber();
+            if (token.floating()) {
+                if (floatingLineNumber == UNKNOWN_LINE_NUMBER) {
+                    floatingLineNumber = token.lineNumber();
+                }
+            } else {
+                lineNumber = token.lineNumber();
+            }
         }
 
         @Override

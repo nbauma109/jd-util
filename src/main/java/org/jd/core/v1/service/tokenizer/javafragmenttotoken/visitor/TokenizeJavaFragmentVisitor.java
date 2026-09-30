@@ -14,6 +14,7 @@ import org.jd.core.v1.model.javafragment.EndBodyInParameterFragment;
 import org.jd.core.v1.model.javafragment.EndMovableJavaBlockFragment;
 import org.jd.core.v1.model.javafragment.EndSingleStatementBlockFragment;
 import org.jd.core.v1.model.javafragment.EndStatementsBlockFragment;
+import org.jd.core.v1.model.javafragment.FloatingLineNumberTokensFragment;
 import org.jd.core.v1.model.javafragment.ImportsFragment;
 import org.jd.core.v1.model.javafragment.JavaFragmentVisitor;
 import org.jd.core.v1.model.javafragment.LineNumberTokensFragment;
@@ -523,8 +524,15 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
 
     @Override
     public void visit(TokensFragment fragment) {
+        boolean keepLineNumbers = fragment instanceof FloatingLineNumberTokensFragment;
+
         for (Token token : fragment.getTokens()) {
-            token.accept(unknownLineNumberTokenVisitor);
+            if (keepLineNumbers && token instanceof LineNumberToken lineNumberToken) {
+                // Reported to the printer (unless an aligned line number is found on the same line), but does not move the statement
+                tokens.add(new LineNumberToken(lineNumberToken.lineNumber(), true));
+            } else {
+                token.accept(unknownLineNumberTokenVisitor);
+            }
         }
     }
 

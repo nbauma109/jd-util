@@ -8,13 +8,19 @@
 package org.jd.core.v1.model.token;
 
 /**
- * Must be created between StartStatementToken and EndStatementToken
+ * Must be created between StartStatementToken and EndStatementToken.
+ * <p>A <i>floating</i> line number belongs to a statement which could not be aligned on its line: it is only reported
+ * to the printer when no other, aligned, line number is found on the same physical line.</p>
  */
-public record LineNumberToken(int lineNumber) implements Token {
+public record LineNumberToken(int lineNumber, boolean floating) implements Token {
+
+    public LineNumberToken(int lineNumber) {
+        this(lineNumber, false);
+    }
 
     @Override
     public String toString() {
-        return "LineNumberToken{" + lineNumber + "}";
+        return "LineNumberToken{" + lineNumber + (floating ? ", floating" : "") + "}";
     }
 
     @Override

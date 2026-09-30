@@ -86,7 +86,15 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     private final boolean genericTypesSupported;
     protected final ImportsFragment importsFragment;
     protected Tokens tokens;
+    /** Legacy guard: line numbers never decrease over the whole compilation unit. Used when line numbers are not realigned. */
     private int maxLineNumber;
+    /**
+     * When line numbers are realigned, the layouter takes care of out-of-order statements (see
+     * {@code LayoutFragmentProcessor}): only require the line numbers inside a statement to be non-decreasing.
+     * A single out-of-order statement (e.g. a copy of a 'finally' block) must not hide the line numbers of
+     * everything that follows.
+     */
+    private boolean realignLineNumbers;
     protected ObjectType currentType;
     protected boolean currentTypeIsRecord;
     private final Map<String, TextToken> textTokenCache = new HashMap<>();
@@ -488,6 +496,10 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         }
     }
 
+    public void setRealignLineNumbers(boolean realignLineNumbers) {
+        this.realignLineNumbers = realignLineNumbers;
+    }
+
     protected TextToken newTextToken(String text) {
         return textTokenCache.computeIfAbsent(text, TextToken::new);
     }
@@ -495,6 +507,8 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     public class Tokens extends DefaultList<Token> {
         private static final long serialVersionUID = 1L;
         private int currentLineNumber = UNKNOWN_LINE_NUMBER;
+        /** Line numbers of the tokens of a statement must not decrease. */
+        private int maxStatementLineNumber;
 
         public int getCurrentLineNumber() {
             return currentLineNumber;
@@ -513,9 +527,9 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         }
 
         public void addLineNumberToken(int lineNumber) {
-            if (lineNumber != UNKNOWN_LINE_NUMBER && lineNumber >= maxLineNumber) {
+            if (lineNumber != UNKNOWN_LINE_NUMBER && lineNumber >= (realignLineNumbers ? maxStatementLineNumber : maxLineNumber)) {
                 super.add(new LineNumberToken(lineNumber));
-                maxLineNumber = currentLineNumber = lineNumber;
+                maxLineNumber = maxStatementLineNumber = currentLineNumber = lineNumber;
             }
         }
 
