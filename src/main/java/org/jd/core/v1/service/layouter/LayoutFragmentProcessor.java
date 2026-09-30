@@ -28,7 +28,7 @@ import org.jd.core.v1.service.layouter.visitor.UpdateSpacerBetweenMovableBlocksV
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.IntStream;
 
 import static org.jd.core.v1.api.printer.Printer.UNKNOWN_LINE_NUMBER;
 
@@ -47,9 +47,7 @@ public class LayoutFragmentProcessor {
 
     public void process(DecompileContext decompileContext) {
         int maxLineNumber = decompileContext.getMaxLineNumber();
-        Map<String, Object> configuration = decompileContext.getConfiguration();
-        Object realignLineNumbersConfiguration = configuration == null ? "false" : configuration.get("realignLineNumbers");
-        boolean realignLineNumbers = realignLineNumbersConfiguration != null && "true".equals(realignLineNumbersConfiguration.toString());
+        boolean realignLineNumbers = decompileContext.isRealignLineNumbers();
 
         List<Fragment> fragments = decompileContext.getBody();
 
@@ -173,40 +171,40 @@ public class LayoutFragmentProcessor {
      * statement), and the fragment stays aligned on the remaining ones. The earlier fragment wins.</p>
      */
     static void demoteOutOfOrderFragments(List<Fragment> fragments) {
-        List<Integer> indexes = new ArrayList<>();
-
-        for (int i = 0; i < fragments.size(); i++) {
-            if (fragments.get(i) instanceof LineNumberTokensFragment) {
-                indexes.add(i);
-            }
-        }
-
-        int size = indexes.size();
+        int[] indexes = IntStream.range(0, fragments.size())
+                .filter(i -> fragments.get(i) instanceof LineNumberTokensFragment)
+                .toArray();
+        int size = indexes.length;
 
         if (size < 2) {
             return;
         }
 
         int[] first = new int[size];
-        int[] last = new int[size];
         int[] weight = new int[size];
         boolean sorted = true;
+        int previousLast = 0;
 
         for (int i = 0; i < size; i++) {
-            LineNumberTokensFragment fragment = (LineNumberTokensFragment) fragments.get(indexes.get(i));
+            LineNumberTokensFragment fragment = (LineNumberTokensFragment) fragments.get(indexes[i]);
 
             first[i] = fragment.getFirstLineNumber();
-            last[i] = fragment.getLastLineNumber();
             weight[i] = isAnchor(fragment.getTokens()) ? ANCHOR_WEIGHT : 1;
-
-            if (i > 0 && first[i] < last[i - 1]) {
-                sorted = false;
-            }
+            sorted &= first[i] >= previousLast;
+            previousLast = fragment.getLastLineNumber();
         }
 
-        if (sorted) {
-            return;
+        if (!sorted) {
+            trimFragments(fragments, indexes, selectHeaviestChain(first, weight));
         }
+    }
+
+    /**
+     * @return for each fragment, true if it belongs to the heaviest chain of fragments whose first line numbers do
+     *         not decrease (the fragments are ordered by the line they start on)
+     */
+    private static boolean[] selectHeaviestChain(int[] first, int[] weight) {
+        int size = first.length;
 
         // Fenwick tree over the (compressed) first line numbers, storing the heaviest chain ending at or before a line number
         int[] sortedFirst = Arrays.stream(first).distinct().sorted().toArray();
@@ -252,63 +250,65 @@ public class LayoutFragmentProcessor {
         for (int i = end; i >= 0; i = previous[i]) {
             kept[i] = true;
         }
+        return kept;
+    }
 
+    /**
+     * Going through the fragments in order, drop the line numbers which are before the end of the previous fragment
+     * (or after the start of the next kept one) and replace the fragments which lost all of them.
+     */
+    private static void trimFragments(List<Fragment> fragments, int[] indexes, boolean[] kept) {
+        int size = indexes.length;
         int[] nextKeptFirst = new int[size];
         int nextFirst = Integer.MAX_VALUE;
 
         for (int i = size - 1; i >= 0; i--) {
             nextKeptFirst[i] = nextFirst;
             if (kept[i]) {
-                nextFirst = first[i];
+                nextFirst = ((LineNumberTokensFragment) fragments.get(indexes[i])).getFirstLineNumber();
             }
         }
 
         int previousLast = 0;
 
         for (int i = 0; i < size; i++) {
-            int index = indexes.get(i);
-            List<Token> tokens = ((LineNumberTokensFragment) fragments.get(index)).getTokens();
+            List<Token> tokens = ((LineNumberTokensFragment) fragments.get(indexes[i])).getTokens();
             int upper = kept[i] ? Integer.MAX_VALUE : nextKeptFirst[i];
             List<Token> trimmed = new ArrayList<>(tokens.size());
-            boolean hasLineNumber = false;
-            boolean dropped = false;
             int trimmedLast = previousLast;
 
             for (Token token : tokens) {
-                if (token instanceof LineNumberToken lineNumberToken) {
-                    int lineNumber = lineNumberToken.lineNumber();
-
-                    if (lineNumber < trimmedLast || lineNumber > upper) {
-                        dropped = true;
-                        continue;
-                    }
-                    hasLineNumber = true;
-                    trimmedLast = lineNumber;
+                if (!(token instanceof LineNumberToken lineNumberToken)) {
+                    trimmed.add(token);
+                } else if (lineNumberToken.lineNumber() >= trimmedLast && lineNumberToken.lineNumber() <= upper) {
+                    trimmedLast = lineNumberToken.lineNumber();
+                    trimmed.add(token);
                 }
-                trimmed.add(token);
             }
 
-            if (hasLineNumber) {
-                if (dropped) {
-                    fragments.set(index, new LineNumberTokensFragment(trimmed));
+            if (hasLineNumber(trimmed)) {
+                if (trimmed.size() != tokens.size()) {
+                    fragments.set(indexes[i], new LineNumberTokensFragment(trimmed));
                 }
                 previousLast = trimmedLast;
-            } else if (startsStatement(tokens)) {
-                // A whole statement: keep its line number to report it to the printer
-                fragments.set(index, new FloatingLineNumberTokensFragment(tokens));
             } else {
-                // The continuation of a statement (e.g. after the body of an anonymous class): a line number
-                // alone would be misleading
-                List<Token> tokensWithoutLineNumbers = new ArrayList<>();
-
-                for (Token token : tokens) {
-                    if (!(token instanceof LineNumberToken)) {
-                        tokensWithoutLineNumbers.add(token);
-                    }
-                }
-                fragments.set(index, new TokensFragment(tokensWithoutLineNumbers));
+                fragments.set(indexes[i], withoutKnownLineNumbers(tokens));
             }
         }
+    }
+
+    private static boolean hasLineNumber(List<Token> tokens) {
+        return tokens.stream().anyMatch(LineNumberToken.class::isInstance);
+    }
+
+    private static Fragment withoutKnownLineNumbers(List<Token> tokens) {
+        if (isAnchor(tokens)) {
+            // A whole statement: keep its line number to report it to the printer
+            return new FloatingLineNumberTokensFragment(tokens);
+        }
+        // The continuation of a statement (e.g. after the body of an anonymous class): a line number alone would be
+        // misleading
+        return new TokensFragment(tokens.stream().filter(token -> !(token instanceof LineNumberToken)).toList());
     }
 
     /**
@@ -345,16 +345,6 @@ public class LayoutFragmentProcessor {
                 continue;
             }
             return token == StartBlockToken.START_DECLARATION_OR_STATEMENT_BLOCK || token instanceof KeywordToken;
-        }
-        return false;
-    }
-
-    private static boolean startsStatement(List<Token> tokens) {
-        for (Token token : tokens) {
-            if (token instanceof LineNumberToken) {
-                continue;
-            }
-            return token == StartBlockToken.START_DECLARATION_OR_STATEMENT_BLOCK;
         }
         return false;
     }

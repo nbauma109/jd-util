@@ -107,6 +107,12 @@ public class DecompileContext {
         this.minorVersion = minorVersion;
     }
 
+    /** @return true if the configuration asks for the line numbers to be realigned ("realignLineNumbers" = "true") */
+    public boolean isRealignLineNumbers() {
+        Object realignLineNumbers = configuration == null ? null : configuration.get("realignLineNumbers");
+        return realignLineNumbers != null && "true".equals(realignLineNumbers.toString());
+    }
+
     public int getMaxLineNumber() {
         return maxLineNumber;
     }

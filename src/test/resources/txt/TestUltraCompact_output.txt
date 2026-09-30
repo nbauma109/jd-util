@@ -94,7 +94,7 @@
 /*     */     public void method1() {
 /*     */       new Thread(new Runnable() { @Override
 /*     */             public void run() {
-/*     */               log("Inner3.method1");
+/*  97 */               log("Inner3.method1");
 /*     */             } }
 /*     */         ).start();
 /*     */     }

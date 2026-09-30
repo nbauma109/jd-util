@@ -11,6 +11,7 @@ import org.jd.core.v1.model.fragment.Fragment;
 import org.jd.core.v1.model.javafragment.FloatingLineNumberTokensFragment;
 import org.jd.core.v1.model.javafragment.LineNumberTokensFragment;
 import org.jd.core.v1.model.javafragment.TokensFragment;
+import org.jd.core.v1.model.token.KeywordToken;
 import org.jd.core.v1.model.token.LineNumberToken;
 import org.jd.core.v1.model.token.StartBlockToken;
 import org.jd.core.v1.model.token.TextToken;
@@ -89,7 +90,7 @@ public class LayoutFragmentProcessorDemotionTest {
 
     @Test
     public void earlierFragmentWinsATie() {
-        // 'for (...) { a = f(x); i++; }': the update 'i++' carries the line of the header, after the two lines of the body
+        // The update of a for loop carries the line of the loop header, after the two lines of the body
         List<Fragment> fragments = new ArrayList<>(List.of(statement(188), statement(188), statement(189, 190), statement(188)));
 
         LayoutFragmentProcessor.demoteOutOfOrderFragments(fragments);
@@ -113,7 +114,7 @@ public class LayoutFragmentProcessorDemotionTest {
 
     @Test
     public void strayLowLineNumberIsTrimmedInsteadOfDemotingTheWholeFragment() {
-        // 'if (a) { x(); if (b) ... }' merged into a single fragment spanning 1426-1428, next to the kept statement 1427:
+        // Nested ifs merged into a single fragment spanning 1426-1428, next to the kept statement 1427:
         // the stray 1426 is dropped and the fragment stays anchored on 1428
         LineNumberTokensFragment merged = new LineNumberTokensFragment(
                 StartBlockToken.START_DECLARATION_OR_STATEMENT_BLOCK, new LineNumberToken(1426), new TextToken("a"), new LineNumberToken(1428), new TextToken("b"));
@@ -134,8 +135,8 @@ public class LayoutFragmentProcessorDemotionTest {
 
     @Test
     public void statementStartOutweighsInterleavedPiecesOfSimilarCount() {
-        // 'return new X().add(new String[] {"a"...}).addAttributes(...)': the pieces of the array initializers inherit
-        // the line of the previous call and interleave with the pieces of the chain; the statement start must stay anchored
+        // The pieces of array initializers inherit the line of the previous call and interleave with the pieces of a
+        // call chain; the statement start must stay anchored
         LineNumberTokensFragment start = statement(135, 136);
         List<Fragment> fragments = new ArrayList<>(List.of(start, piece(135), piece(135), piece(135), piece(141), piece(136),
                 piece(142), piece(141), piece(143), piece(142)));
@@ -143,5 +144,27 @@ public class LayoutFragmentProcessorDemotionTest {
         LayoutFragmentProcessor.demoteOutOfOrderFragments(fragments);
 
         assertSame(start, fragments.get(0));
+    }
+
+    @Test
+    public void demotedKeywordStatementKeepsItsLineNumber() {
+        // A 'break' is not a declaration or an expression statement, but it is a whole statement all the same
+        LineNumberTokensFragment spike = new LineNumberTokensFragment(new LineNumberToken(500), new KeywordToken("break"));
+        List<Fragment> fragments = new ArrayList<>(List.of(statement(10), spike, statement(11), statement(12)));
+
+        LayoutFragmentProcessor.demoteOutOfOrderFragments(fragments);
+
+        assertTrue(fragments.get(1) instanceof FloatingLineNumberTokensFragment);
+        assertEquals(new LineNumberToken(500), ((FloatingLineNumberTokensFragment) fragments.get(1)).getTokens().get(0));
+    }
+
+    @Test
+    public void singleFragmentIsLeftAlone() {
+        LineNumberTokensFragment only = statement(10);
+        List<Fragment> fragments = new ArrayList<>(List.of(only));
+
+        LayoutFragmentProcessor.demoteOutOfOrderFragments(fragments);
+
+        assertSame(only, fragments.get(0));
     }
 }

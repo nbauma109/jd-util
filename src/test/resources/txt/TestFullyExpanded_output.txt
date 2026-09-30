@@ -153,7 +153,7 @@
 /*     */             @Override
 /*     */             public void run()
 /*     */             {
-/*     */               log("Inner3.method1");
+/* 156 */               log("Inner3.method1");
 /*     */             }
 /*     */           }).start();
 /*     */     }

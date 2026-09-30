@@ -86,7 +86,13 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     private final boolean genericTypesSupported;
     protected final ImportsFragment importsFragment;
     protected Tokens tokens;
-    /** Legacy guard: line numbers never decrease over the whole compilation unit. Used when line numbers are not realigned. */
+    /**
+     * Legacy guard, used when line numbers are not realigned. Members are already sorted by line number
+     * (see {@code MergeMembersUtil} in jd-core, whatever the realignment setting), so this rarely rejects a whole
+     * member. It rejects the out-of-order numbers of a statement (e.g. an inlined copy of a 'finally' block), which
+     * would otherwise produce a negative {@code NewLineToken} when tokenizing, since nothing reorders fragments
+     * when line numbers are not realigned.
+     */
     private int maxLineNumber;
     /**
      * When line numbers are realigned, the layouter takes care of out-of-order statements (see

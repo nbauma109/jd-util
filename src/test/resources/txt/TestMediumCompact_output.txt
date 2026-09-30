@@ -100,7 +100,7 @@
 /*     */           {
 /*     */             @Override
 /*     */             public void run() {
-/*     */               log("Inner3.method1");
+/* 103 */               log("Inner3.method1");
 /*     */             }
 /*     */           }).start();
 /*     */     }
