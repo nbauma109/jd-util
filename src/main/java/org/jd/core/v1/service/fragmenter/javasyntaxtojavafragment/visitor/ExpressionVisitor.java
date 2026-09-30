@@ -80,15 +80,16 @@ import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.Character
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.StringUtil;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.SearchFirstKnownLineNumberVisitor;
+import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.SearchKnownLineNumbersVisitor;
 import org.jd.core.v1.util.DefaultList;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 import static org.apache.bcel.Const.MAJOR_1_7;
@@ -118,6 +119,7 @@ public class ExpressionVisitor extends TypeVisitor {
 
     protected static final int UNKNOWN_LINE_NUMBER = Printer.UNKNOWN_LINE_NUMBER;
     private final SearchFirstKnownLineNumberVisitor searchFirstKnownLineNumberVisitor = new SearchFirstKnownLineNumberVisitor();
+    private final SearchKnownLineNumbersVisitor searchKnownLineNumbersVisitor = new SearchKnownLineNumbersVisitor();
 
     protected final LinkedList<Context> contextStack = new LinkedList<>();
     protected Fragments fragments = new Fragments();
@@ -261,31 +263,6 @@ public class ExpressionVisitor extends TypeVisitor {
             || expression instanceof BooleanExpression;
     }
 
-    /** @return the earliest known line of a chain of calls (receivers and arguments included), or of the expression itself */
-    private int earliestLineNumberOfCallChain(Expression expression) {
-        int earliest = firstKnownLineNumber(expression);
-
-        if (expression.isMethodInvocationExpression()) {
-            earliest = earliestOf(earliest, earliestLineNumberOfCallChain(expression.getExpression()));
-
-            BaseExpression parameters = expression.getParameters();
-
-            if (parameters != null) {
-                for (Expression parameter : parameters) {
-                    earliest = earliestOf(earliest, earliestLineNumberOfCallChain(parameter));
-                }
-            }
-        }
-        return earliest;
-    }
-
-    private static int earliestOf(int lineNumber1, int lineNumber2) {
-        if (lineNumber1 <= 0) {
-            return lineNumber2;
-        }
-        return lineNumber2 > 0 && lineNumber2 < lineNumber1 ? lineNumber2 : lineNumber1;
-    }
-
     private int firstKnownLineNumber(Expression expression) {
         searchFirstKnownLineNumberVisitor.init();
         expression.accept(searchFirstKnownLineNumberVisitor);
@@ -305,8 +282,11 @@ public class ExpressionVisitor extends TypeVisitor {
     private int countDistinctLineNumbers(BaseExpression parameters) {
         return (int) StreamSupport.stream(parameters.spliterator(), false)
                 .filter(parameter -> !isConstant(parameter))
-                .flatMapToInt(parameter -> IntStream.of(parameter.getLineNumber(), earliestLineNumberOfCallChain(parameter)))
-                .filter(lineNumber -> lineNumber > 0)
+                .flatMap(parameter -> {
+                    searchKnownLineNumbersVisitor.init();
+                    parameter.accept(searchKnownLineNumbersVisitor);
+                    return new ArrayList<>(searchKnownLineNumbersVisitor.getLineNumbers()).stream();
+                })
                 .distinct()
                 .count();
     }

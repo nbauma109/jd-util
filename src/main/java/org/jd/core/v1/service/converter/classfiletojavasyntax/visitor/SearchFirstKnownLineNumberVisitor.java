@@ -74,7 +74,7 @@ public class SearchFirstKnownLineNumberVisitor extends AbstractJavaSyntaxVisitor
         return lineNumber;
     }
 
-    private boolean setLineNumberIfValid(int candidateLineNumber) {
+    protected boolean setLineNumberIfValid(int candidateLineNumber) {
         if (lineNumber != -1) {
             return true;
         }

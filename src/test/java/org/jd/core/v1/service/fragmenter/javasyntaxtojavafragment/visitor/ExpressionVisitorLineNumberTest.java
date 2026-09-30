@@ -9,6 +9,7 @@ package org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.visitor;
 
 import org.jd.core.v1.loader.ClassPathLoader;
 import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
+import org.jd.core.v1.model.javasyntax.expression.CastExpression;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 import org.jd.core.v1.model.javasyntax.expression.Expressions;
 import org.jd.core.v1.model.javasyntax.expression.FieldReferenceExpression;
@@ -167,5 +168,20 @@ public class ExpressionVisitorLineNumberTest {
         visitor.visit(new TryStatement.Resource(TYPE, "r", call(10, NoExpression.NO_EXPRESSION, parameters(variable(3), variable(7)))));
 
         assertEquals(List.of(3, 7), lineNumbers(visitor));
+    }
+
+    @Test
+    public void callWithAMultilineArgumentInsideAnotherExpressionIsDeferred() {
+        StatementVisitor visitor = newVisitor();
+        // The only argument is a cast (not a call) wrapping a chain of calls on lines 3 to 7
+        Expression cast = new CastExpression(7, TYPE, call(7, call(3, variable(3), null), null));
+
+        call(10, NoExpression.NO_EXPRESSION, parameters(cast)).accept(visitor);
+
+        List<Integer> lineNumbers = lineNumbers(visitor);
+
+        // The line of the outer call is not emitted before the lines of the argument
+        assertEquals(7, (int) lineNumbers.get(0));
+        assertFalse(lineNumbers.contains(10));
     }
 }
