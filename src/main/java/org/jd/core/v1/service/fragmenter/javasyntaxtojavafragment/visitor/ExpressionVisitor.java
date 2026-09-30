@@ -88,6 +88,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 import static org.apache.bcel.Const.MAJOR_1_7;
@@ -236,7 +237,7 @@ public class ExpressionVisitor extends TypeVisitor {
      * javac line tables make the arguments inherit the line of the previous entry, usually the line just before the
      * call: only arguments which start at least two lines before the call are considered to be written there.
      */
-    private boolean isCallLineDeferredToParameters(Expression call, BaseExpression parameters) {
+    protected boolean isCallLineDeferredToParameters(Expression call, BaseExpression parameters) {
         if (parameters == null) {
             return false;
         }
@@ -260,23 +261,52 @@ public class ExpressionVisitor extends TypeVisitor {
             || expression instanceof BooleanExpression;
     }
 
+    /** @return the earliest known line of a chain of calls (receivers and arguments included), or of the expression itself */
+    private int earliestLineNumberOfCallChain(Expression expression) {
+        int earliest = firstKnownLineNumber(expression);
+
+        if (expression.isMethodInvocationExpression()) {
+            earliest = earliestOf(earliest, earliestLineNumberOfCallChain(expression.getExpression()));
+
+            BaseExpression parameters = expression.getParameters();
+
+            if (parameters != null) {
+                for (Expression parameter : parameters) {
+                    earliest = earliestOf(earliest, earliestLineNumberOfCallChain(parameter));
+                }
+            }
+        }
+        return earliest;
+    }
+
+    private static int earliestOf(int lineNumber1, int lineNumber2) {
+        if (lineNumber1 <= 0) {
+            return lineNumber2;
+        }
+        return lineNumber2 > 0 && lineNumber2 < lineNumber1 ? lineNumber2 : lineNumber1;
+    }
+
+    private int firstKnownLineNumber(Expression expression) {
+        searchFirstKnownLineNumberVisitor.init();
+        expression.accept(searchFirstKnownLineNumberVisitor);
+        return searchFirstKnownLineNumberVisitor.getLineNumber();
+    }
+
     private int firstNonConstantLineNumber(BaseExpression parameters) {
         return StreamSupport.stream(parameters.spliterator(), false)
                 .filter(parameter -> !isConstant(parameter))
-                .mapToInt(parameter -> {
-                    searchFirstKnownLineNumberVisitor.init();
-                    parameter.accept(searchFirstKnownLineNumberVisitor);
-                    return searchFirstKnownLineNumberVisitor.getLineNumber();
-                })
+                .mapToInt(this::firstKnownLineNumber)
                 .filter(lineNumber -> lineNumber != -1)
                 .findFirst()
                 .orElse(-1);
     }
 
-    private static int countDistinctLineNumbers(BaseExpression parameters) {
+    /** Counts the distinct known lines of the arguments, including the lines inside an argument (e.g. a chain of calls) */
+    private int countDistinctLineNumbers(BaseExpression parameters) {
         return (int) StreamSupport.stream(parameters.spliterator(), false)
-                .filter(parameter -> !isConstant(parameter) && parameter.getLineNumber() > 0)
-                .map(Expression::getLineNumber)
+                .filter(parameter -> !isConstant(parameter))
+                .flatMapToInt(parameter -> IntStream.of(parameter.getLineNumber(), earliestLineNumberOfCallChain(parameter)))
+                .filter(lineNumber -> lineNumber > 0)
                 .distinct()
                 .count();
     }

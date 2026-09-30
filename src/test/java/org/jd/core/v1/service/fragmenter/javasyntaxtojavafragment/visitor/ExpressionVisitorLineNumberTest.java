@@ -145,4 +145,27 @@ public class ExpressionVisitorLineNumberTest {
 
         assertEquals(5, (int) lineNumbers(visitor).get(0));
     }
+
+    @Test
+    public void callWithASingleMultilineArgumentIsDeferred() {
+        StatementVisitor visitor = newVisitor();
+        // The only argument is a chain of calls on lines 3 to 7
+        Expression chain = call(7, call(3, variable(3), null), null);
+
+        call(10, NoExpression.NO_EXPRESSION, parameters(chain)).accept(visitor);
+
+        List<Integer> lineNumbers = lineNumbers(visitor);
+
+        assertEquals(3, (int) lineNumbers.get(0));
+        assertFalse(lineNumbers.contains(10));
+    }
+
+    @Test
+    public void resourceCallWithEarlierArgumentsIsNotAnchoredOnItsOwnLine() {
+        StatementVisitor visitor = newVisitor();
+
+        visitor.visit(new TryStatement.Resource(TYPE, "r", call(10, NoExpression.NO_EXPRESSION, parameters(variable(3), variable(7)))));
+
+        assertEquals(List.of(3, 7), lineNumbers(visitor));
+    }
 }

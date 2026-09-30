@@ -273,28 +273,44 @@ public class LayoutFragmentProcessor {
 
         for (int i = 0; i < size; i++) {
             List<Token> tokens = ((LineNumberTokensFragment) fragments.get(indexes[i])).getTokens();
-            int upper = kept[i] ? Integer.MAX_VALUE : nextKeptFirst[i];
-            List<Token> trimmed = new ArrayList<>(tokens.size());
-            int trimmedLast = previousLast;
+            List<Token> trimmed = trimLineNumbers(tokens, previousLast, kept[i] ? Integer.MAX_VALUE : nextKeptFirst[i]);
 
-            for (Token token : tokens) {
-                if (!(token instanceof LineNumberToken lineNumberToken)) {
-                    trimmed.add(token);
-                } else if (lineNumberToken.lineNumber() >= trimmedLast && lineNumberToken.lineNumber() <= upper) {
-                    trimmedLast = lineNumberToken.lineNumber();
-                    trimmed.add(token);
-                }
-            }
-
-            if (hasLineNumber(trimmed)) {
-                if (trimmed.size() != tokens.size()) {
-                    fragments.set(indexes[i], new LineNumberTokensFragment(trimmed));
-                }
-                previousLast = trimmedLast;
-            } else {
+            if (!hasLineNumber(trimmed)) {
                 fragments.set(indexes[i], withoutKnownLineNumbers(tokens));
+                continue;
+            }
+            if (trimmed.size() != tokens.size()) {
+                fragments.set(indexes[i], new LineNumberTokensFragment(trimmed));
+            }
+            previousLast = lastLineNumber(trimmed, previousLast);
+        }
+    }
+
+    /** @return the tokens without the line numbers which are lower than {@code lower}, or than the previous kept one, or greater than {@code upper} */
+    private static List<Token> trimLineNumbers(List<Token> tokens, int lower, int upper) {
+        List<Token> trimmed = new ArrayList<>(tokens.size());
+        int last = lower;
+
+        for (Token token : tokens) {
+            if (!(token instanceof LineNumberToken lineNumberToken)) {
+                trimmed.add(token);
+            } else if (lineNumberToken.lineNumber() >= last && lineNumberToken.lineNumber() <= upper) {
+                last = lineNumberToken.lineNumber();
+                trimmed.add(token);
             }
         }
+        return trimmed;
+    }
+
+    private static int lastLineNumber(List<Token> tokens, int defaultLineNumber) {
+        int last = defaultLineNumber;
+
+        for (Token token : tokens) {
+            if (token instanceof LineNumberToken lineNumberToken) {
+                last = lineNumberToken.lineNumber();
+            }
+        }
+        return last;
     }
 
     private static boolean hasLineNumber(List<Token> tokens) {
