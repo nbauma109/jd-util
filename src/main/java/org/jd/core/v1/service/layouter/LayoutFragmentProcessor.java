@@ -347,10 +347,8 @@ public class LayoutFragmentProcessor {
             }
 
             if (startBody != null && spacer != null && startBody.getLineCount() == 0 && spacer.getLineCount() >= 2
-             && startBody.getLineCount() < startBody.getMaximalLineCount()) {
-                if (spacer.decLineCount(true)) {
-                    startBody.incLineCount(true);
-                }
+             && startBody.getLineCount() < startBody.getMaximalLineCount() && spacer.decLineCount(true)) {
+                startBody.incLineCount(true);
             }
         }
     }
