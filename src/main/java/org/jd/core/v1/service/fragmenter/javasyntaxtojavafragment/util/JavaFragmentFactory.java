@@ -155,6 +155,14 @@ public final class JavaFragmentFactory {
         fragments.add(new SpacerBetweenMembersFragment(0, 2, Integer.MAX_VALUE, 7, "Spacer between members"));
     }
 
+    /**
+     * Declarations without initializer (typically hoisted by the decompiler) have no line of their own in the source:
+     * the line break following them is the first one to give up when the lines are short.
+     */
+    public static void addSpacerAfterBareDeclaration(List<Fragment> fragments) {
+        fragments.add(new SpaceSpacerFragment(0, 1, Integer.MAX_VALUE, 5, "Spacer after bare declaration"));
+    }
+
     public static void addSpacerBetweenStatements(List<Fragment> fragments) {
         fragments.add(new SpaceSpacerFragment(0, 1, Integer.MAX_VALUE, 12, "Spacer between statements"));
     }
@@ -185,6 +193,16 @@ public final class JavaFragmentFactory {
 
     public static StartBodyFragment addStartSingleStatementMethodBody(List<Fragment> fragments) {
         StartBodyFragment fragment = new StartBodyFragment(0, 1, 2, 7, "Start single statement method body");
+        fragments.add(fragment);
+        return fragment;
+    }
+
+    /**
+     * Same layout as {@link #addStartSingleStatementMethodBody}, but with its own label: the header of a constructor is
+     * not separated from its body by the realignment (the source of a constructor is often written on a single line).
+     */
+    public static StartBodyFragment addStartSingleStatementConstructorBody(List<Fragment> fragments) {
+        StartBodyFragment fragment = new StartBodyFragment(0, 1, 2, 7, "Start single statement constructor body");
         fragments.add(fragment);
         return fragment;
     }

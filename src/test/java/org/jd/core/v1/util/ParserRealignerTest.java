@@ -370,6 +370,27 @@ public class ParserRealignerTest implements DefaultTest {
         testParseRealign("/txt/MissingLineNumbers_input.txt", "/txt/MissingLineNumbers_output.txt");
     }
 
+    @Test
+    public void testMemberWithLinesOnlyInAnAnonymousClassKeepsItsPlace() throws ParseException {
+        String source = String.join("\n",
+                "/*     */ package test;",
+                "/*     */ public class T {",
+                "/*     */   void first() {",
+                "/*     */     new Thread(new Runnable() { public void run() {",
+                "/*   5 */       System.gc();",
+                "/*     */     }}).start();",
+                "/*     */   }",
+                "/*     */   void second() {",
+                "/*   9 */     System.gc();",
+                "/*     */   }",
+                "/*     */ }",
+                "");
+
+        String actual = new ParserRealigner().realign(source);
+
+        assertTrue(actual, actual.indexOf("first()") < actual.indexOf("second()"));
+    }
+
     private void testParseRealign(String inputName, String outputName)
             throws IOException, URISyntaxException, ParseException {
         String input = toString(getClass().getResource(inputName));

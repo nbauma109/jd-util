@@ -53,6 +53,7 @@ public class ParserRealigner {
         decompileContext.setPrinter(printer);
         ImportsFragment importsFragment = parseResult.getImportsFragments();
         CompilationUnitVisitor visitor = new CompilationUnitVisitor(loader, internalTypeName, importsFragment);
+        visitor.setRealignLineNumbers(true);
         visitor.visit(compilationUnit);
         decompileContext.setBody(visitor.getFragments());
         layouter.process(decompileContext);

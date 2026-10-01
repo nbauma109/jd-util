@@ -33,6 +33,7 @@ public class JavaSyntaxToJavaFragmentProcessor {
         decompileContext.setMaxLineNumber(importsVisitor.getMaxLineNumber());
 
         CompilationUnitVisitor visitor = new CompilationUnitVisitor(loader, mainInternalTypeName, majorVersion, importsFragment);
+        visitor.setRealignLineNumbers(decompileContext.isRealignLineNumbers());
         visitor.visit(compilationUnit);
         decompileContext.setBody(visitor.getFragments());
     }

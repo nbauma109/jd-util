@@ -230,6 +230,11 @@ public class SearchFirstKnownLineNumberVisitor extends AbstractJavaSyntaxVisitor
     public void visit(NewExpression expression) {
         if (!setLineNumberIfValid(expression.getLineNumber())) {
             super.visit(expression);
+
+            // The body of an anonymous class has lines too (the default traversal ignores it)
+            if (lineNumber == -1 && expression.getBodyDeclaration() != null) {
+                expression.getBodyDeclaration().accept(this);
+            }
         }
     }
 

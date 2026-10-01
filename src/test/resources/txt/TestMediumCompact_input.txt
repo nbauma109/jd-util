@@ -62,11 +62,11 @@
               public String method5(int i) {
 /*  81 */         this.log("Test.method5 start");
 /*  82 */         String s = switch (i) {
-                      case 0 -> "Test.method5 case 0";
-                      case 1 -> "Test.method5 case 1";
-                      case 2 -> "Test.method5 case 2";
-                      case 3 -> "Test.method5 case 3";
-                      default -> throw new IllegalArgumentException();
+/*  83 */             case 0 -> "Test.method5 case 0";
+/*  84 */             case 1 -> "Test.method5 case 1";
+/*  85 */             case 2 -> "Test.method5 case 2";
+/*  86 */             case 3 -> "Test.method5 case 3";
+/*  87 */             default -> throw new IllegalArgumentException();
                   };
 /*  89 */         return "return:" + s;
               }
@@ -123,14 +123,14 @@
                   }
           
                   public void method2() {
-                      new Thread(() -> {
+/* 109 */             new Thread(() -> {
 /* 110 */                 TestMediumCompact.this.log("Inner3.method2a");
 /* 111 */                 TestMediumCompact.this.log("Inner3.method2b");
                       }).start();
                   }
           
                   public void method3() {
-                      new Thread(() -> TestMediumCompact.this.log("Inner3.method3")).start();
+/* 118 */ new Thread(() -> TestMediumCompact.this.log("Inner3.method3")).start();
                   }
               }
           

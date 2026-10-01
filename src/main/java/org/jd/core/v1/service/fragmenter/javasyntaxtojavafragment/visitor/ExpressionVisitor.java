@@ -448,8 +448,17 @@ public class ExpressionVisitor extends TypeVisitor {
                 }
             } else if (exp != NoExpression.NO_EXPRESSION) {
                 if (exp.isFieldReferenceExpression() || exp.isLocalVariableReferenceExpression()) {
-                    tokens.addLineNumberToken(expression);
-                    visit(expression, exp);
+                    int receiverLineNumber = exp.getLineNumber();
+
+                    if (receiverLineNumber != UNKNOWN_LINE_NUMBER && receiverLineNumber < expression.getLineNumber()) {
+                        // The receiver is known to sit on an earlier line than the call (e.g. 'this.field' then '.method(...)' on
+                        // the next line): keep both line numbers so that the call is not stacked on the receiver's line.
+                        visit(expression, exp);
+                        tokens.addLineNumberToken(expression);
+                    } else {
+                        tokens.addLineNumberToken(expression);
+                        visit(expression, exp);
+                    }
                 } else {
                     if (exp instanceof NewExpression newExpression) {
                         newExpression.setDiamondPossible(false);

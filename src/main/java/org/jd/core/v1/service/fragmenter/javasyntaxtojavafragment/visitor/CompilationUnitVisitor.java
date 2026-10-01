@@ -623,7 +623,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
                     StartBodyFragment start;
 
                     if (singleLineStatement) {
-                        start = JavaFragmentFactory.addStartSingleStatementMethodBody(fragments);
+                        start = JavaFragmentFactory.addStartSingleStatementConstructorBody(fragments);
                     } else {
                         start = JavaFragmentFactory.addStartMethodBody(fragments);
                     }

@@ -112,27 +112,27 @@
 /*     */   public String method5(int i) {
 /* 113 */     log("Test.method5 start");
 /* 114 */     String s = switch (i) {
-/*     */         case 0 -> "Test.method5 case 0";
+/* 115 */         case 0 -> "Test.method5 case 0";
 /*     */
 /*     */
 /*     */
 /*     */
-/*     */         case 1 -> "Test.method5 case 1";
+/* 120 */         case 1 -> "Test.method5 case 1";
 /*     */
 /*     */
 /*     */
 /*     */
-/*     */         case 2 -> "Test.method5 case 2";
+/* 125 */         case 2 -> "Test.method5 case 2";
 /*     */
 /*     */
 /*     */
 /*     */
-/*     */         case 3 -> "Test.method5 case 3";
+/* 130 */         case 3 -> "Test.method5 case 3";
 /*     */
 /*     */
 /*     */
 /*     */
-/*     */         default -> throw new IllegalArgumentException();
+/* 135 */         default -> throw new IllegalArgumentException();
 /*     */       };
 /* 137 */     return "return:" + s;
 /*     */   }
@@ -153,7 +153,7 @@
 /*     */             @Override
 /*     */             public void run()
 /*     */             {
-/*     */               log("Inner3.method1");
+/* 156 */               log("Inner3.method1");
 /*     */             }
 /*     */           }).start();
 /*     */     }
@@ -161,7 +161,7 @@
 /*     */
 /*     */     public void method2()
 /*     */     {
-/*     */       new Thread(() -> {
+/* 164 */       new Thread(() -> {
 /* 165 */             log("Inner3.method2a");
 /* 166 */             log("Inner3.method2b");
 /*     */           }).start();
@@ -169,9 +169,9 @@
 /*     */
 /*     */
 /*     */
-/*     */     public void method3()
-/*     */     {
-/*     */       new Thread(() -> log("Inner3.method3")).start();
+/*     */
+/*     */     public void method3() {
+/* 174 */       new Thread(() -> log("Inner3.method3")).start();
 /*     */     }
 /*     */   }
 /*     */
