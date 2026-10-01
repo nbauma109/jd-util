@@ -256,4 +256,25 @@ public class ExpressionVisitorLineNumberTest {
 
         assertFalse(lineNumbers(visitor).contains(10));
     }
+
+    @Test
+    public void staticCallOnTheSameLineIsDeferredToItsArguments() {
+        StatementVisitor visitor = newVisitor();
+        // The type and the call are on the late line
+        Expression receiver = new ObjectTypeReferenceExpression(10, ObjectType.TYPE_STRING);
+
+        call(10, receiver, parameters(variable(3), variable(7))).accept(visitor);
+
+        assertEquals(List.of(3, 7), lineNumbers(visitor));
+    }
+
+    @Test
+    public void staticCallKeepsItsLineAfterItsReceiverWhenNotDeferred() {
+        StatementVisitor visitor = newVisitor();
+        Expression receiver = new ObjectTypeReferenceExpression(9, ObjectType.TYPE_STRING);
+
+        call(10, receiver, null).accept(visitor);
+
+        assertEquals(List.of(9, 10), lineNumbers(visitor));
+    }
 }

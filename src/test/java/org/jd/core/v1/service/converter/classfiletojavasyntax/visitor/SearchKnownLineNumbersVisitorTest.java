@@ -7,6 +7,7 @@
 
 package org.jd.core.v1.service.converter.classfiletojavasyntax.visitor;
 
+import org.jd.core.v1.model.javasyntax.declaration.LocalVariableDeclarator;
 import org.jd.core.v1.model.javasyntax.expression.ArrayExpression;
 import org.jd.core.v1.model.javasyntax.expression.BinaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.CastExpression;
@@ -138,5 +139,18 @@ public class SearchKnownLineNumbersVisitorTest {
         assertEquals(List.of(12), lineNumbers(new NewInitializedArray(12, TYPE, null)));
         assertEquals(List.of(13), lineNumbers(new ObjectTypeReferenceExpression(13, TYPE)));
         assertEquals(List.of(14), lineNumbers(new TypeReferenceDotClassExpression(14, TYPE)));
+    }
+
+    @Test
+    public void collectsTheLineOfAQualifierAndOfABareDeclarator() {
+        NewExpression qualified = new NewExpression(7, TYPE, "()V", false, false);
+        qualified.setQualifier(variable(3));
+
+        assertEquals(List.of(3, 7), lineNumbers(qualified));
+
+        SearchKnownLineNumbersVisitor visitor = new SearchKnownLineNumbersVisitor();
+        new LocalVariableDeclarator(5, "x", null).accept(visitor);
+
+        assertEquals(List.of(5), List.copyOf(visitor.getLineNumbers()));
     }
 }

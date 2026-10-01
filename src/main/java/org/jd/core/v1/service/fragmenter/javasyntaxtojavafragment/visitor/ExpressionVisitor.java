@@ -268,6 +268,14 @@ public class ExpressionVisitor extends TypeVisitor {
                 });
     }
 
+    private void visitWithoutLineNumbers(Expression parent, Expression expression) {
+        boolean previouslySuppressed = tokens.isLineNumbersSuppressed();
+
+        tokens.setLineNumbersSuppressed(true);
+        visit(parent, expression);
+        tokens.setLineNumbersSuppressed(previouslySuppressed);
+    }
+
     /** Constants never own a line: they always inherit the one of the previous instruction. */
     private static boolean isConstant(Expression expression) {
         return expression instanceof StringConstantExpression || expression instanceof IntegerConstantExpression
@@ -534,8 +542,13 @@ public class ExpressionVisitor extends TypeVisitor {
                 ObjectType ot = exp.getObjectType();
 
                 if (expression.getNonWildcardTypeArguments() != null || !ot.getInternalName().equals(getCurrentTypeInternalName())) {
-                    visit(expression, exp);
-                    addCallLineNumberToken(expression, parameters);
+                    if (isCallLineDeferredToParameters(expression, parameters)) {
+                        // The receiver, which is on the late line of the call, must not hide the lines of the arguments
+                        visitWithoutLineNumbers(expression, exp);
+                    } else {
+                        visit(expression, exp);
+                        tokens.addLineNumberToken(expression);
+                    }
                     callLineAdded = true;
                     tokens.add(TextToken.DOT);
                     dot = true;
@@ -552,11 +565,7 @@ public class ExpressionVisitor extends TypeVisitor {
                         callLineAdded = true;
                     } else if (isCallLineDeferredToParameters(expression, parameters)) {
                         // The receiver, which is on the late line of the call, must not hide the lines of the arguments
-                        boolean previouslySuppressed = tokens.isLineNumbersSuppressed();
-
-                        tokens.setLineNumbersSuppressed(true);
-                        visit(expression, exp);
-                        tokens.setLineNumbersSuppressed(previouslySuppressed);
+                        visitWithoutLineNumbers(expression, exp);
                     } else {
                         tokens.addLineNumberToken(expression);
                         visit(expression, exp);

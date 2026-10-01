@@ -8,6 +8,7 @@
 package org.jd.core.v1.service.converter.classfiletojavasyntax.visitor;
 
 import org.jd.core.v1.model.javasyntax.AbstractJavaSyntaxVisitor;
+import org.jd.core.v1.model.javasyntax.declaration.LocalVariableDeclarator;
 import org.jd.core.v1.model.javasyntax.expression.ArrayExpression;
 import org.jd.core.v1.model.javasyntax.expression.BinaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.CastExpression;
@@ -149,6 +150,10 @@ public class SearchKnownLineNumbersVisitor extends AbstractJavaSyntaxVisitor {
     @Override
     public void visit(NewExpression expression) {
         add(expression.getLineNumber());
+        if (expression.getQualifier() != null) {
+            // The qualifier is not part of the default traversal
+            expression.getQualifier().accept(this);
+        }
         super.visit(expression);
     }
 
@@ -222,5 +227,12 @@ public class SearchKnownLineNumbersVisitor extends AbstractJavaSyntaxVisitor {
     public void visit(SwitchExpression expression) {
         add(expression.getLineNumber());
         super.visit(expression);
+    }
+
+    @Override
+    public void visit(LocalVariableDeclarator declarator) {
+        // The line of a declarator without initializer is written on its own
+        add(declarator.getLineNumber());
+        super.visit(declarator);
     }
 }
