@@ -89,21 +89,21 @@
 /*     */   public String method5(int i) {
 /*  90 */     log("Test.method5 start");
 /*  91 */     String s = switch (i) {
-/*     */         case 0 -> "Test.method5 case 0";
+/*  92 */         case 0 -> "Test.method5 case 0";
 /*     */
 /*     */
 /*     */
-/*     */         case 1 -> "Test.method5 case 1";
+/*  96 */         case 1 -> "Test.method5 case 1";
 /*     */
 /*     */
 /*     */
-/*     */         case 2 -> "Test.method5 case 2";
+/* 100 */         case 2 -> "Test.method5 case 2";
 /*     */
 /*     */
-/*     */         case 3 -> "Test.method5 case 3";
+/* 103 */         case 3 -> "Test.method5 case 3";
 /*     */
 /*     */
-/*     */         default -> throw new IllegalArgumentException();
+/* 106 */         default -> throw new IllegalArgumentException();
 /*     */       };
 /* 108 */     return "return:" + s;
 /*     */   }
@@ -125,7 +125,7 @@
 /*     */     }
 /*     */
 /*     */     public void method2() {
-/*     */       new Thread(() -> {
+/* 128 */       new Thread(() -> {
 /* 129 */             log("Inner3.method2a");
 /* 130 */             log("Inner3.method2b");
 /*     */           }).start();
