@@ -244,7 +244,7 @@ public class ExpressionVisitor extends TypeVisitor {
             return false;
         }
 
-        int firstParameterLineNumber = firstNonConstantLineNumber(parameters);
+        int firstParameterLineNumber = earliestParameterLineNumber(parameters);
 
         if (firstParameterLineNumber == -1 || firstParameterLineNumber > call.getLineNumber() - 2) {
             return false;
@@ -290,12 +290,17 @@ public class ExpressionVisitor extends TypeVisitor {
         return searchFirstKnownLineNumberVisitor.getLineNumber();
     }
 
-    private int firstNonConstantLineNumber(BaseExpression parameters) {
+    /** @return the earliest known line of the arguments, anywhere in their subtrees, or -1 */
+    private int earliestParameterLineNumber(BaseExpression parameters) {
         return StreamSupport.stream(parameters.spliterator(), false)
                 .filter(parameter -> !isConstant(parameter))
-                .mapToInt(this::firstKnownLineNumber)
-                .filter(lineNumber -> lineNumber != -1)
-                .findFirst()
+                .flatMap(parameter -> {
+                    searchKnownLineNumbersVisitor.init();
+                    parameter.accept(searchKnownLineNumbersVisitor);
+                    return new ArrayList<>(searchKnownLineNumbersVisitor.getLineNumbers()).stream();
+                })
+                .mapToInt(Integer::intValue)
+                .min()
                 .orElse(-1);
     }
 

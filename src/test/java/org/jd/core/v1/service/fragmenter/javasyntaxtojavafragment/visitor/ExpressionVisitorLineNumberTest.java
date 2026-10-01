@@ -277,4 +277,26 @@ public class ExpressionVisitorLineNumberTest {
 
         assertEquals(List.of(9, 10), lineNumbers(visitor));
     }
+
+    @Test
+    public void callIsDeferredWhenOnlyANestedLineIsEarlyEnough() {
+        StatementVisitor visitor = newVisitor();
+        // The cast has an inherited line 9 (not two lines before the call) but wraps calls on lines 3 and 7
+        Expression cast = new CastExpression(9, TYPE, call(7, call(3, variable(3), null), null));
+
+        call(10, NoExpression.NO_EXPRESSION, parameters(cast)).accept(visitor);
+
+        assertFalse(lineNumbers(visitor).contains(10));
+    }
+
+    @Test
+    public void resourceCreationWithEarlierArgumentsIsNotAnchoredOnItsOwnLine() {
+        StatementVisitor visitor = newVisitor();
+        NewExpression creation = new NewExpression(10, TYPE, "()V", false, false);
+        creation.setParameters(parameters(variable(3), variable(7)));
+
+        visitor.visit(new TryStatement.Resource(TYPE, "r", creation));
+
+        assertEquals(List.of(3, 7), lineNumbers(visitor));
+    }
 }

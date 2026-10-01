@@ -14,6 +14,7 @@ import org.jd.core.v1.model.javafragment.StartStatementsBlockFragment.Group;
 import org.jd.core.v1.model.javafragment.TokensFragment;
 import org.jd.core.v1.model.javasyntax.declaration.LocalVariableDeclarator;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
+import org.jd.core.v1.model.javasyntax.expression.NewExpression;
 import org.jd.core.v1.model.javasyntax.expression.NoExpression;
 import org.jd.core.v1.model.javasyntax.statement.AssertStatement;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
@@ -741,6 +742,9 @@ public class StatementVisitor extends ExpressionVisitor {
 
         while (call.isMethodInvocationExpression() && call.getExpression() != null && call.getExpression().isMethodInvocationExpression()) {
             call = call.getExpression();
+        }
+        if (call instanceof NewExpression creation) {
+            return isCallLineDeferredToParameters(creation, creation.getParameters());
         }
         return call.isMethodInvocationExpression() && isCallLineDeferredToParameters(call, call.getParameters());
     }
