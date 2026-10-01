@@ -167,4 +167,15 @@ public class LayoutFragmentProcessorDemotionTest {
 
         assertSame(only, fragments.get(0));
     }
+
+    @Test
+    public void demotedFragmentWithoutAnyTokenOtherThanALineNumberLosesIt() {
+        // Neither a statement nor a piece of text: nothing to report to the printer
+        List<Fragment> fragments = new ArrayList<>(List.of(statement(10), new LineNumberTokensFragment(new LineNumberToken(500)), statement(11), statement(12)));
+
+        LayoutFragmentProcessor.demoteOutOfOrderFragments(fragments);
+
+        assertEquals(TokensFragment.class, fragments.get(1).getClass());
+        assertTrue(((TokensFragment) fragments.get(1)).getTokens().isEmpty());
+    }
 }

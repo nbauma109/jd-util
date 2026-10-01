@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class LayoutFragmentProcessorClassFileTest {
 
@@ -76,5 +77,17 @@ public class LayoutFragmentProcessorClassFileTest {
     @Test
     public void otherBodiesAreLeftAlone() {
         assertArrayEquals(layout(false, false, 2, 1), layout(true, false, 2, 1));
+    }
+
+    @Test
+    public void headerIsNotSeparatedWhenTheBodyStartAlreadyHasALine() {
+        // The spacer has a line to spare, but the body already starts on its own line
+        assertArrayEquals(layout(false, true, 3, 1), layout(true, true, 3, 1));
+        assertEquals(1, layout(true, true, 3, 1)[1]);
+    }
+
+    @Test
+    public void headerIsNotSeparatedWhenTheSpacerHasASingleLine() {
+        assertArrayEquals(layout(false, true, 1, 0), layout(true, true, 1, 0));
     }
 }
