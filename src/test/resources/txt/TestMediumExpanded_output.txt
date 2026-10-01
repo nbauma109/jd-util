@@ -132,9 +132,9 @@
 /*     */     }
 /*     */
 /*     */
-/*     */     public void method3()
-/*     */     {
-/*     */       new Thread(() -> log("Inner3.method3")).start();
+/*     */
+/*     */     public void method3() {
+/* 137 */       new Thread(() -> log("Inner3.method3")).start();
 /*     */     }
 /*     */   }
 /*     */

@@ -130,7 +130,7 @@
                   }
           
                   public void method3() {
-                      new Thread(() -> TestFullyExpanded.this.log("Inner3.method3")).start();
+/* 174 */ new Thread(() -> TestFullyExpanded.this.log("Inner3.method3")).start();
                   }
               }
           

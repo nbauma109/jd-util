@@ -130,7 +130,7 @@
                   }
           
                   public void method3() {
-                      new Thread(() -> TestUltraCompact.this.log("Inner3.method3")).start();
+/* 110 */ new Thread(() -> TestUltraCompact.this.log("Inner3.method3")).start();
                   }
               }
           
