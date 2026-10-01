@@ -129,24 +129,24 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     }
 
     void lambdaAndOptional() {
-/* 132 */         Supplier<String> supplier = () -> "value";
+        Supplier<String> supplier = () -> "value";
         Function<String, Integer> function = String::length;
-/* 134 */         Optional.ofNullable(supplier.get()).map(function).ifPresent(length -> log("length=" + length));
+        Optional.ofNullable(supplier.get()).map(function).ifPresent(length -> log("length=" + length));
     }
 
     void unTypedLambdaParams(List<String> list) {
-/* 138 */         list.sort((a, b) -> b.compareTo(a));
-/* 139 */         list.sort((a, b) -> {
+        list.sort((a, b) -> b.compareTo(a));
+        list.sort((a, b) -> {
             log("Comparing a and b");
             return b.compareTo(a);
         });
     }
     
     void doPrivileged(boolean flag) {
-/* 146 */       ((Runnable)() -> {
+      ((Runnable)() -> {
     
           }).run();
-/* 149 */       AccessController.doPrivileged((PrivilegedAction<Void>)() -> {
+      AccessController.doPrivileged((PrivilegedAction<Void>)() -> {
             if (flag) {
     
             }
@@ -228,16 +228,16 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
 
     void enumSwitch(Day day) {
         switch (day) {
-/* 231 */         case MONDAY, TUESDAY -> log("weekday");
-/* 232 */         default -> log("other");
+        case MONDAY, TUESDAY -> log("weekday");
+        default -> log("other");
         }
     }
 
     public String expressionSwitch(int value) {
         return switch (value) {
-/* 238 */         case 0 -> "zero";
-/* 239 */         case 1 -> "one";
-/* 240 */         default -> throw new IllegalArgumentException();
+        case 0 -> "zero";
+        case 1 -> "one";
+        default -> throw new IllegalArgumentException();
         };
     }
 
@@ -403,8 +403,8 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
 
     <T> String handleResult(Result<T> result) {
         return switch (result) {
-/* 406 */         case Success<T> success -> "success:" + success.value();
-/* 407 */         case Failure<T> failure -> "failure:" + failure.exception().getClass().getSimpleName();
+        case Success<T> success -> "success:" + success.value();
+        case Failure<T> failure -> "failure:" + failure.exception().getClass().getSimpleName();
         };
     }
 
@@ -431,11 +431,11 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         }
 
         void lambda() {
-/* 434 */             new Thread(() -> log("Inner.lambda")).start();
+            new Thread(() -> log("Inner.lambda")).start();
         }
         
         void lambdaBlock() {
-/* 438 */             new Thread(() -> {
+            new Thread(() -> {
                 log("Inner.lambda 1");
                 log("Inner.lambda 2");
             }).start();
@@ -473,7 +473,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         return value;
     }
 
-/* 476 */     transient Callable<String> callable = () -> "callable";
+    transient Callable<String> callable = () -> "callable";
 
     void labeledLoops() {
         outer: for (int i = 0; i < 3; i++) {
@@ -518,7 +518,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
     }
 
     String throwExpression(Integer value) {
-/* 521 */         return Optional.ofNullable(value).map(Object::toString).orElseThrow(() -> new IllegalArgumentException());
+        return Optional.ofNullable(value).map(Object::toString).orElseThrow(() -> new IllegalArgumentException());
     }
 
     void synchronizedBlock() {
@@ -619,7 +619,7 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
 
     int switchYield(int i) {
         return switch (i) {
-/* 622 */         case 0 -> {
+        case 0 -> {
             log("before yield");
             yield 10;
         }
@@ -728,16 +728,16 @@ public abstract class AllJavaSyntaxes<E extends Comparable<E>> extends ArrayList
         int length = array.length;
         Class<?> clazz = String.class;
         Function<String, Integer> lengthRef = String::length;
-/* 731 */         Supplier<Integer> lambda = () -> 42;
+        Supplier<Integer> lambda = () -> 42;
         AllJavaSyntaxes.this.log("this");
         super.size();
         Comparator<String> cmp = String::compareTo;
         int[][] matrix = new int[1][1];
         int value = matrix[0].length;
-/* 737 */         Runnable runnable = () -> log("run");
+        Runnable runnable = () -> log("run");
         Supplier<ArrayList<String>> ctorRef = ArrayList::new;
         int yielded = switch (a) {
-/* 740 */         case 0 -> 0;
+        case 0 -> 0;
         default -> {
             yield 1;
         }

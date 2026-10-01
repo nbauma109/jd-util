@@ -1,13 +1,11 @@
-/*   */ 
-/*   */ class SwitchPatternMatching
-/*   */ {
-/*   */   static int describe(Object o) {
-/*   */     return switch (o) {
-/* 6 */         case Point(int x, int y) -> x + y;
-/* 7 */         case Integer i -> i;
-/* 8 */         default -> 0;
-/*   */       };
-/*   */   }
-/*   */   
-/*   */   record Point(int x, int y) {}
-/*   */ }
+class SwitchPatternMatching {
+  record Point(int x, int y) {}
+
+  static int describe(Object o) {
+    return switch (o) {
+        case Point(int x, int y) -> x + y;
+        case Integer i -> i;
+        default -> 0;
+      };
+  }
+}

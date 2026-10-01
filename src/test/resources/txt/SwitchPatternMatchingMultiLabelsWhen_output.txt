@@ -1,8 +1,10 @@
-/*   */ class SwitchPatternMatchingMultiLabelsWhen {
-/*   */   static void describe(Object o) {
-/*   */     switch (o) {
-/* 4 */       case Integer _, Long _ when o != null && o.hashCode() > 0: System.out.println(1);
-/* 5 */       default: System.out.println(0);
-/*   */     } 
-/*   */   }
-/*   */ }
+class SwitchPatternMatchingMultiLabelsWhen {
+  static void describe(Object o) {
+    switch (o) {
+      case Integer _, Long _ when o != null && o.hashCode() > 0:
+        System.out.println(1);
+      default:
+        System.out.println(0);
+    }
+  }
+}
