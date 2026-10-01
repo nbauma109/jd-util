@@ -17,6 +17,9 @@ import org.jd.core.v1.model.javafragment.StartBodyFragment;
 import org.jd.core.v1.model.javafragment.TokensFragment;
 import org.jd.core.v1.model.message.DecompileContext;
 import org.jd.core.v1.model.token.KeywordToken;
+import org.jd.core.v1.model.token.ReferenceToken;
+import org.jd.core.v1.model.token.TextToken;
+import org.jd.core.v1.model.token.NewLineToken;
 import org.jd.core.v1.model.token.LineNumberToken;
 import org.jd.core.v1.model.token.StartBlockToken;
 import org.jd.core.v1.model.token.Token;
@@ -139,6 +142,8 @@ public class LayoutFragmentProcessor {
                 // Decompiling a class file: the line of a method header is unknown (unlike when realigning a source file)
                 separateHeadersFromSingleStatementBodies(sections);
             }
+
+            breakBeforeTheFirstLineNumberOfUnreachableFragments(sections);
 
             // Update fragments
             fragments.clear();
@@ -351,6 +356,48 @@ public class LayoutFragmentProcessor {
                 startBody.incLineCount(true);
             }
         }
+    }
+
+    /**
+     * The flexible fragments of a section cannot always take as many lines as the ones which separate the fixed
+     * fragments (e.g. no fragment offers a line break between the ':' of a ternary and the expression which follows the
+     * body of an anonymous class). The fixed fragment then starts with tokens of the previous line: break the line
+     * between them and its first line number, so that the line numbers stay aligned.
+     */
+    private static void breakBeforeTheFirstLineNumberOfUnreachableFragments(List<Section> sections) {
+        for (Section section : sections) {
+            int missingLineCount = section.getTargetLineCount() - section.getLineCount();
+
+            if (missingLineCount > 0 && section.getFixedFragment() instanceof LineNumberTokensFragment fragment) {
+                List<Token> tokens = fragment.getTokens();
+                int index = indexOfFirstLineNumber(tokens);
+
+                if (index > 0 && hasText(tokens.subList(0, index))) {
+                    List<Token> broken = new ArrayList<>(tokens.size() + missingLineCount);
+
+                    broken.addAll(tokens.subList(0, index));
+                    for (int i = 0; i < missingLineCount; i++) {
+                        broken.add(NewLineToken.NEWLINE_1);
+                    }
+                    broken.addAll(tokens.subList(index, tokens.size()));
+                    section.setFixedFragment(new LineNumberTokensFragment(broken));
+                }
+            }
+        }
+    }
+
+    private static int indexOfFirstLineNumber(List<Token> tokens) {
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens.get(i) instanceof LineNumberToken) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** @return true if the tokens print something on the line (not only markers of blocks) */
+    private static boolean hasText(List<Token> tokens) {
+        return tokens.stream().anyMatch(token -> token instanceof TextToken || token instanceof KeywordToken || token instanceof ReferenceToken);
     }
 
     /** @return true if the fragment starts a statement ('return ...;', 'x = ...;', 'if (...)', 'while (...)'...) */
