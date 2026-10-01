@@ -534,6 +534,10 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
             addLineNumberToken(expression.getLineNumber());
         }
 
+        public boolean isLineNumbersSuppressed() {
+            return lineNumbersSuppressed;
+        }
+
         public void setLineNumbersSuppressed(boolean lineNumbersSuppressed) {
             this.lineNumbersSuppressed = lineNumbersSuppressed;
         }

@@ -552,9 +552,11 @@ public class ExpressionVisitor extends TypeVisitor {
                         callLineAdded = true;
                     } else if (isCallLineDeferredToParameters(expression, parameters)) {
                         // The receiver, which is on the late line of the call, must not hide the lines of the arguments
+                        boolean previouslySuppressed = tokens.isLineNumbersSuppressed();
+
                         tokens.setLineNumbersSuppressed(true);
                         visit(expression, exp);
-                        tokens.setLineNumbersSuppressed(false);
+                        tokens.setLineNumbersSuppressed(previouslySuppressed);
                     } else {
                         tokens.addLineNumberToken(expression);
                         visit(expression, exp);
@@ -694,7 +696,7 @@ public class ExpressionVisitor extends TypeVisitor {
         inInvokeNewFlag = true;
         BodyDeclaration bodyDeclaration = expression.getBodyDeclaration();
 
-        tokens.addLineNumberToken(expression);
+        addCallLineNumberToken(expression, expression.getParameters());
         if (expression.getQualifier() != null) {
             expression.getQualifier().accept(this);
             tokens.add(TextToken.DOT);

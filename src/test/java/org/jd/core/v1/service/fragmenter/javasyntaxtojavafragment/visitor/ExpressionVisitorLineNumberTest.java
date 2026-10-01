@@ -15,6 +15,7 @@ import org.jd.core.v1.model.javasyntax.expression.Expressions;
 import org.jd.core.v1.model.javasyntax.expression.FieldReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.LocalVariableReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.MethodInvocationExpression;
+import org.jd.core.v1.model.javasyntax.expression.NewExpression;
 import org.jd.core.v1.model.javasyntax.expression.NoExpression;
 import org.jd.core.v1.model.javasyntax.expression.ObjectTypeReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
@@ -231,5 +232,28 @@ public class ExpressionVisitorLineNumberTest {
 
         assertTrue(lineNumbers.contains(7));
         assertFalse(lineNumbers.contains(10));
+    }
+
+    @Test
+    public void objectCreationIsDeferredToItsArguments() {
+        StatementVisitor visitor = newVisitor();
+        NewExpression creation = new NewExpression(10, TYPE, "()V", false, false);
+        creation.setParameters(parameters(variable(3), variable(7)));
+
+        creation.accept(visitor);
+
+        assertEquals(List.of(3, 7), lineNumbers(visitor));
+    }
+
+    @Test
+    public void nestedDeferredReceiversKeepTheLineNumbersSuppressed() {
+        StatementVisitor visitor = newVisitor();
+        // service.make(a, b).field.outer(c, d): both calls and the field are on the late line 10
+        Expression inner = call(10, variable(10), parameters(variable(3), variable(4)));
+        Expression field = new FieldReferenceExpression(10, TYPE, inner, "test/Other", "f", "Ljava/lang/Object;");
+
+        call(10, field, parameters(variable(5), variable(7))).accept(visitor);
+
+        assertFalse(lineNumbers(visitor).contains(10));
     }
 }
