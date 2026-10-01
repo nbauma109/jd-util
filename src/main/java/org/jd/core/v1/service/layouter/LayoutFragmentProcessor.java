@@ -398,9 +398,14 @@ public class LayoutFragmentProcessor {
 
     /** @return true if the tokens print something on the line (anything but the markers of blocks, the line numbers and the line breaks) */
     private static boolean hasText(List<Token> tokens) {
-        return tokens.stream().anyMatch(token -> !(token instanceof StartBlockToken || token instanceof EndBlockToken
-                || token instanceof StartMarkerToken || token instanceof EndMarkerToken
+        return tokens.stream().anyMatch(token -> !(isSilentBlockToken(token) || token instanceof StartMarkerToken || token instanceof EndMarkerToken
                 || token instanceof LineNumberToken || token instanceof NewLineToken));
+    }
+
+    /** @return true for the block tokens which print nothing (the parameters, array and resources ones print a delimiter) */
+    private static boolean isSilentBlockToken(Token token) {
+        return token instanceof StartBlockToken start && start.text().isEmpty()
+                || token instanceof EndBlockToken end && end.text().isEmpty();
     }
 
     /** @return true if the fragment starts a statement ('return ...;', 'x = ...;', 'if (...)', 'while (...)'...) */

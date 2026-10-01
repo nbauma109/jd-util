@@ -105,7 +105,10 @@ public class LayoutFragmentProcessorUnreachableLineTest {
                 new StringConstantToken("\"a\"", "test/T"),
                 new NumericConstantToken("1"),
                 new BooleanConstantToken(true),
-                new CharacterConstantToken("'a'", "test/T"));
+                new CharacterConstantToken("'a'", "test/T"),
+                StartBlockToken.START_PARAMETERS_BLOCK,
+                EndBlockToken.END_PARAMETERS_BLOCK,
+                EndBlockToken.END_ARRAY_BLOCK);
 
         for (Token token : printed) {
             LineNumberTokensFragment second = new LineNumberTokensFragment(token, new LineNumberToken(13), new TextToken("new"));
