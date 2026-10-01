@@ -387,19 +387,20 @@ public class LayoutFragmentProcessor {
         }
     }
 
+    /** @return the index of the first line number (a LineNumberTokensFragment always has one) */
     private static int indexOfFirstLineNumber(List<Token> tokens) {
-        for (int i = 0; i < tokens.size(); i++) {
-            if (tokens.get(i) instanceof LineNumberToken) {
-                return i;
-            }
+        int index = 0;
+
+        while (!(tokens.get(index) instanceof LineNumberToken)) {
+            index++;
         }
-        return -1;
+        return index;
     }
 
     /** @return true if the tokens print something on the line (anything but the markers of blocks, the line numbers and the line breaks) */
     private static boolean hasText(List<Token> tokens) {
         return tokens.stream().anyMatch(token -> !(isSilentBlockToken(token) || token instanceof StartMarkerToken || token instanceof EndMarkerToken
-                || token instanceof LineNumberToken || token instanceof NewLineToken));
+                || token instanceof NewLineToken));
     }
 
     /** @return true for the block tokens which print nothing (the parameters, array and resources ones print a delimiter) */
