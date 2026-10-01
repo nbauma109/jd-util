@@ -7,8 +7,8 @@ class SealedSwitch {
 
     int area(Shape shape) {
         return switch (shape) {
-            case Circle c -> c.radius() * c.radius();
-            case Square s -> s.side() * s.side();
+/*  10 */             case Circle c -> c.radius() * c.radius();
+/*  11 */             case Square s -> s.side() * s.side();
         };
     }
 }

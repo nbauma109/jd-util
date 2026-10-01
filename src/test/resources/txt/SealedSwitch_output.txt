@@ -1,14 +1,20 @@
-class SealedSwitch {
-  sealed interface Shape permits Circle, Square {}
-
-  record Circle(int radius) implements Shape {}
-
-  record Square(int side) implements Shape {}
-
-  int area(Shape shape) {
-    return switch (shape) {
-        case Circle c -> c.radius() * c.radius();
-        case Square s -> s.side() * s.side();
-      };
-  }
-}
+/*    */ 
+/*    */ 
+/*    */ 
+/*    */ 
+/*    */ 
+/*    */ class SealedSwitch
+/*    */ {
+/*    */   int area(Shape shape) {
+/*    */     return switch (shape) {
+/* 10 */         case Circle c -> c.radius() * c.radius();
+/* 11 */         case Square s -> s.side() * s.side();
+/*    */       };
+/*    */   }
+/*    */   
+/*    */   sealed interface Shape permits Circle, Square {}
+/*    */   
+/*    */   record Circle(int radius) implements Shape {}
+/*    */   
+/*    */   record Square(int side) implements Shape {}
+/*    */ }

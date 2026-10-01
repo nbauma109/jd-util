@@ -14,7 +14,6 @@ import org.jd.core.v1.model.javafragment.StartStatementsBlockFragment.Group;
 import org.jd.core.v1.model.javafragment.TokensFragment;
 import org.jd.core.v1.model.javasyntax.declaration.LocalVariableDeclarator;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
-import org.jd.core.v1.model.javasyntax.expression.NewExpression;
 import org.jd.core.v1.model.javasyntax.expression.NoExpression;
 import org.jd.core.v1.model.javasyntax.statement.AssertStatement;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
@@ -712,11 +711,8 @@ public class StatementVisitor extends ExpressionVisitor {
     public void visit(TryStatement.Resource resource) {
         Expression expression = resource.getExpression();
 
-        // The line of a chain of calls is the line of its last call: start at the line of the first one, unless the
-        // arguments of this first call are on earlier lines: they must not be hidden by the line of the call
-        if (!isFirstCallLineDeferredToParameters(expression)) {
-            tokens.addLineNumberToken(firstLineNumberOfReceiverChain(expression));
-        }
+        // The line of a chain of calls is the line of its last call: start at the line of the first one
+        tokens.addLineNumberToken(firstLineNumberOfReceiverChain(expression));
 
         if (resource.isExpressionOnly()) {
             expression.accept(this);
@@ -735,18 +731,6 @@ public class StatementVisitor extends ExpressionVisitor {
         tokens.add(newTextToken(resource.getName()));
         tokens.add(TextToken.SPACE_EQUAL_SPACE);
         expression.accept(this);
-    }
-
-    private boolean isFirstCallLineDeferredToParameters(Expression expression) {
-        Expression call = expression;
-
-        while (call.isMethodInvocationExpression() && call.getExpression() != null && call.getExpression().isMethodInvocationExpression()) {
-            call = call.getExpression();
-        }
-        if (call instanceof NewExpression creation) {
-            return isCallLineDeferredToParameters(creation, creation.getParameters());
-        }
-        return call.isMethodInvocationExpression() && isCallLineDeferredToParameters(call, call.getParameters());
     }
 
     private static int firstLineNumberOfReceiverChain(Expression expression) {

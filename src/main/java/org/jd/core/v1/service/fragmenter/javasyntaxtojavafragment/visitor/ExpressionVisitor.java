@@ -79,18 +79,14 @@ import org.jd.core.v1.model.token.TextToken;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.CharacterUtil;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.StringUtil;
-import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.SearchFirstKnownLineNumberVisitor;
-import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.SearchKnownLineNumbersVisitor;
 import org.jd.core.v1.util.DefaultList;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 import static org.apache.bcel.Const.MAJOR_1_7;
 import static org.jd.core.v1.model.javasyntax.type.PrimitiveType.FLAG_BOOLEAN;
@@ -118,8 +114,6 @@ public class ExpressionVisitor extends TypeVisitor {
     public static final KeywordToken FINAL = new KeywordToken("final");
 
     protected static final int UNKNOWN_LINE_NUMBER = Printer.UNKNOWN_LINE_NUMBER;
-    private final SearchFirstKnownLineNumberVisitor searchFirstKnownLineNumberVisitor = new SearchFirstKnownLineNumberVisitor();
-    private final SearchKnownLineNumbersVisitor searchKnownLineNumbersVisitor = new SearchKnownLineNumbersVisitor();
 
     protected final LinkedList<Context> contextStack = new LinkedList<>();
     protected Fragments fragments = new Fragments();
@@ -219,107 +213,9 @@ public class ExpressionVisitor extends TypeVisitor {
         visit(expression, expression.getExpression());
     }
 
-    /**
-     * Adds the line number token of a call (method, constructor, 'this(...)', 'super(...)'), unless its arguments
-     * start on an earlier line: some compilers (ECJ) attribute the call to the line of its last argument or of its
-     * closing parenthesis. Emitting the call line first would drop the line numbers of all the arguments
-     * (they must be non decreasing) and stack them on a single line.
-     */
-    protected void addCallLineNumberToken(Expression call, BaseExpression parameters) {
-        if (!isCallLineDeferredToParameters(call, parameters)) {
-            tokens.addLineNumberToken(call);
-        }
-    }
-
-    /**
-     * Only when the arguments really bring a new line: an argument which is on the line already reached merely
-     * inherits it (javac only records a line number for statements and calls), and the call must still be moved to
-     * its own line. At the start of a statement nothing has been reached yet: the arguments must then be written on
-     * several lines, otherwise they only inherit the line of the statement.
-     * javac line tables make the arguments inherit the line of the previous entry, usually the line just before the
-     * call: only arguments which start at least two lines before the call are considered to be written there.
-     */
-    protected boolean isCallLineDeferredToParameters(Expression call, BaseExpression parameters) {
-        if (parameters == null) {
-            return false;
-        }
-
-        int firstParameterLineNumber = earliestParameterLineNumber(parameters);
-
-        if (firstParameterLineNumber == -1 || firstParameterLineNumber > call.getLineNumber() - 2) {
-            return false;
-        }
-
-        int currentLineNumber = tokens.getCurrentLineNumber();
-
-        return currentLineNumber == UNKNOWN_LINE_NUMBER
-            ? countDistinctLineNumbers(parameters) > 1
-            : hasParameterLineNumberBetween(parameters, currentLineNumber, call.getLineNumber());
-    }
-
-    /** @return true if a line of the arguments (anywhere in their subtrees) is after {@code lower} and before {@code upper} */
-    private boolean hasParameterLineNumberBetween(BaseExpression parameters, int lower, int upper) {
-        return StreamSupport.stream(parameters.spliterator(), false)
-                .filter(parameter -> !isConstant(parameter))
-                .anyMatch(parameter -> {
-                    searchKnownLineNumbersVisitor.init();
-                    parameter.accept(searchKnownLineNumbersVisitor);
-                    return searchKnownLineNumbersVisitor.getLineNumbers().stream().anyMatch(lineNumber -> lineNumber > lower && lineNumber < upper);
-                });
-    }
-
-    private void visitWithoutLineNumbers(Expression parent, Expression expression) {
-        boolean previouslySuppressed = tokens.isLineNumbersSuppressed();
-
-        tokens.setLineNumbersSuppressed(true);
-        visit(parent, expression);
-        tokens.setLineNumbersSuppressed(previouslySuppressed);
-    }
-
-    /** Constants never own a line: they always inherit the one of the previous instruction. */
-    private static boolean isConstant(Expression expression) {
-        return expression instanceof StringConstantExpression || expression instanceof IntegerConstantExpression
-            || expression instanceof LongConstantExpression || expression instanceof FloatConstantExpression
-            || expression instanceof DoubleConstantExpression || expression instanceof NullExpression
-            || expression instanceof BooleanExpression;
-    }
-
-    private int firstKnownLineNumber(Expression expression) {
-        searchFirstKnownLineNumberVisitor.init();
-        expression.accept(searchFirstKnownLineNumberVisitor);
-        return searchFirstKnownLineNumberVisitor.getLineNumber();
-    }
-
-    /** @return the earliest known line of the arguments, anywhere in their subtrees, or -1 */
-    private int earliestParameterLineNumber(BaseExpression parameters) {
-        return StreamSupport.stream(parameters.spliterator(), false)
-                .filter(parameter -> !isConstant(parameter))
-                .flatMap(parameter -> {
-                    searchKnownLineNumbersVisitor.init();
-                    parameter.accept(searchKnownLineNumbersVisitor);
-                    return new ArrayList<>(searchKnownLineNumbersVisitor.getLineNumbers()).stream();
-                })
-                .mapToInt(Integer::intValue)
-                .min()
-                .orElse(-1);
-    }
-
-    /** Counts the distinct known lines of the arguments, including the lines inside an argument (e.g. a chain of calls) */
-    private int countDistinctLineNumbers(BaseExpression parameters) {
-        return (int) StreamSupport.stream(parameters.spliterator(), false)
-                .filter(parameter -> !isConstant(parameter))
-                .flatMap(parameter -> {
-                    searchKnownLineNumbersVisitor.init();
-                    parameter.accept(searchKnownLineNumbersVisitor);
-                    return new ArrayList<>(searchKnownLineNumbersVisitor.getLineNumbers()).stream();
-                })
-                .distinct()
-                .count();
-    }
-
     @Override
     public void visit(ConstructorInvocationExpression expression) {
-        addCallLineNumberToken(expression, expression.getParameters());
+        tokens.addLineNumberToken(expression);
         tokens.add(THIS);
         tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
 
@@ -539,22 +435,14 @@ public class ExpressionVisitor extends TypeVisitor {
         BaseTypeArgument nonWildcardTypeArguments = expression.getNonWildcardTypeArguments();
         BaseExpression parameters = expression.getParameters();
         boolean dot = false;
-        // The call line is emitted after the receiver, unless the arguments defer it
-        boolean callLineAdded = false;
 
         if (!exp.isThisExpression()) {
             if (exp.isObjectTypeReferenceExpression()) {
                 ObjectType ot = exp.getObjectType();
 
                 if (expression.getNonWildcardTypeArguments() != null || !ot.getInternalName().equals(getCurrentTypeInternalName())) {
-                    if (isCallLineDeferredToParameters(expression, parameters)) {
-                        // The receiver, which is on the late line of the call, must not hide the lines of the arguments
-                        visitWithoutLineNumbers(expression, exp);
-                    } else {
-                        visit(expression, exp);
-                        tokens.addLineNumberToken(expression);
-                    }
-                    callLineAdded = true;
+                    visit(expression, exp);
+                    tokens.addLineNumberToken(expression);
                     tokens.add(TextToken.DOT);
                     dot = true;
                 }
@@ -563,14 +451,10 @@ public class ExpressionVisitor extends TypeVisitor {
                     int receiverLineNumber = exp.getLineNumber();
 
                     if (receiverLineNumber != UNKNOWN_LINE_NUMBER && receiverLineNumber < expression.getLineNumber()) {
-                        // The receiver sits on an earlier line than the call (e.g. 'this.field' then '.method(...)' on the next line):
-                        // keep both line numbers so that the call is not stacked on the receiver's line.
+                        // The receiver is known to sit on an earlier line than the call (e.g. 'this.field' then '.method(...)' on
+                        // the next line): keep both line numbers so that the call is not stacked on the receiver's line.
                         visit(expression, exp);
-                        addCallLineNumberToken(expression, parameters);
-                        callLineAdded = true;
-                    } else if (isCallLineDeferredToParameters(expression, parameters)) {
-                        // The receiver, which is on the late line of the call, must not hide the lines of the arguments
-                        visitWithoutLineNumbers(expression, exp);
+                        tokens.addLineNumberToken(expression);
                     } else {
                         tokens.addLineNumberToken(expression);
                         visit(expression, exp);
@@ -580,8 +464,7 @@ public class ExpressionVisitor extends TypeVisitor {
                         newExpression.setDiamondPossible(false);
                     }
                     visit(expression, exp);
-                    addCallLineNumberToken(expression, parameters);
-                    callLineAdded = true;
+                    tokens.addLineNumberToken(expression);
                 }
 
                 tokens.add(TextToken.DOT);
@@ -589,9 +472,7 @@ public class ExpressionVisitor extends TypeVisitor {
             }
         }
 
-        if (!callLineAdded) {
-            addCallLineNumberToken(expression, parameters);
-        }
+        tokens.addLineNumberToken(expression);
 
         if (nonWildcardTypeArguments != null && dot) {
             tokens.add(TextToken.LEFTANGLEBRACKET);
@@ -710,7 +591,7 @@ public class ExpressionVisitor extends TypeVisitor {
         inInvokeNewFlag = true;
         BodyDeclaration bodyDeclaration = expression.getBodyDeclaration();
 
-        addCallLineNumberToken(expression, expression.getParameters());
+        tokens.addLineNumberToken(expression);
         if (expression.getQualifier() != null) {
             expression.getQualifier().accept(this);
             tokens.add(TextToken.DOT);
@@ -841,7 +722,7 @@ public class ExpressionVisitor extends TypeVisitor {
 
     @Override
     public void visit(SuperConstructorInvocationExpression expression) {
-        addCallLineNumberToken(expression, expression.getParameters());
+        tokens.addLineNumberToken(expression);
         tokens.add(SUPER);
         tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
 

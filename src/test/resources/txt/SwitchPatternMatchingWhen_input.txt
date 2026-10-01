@@ -3,9 +3,9 @@ class SwitchPatternMatchingWhen {
 
     static int describe(Object o) {
         return switch (o) {
-            case Point(int x, int y) when x > y -> x - y;
-            case Point(int x, int y) -> x + y;
-            default -> 0;
+/*   6 */             case Point(int x, int y) when x > y -> x - y;
+/*   7 */             case Point(int x, int y) -> x + y;
+/*   8 */             default -> 0;
         };
     }
 }

@@ -1,12 +1,10 @@
-class SwitchExpressionLabelsWhen {
-  static int describe(int i) {
-    int result;
-    switch (i) {
-      case 1, 2 when i > 0:
-        result = 1;
-      default:
-        result = 0;
-    }
-    return result;
-  }
-}
+/*   */ class SwitchExpressionLabelsWhen {
+/*   */   static int describe(int i) {
+/*   */     int result;
+/*   */     switch (i) {
+/* 5 */       case 1, 2 when i > 0: result = 1;
+/* 6 */       default: result = 0;
+/*   */     } 
+/*   */     return result;
+/*   */   }
+/*   */ }
