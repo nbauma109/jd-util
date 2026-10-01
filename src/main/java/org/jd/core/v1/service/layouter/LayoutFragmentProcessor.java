@@ -16,9 +16,10 @@ import org.jd.core.v1.model.javafragment.SpacerBetweenMembersFragment;
 import org.jd.core.v1.model.javafragment.StartBodyFragment;
 import org.jd.core.v1.model.javafragment.TokensFragment;
 import org.jd.core.v1.model.message.DecompileContext;
+import org.jd.core.v1.model.token.EndBlockToken;
+import org.jd.core.v1.model.token.StartMarkerToken;
+import org.jd.core.v1.model.token.EndMarkerToken;
 import org.jd.core.v1.model.token.KeywordToken;
-import org.jd.core.v1.model.token.ReferenceToken;
-import org.jd.core.v1.model.token.TextToken;
 import org.jd.core.v1.model.token.NewLineToken;
 import org.jd.core.v1.model.token.LineNumberToken;
 import org.jd.core.v1.model.token.StartBlockToken;
@@ -395,9 +396,11 @@ public class LayoutFragmentProcessor {
         return -1;
     }
 
-    /** @return true if the tokens print something on the line (not only markers of blocks) */
+    /** @return true if the tokens print something on the line (anything but the markers of blocks, the line numbers and the line breaks) */
     private static boolean hasText(List<Token> tokens) {
-        return tokens.stream().anyMatch(token -> token instanceof TextToken || token instanceof KeywordToken || token instanceof ReferenceToken);
+        return tokens.stream().anyMatch(token -> !(token instanceof StartBlockToken || token instanceof EndBlockToken
+                || token instanceof StartMarkerToken || token instanceof EndMarkerToken
+                || token instanceof LineNumberToken || token instanceof NewLineToken));
     }
 
     /** @return true if the fragment starts a statement ('return ...;', 'x = ...;', 'if (...)', 'while (...)'...) */

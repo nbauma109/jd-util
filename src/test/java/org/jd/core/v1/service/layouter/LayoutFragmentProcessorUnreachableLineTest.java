@@ -8,6 +8,17 @@
 package org.jd.core.v1.service.layouter;
 
 import org.jd.core.v1.model.fragment.Fragment;
+import org.jd.core.v1.model.token.StringConstantToken;
+import org.jd.core.v1.model.token.StartMarkerToken;
+import org.jd.core.v1.model.token.ReferenceToken;
+import org.jd.core.v1.model.token.NumericConstantToken;
+import org.jd.core.v1.model.token.KeywordToken;
+import org.jd.core.v1.model.token.EndMarkerToken;
+import org.jd.core.v1.model.token.EndBlockToken;
+import org.jd.core.v1.model.token.DeclarationToken;
+import org.jd.core.v1.model.token.CharacterConstantToken;
+import org.jd.core.v1.model.token.BooleanConstantToken;
+import org.jd.core.v1.api.printer.Printer;
 import org.jd.core.v1.model.javafragment.LineNumberTokensFragment;
 import org.jd.core.v1.model.javafragment.SpacerFragment;
 import org.jd.core.v1.model.javafragment.TokensFragment;
@@ -83,5 +94,33 @@ public class LayoutFragmentProcessorUnreachableLineTest {
         LineNumberTokensFragment second = new LineNumberTokensFragment(StartBlockToken.START_DECLARATION_OR_STATEMENT_BLOCK, new LineNumberToken(13), new TextToken("a"));
 
         assertSame(second, fixedFragmentAfter(layout(second), 13));
+    }
+
+    @Test
+    public void everyPrintedTokenBeforeTheFirstLineNumberIsBrokenFromIt() {
+        List<Token> printed = List.of(
+                new KeywordToken("new"),
+                new DeclarationToken(Printer.FIELD, "test/T", "f", "I"),
+                new ReferenceToken(Printer.TYPE, "java/lang/String", "String"),
+                new StringConstantToken("\"a\"", "test/T"),
+                new NumericConstantToken("1"),
+                new BooleanConstantToken(true),
+                new CharacterConstantToken("'a'", "test/T"));
+
+        for (Token token : printed) {
+            LineNumberTokensFragment second = new LineNumberTokensFragment(token, new LineNumberToken(13), new TextToken("new"));
+
+            assertEquals(token.toString(), List.of(token, NewLineToken.NEWLINE_1, new LineNumberToken(13), new TextToken("new")),
+                    fixedFragmentAfter(layout(second), 13).getTokens());
+        }
+    }
+
+    @Test
+    public void structuralTokensBeforeTheFirstLineNumberAreNotText() {
+        for (Token token : List.<Token>of(EndBlockToken.END_DECLARATION_OR_STATEMENT_BLOCK, StartMarkerToken.IMPORT_STATEMENTS, EndMarkerToken.IMPORT_STATEMENTS, NewLineToken.NEWLINE_1)) {
+            LineNumberTokensFragment second = new LineNumberTokensFragment(token, new LineNumberToken(13), new TextToken("new"));
+
+            assertSame(token.toString(), second, fixedFragmentAfter(layout(second), 13));
+        }
     }
 }
