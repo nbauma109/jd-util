@@ -136,6 +136,11 @@ public final class JavaFragmentFactory {
         fragments.add(new SpaceSpacerFragment(0, 0, 1, 2, "Spacer before implements"));
     }
 
+    /** The line break after the ';' of an enum without constants */
+    public static void addSpacerAfterEmptyEnumConstants(List<Fragment> fragments) {
+        fragments.add(new SpacerFragment(1, 1, 1, 12, "Spacer after the semicolon of an enum without constants"));
+    }
+
     public static void addSpacerBetweenEnumValues(List<Fragment> fragments, int preferredLineCount) {
         fragments.add(TokensFragment.COMMA);
         fragments.add(new SpaceSpacerFragment(0, preferredLineCount, 1, 10, "Spacer between enum values"));

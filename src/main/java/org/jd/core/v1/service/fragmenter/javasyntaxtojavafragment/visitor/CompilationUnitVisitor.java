@@ -845,8 +845,11 @@ public class CompilationUnitVisitor extends StatementVisitor {
             tokens = new Tokens();
 
             if (emptyConstants) {
+                // The ';' which ends the (empty) list of constants: its line break is a fragment, so that the layout counts it
                 tokens.add(TextToken.SEMICOLON);
-                tokens.add(NewLineToken.NEWLINE_1);
+                fragments.addTokensFragment(tokens);
+                JavaFragmentFactory.addSpacerAfterEmptyEnumConstants(fragments);
+                tokens = new Tokens();
                 emptyConstants = false;
             }
 

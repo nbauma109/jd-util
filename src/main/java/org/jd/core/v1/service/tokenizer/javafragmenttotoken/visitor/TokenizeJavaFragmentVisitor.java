@@ -578,6 +578,15 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
         }
 
         @Override
+        public void visit(NewLineToken token) {
+            // A line break which the layout asked for: the following line numbers are after it
+            tokens.add(token);
+            if (currentLineNumber != Printer.UNKNOWN_LINE_NUMBER) {
+                currentLineNumber += token.count();
+            }
+        }
+
+        @Override
         public void visit(StartBlockToken token) {
             if (token == StartBlockToken.START_BLOCK) {
                 throw new IllegalArgumentException("Unexpected StartBlockToken.START_BLOCK at this step. Uses 'JavaFragmentFactory.addStart***(fragments)' instead");

@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 
 public class Section {
     private final DefaultList<FlexibleFragment> flexibleFragments;
-    private final FixedFragment fixedFragment;
+    private       FixedFragment fixedFragment;
     private final Section previousSection;
     private       Section nextSection; // NO_UCD (use final)
     private final int targetLineCount;
@@ -58,6 +58,20 @@ public class Section {
 
     public DefaultList<FlexibleFragment> getFlexibleFragments() { return flexibleFragments; }
     public FixedFragment getFixedFragment() { return fixedFragment; }
+    public void setFixedFragment(FixedFragment fixedFragment) { this.fixedFragment = fixedFragment; }
+
+    /** @return the number of lines which separate the previous fixed fragment from the one of this section */
+    public int getTargetLineCount() { return targetLineCount; }
+
+    /** @return the number of lines taken by the flexible fragments of this section */
+    public int getLineCount() {
+        int lineCount = 0;
+
+        for (FlexibleFragment flexibleFragment : flexibleFragments) {
+            lineCount += flexibleFragment.getLineCount();
+        }
+        return lineCount;
+    }
     public Section getPreviousSection() { return previousSection; }
     public Section getNextSection() { return nextSection; }
     public int getRate() { return rate; }

@@ -391,6 +391,30 @@ public class ParserRealignerTest implements DefaultTest {
         assertTrue(actual, actual.indexOf("first()") < actual.indexOf("second()"));
     }
 
+    @Test
+    public void testEnumWithoutConstantsKeepsTheLineOfItsFirstField() throws ParseException {
+        String source = String.join("\n",
+                "/*     */ package test;",
+                "/*     */ enum E {",
+                "/*     */   ;",
+                "/*     */   static final int A = 1;",
+                "/*   5 */   static final int B = System.getProperty(\"b\").length();",
+                "/*     */ }",
+                "");
+
+        String actual = new ParserRealigner().realign(source);
+        String[] lines = actual.split("\\R");
+        int index = 0;
+
+        while (!lines[index].contains("B =")) {
+            index++;
+        }
+
+        // The ';' which ends the empty list of constants has its own line, which the layout knows about
+        assertTrue(actual, lines[index].matches("/\\*\\s*5 \\*/.*"));
+        assertEquals(actual, 5, index + 1);
+    }
+
     private void testParseRealign(String inputName, String outputName)
             throws IOException, URISyntaxException, ParseException {
         String input = toString(getClass().getResource(inputName));
