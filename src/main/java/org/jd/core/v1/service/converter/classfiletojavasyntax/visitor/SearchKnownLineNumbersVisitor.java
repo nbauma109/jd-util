@@ -7,6 +7,8 @@
 
 package org.jd.core.v1.service.converter.classfiletojavasyntax.visitor;
 
+import org.jd.core.v1.model.javasyntax.expression.MethodInvocationExpression;
+
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -34,5 +36,15 @@ public class SearchKnownLineNumbersVisitor extends SearchFirstKnownLineNumberVis
         }
         // Never stop: look at the children too
         return false;
+    }
+
+    @Override
+    public void visit(MethodInvocationExpression expression) {
+        // The search for the first line only looks at the receiver: look at the parameters too
+        setLineNumberIfValid(expression.getLineNumber());
+        if (expression.getExpression() != null) {
+            expression.getExpression().accept(this);
+        }
+        safeAccept(expression.getParameters());
     }
 }

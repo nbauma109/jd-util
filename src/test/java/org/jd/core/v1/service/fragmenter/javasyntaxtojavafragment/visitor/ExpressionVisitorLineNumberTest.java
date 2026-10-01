@@ -184,4 +184,15 @@ public class ExpressionVisitorLineNumberTest {
         assertEquals(7, (int) lineNumbers.get(0));
         assertFalse(lineNumbers.contains(10));
     }
+
+    @Test
+    public void callWithACallArgumentWhoseOwnArgumentIsEarlierIsDeferred() {
+        StatementVisitor visitor = newVisitor();
+        // The only argument is a call on line 7, whose own argument is on line 3
+        Expression argument = call(7, NoExpression.NO_EXPRESSION, parameters(variable(3)));
+
+        call(10, NoExpression.NO_EXPRESSION, parameters(argument)).accept(visitor);
+
+        assertFalse(lineNumbers(visitor).contains(10));
+    }
 }
