@@ -538,7 +538,7 @@ public class ExpressionVisitor extends TypeVisitor {
                         addCallLineNumberToken(expression, parameters);
                         callLineAdded = true;
                     } else {
-                        tokens.addLineNumberToken(expression);
+                        addCallLineNumberToken(expression, parameters);
                         visit(expression, exp);
                     }
                 } else {

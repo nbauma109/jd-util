@@ -7,21 +7,45 @@
 
 package org.jd.core.v1.service.converter.classfiletojavasyntax.visitor;
 
+import org.jd.core.v1.model.javasyntax.AbstractJavaSyntaxVisitor;
+import org.jd.core.v1.model.javasyntax.expression.ArrayExpression;
+import org.jd.core.v1.model.javasyntax.expression.BinaryOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.CastExpression;
+import org.jd.core.v1.model.javasyntax.expression.ConstructorInvocationExpression;
+import org.jd.core.v1.model.javasyntax.expression.ConstructorReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.EnumConstantReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.FieldReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.InstanceOfExpression;
+import org.jd.core.v1.model.javasyntax.expression.LambdaIdentifiersExpression;
+import org.jd.core.v1.model.javasyntax.expression.LengthExpression;
+import org.jd.core.v1.model.javasyntax.expression.LocalVariableReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.MethodInvocationExpression;
+import org.jd.core.v1.model.javasyntax.expression.MethodReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.NewArray;
+import org.jd.core.v1.model.javasyntax.expression.NewExpression;
+import org.jd.core.v1.model.javasyntax.expression.NewInitializedArray;
+import org.jd.core.v1.model.javasyntax.expression.ObjectTypeReferenceExpression;
+import org.jd.core.v1.model.javasyntax.expression.ParenthesesExpression;
+import org.jd.core.v1.model.javasyntax.expression.PostOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.PreOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.SuperExpression;
+import org.jd.core.v1.model.javasyntax.expression.TernaryOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
+import org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression;
 
 import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Collects all the known line numbers of the expressions and statements it visits, whatever their nesting (the
- * search for the first known line number stops at the first expression which has one).
+ * Collects all the known line numbers of the expressions it visits (except the constants, which never own a line),
+ * whatever their nesting: the receivers and the
+ * parameters of the calls, the bodies of lambdas... ({@link SearchFirstKnownLineNumberVisitor} stops at the first
+ * known line number and only looks at a part of the children).
  */
-public class SearchKnownLineNumbersVisitor extends SearchFirstKnownLineNumberVisitor {
+public class SearchKnownLineNumbersVisitor extends AbstractJavaSyntaxVisitor {
     private final Set<Integer> lineNumbers = new TreeSet<>();
 
-    @Override
     public void init() {
-        super.init();
         lineNumbers.clear();
     }
 
@@ -29,22 +53,153 @@ public class SearchKnownLineNumbersVisitor extends SearchFirstKnownLineNumberVis
         return lineNumbers;
     }
 
-    @Override
-    protected boolean setLineNumberIfValid(int candidateLineNumber) {
-        if (candidateLineNumber > 0) {
-            lineNumbers.add(candidateLineNumber);
+    private void add(int lineNumber) {
+        if (lineNumber > 0) {
+            lineNumbers.add(lineNumber);
         }
-        // Never stop: look at the children too
-        return false;
     }
 
     @Override
     public void visit(MethodInvocationExpression expression) {
-        // The search for the first line only looks at the receiver: look at the parameters too
-        setLineNumberIfValid(expression.getLineNumber());
-        if (expression.getExpression() != null) {
-            expression.getExpression().accept(this);
-        }
-        safeAccept(expression.getParameters());
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(ArrayExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(BinaryOperatorExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(CastExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(ConstructorInvocationExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(ConstructorReferenceExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(EnumConstantReferenceExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(FieldReferenceExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(InstanceOfExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(LambdaIdentifiersExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(LengthExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(LocalVariableReferenceExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(MethodReferenceExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(NewArray expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(NewExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(NewInitializedArray expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(ObjectTypeReferenceExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(ParenthesesExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(PostOperatorExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(PreOperatorExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(SuperExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(TernaryOperatorExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(ThisExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(TypeReferenceDotClassExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
     }
 }

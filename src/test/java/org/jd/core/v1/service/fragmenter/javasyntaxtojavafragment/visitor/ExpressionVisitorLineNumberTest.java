@@ -195,4 +195,15 @@ public class ExpressionVisitorLineNumberTest {
 
         assertFalse(lineNumbers(visitor).contains(10));
     }
+
+    @Test
+    public void callOnAFieldWithoutLineIsDeferredToItsArguments() {
+        StatementVisitor visitor = newVisitor();
+        // The receiver has no line of its own
+        Expression receiver = new FieldReferenceExpression(0, TYPE, new LocalVariableReferenceExpression(TYPE, "this"), "test/Other", "f", "Ljava/lang/Object;");
+
+        call(10, receiver, parameters(variable(3), variable(7))).accept(visitor);
+
+        assertEquals(3, (int) lineNumbers(visitor).get(0));
+    }
 }
