@@ -123,4 +123,19 @@ public class LayoutFragmentProcessorUnreachableLineTest {
             assertSame(token.toString(), second, fixedFragmentAfter(layout(second), 13));
         }
     }
+
+    @Test
+    public void fragmentWhoseLinesAreReachableIsLeftAlone() {
+        // The statements are only two lines apart: the two line breaks available are enough
+        LineNumberTokensFragment second = new LineNumberTokensFragment(new TextToken(":"), new LineNumberToken(12), new TextToken("new"));
+
+        assertSame(second, fixedFragmentAfter(layout(second), 12));
+    }
+
+    @Test
+    public void fragmentWithoutTextBeforeItsLineNumberButNotFirstIsLeftAlone() {
+        LineNumberTokensFragment second = new LineNumberTokensFragment(new LineNumberToken(13), new TextToken("a"), new LineNumberToken(14));
+
+        assertSame(second, fixedFragmentAfter(layout(second), 14));
+    }
 }
