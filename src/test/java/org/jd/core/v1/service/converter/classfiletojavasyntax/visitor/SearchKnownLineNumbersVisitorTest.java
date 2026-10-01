@@ -21,13 +21,17 @@ import org.jd.core.v1.model.javasyntax.expression.NoExpression;
 import org.jd.core.v1.model.javasyntax.expression.ParenthesesExpression;
 import org.jd.core.v1.model.javasyntax.expression.PostOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.PreOperatorExpression;
+import org.jd.core.v1.model.javasyntax.expression.QualifiedSuperExpression;
 import org.jd.core.v1.model.javasyntax.expression.StringConstantExpression;
+import org.jd.core.v1.model.javasyntax.expression.SuperConstructorInvocationExpression;
 import org.jd.core.v1.model.javasyntax.expression.SuperExpression;
+import org.jd.core.v1.model.javasyntax.expression.SwitchExpression;
 import org.jd.core.v1.model.javasyntax.expression.TernaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -95,5 +99,16 @@ public class SearchKnownLineNumbersVisitorTest {
         variable(5).accept(visitor);
 
         assertEquals(List.of(5), List.copyOf(visitor.getLineNumbers()));
+    }
+
+    @Test
+    public void collectsTheLinesOfSuperAndSwitchExpressions() {
+        Expressions parameters = new Expressions();
+        parameters.add(variable(3));
+
+        assertEquals(List.of(3, 4), lineNumbers(new SuperConstructorInvocationExpression(4, TYPE, "()V", parameters, false)));
+        assertEquals(List.of(5), lineNumbers(new QualifiedSuperExpression(5, TYPE)));
+        // A selector which is a constant has no line of its own: the line of the switch is the only one
+        assertEquals(List.of(6), lineNumbers(new SwitchExpression(6, new StringConstantExpression(2, "a"), new ArrayList<>(), TYPE)));
     }
 }

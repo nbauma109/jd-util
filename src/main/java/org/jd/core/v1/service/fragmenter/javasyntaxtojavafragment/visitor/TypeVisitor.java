@@ -515,6 +515,8 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         private int currentLineNumber = UNKNOWN_LINE_NUMBER;
         /** Line numbers of the tokens of a statement must not decrease. */
         private int maxStatementLineNumber;
+        /** True while visiting a receiver whose late line must not hide the lines of the arguments of its call */
+        private boolean lineNumbersSuppressed;
 
         public int getCurrentLineNumber() {
             return currentLineNumber;
@@ -532,8 +534,12 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
             addLineNumberToken(expression.getLineNumber());
         }
 
+        public void setLineNumbersSuppressed(boolean lineNumbersSuppressed) {
+            this.lineNumbersSuppressed = lineNumbersSuppressed;
+        }
+
         public void addLineNumberToken(int lineNumber) {
-            if (lineNumber != UNKNOWN_LINE_NUMBER && lineNumber >= (realignLineNumbers ? maxStatementLineNumber : maxLineNumber)) {
+            if (!lineNumbersSuppressed && lineNumber != UNKNOWN_LINE_NUMBER && lineNumber >= (realignLineNumbers ? maxStatementLineNumber : maxLineNumber)) {
                 super.add(new LineNumberToken(lineNumber));
                 maxLineNumber = maxStatementLineNumber = currentLineNumber = lineNumber;
             }

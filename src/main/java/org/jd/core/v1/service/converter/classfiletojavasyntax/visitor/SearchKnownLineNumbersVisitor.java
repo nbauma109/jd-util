@@ -20,6 +20,9 @@ import org.jd.core.v1.model.javasyntax.expression.LambdaIdentifiersExpression;
 import org.jd.core.v1.model.javasyntax.expression.LengthExpression;
 import org.jd.core.v1.model.javasyntax.expression.LocalVariableReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.MethodInvocationExpression;
+import org.jd.core.v1.model.javasyntax.expression.SwitchExpression;
+import org.jd.core.v1.model.javasyntax.expression.SuperConstructorInvocationExpression;
+import org.jd.core.v1.model.javasyntax.expression.QualifiedSuperExpression;
 import org.jd.core.v1.model.javasyntax.expression.MethodReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.NewArray;
 import org.jd.core.v1.model.javasyntax.expression.NewExpression;
@@ -199,6 +202,24 @@ public class SearchKnownLineNumbersVisitor extends AbstractJavaSyntaxVisitor {
 
     @Override
     public void visit(TypeReferenceDotClassExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(QualifiedSuperExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(SuperConstructorInvocationExpression expression) {
+        add(expression.getLineNumber());
+        super.visit(expression);
+    }
+
+    @Override
+    public void visit(SwitchExpression expression) {
         add(expression.getLineNumber());
         super.visit(expression);
     }

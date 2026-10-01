@@ -252,7 +252,20 @@ public class ExpressionVisitor extends TypeVisitor {
 
         int currentLineNumber = tokens.getCurrentLineNumber();
 
-        return currentLineNumber == UNKNOWN_LINE_NUMBER ? countDistinctLineNumbers(parameters) > 1 : firstParameterLineNumber > currentLineNumber;
+        return currentLineNumber == UNKNOWN_LINE_NUMBER
+            ? countDistinctLineNumbers(parameters) > 1
+            : hasParameterLineNumberBetween(parameters, currentLineNumber, call.getLineNumber());
+    }
+
+    /** @return true if a line of the arguments (anywhere in their subtrees) is after {@code lower} and before {@code upper} */
+    private boolean hasParameterLineNumberBetween(BaseExpression parameters, int lower, int upper) {
+        return StreamSupport.stream(parameters.spliterator(), false)
+                .filter(parameter -> !isConstant(parameter))
+                .anyMatch(parameter -> {
+                    searchKnownLineNumbersVisitor.init();
+                    parameter.accept(searchKnownLineNumbersVisitor);
+                    return searchKnownLineNumbersVisitor.getLineNumbers().stream().anyMatch(lineNumber -> lineNumber > lower && lineNumber < upper);
+                });
     }
 
     /** Constants never own a line: they always inherit the one of the previous instruction. */
@@ -537,8 +550,13 @@ public class ExpressionVisitor extends TypeVisitor {
                         visit(expression, exp);
                         addCallLineNumberToken(expression, parameters);
                         callLineAdded = true;
+                    } else if (isCallLineDeferredToParameters(expression, parameters)) {
+                        // The receiver, which is on the late line of the call, must not hide the lines of the arguments
+                        tokens.setLineNumbersSuppressed(true);
+                        visit(expression, exp);
+                        tokens.setLineNumbersSuppressed(false);
                     } else {
-                        addCallLineNumberToken(expression, parameters);
+                        tokens.addLineNumberToken(expression);
                         visit(expression, exp);
                     }
                 } else {

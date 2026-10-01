@@ -31,6 +31,7 @@ import java.util.List;
 import static org.apache.bcel.Const.MAJOR_1_5;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Some compilers (ECJ) attribute a call to the line of its last argument or of its closing parenthesis: the line of the
@@ -205,5 +206,30 @@ public class ExpressionVisitorLineNumberTest {
         call(10, receiver, parameters(variable(3), variable(7))).accept(visitor);
 
         assertEquals(3, (int) lineNumbers(visitor).get(0));
+    }
+
+    @Test
+    public void callOnAFieldOnTheSameLineIsDeferredToItsArguments() {
+        StatementVisitor visitor = newVisitor();
+        // The receiver and the call are on the late line
+        Expression receiver = new FieldReferenceExpression(10, TYPE, new LocalVariableReferenceExpression(TYPE, "this"), "test/Other", "f", "Ljava/lang/Object;");
+
+        call(10, receiver, parameters(variable(3), variable(7))).accept(visitor);
+
+        assertEquals(List.of(3, 7), lineNumbers(visitor));
+    }
+
+    @Test
+    public void callIsDeferredWhenALaterArgumentAddsALineToTheOneOfTheStatement() {
+        StatementVisitor visitor = newVisitor();
+        // The statement has already reached line 3, the first argument is on that line, the second one is on line 7
+        visitor.tokens.addLineNumberToken(3);
+
+        call(10, NoExpression.NO_EXPRESSION, parameters(variable(3), variable(7))).accept(visitor);
+
+        List<Integer> lineNumbers = lineNumbers(visitor);
+
+        assertTrue(lineNumbers.contains(7));
+        assertFalse(lineNumbers.contains(10));
     }
 }
