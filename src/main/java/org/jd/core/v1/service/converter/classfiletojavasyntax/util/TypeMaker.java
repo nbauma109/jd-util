@@ -1035,7 +1035,8 @@ public class TypeMaker {
             }
 
             bindTypesToTypesVisitor.setBindings(bindings);
-            bindTypesToTypesVisitor.setKeepingObjectTypeArguments(true);
+            // (an unbound type variable of a raw type is erased, not bound to Object)
+            bindTypesToTypesVisitor.setKeepingObjectTypeArguments(right.getTypeArguments() != null);
 
             if (rightTypeTypes.getSuperType() != null) {
                 bindTypesToTypesVisitor.init();
@@ -1978,7 +1979,7 @@ public class TypeMaker {
             }
 
             if (leftType instanceof GenericType gt) {
-                if (gt.getDimension() > otRight.getDimension()) {
+                if (otRight != ObjectType.TYPE_UNDEFINED_OBJECT && gt.getDimension() > otRight.getDimension()) {
                     // 'E[]' accepts no argument which is not an array
                     return false;
                 }

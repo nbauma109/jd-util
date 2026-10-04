@@ -784,6 +784,21 @@ public class TypeMakerTest extends TestCase {
     }
 
     @Test
+    public void testSearchSuperParameterizedTypeOfARawTypeStaysRaw() throws Exception {
+        ObjectType list = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/List");
+        ObjectType rawArrayList = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/ArrayList");
+
+        assertEquals(list, typeMaker.searchSuperParameterizedType(list, rawArrayList));
+    }
+
+    @Test
+    public void testAnUndefinedArgumentMatchesAnArrayOfATypeVariable() throws Exception {
+        Map<String, BaseType> bounds = Collections.singletonMap("E", ObjectType.TYPE_OBJECT);
+
+        assertTrue(typeMaker.match(Collections.emptyMap(), bounds, new GenericType("E", 1), ObjectType.TYPE_UNDEFINED_OBJECT));
+    }
+
+    @Test
     public void testSearchSuperParameterizedType() throws Exception {
         ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/HashMap");
         ObjectType treeMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap");
