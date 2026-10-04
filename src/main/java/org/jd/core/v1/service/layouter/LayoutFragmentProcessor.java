@@ -382,8 +382,7 @@ public class LayoutFragmentProcessor {
 
     /** @return true if the tokens print something on the line (anything but the markers of blocks, the line numbers and the line breaks) */
     private static boolean hasText(List<Token> tokens) {
-        return tokens.stream().anyMatch(token -> !(isSilentBlockToken(token) || token instanceof StartMarkerToken || token instanceof EndMarkerToken
-                || token instanceof NewLineToken));
+        return tokens.stream().anyMatch(token -> (!isSilentBlockToken(token) && !(token instanceof StartMarkerToken) && !(token instanceof EndMarkerToken) && !(token instanceof NewLineToken)));
     }
 
     /** @return true for the block tokens which print nothing (the parameters, array and resources ones print a delimiter) */
