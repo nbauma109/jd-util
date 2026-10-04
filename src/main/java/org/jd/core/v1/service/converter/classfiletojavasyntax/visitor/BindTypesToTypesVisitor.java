@@ -29,10 +29,20 @@ public class BindTypesToTypesVisitor extends AbstractNopTypeVisitor {
 
     private Map<String, TypeArgument> bindings;
     private BaseType result;
+    private boolean keepingObjectTypeArguments;
 
     public void setBindings(Map<String, TypeArgument> bindings) {
         this.bindings = bindings;
         bindTypeArgumentsToTypeArgumentsVisitor.setBindings(this.bindings);
+    }
+
+    /** Binds a type variable to Object as Foo&lt;Object&gt; instead of the raw Foo (the supertypes of a type keep their type arguments) */
+    public void setKeepingObjectTypeArguments(boolean keepingObjectTypeArguments) {
+        this.keepingObjectTypeArguments = keepingObjectTypeArguments;
+    }
+
+    private BaseTypeArgument typeArgumentResult() {
+        return keepingObjectTypeArguments ? bindTypeArgumentsToTypeArgumentsVisitor.getTypeArgumentKeepingObject() : bindTypeArgumentsToTypeArgumentsVisitor.getTypeArgument();
     }
 
     public void init() {
@@ -57,7 +67,7 @@ public class BindTypesToTypesVisitor extends AbstractNopTypeVisitor {
         } else {
             bindTypeArgumentsToTypeArgumentsVisitor.init();
             typeArguments.accept(bindTypeArgumentsToTypeArgumentsVisitor);
-            BaseTypeArgument ta = bindTypeArgumentsToTypeArgumentsVisitor.getTypeArgument();
+            BaseTypeArgument ta = typeArgumentResult();
 
             if (typeArguments == ta) {
                 result = type;
@@ -82,7 +92,7 @@ public class BindTypesToTypesVisitor extends AbstractNopTypeVisitor {
             } else {
                 bindTypeArgumentsToTypeArgumentsVisitor.init();
                 typeArguments.accept(bindTypeArgumentsToTypeArgumentsVisitor);
-                BaseTypeArgument ta = bindTypeArgumentsToTypeArgumentsVisitor.getTypeArgument();
+                BaseTypeArgument ta = typeArgumentResult();
 
                 if (typeArguments == ta) {
                     result = type;
@@ -96,7 +106,7 @@ public class BindTypesToTypesVisitor extends AbstractNopTypeVisitor {
             if (typeArguments != null) {
                 bindTypeArgumentsToTypeArgumentsVisitor.init();
                 typeArguments.accept(bindTypeArgumentsToTypeArgumentsVisitor);
-                typeArguments = bindTypeArgumentsToTypeArgumentsVisitor.getTypeArgument();
+                typeArguments = typeArgumentResult();
 
                 if (WildcardTypeArgument.WILDCARD_TYPE_ARGUMENT == typeArguments) {
                     typeArguments = null;
