@@ -26,7 +26,8 @@ public final class BestChainTracker {
 
     /**
      * @param distinct     number of distinct values
-     * @param preferLatest whether, for the same score, an updated chain replaces the one already stored
+     * @param preferLatest whether, for the same score, an updated chain replaces the one already stored (in the tree nodes
+     *                     and for an exact rank); a query returns the first best node it meets, which is not always the latest
      */
     public BestChainTracker(int distinct, boolean preferLatest) {
         this.distinct = distinct;
@@ -45,7 +46,7 @@ public final class BestChainTracker {
         int bestItem = -1;
 
         for (int k = rank; k > 0; k -= k & -k) {
-            if (treeItem[k] != -1 && treeScore[k] > bestScore) {
+            if (treeItem[k] != -1 && (bestItem == -1 || treeScore[k] > bestScore)) {
                 bestScore = treeScore[k];
                 bestItem = treeItem[k];
             }
@@ -65,7 +66,10 @@ public final class BestChainTracker {
 
     /** Records the chain of the given score which ends with the item, whose value has the given rank. */
     public void update(int item, int rank, int score) {
-        if (equalItem[rank] == -1 || score >= equalScore[rank]) {
+        if (rank < 1 || rank > distinct) {
+            throw new IllegalArgumentException("rank " + rank + " is not in [1, " + distinct + "]");
+        }
+        if (equalItem[rank] == -1 || (preferLatest ? score >= equalScore[rank] : score > equalScore[rank])) {
             equalScore[rank] = score;
             equalItem[rank] = item;
         }

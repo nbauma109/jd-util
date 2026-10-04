@@ -43,4 +43,32 @@ public class BestChainTrackerTest {
         assertEquals(0, keepFirst.bestAtOrBelow(2));
         assertEquals(1, keepLatest.bestAtOrBelow(2));
     }
+
+    @Test
+    public void testAChainOfNonPositiveScoreIsReturned() {
+        BestChainTracker tracker = new BestChainTracker(2, false);
+
+        tracker.update(0, 1, 0);
+
+        assertEquals(0, tracker.bestAtOrBelow(2));
+    }
+
+    @Test
+    public void testTheExactRankFollowsTheTiePreference() {
+        BestChainTracker keepFirst = new BestChainTracker(1, false);
+        BestChainTracker keepLatest = new BestChainTracker(1, true);
+
+        for (BestChainTracker tracker : new BestChainTracker[] {keepFirst, keepLatest}) {
+            tracker.update(0, 1, 2);
+            tracker.update(1, 1, 2);
+        }
+
+        assertEquals(0, keepFirst.bestAt(1));
+        assertEquals(1, keepLatest.bestAt(1));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testARankBelowOneIsRejected() {
+        new BestChainTracker(2, false).update(0, 0, 1);
+    }
 }
