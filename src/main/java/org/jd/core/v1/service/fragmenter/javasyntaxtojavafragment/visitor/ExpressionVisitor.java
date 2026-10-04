@@ -213,6 +213,18 @@ public class ExpressionVisitor extends TypeVisitor {
         visit(expression, expression.getExpression());
     }
 
+    /**
+     * The last parameter of an invocation is not followed by another one, whatever the invocation is itself:
+     * a block lambda then needs no separator after its closing brace ('m(() -> new Foo(x -> { ... }), 1)').
+     */
+    private void visitParameters(BaseExpression parameters) {
+        boolean ief = inExpressionFlag;
+
+        inExpressionFlag = false;
+        parameters.accept(this);
+        inExpressionFlag = ief;
+    }
+
     @Override
     public void visit(ConstructorInvocationExpression expression) {
         tokens.addLineNumberToken(expression);
@@ -222,7 +234,7 @@ public class ExpressionVisitor extends TypeVisitor {
         BaseExpression parameters = expression.getParameters();
 
         if (parameters != null) {
-            parameters.accept(this);
+            visitParameters(parameters);
         }
 
         tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
@@ -620,7 +632,7 @@ public class ExpressionVisitor extends TypeVisitor {
 
         BaseExpression parameters = expression.getParameters();
         if (parameters != null) {
-            parameters.accept(this);
+            visitParameters(parameters);
         }
 
         tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
@@ -729,7 +741,7 @@ public class ExpressionVisitor extends TypeVisitor {
         BaseExpression parameters = expression.getParameters();
 
         if (parameters != null) {
-            parameters.accept(this);
+            visitParameters(parameters);
         }
 
         tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);

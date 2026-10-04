@@ -30,6 +30,7 @@ import org.jd.core.v1.model.javasyntax.expression.DoubleConstantExpression;
 import org.jd.core.v1.model.javasyntax.expression.Expressions;
 import org.jd.core.v1.model.javasyntax.expression.FieldReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.IntegerConstantExpression;
+import org.jd.core.v1.model.javasyntax.expression.LambdaIdentifiersExpression;
 import org.jd.core.v1.model.javasyntax.expression.LengthExpression;
 import org.jd.core.v1.model.javasyntax.expression.LocalVariableReferenceExpression;
 import org.jd.core.v1.model.javasyntax.expression.MethodInvocationExpression;
@@ -42,6 +43,7 @@ import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
 import org.jd.core.v1.model.javasyntax.statement.ExpressionStatement;
 import org.jd.core.v1.model.javasyntax.statement.ForEachStatement;
 import org.jd.core.v1.model.javasyntax.statement.IfStatement;
+import org.jd.core.v1.model.javasyntax.statement.LambdaExpressionStatement;
 import org.jd.core.v1.model.javasyntax.statement.LocalVariableDeclarationStatement;
 import org.jd.core.v1.model.javasyntax.statement.ReturnExpressionStatement;
 import org.jd.core.v1.model.javasyntax.statement.ReturnStatement;
@@ -213,6 +215,70 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
 
         Assert.assertNotEquals(-1, source.indexOf("/* 22: 22 */"));
         Assert.assertEquals(-1, source.indexOf("java.lang.System"));
+    }
+
+    @Test
+    public void testBlockLambdaAsOnlyParameterOfInvocationNestedInAnotherParameter() throws Exception {
+        ObjectType operatorType = new ObjectType("java/util/function/BinaryOperator", "java.util.function.BinaryOperator", "BinaryOperator");
+        ObjectType supplierType = new ObjectType("java/util/function/Supplier", "java.util.function.Supplier", "Supplier");
+        ObjectType accumulatorType = new ObjectType("org/jd/core/v1/service/test/Accumulator", "org.jd.core.v1.service.test.Accumulator", "Accumulator");
+        ObjectType testType = new ObjectType("org/jd/core/v1/service/test/NestedLambdaTest", "org.jd.core.v1.service.test.NestedLambdaTest", "NestedLambdaTest");
+
+        NewExpression newAccumulator = new NewExpression(7, accumulatorType, "(Ljava/util/function/BinaryOperator;)V", false, false);
+        newAccumulator.setParameters(new LambdaIdentifiersExpression(7, operatorType, PrimitiveType.TYPE_VOID, Arrays.asList("a", "b"), new Statements(ReturnStatement.RETURN, ReturnStatement.RETURN)));
+        LambdaIdentifiersExpression supplier = new LambdaIdentifiersExpression(7, supplierType, accumulatorType, Collections.emptyList(), new LambdaExpressionStatement(newAccumulator));
+
+        CompilationUnit compilationUnit = new CompilationUnit(
+            new ClassDeclaration(
+                Const.ACC_PUBLIC,
+                "org/jd/core/v1/service/test/NestedLambdaTest",
+                "NestedLambdaTest",
+                new BodyDeclaration(
+                    "org/jd/core/v1/service/test/NestedLambdaTest",
+                    new MethodDeclaration(
+                        Const.ACC_PUBLIC | Const.ACC_STATIC,
+                        "run",
+                        PrimitiveType.TYPE_VOID,
+                        "()V",
+                        new ExpressionStatement(
+                            new MethodInvocationExpression(
+                                7,
+                                PrimitiveType.TYPE_VOID,
+                                new ObjectTypeReferenceExpression(7, testType),
+                                "org/jd/core/v1/service/test/NestedLambdaTest",
+                                "use",
+                                "(Ljava/util/function/Supplier;I)V",
+                                new Expressions(supplier, new IntegerConstantExpression(PrimitiveType.TYPE_INT, 1)),
+                                null
+                            )
+                        )
+                    )
+                )
+            )
+        );
+
+        PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
+        DecompileContext decompileContext = new DecompileContext();
+        decompileContext.setCompilationUnit(compilationUnit);
+        decompileContext.setMainInternalTypeName("org/jd/core/v1/service/test/NestedLambdaTest");
+        decompileContext.setLoader(new NopLoader());
+        decompileContext.setPrinter(printer);
+        decompileContext.setConfiguration(Collections.emptyMap());
+        decompileContext.setMaxLineNumber(7);
+        decompileContext.setMajorVersion(0);
+        decompileContext.setMinorVersion(0);
+
+        fragmenter.process(compilationUnit, decompileContext);
+        layouter.process(decompileContext);
+        DefaultList<Token> tokens = tokenizer.process(decompileContext.getBody());
+        decompileContext.setTokens(tokens);
+        writer.process(decompileContext);
+
+        String source = printer.toString();
+
+        // The closing brace of the lambda is followed by the closing parenthesis of the instance creation, not by a separator
+        Assert.assertTrue(source, source.contains("}), 1)"));
+        Assert.assertFalse(source, source.contains(", )"));
     }
 
     @Test
