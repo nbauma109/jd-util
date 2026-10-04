@@ -39,6 +39,11 @@ public class BindTypeArgumentsToTypeArgumentsVisitor extends AbstractTypeArgumen
         this.result = null;
     }
 
+    /** Unlike {@link #getTypeArgument()}, a binding to Object is kept: Foo&lt;Object&gt; is not a raw Foo */
+    public BaseTypeArgument getTypeArgumentKeepingObject() {
+        return result;
+    }
+
     public BaseTypeArgument getTypeArgument() {
         if (result == null || TYPE_OBJECT.equals(result)) {
             return null;

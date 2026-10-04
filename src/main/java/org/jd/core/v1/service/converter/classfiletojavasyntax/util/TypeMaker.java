@@ -107,6 +107,7 @@ public class TypeMaker {
     private static final Map<String, ObjectType> descriptorToObjectType = Collections.synchronizedMap(new HashMap<>(1024));
     private static final Map<String, ObjectType> internalTypeNameToObjectType = Collections.synchronizedMap(new HashMap<>(1024));
     private static final Map<String, TypeTypes> internalTypeNameToTypeTypes = Collections.synchronizedMap(new HashMap<>(1024));
+    private static final Map<String, Set<BaseType>> internalTypeNameMethodNameParameterCountToStaticParameterTypes = Collections.synchronizedMap(new HashMap<>(1024));
     private static final Map<String, Set<BaseType>> internalTypeNameMethodNameParameterCountToDeclaredParameterTypes = Collections.synchronizedMap(new HashMap<>(1024));
     private static final Map<String, Set<BaseType>> internalTypeNameMethodNameParameterCountToParameterTypes = Collections.synchronizedMap(new HashMap<>(1024));
     private static final Map<String, MethodTypes> internalTypeNameMethodNameDescriptorToMethodTypes = Collections.synchronizedMap(new HashMap<>(1024));
@@ -1034,6 +1035,8 @@ public class TypeMaker {
             }
 
             bindTypesToTypesVisitor.setBindings(bindings);
+            // (an unbound type variable of a raw type is erased, not bound to Object)
+            bindTypesToTypesVisitor.setKeepingObjectTypeArguments(right.getTypeArguments() != null);
 
             if (rightTypeTypes.getSuperType() != null) {
                 bindTypesToTypesVisitor.init();
@@ -1666,6 +1669,9 @@ public class TypeMaker {
 
                     if (parameterCount > 0) {
                         internalTypeNameMethodNameParameterCountToDeclaredParameterTypes.computeIfAbsent(key, k -> new HashSet<>()).add(methodTypes.getParameterTypes());
+                        if ((accessFlags & Const.ACC_STATIC) != 0) {
+                            internalTypeNameMethodNameParameterCountToStaticParameterTypes.computeIfAbsent(key, k -> new HashSet<>()).add(methodTypes.getParameterTypes());
+                        }
                     } else {
                         internalTypeNameMethodNameParameterCountToDeclaredParameterTypes.computeIfAbsent(key, k -> Collections.emptySet());
                     }
@@ -1885,6 +1891,17 @@ public class TypeMaker {
         return counter;
     }
 
+    /** The static methods of an interface are not inherited by the types which implement it */
+    private Set<BaseType> inheritableParameterTypes(String interfaceInternalName, String suffixKey) {
+        Set<BaseType> inheritable = new HashSet<>(getSetOfParameterTypes(interfaceInternalName, suffixKey, false));
+        Set<BaseType> staticTypes = internalTypeNameMethodNameParameterCountToStaticParameterTypes.get(interfaceInternalName + suffixKey);
+
+        if (staticTypes != null) {
+            inheritable.removeAll(staticTypes);
+        }
+        return inheritable;
+    }
+
     @SuppressWarnings("all")
     private Set<BaseType> getSetOfParameterTypes(String internalTypeName, String suffixKey, boolean constructor) {
         String key = internalTypeName + suffixKey;
@@ -1902,7 +1919,7 @@ public class TypeMaker {
                     }
                     if (typeTypes.getInterfaces() != null) {
                         for (Type interfaceType : typeTypes.getInterfaces()) {
-                            setOfParameterTypes.addAll(getSetOfParameterTypes(interfaceType.getInternalName(), suffixKey, constructor));
+                            setOfParameterTypes.addAll(inheritableParameterTypes(interfaceType.getInternalName(), suffixKey));
                         }
                     }
                 }
@@ -1962,6 +1979,10 @@ public class TypeMaker {
             }
 
             if (leftType instanceof GenericType gt) {
+                if (otRight != ObjectType.TYPE_UNDEFINED_OBJECT && gt.getDimension() > otRight.getDimension()) {
+                    // 'E[]' accepts no argument which is not an array
+                    return false;
+                }
                 BaseType boundType = typeBounds.get(gt.getName());
                 if (boundType instanceof ObjectType ot && isAssignable(ot, otRight)) {
                     return true;

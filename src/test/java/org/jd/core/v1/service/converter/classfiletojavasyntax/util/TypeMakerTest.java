@@ -748,6 +748,57 @@ public class TypeMakerTest extends TestCase {
     }
 
     @Test
+    public void testSearchSuperParameterizedTypeKeepsTheTypeArgumentsOfAnInnerType() throws Exception {
+        ObjectType mapEntry = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/Map$Entry");
+        ObjectType simpleEntry = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/AbstractMap$SimpleEntry");
+        ObjectType string = ObjectType.TYPE_OBJECT;
+        ObjectType integer = ObjectType.TYPE_OBJECT;
+        simpleEntry = simpleEntry.createType(new TypeArguments(Arrays.asList(string, integer)));
+
+        ObjectType found = typeMaker.searchSuperParameterizedType(mapEntry, simpleEntry);
+
+        assertEquals(mapEntry.createType(new TypeArguments(Arrays.asList(string, integer))), found);
+    }
+
+    @Test
+    public void testSearchSuperParameterizedTypeKeepsAnObjectTypeArgument() throws Exception {
+        ObjectType list = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/List");
+        ObjectType arrayList = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/ArrayList").createType(ObjectType.TYPE_OBJECT);
+
+        assertEquals(list.createType(ObjectType.TYPE_OBJECT), typeMaker.searchSuperParameterizedType(list, arrayList));
+    }
+
+    @Test
+    public void testStaticMethodsOfAnInterfaceAreNotInherited() throws Exception {
+        // Set.of(E) and Set.of(E...) are not members of the classes which implement Set
+        assertEquals(0, typeMaker.matchCount("java/util/AbstractSet", "of", 1, false));
+        assertTrue(typeMaker.matchCount("java/util/Set", "of", 1, false) > 0);
+    }
+
+    @Test
+    public void testAnArrayOfATypeVariableMatchesNoReference() throws Exception {
+        Map<String, BaseType> bounds = Collections.singletonMap("E", ObjectType.TYPE_OBJECT);
+
+        assertFalse(typeMaker.match(Collections.emptyMap(), bounds, new GenericType("E", 1), ObjectType.TYPE_STRING));
+        assertTrue(typeMaker.match(Collections.emptyMap(), bounds, new GenericType("E", 1), ObjectType.TYPE_STRING.createType(1)));
+    }
+
+    @Test
+    public void testSearchSuperParameterizedTypeOfARawTypeStaysRaw() throws Exception {
+        ObjectType list = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/List");
+        ObjectType rawArrayList = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/ArrayList");
+
+        assertEquals(list, typeMaker.searchSuperParameterizedType(list, rawArrayList));
+    }
+
+    @Test
+    public void testAnUndefinedArgumentMatchesAnArrayOfATypeVariable() throws Exception {
+        Map<String, BaseType> bounds = Collections.singletonMap("E", ObjectType.TYPE_OBJECT);
+
+        assertTrue(typeMaker.match(Collections.emptyMap(), bounds, new GenericType("E", 1), ObjectType.TYPE_UNDEFINED_OBJECT));
+    }
+
+    @Test
     public void testSearchSuperParameterizedType() throws Exception {
         ObjectType hashMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/HashMap");
         ObjectType treeMap = typeMaker.makeFromDescriptorOrInternalTypeName("java/util/TreeMap");
