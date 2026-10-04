@@ -30,6 +30,8 @@ import org.jd.core.v1.service.layouter.visitor.BuildSectionsVisitor;
 import org.jd.core.v1.service.layouter.visitor.UpdateSpacerBetweenMovableBlocksVisitor;
 
 import java.util.ArrayList;
+import org.jd.core.v1.util.BestChainTracker;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -212,35 +214,16 @@ public class LayoutFragmentProcessor {
     private static boolean[] selectHeaviestChain(int[] first, int[] weight) {
         int size = first.length;
 
-        // Fenwick tree over the (compressed) first line numbers, storing the heaviest chain ending at or before a line number
+        // The heaviest chain ending at or before a (compressed) first line number
         int[] sortedFirst = Arrays.stream(first).distinct().sorted().toArray();
-        int[] bestLength = new int[sortedFirst.length + 1];
-        int[] bestIndex = new int[sortedFirst.length + 1];
+        BestChainTracker tracker = new BestChainTracker(sortedFirst.length, false);
         int[] length = new int[size];
         int[] previous = new int[size];
 
-        Arrays.fill(bestIndex, -1);
-
         for (int i = 0; i < size; i++) {
-            int best = 0;
-            int bestPrevious = -1;
-
-            for (int k = upperBound(sortedFirst, first[i]); k > 0; k -= k & -k) {
-                if (bestLength[k] > best) {
-                    best = bestLength[k];
-                    bestPrevious = bestIndex[k];
-                }
-            }
-
-            previous[i] = bestPrevious;
-            length[i] = best + weight[i];
-
-            for (int k = Arrays.binarySearch(sortedFirst, first[i]) + 1; k <= sortedFirst.length; k += k & -k) {
-                if (length[i] > bestLength[k]) {
-                    bestLength[k] = length[i];
-                    bestIndex[k] = i;
-                }
-            }
+            previous[i] = tracker.bestAtOrBelow(upperBound(sortedFirst, first[i]));
+            length[i] = (previous[i] == -1 ? 0 : length[previous[i]]) + weight[i];
+            tracker.update(i, Arrays.binarySearch(sortedFirst, first[i]) + 1, length[i]);
         }
 
         int end = 0;
