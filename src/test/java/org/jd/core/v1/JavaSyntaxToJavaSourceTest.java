@@ -361,6 +361,28 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
+    public void testExplicitParameterTypesOfLambdas() throws Exception {
+        ObjectType functionType = new ObjectType("java/util/function/BiFunction", "java.util.function.BiFunction", "BiFunction");
+        ObjectType listType = new ObjectType("java/util/List", "java.util.List", "List");
+        ObjectType stringType = new ObjectType("java/lang/String", "java.lang.String", "String");
+
+        LambdaIdentifiersExpression implicit = new LambdaIdentifiersExpression(7, functionType, stringType, Arrays.asList("a", "b"), new LambdaExpressionStatement(new IntegerConstantExpression(PrimitiveType.TYPE_INT, 1)));
+        LambdaIdentifiersExpression explicit = new LambdaIdentifiersExpression(7, functionType, stringType, Arrays.asList("a", "b"), new LambdaExpressionStatement(new IntegerConstantExpression(PrimitiveType.TYPE_INT, 2)));
+
+        implicit.setParameterTypes(Arrays.<Type>asList(listType, stringType));
+        explicit.setParameterTypes(Arrays.<Type>asList(listType, stringType));
+        explicit.setExplicitParameterTypes(true);
+        Assert.assertTrue(explicit.isExplicitParameterTypes());
+        Assert.assertFalse(implicit.isExplicitParameterTypes());
+        Assert.assertEquals(explicit.getParameterTypes(), ((LambdaIdentifiersExpression) explicit.copyTo(8)).getParameterTypes());
+        Assert.assertTrue(((LambdaIdentifiersExpression) explicit.copyTo(8)).isExplicitParameterTypes());
+
+        String source = printCallWithParameters(52, implicit, explicit);
+
+        Assert.assertTrue(source, source.contains("(a, b) -> 1, (java.util.List a, String b) -> 2"));
+    }
+
+    @Test
     public void testInterfaceDeclaration() throws Exception {
         ObjectType cloneableType = new ObjectType(StringConstants.JAVA_LANG_CLONEABLE, "java.lang.Cloneable", "Cloneable");
         ObjectType stringType = new ObjectType(StringConstants.JAVA_LANG_STRING, "java.lang.String", "String");
