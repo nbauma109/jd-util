@@ -245,8 +245,15 @@ public class ExpressionVisitor extends TypeVisitor {
         ObjectType ot = expression.getObjectType();
 
         tokens.addLineNumberToken(expression);
-        tokens.add(newTypeReferenceToken(ot, currentType));
-        visitDimension(expression.getObjectType().getDimension());
+        if (ot.getTypeArguments() != null && ot.getDimension() == 0) {
+            // 'Builder<K, V>::new': the type arguments are what infers the type of the whole call
+            BaseType type = ot;
+
+            type.accept(this);
+        } else {
+            tokens.add(newTypeReferenceToken(ot, currentType));
+            visitDimension(expression.getObjectType().getDimension());
+        }
         tokens.add(TextToken.COLON_COLON);
         //tokens.add(new ReferenceToken(ReferenceToken.CONSTRUCTOR, ot.getInternalName(), "new", expression.getDescriptor(), currentInternalTypeName));
         tokens.add(NEW);
@@ -523,6 +530,11 @@ public class ExpressionVisitor extends TypeVisitor {
         }
         tokens.addLineNumberToken(expression);
         tokens.add(TextToken.COLON_COLON);
+        if (expression.getNonWildcardTypeArguments() != null) {
+            tokens.add(TextToken.LEFTANGLEBRACKET);
+            expression.getNonWildcardTypeArguments().accept(this);
+            tokens.add(TextToken.RIGHTANGLEBRACKET);
+        }
         tokens.add(new ReferenceToken(Printer.METHOD, expression.getInternalTypeName(), expression.getName(), expression.getDescriptor(), currentType));
     }
 
