@@ -12,6 +12,8 @@ import org.apache.commons.collections4.bidimap.AbstractDualBidiMap;
 import org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.jd.core.v1.loader.ClassPathLoader;
+import org.jd.core.v1.model.classfile.ClassFile;
+import org.jd.core.v1.service.deserializer.classfile.ClassFileDeserializer;
 import org.jd.core.v1.model.javasyntax.expression.BaseExpression;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
 import org.jd.core.v1.model.javasyntax.expression.Expressions;
@@ -1206,5 +1208,26 @@ public class TypeMakerTest extends TestCase {
             TypeMaker typeMaker = new TypeMaker(loader);
             assertNotNull(typeMaker.makeFieldType(internalTypeName, name, descriptor));
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    static <I extends Iterator<?>> Iterator<I> variable(I... elements) {
+        return null;
+    }
+
+    public void testTypesOfAMethodOfTheClassBeingConvertedKeepItsAccessFlags() throws Exception {
+        String internalTypeName = TypeMakerTest.class.getName().replace('.', '/');
+        ClassFile classFile = new ClassFileDeserializer().loadClassFile(new ClassPathLoader(), internalTypeName);
+        org.apache.bcel.classfile.Method method = null;
+
+        for (org.apache.bcel.classfile.Method candidate : classFile.getMethods()) {
+            if ("variable".equals(candidate.getName())) {
+                method = candidate;
+            }
+        }
+        TypeMaker maker = new TypeMaker();
+
+        assertTrue(maker.parseMethodSignature(classFile, method).isVarArgs());
+        assertTrue(maker.makeMethodTypes(internalTypeName, "variable", "([Ljava/util/Iterator;)Ljava/util/Iterator;").isVarArgs());
     }
 }

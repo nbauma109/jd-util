@@ -260,6 +260,8 @@ public class TypeMaker {
             methodTypes = parseMethodSignature(internalTypeName, method.getName(), method.getSignature(), attributeSignature.getSignature(), exceptionTypeNames);
         }
 
+        // (the flags tell the varargs methods, which the callers of the method need)
+        methodTypes = methodTypes.withAccessFlags(method.getAccessFlags());
         internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
 
         return methodTypes;
@@ -1658,7 +1660,8 @@ public class TypeMaker {
                     } else {
                         methodTypes = parseMethodSignature(internalTypeName, name, descriptor, signature, exceptionTypeNames);
                     }
-                    methodTypes.setAccessFlags(accessFlags);
+                    // (methods with the same signature share the parsed types: the flags of one must not become those of another)
+                    methodTypes = methodTypes.withAccessFlags(accessFlags);
                     if ((accessFlags & Const.ACC_SYNTHETIC) != 0) {
                         continue;
                     }
@@ -2048,6 +2051,17 @@ public class TypeMaker {
 
         public int getAccessFlags() {
             return accessFlags;
+        }
+
+        /** @return a copy of these types with the given access flags */
+        MethodTypes withAccessFlags(int flags) {
+            MethodTypes copy = new MethodTypes();
+            copy.typeParameters = typeParameters;
+            copy.parameterTypes = parameterTypes;
+            copy.returnedType = returnedType;
+            copy.exceptionTypes = exceptionTypes;
+            copy.accessFlags = flags;
+            return copy;
         }
 
         public void setAccessFlags(int accessFlags) {
