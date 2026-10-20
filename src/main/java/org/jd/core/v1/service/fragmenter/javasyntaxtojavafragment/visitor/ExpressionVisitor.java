@@ -62,6 +62,7 @@ import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
 import org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
+import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.DiamondTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.InnerObjectType;
@@ -376,8 +377,25 @@ public class ExpressionVisitor extends TypeVisitor {
     public void visit(LambdaIdentifiersExpression expression) {
         List<String> parameters = expression.getParameterNames();
 
+        List<Type> parameterTypes = expression.getParameterTypes();
+
         if (parameters == null) {
             tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
+        } else if (expression.isExplicitParameterTypes() && parameterTypes != null && parameterTypes.size() == parameters.size() && !parameters.isEmpty()) {
+            // '(List params) -> ...'
+            tokens.add(TextToken.LEFTROUNDBRACKET);
+
+            for (int i = 0; i < parameters.size(); i++) {
+                if (i > 0) {
+                    tokens.add(TextToken.COMMA_SPACE);
+                }
+                BaseType parameterType = parameterTypes.get(i);
+
+                parameterType.accept(this);
+                tokens.add(TextToken.SPACE);
+                tokens.add(newTextToken(parameters.get(i)));
+            }
+            tokens.add(TextToken.RIGHTROUNDBRACKET);
         } else {
             int size = parameters.size();
 

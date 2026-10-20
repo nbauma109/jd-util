@@ -15,6 +15,8 @@ import java.util.List;
 public class LambdaIdentifiersExpression extends AbstractLambdaExpression {
     private final Type returnedType;
     private final List<String> parameterNames;
+    private List<Type> parameterTypes;
+    private boolean explicitParameterTypes;
 
     public LambdaIdentifiersExpression(int lineNumber, Type type, Type returnedType, List<String> parameterNames, BaseStatement statements) {
         super(lineNumber, type, statements);
@@ -30,6 +32,24 @@ public class LambdaIdentifiersExpression extends AbstractLambdaExpression {
         return parameterNames;
     }
 
+    /** @return the types of the parameters, null if they are not known */
+    public List<Type> getParameterTypes() {
+        return parameterTypes;
+    }
+
+    public void setParameterTypes(List<Type> parameterTypes) {
+        this.parameterTypes = parameterTypes;
+    }
+
+    /** @return true if the types of the parameters are written ('(List params) -&gt; ...'), because nothing else tells them */
+    public boolean isExplicitParameterTypes() {
+        return explicitParameterTypes;
+    }
+
+    public void setExplicitParameterTypes(boolean explicitParameterTypes) {
+        this.explicitParameterTypes = explicitParameterTypes;
+    }
+
     @Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visit(this);
@@ -42,6 +62,10 @@ public class LambdaIdentifiersExpression extends AbstractLambdaExpression {
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new LambdaIdentifiersExpression(lineNumber, getType(), returnedType, parameterNames, statements);
+        LambdaIdentifiersExpression copy = new LambdaIdentifiersExpression(lineNumber, getType(), returnedType, parameterNames, statements);
+
+        copy.parameterTypes = parameterTypes;
+        copy.explicitParameterTypes = explicitParameterTypes;
+        return copy;
     }
 }
