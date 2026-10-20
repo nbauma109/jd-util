@@ -8,7 +8,6 @@
 package org.jd.core.v1.model.javasyntax.expression;
 
 import org.jd.core.v1.model.javasyntax.type.BaseType;
-import org.jd.core.v1.model.javasyntax.type.BaseTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.javasyntax.type.TypeArgument;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.util.TypeMaker.MethodTypes;
@@ -17,7 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MethodInvocationExpression extends MethodReferenceExpression {
-    private BaseTypeArgument nonWildcardTypeArguments;
     private BaseExpression parameters;
     private final MethodTypes methodTypes;
     private Map<String, BaseType> typeBounds;
@@ -43,14 +41,6 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
 
     public BaseType getExceptionTypes() {
         return Optional.ofNullable(methodTypes).map(MethodTypes::getExceptionTypes).orElse(null);
-    }
-
-    public BaseTypeArgument getNonWildcardTypeArguments() {
-        return nonWildcardTypeArguments;
-    }
-
-    public void setNonWildcardTypeArguments(BaseTypeArgument nonWildcardTypeArguments) {
-        this.nonWildcardTypeArguments = nonWildcardTypeArguments;
     }
 
     @Override
