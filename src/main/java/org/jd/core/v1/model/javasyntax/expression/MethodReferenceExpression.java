@@ -53,7 +53,16 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
         return descriptor;
     }
 
-    /** @return the type arguments written before the name ('Builder::&lt;K, V&gt;create'), null if the method reference has none */
+    /**
+     * Explicit type arguments of the generic method the reference designates, printed between '::' and the name ('Builder::&lt;K, V&gt;create').
+     * Without them javac infers the type variables of the method from the target type only, and infers 'Object' when the target does not tell
+     * (the supplier of 'Collector.of(Builder::&lt;K, V&gt;create, ...)', whose accumulator type nothing else fixes).
+     *
+     * <p>A {@link MethodInvocationExpression} is a method reference too and uses the same field for the type arguments written before the
+     * name of the method it calls ('Collections.&lt;String&gt;emptyList()').
+     *
+     * @return the type arguments, null when the method reference has none
+     */
     public BaseTypeArgument getNonWildcardTypeArguments() {
         return nonWildcardTypeArguments;
     }

@@ -260,7 +260,9 @@ public class TypeMaker {
             methodTypes = parseMethodSignature(internalTypeName, method.getName(), method.getSignature(), attributeSignature.getSignature(), exceptionTypeNames);
         }
 
-        // (the flags tell the varargs methods, which the callers of the method need)
+        // The types of a method of the class being converted replace the ones loaded from its class file (see loadFieldsAndMethods) in
+        // the cache the callers of the method read: they must carry the access flags too, or a call of a varargs method of this class
+        // is no longer known to be varargs (ACC_VARARGS) and its array of arguments is printed 'new T[] { a, b }' instead of 'a, b'.
         methodTypes = methodTypes.withAccessFlags(method.getAccessFlags());
         internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
 
@@ -1660,7 +1662,8 @@ public class TypeMaker {
                     } else {
                         methodTypes = parseMethodSignature(internalTypeName, name, descriptor, signature, exceptionTypeNames);
                     }
-                    // (methods with the same signature share the parsed types: the flags of one must not become those of another)
+                    // parseMethodSignature caches its result per signature, so two methods with the same generic signature get the same
+                    // MethodTypes instance: setting the flags on it made the flags of the last one (varargs or not, static or not) those of both.
                     methodTypes = methodTypes.withAccessFlags(accessFlags);
                     if ((accessFlags & Const.ACC_SYNTHETIC) != 0) {
                         continue;
@@ -2053,7 +2056,12 @@ public class TypeMaker {
             return accessFlags;
         }
 
-        /** @return a copy of these types with the given access flags */
+        /**
+         * The cached types of a signature are shared by every method which has that signature, so the access flags of one method
+         * (which only that method has) can only be set on a copy.
+         *
+         * @return a copy of these types with the given access flags
+         */
         MethodTypes withAccessFlags(int flags) {
             MethodTypes copy = new MethodTypes();
             copy.typeParameters = typeParameters;

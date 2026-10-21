@@ -62,12 +62,12 @@ import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
 import org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
-import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.DiamondTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.InnerObjectType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
+import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.token.BooleanConstantToken;
 import org.jd.core.v1.model.token.CharacterConstantToken;
 import org.jd.core.v1.model.token.EndBlockToken;
@@ -247,7 +247,9 @@ public class ExpressionVisitor extends TypeVisitor {
 
         tokens.addLineNumberToken(expression);
         if (ot.getTypeArguments() != null && ot.getDimension() == 0) {
-            // 'Builder<K, V>::new': the type arguments are what infers the type of the whole call
+            // A reference to the constructor of a generic class with no type arguments ('Builder::new') makes javac infer them from the
+            // target type alone, and infer 'Object' when the target does not tell ('Collector.of(Builder::new, ...)'): when the producer of
+            // the tree knows them they are printed, 'Builder<K, V>::new'. They are not printed for an array ('int[]::new').
             BaseType type = ot;
 
             type.accept(this);
@@ -376,13 +378,12 @@ public class ExpressionVisitor extends TypeVisitor {
     @Override
     public void visit(LambdaIdentifiersExpression expression) {
         List<String> parameters = expression.getParameterNames();
-
         List<Type> parameterTypes = expression.getParameterTypes();
 
         if (parameters == null) {
             tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
         } else if (expression.isExplicitParameterTypes() && parameterTypes != null && parameterTypes.size() == parameters.size() && !parameters.isEmpty()) {
-            // '(List params) -> ...'
+            // Typed parameters are always between brackets, even a single one: '(List params) -> ...' (a lambda cannot be 'List params -> ...')
             tokens.add(TextToken.LEFTROUNDBRACKET);
 
             for (int i = 0; i < parameters.size(); i++) {
@@ -548,6 +549,7 @@ public class ExpressionVisitor extends TypeVisitor {
         }
         tokens.addLineNumberToken(expression);
         tokens.add(TextToken.COLON_COLON);
+        // 'Builder::<K, V>create': the explicit type arguments of a generic method are written after '::', before its name
         if (expression.getNonWildcardTypeArguments() != null) {
             tokens.add(TextToken.LEFTANGLEBRACKET);
             expression.getNonWildcardTypeArguments().accept(this);
