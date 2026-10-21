@@ -260,9 +260,7 @@ public class TypeMaker {
             methodTypes = parseMethodSignature(internalTypeName, method.getName(), method.getSignature(), attributeSignature.getSignature(), exceptionTypeNames);
         }
 
-        // The types of a method of the class being converted replace the ones loaded from its class file (see loadFieldsAndMethods) in
-        // the cache the callers of the method read: they must carry the access flags too, or a call of a varargs method of this class
-        // is no longer known to be varargs (ACC_VARARGS) and its array of arguments is printed 'new T[] { a, b }' instead of 'a, b'.
+        // Keep the access flags: without ACC_VARARGS a call of this method prints its arguments as 'new T[] { a, b }'
         methodTypes = methodTypes.withAccessFlags(method.getAccessFlags());
         internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
 
@@ -1662,8 +1660,7 @@ public class TypeMaker {
                     } else {
                         methodTypes = parseMethodSignature(internalTypeName, name, descriptor, signature, exceptionTypeNames);
                     }
-                    // parseMethodSignature caches its result per signature, so two methods with the same generic signature get the same
-                    // MethodTypes instance: setting the flags on it made the flags of the last one (varargs or not, static or not) those of both.
+                    // Methods with the same signature share one cached MethodTypes: copy it before setting the flags
                     methodTypes = methodTypes.withAccessFlags(accessFlags);
                     if ((accessFlags & Const.ACC_SYNTHETIC) != 0) {
                         continue;
@@ -2056,12 +2053,7 @@ public class TypeMaker {
             return accessFlags;
         }
 
-        /**
-         * The cached types of a signature are shared by every method which has that signature, so the access flags of one method
-         * (which only that method has) can only be set on a copy.
-         *
-         * @return a copy of these types with the given access flags
-         */
+        /** @return a copy with the given access flags (the instance may be shared by methods with the same signature) */
         MethodTypes withAccessFlags(int flags) {
             MethodTypes copy = new MethodTypes();
             copy.typeParameters = typeParameters;

@@ -247,9 +247,7 @@ public class ExpressionVisitor extends TypeVisitor {
 
         tokens.addLineNumberToken(expression);
         if (ot.getTypeArguments() != null && ot.getDimension() == 0) {
-            // A reference to the constructor of a generic class with no type arguments ('Builder::new') makes javac infer them from the
-            // target type alone, and infer 'Object' when the target does not tell ('Collector.of(Builder::new, ...)'): when the producer of
-            // the tree knows them they are printed, 'Builder<K, V>::new'. They are not printed for an array ('int[]::new').
+            // 'Builder<K, V>::new': without the type arguments javac may infer Object (not for arrays)
             BaseType type = ot;
 
             type.accept(this);
@@ -383,7 +381,7 @@ public class ExpressionVisitor extends TypeVisitor {
         if (parameters == null) {
             tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
         } else if (expression.isExplicitParameterTypes() && parameterTypes != null && parameterTypes.size() == parameters.size() && !parameters.isEmpty()) {
-            // Typed parameters are always between brackets, even a single one: '(List params) -> ...' (a lambda cannot be 'List params -> ...')
+            // '(List params) -> ...': brackets are required with a type, even for one parameter
             tokens.add(TextToken.LEFTROUNDBRACKET);
 
             for (int i = 0; i < parameters.size(); i++) {
@@ -549,7 +547,7 @@ public class ExpressionVisitor extends TypeVisitor {
         }
         tokens.addLineNumberToken(expression);
         tokens.add(TextToken.COLON_COLON);
-        // 'Builder::<K, V>create': the explicit type arguments of a generic method are written after '::', before its name
+        // 'Builder::<K, V>create'
         if (expression.getNonWildcardTypeArguments() != null) {
             tokens.add(TextToken.LEFTANGLEBRACKET);
             expression.getNonWildcardTypeArguments().accept(this);
