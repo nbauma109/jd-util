@@ -281,6 +281,107 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         Assert.assertFalse(source, source.contains(", )"));
     }
 
+    private String printCallWithParameters(int majorVersion, org.jd.core.v1.model.javasyntax.expression.Expression... parameters) throws Exception {
+        ObjectType testType = new ObjectType("org/jd/core/v1/service/test/ReferenceTest", "org.jd.core.v1.service.test.ReferenceTest", "ReferenceTest");
+
+        CompilationUnit compilationUnit = new CompilationUnit(
+            new ClassDeclaration(
+                Const.ACC_PUBLIC,
+                "org/jd/core/v1/service/test/ReferenceTest",
+                "ReferenceTest",
+                new BodyDeclaration(
+                    "org/jd/core/v1/service/test/ReferenceTest",
+                    new MethodDeclaration(
+                        Const.ACC_PUBLIC | Const.ACC_STATIC,
+                        "run",
+                        PrimitiveType.TYPE_VOID,
+                        "()V",
+                        new ExpressionStatement(
+                            new MethodInvocationExpression(
+                                7,
+                                PrimitiveType.TYPE_VOID,
+                                new ObjectTypeReferenceExpression(7, testType),
+                                "org/jd/core/v1/service/test/ReferenceTest",
+                                "use",
+                                "()V",
+                                new Expressions(Arrays.asList(parameters)),
+                                null
+                            )
+                        )
+                    )
+                )
+            )
+        );
+
+        PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
+        DecompileContext decompileContext = new DecompileContext();
+        decompileContext.setCompilationUnit(compilationUnit);
+        decompileContext.setMainInternalTypeName("org/jd/core/v1/service/test/ReferenceTest");
+        decompileContext.setLoader(new NopLoader());
+        decompileContext.setPrinter(printer);
+        decompileContext.setConfiguration(Collections.emptyMap());
+        decompileContext.setMaxLineNumber(7);
+        decompileContext.setMajorVersion(majorVersion);
+        decompileContext.setMinorVersion(0);
+
+        fragmenter.process(compilationUnit, decompileContext);
+        layouter.process(decompileContext);
+        DefaultList<Token> tokens = tokenizer.process(decompileContext.getBody());
+        decompileContext.setTokens(tokens);
+        writer.process(decompileContext);
+
+        return printer.toString().replaceAll("<META-[^>]*/>", "");
+    }
+
+    @Test
+    public void testTypeArgumentsOfConstructorAndMethodReferences() throws Exception {
+        ObjectType builderType = new ObjectType("org/jd/core/v1/service/test/Builder", "org.jd.core.v1.service.test.Builder", "Builder");
+        ObjectType parameterizedBuilderType = builderType.createType(new org.jd.core.v1.model.javasyntax.type.TypeArguments(Arrays.<org.jd.core.v1.model.javasyntax.type.TypeArgument>asList(
+            new org.jd.core.v1.model.javasyntax.type.GenericType("K"), new org.jd.core.v1.model.javasyntax.type.GenericType("V"))));
+        ObjectType supplierType = new ObjectType("java/util/function/Supplier", "java.util.function.Supplier", "Supplier");
+
+        org.jd.core.v1.model.javasyntax.expression.ConstructorReferenceExpression plainConstructor =
+            new org.jd.core.v1.model.javasyntax.expression.ConstructorReferenceExpression(7, supplierType, builderType, "()V");
+        org.jd.core.v1.model.javasyntax.expression.ConstructorReferenceExpression typedConstructor =
+            new org.jd.core.v1.model.javasyntax.expression.ConstructorReferenceExpression(7, supplierType, parameterizedBuilderType, "()V");
+        org.jd.core.v1.model.javasyntax.expression.MethodReferenceExpression plainMethod =
+            new org.jd.core.v1.model.javasyntax.expression.MethodReferenceExpression(7, supplierType, new ObjectTypeReferenceExpression(7, builderType), builderType.getInternalName(), "create", "()V");
+        org.jd.core.v1.model.javasyntax.expression.MethodReferenceExpression typedMethod =
+            new org.jd.core.v1.model.javasyntax.expression.MethodReferenceExpression(7, supplierType, new ObjectTypeReferenceExpression(7, builderType), builderType.getInternalName(), "create", "()V");
+
+        typedMethod.setNonWildcardTypeArguments(new org.jd.core.v1.model.javasyntax.type.TypeArguments(Arrays.<org.jd.core.v1.model.javasyntax.type.TypeArgument>asList(
+            new org.jd.core.v1.model.javasyntax.type.GenericType("K"), new org.jd.core.v1.model.javasyntax.type.GenericType("V"))));
+        Assert.assertNull(plainMethod.getNonWildcardTypeArguments());
+        Assert.assertEquals(typedMethod.getNonWildcardTypeArguments(), ((org.jd.core.v1.model.javasyntax.expression.MethodReferenceExpression) typedMethod.copyTo(8)).getNonWildcardTypeArguments());
+
+        String source = printCallWithParameters(52, plainConstructor, typedConstructor, plainMethod, typedMethod);
+
+        Assert.assertTrue(source, source.contains("Builder::new, Builder<K, V>::new"));
+        Assert.assertTrue(source, source.contains("Builder::create, Builder::<K, V>create"));
+    }
+
+    @Test
+    public void testExplicitParameterTypesOfLambdas() throws Exception {
+        ObjectType functionType = new ObjectType("java/util/function/BiFunction", "java.util.function.BiFunction", "BiFunction");
+        ObjectType listType = new ObjectType("java/util/List", "java.util.List", "List");
+        ObjectType stringType = new ObjectType("java/lang/String", "java.lang.String", "String");
+
+        LambdaIdentifiersExpression implicit = new LambdaIdentifiersExpression(7, functionType, stringType, Arrays.asList("a", "b"), new LambdaExpressionStatement(new IntegerConstantExpression(PrimitiveType.TYPE_INT, 1)));
+        LambdaIdentifiersExpression explicit = new LambdaIdentifiersExpression(7, functionType, stringType, Arrays.asList("a", "b"), new LambdaExpressionStatement(new IntegerConstantExpression(PrimitiveType.TYPE_INT, 2)));
+
+        implicit.setParameterTypes(Arrays.<Type>asList(listType, stringType));
+        explicit.setParameterTypes(Arrays.<Type>asList(listType, stringType));
+        explicit.setExplicitParameterTypes(true);
+        Assert.assertTrue(explicit.isExplicitParameterTypes());
+        Assert.assertFalse(implicit.isExplicitParameterTypes());
+        Assert.assertEquals(explicit.getParameterTypes(), ((LambdaIdentifiersExpression) explicit.copyTo(8)).getParameterTypes());
+        Assert.assertTrue(((LambdaIdentifiersExpression) explicit.copyTo(8)).isExplicitParameterTypes());
+
+        String source = printCallWithParameters(52, implicit, explicit);
+
+        Assert.assertTrue(source, source.contains("(a, b) -> 1, (java.util.List a, String b) -> 2"));
+    }
+
     @Test
     public void testInterfaceDeclaration() throws Exception {
         ObjectType cloneableType = new ObjectType(StringConstants.JAVA_LANG_CLONEABLE, "java.lang.Cloneable", "Cloneable");

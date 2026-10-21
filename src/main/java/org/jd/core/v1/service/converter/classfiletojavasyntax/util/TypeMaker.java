@@ -260,6 +260,8 @@ public class TypeMaker {
             methodTypes = parseMethodSignature(internalTypeName, method.getName(), method.getSignature(), attributeSignature.getSignature(), exceptionTypeNames);
         }
 
+        // Keep the access flags: without ACC_VARARGS a call of this method prints its arguments as 'new T[] { a, b }'
+        methodTypes = methodTypes.withAccessFlags(method.getAccessFlags());
         internalTypeNameMethodNameDescriptorToMethodTypes.put(key, methodTypes);
 
         return methodTypes;
@@ -1658,7 +1660,8 @@ public class TypeMaker {
                     } else {
                         methodTypes = parseMethodSignature(internalTypeName, name, descriptor, signature, exceptionTypeNames);
                     }
-                    methodTypes.setAccessFlags(accessFlags);
+                    // Methods with the same signature share one cached MethodTypes: copy it before setting the flags
+                    methodTypes = methodTypes.withAccessFlags(accessFlags);
                     if ((accessFlags & Const.ACC_SYNTHETIC) != 0) {
                         continue;
                     }
@@ -2048,6 +2051,17 @@ public class TypeMaker {
 
         public int getAccessFlags() {
             return accessFlags;
+        }
+
+        /** @return a copy with the given access flags (the instance may be shared by methods with the same signature) */
+        MethodTypes withAccessFlags(int flags) {
+            MethodTypes copy = new MethodTypes();
+            copy.typeParameters = typeParameters;
+            copy.parameterTypes = parameterTypes;
+            copy.returnedType = returnedType;
+            copy.exceptionTypes = exceptionTypes;
+            copy.accessFlags = flags;
+            return copy;
         }
 
         public void setAccessFlags(int accessFlags) {

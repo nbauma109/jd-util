@@ -316,6 +316,10 @@ public class JdJavaSourceParser
     return i;
   }
 
+  /* The type of the last explicitly typed lambda parameter, the types of the last list of them (see LambdaExplicitParameterNamesOpt) */
+  private Type lambdaParameterType;
+  private List<Type> lambdaParameterTypes;
+
   private boolean isLambdaExplicitParameterAhead() {
     return scanLambdaExplicitParameter(1) >= 0;
   }
@@ -4058,6 +4062,9 @@ List<String> LambdaParametersOpt() :
   List<String> names;
 }
 {
+  {
+    lambdaParameterTypes = null;
+  }
   (
     LOOKAHEAD( { isLambdaExplicitParameterAhead() } )
     names = LambdaExplicitParameterNamesOpt()
@@ -4069,9 +4076,11 @@ List<String> LambdaParametersOpt() :
   }
 }
 
+/* Also leaves the declared types in lambdaParameterTypes, for the caller to read before it parses anything else */
 List<String> LambdaExplicitParameterNamesOpt() :
 {
   List<String> names = new ArrayList<>();
+  List<Type> types = new ArrayList<>();
   Token nameTok;
 }
 {
@@ -4079,15 +4088,18 @@ List<String> LambdaExplicitParameterNamesOpt() :
     nameTok = LambdaExplicitParameterName()
     {
       names.add(nameTok.image);
+      types.add(lambdaParameterType);
     }
     (
       <COMMA>
       nameTok = LambdaExplicitParameterName()
       {
         names.add(nameTok.image);
+        types.add(lambdaParameterType);
       }
     )*
     {
+      lambdaParameterTypes = types;
       return names;
     }
   )
@@ -4117,6 +4129,7 @@ Token LambdaExplicitParameterName() :
   nameTok = IdentifierToken()
   dims = ArrayDimsOpt()
   {
+    lambdaParameterType = dims + (varargs ? 1 : 0) == 0 ? t : t.createType(t.getDimension() + dims + (varargs ? 1 : 0));
     return nameTok;
   }
 }
@@ -4496,6 +4509,7 @@ Expression PostfixExpression() :
       id.image,
       ""
       );
+      ((MethodReferenceExpression) e).setNonWildcardTypeArguments(explicitTypeArgs);
     }
   |
     <DOT>
@@ -4589,6 +4603,7 @@ Expression PostfixExpression() :
           id.image,
           ""
           );
+          ((MethodReferenceExpression) e).setNonWildcardTypeArguments(explicitTypeArgs);
         }
       )
     )
@@ -4609,6 +4624,7 @@ Expression PrimaryExpression() :
   int ln;
   String qn;
   Type typeRef;
+  BaseTypeArgument typeArgs;
 }
 {
   (
@@ -4708,17 +4724,20 @@ Expression PrimaryExpression() :
     t = <THIS> mr = <METHOD_REF>
     (
       LOOKAHEAD(<LT>)
-      TypeArgumentsOpt()
+      typeArgs = TypeArgumentsOpt()
     |
       {
-        /* keep going */
+        typeArgs = null;
       }
     )
     id = IdentifierToken()
     {
       ln = consumeLineNumber(t);
       e = new ThisExpression(ln, TYPE_UNDEFINED_OBJECT);
-      return new MethodReferenceExpression(ln, TYPE_UNDEFINED_OBJECT, e, "", id.image, "");
+      MethodReferenceExpression reference = new MethodReferenceExpression(ln, TYPE_UNDEFINED_OBJECT, e, "", id.image, "");
+
+      reference.setNonWildcardTypeArguments(typeArgs);
+      return reference;
     }
   |
     /* instance method reference: super::log */
@@ -4726,17 +4745,20 @@ Expression PrimaryExpression() :
     t = <SUPER> mr = <METHOD_REF>
     (
       LOOKAHEAD(<LT>)
-      TypeArgumentsOpt()
+      typeArgs = TypeArgumentsOpt()
     |
       {
-        /* keep going */
+        typeArgs = null;
       }
     )
     id = IdentifierToken()
     {
       ln = consumeLineNumber(t);
       e = new SuperExpression(ln, TYPE_UNDEFINED_OBJECT);
-      return new MethodReferenceExpression(ln, TYPE_UNDEFINED_OBJECT, e, "", id.image, "");
+      MethodReferenceExpression reference = new MethodReferenceExpression(ln, TYPE_UNDEFINED_OBJECT, e, "", id.image, "");
+
+      reference.setNonWildcardTypeArguments(typeArgs);
+      return reference;
     }
   |
     LOOKAHEAD(<THIS> <LPAREN>)
@@ -4804,6 +4826,7 @@ Expression TypeMethodReferencePrimary() :
   int ln;
   ObjectType ot;
   Expression qualifier;
+  BaseTypeArgument typeArgs;
 }
 {
   ty = TypeRef()
@@ -4826,9 +4849,17 @@ Expression TypeMethodReferencePrimary() :
       );
     }
   |
+    (
+      LOOKAHEAD(<LT>)
+      typeArgs = TypeArgumentsOpt()
+    |
+      {
+        typeArgs = null;
+      }
+    )
     id = IdentifierToken()
     {
-      return new MethodReferenceExpression(
+      MethodReferenceExpression reference = new MethodReferenceExpression(
       ln,
       TYPE_UNDEFINED_OBJECT,
       qualifier,
@@ -4836,6 +4867,9 @@ Expression TypeMethodReferencePrimary() :
       id.image,
       ""
       );
+
+      reference.setNonWildcardTypeArguments(typeArgs);
+      return reference;
     }
   )
 }
@@ -5193,6 +5227,7 @@ Expression LambdaExpression() :
   Token nameTok;
   Token arrowTok;
   List<String> parameterNames;
+  List<Type> parameterTypes = null;
   BaseStatement bodyStatements;
   Expression bodyExpression;
   int lineNumber;
@@ -5209,6 +5244,9 @@ Expression LambdaExpression() :
   |
     <LPAREN>
     parameterNames = LambdaParametersOpt()
+    {
+      parameterTypes = lambdaParameterTypes;
+    }
     <RPAREN>
     arrowTok = <ARROW>
     {
@@ -5225,13 +5263,20 @@ Expression LambdaExpression() :
     }
   )
   {
-    return new LambdaIdentifiersExpression(
+    LambdaIdentifiersExpression lambda = new LambdaIdentifiersExpression(
     lineNumber,
     TYPE_UNDEFINED_OBJECT,
     TYPE_UNDEFINED_OBJECT,
     parameterNames,
     bodyStatements
     );
+
+    // '(List a) -> ...': the types are written in the source, they are printed again
+    if (parameterTypes != null) {
+      lambda.setParameterTypes(parameterTypes);
+      lambda.setExplicitParameterTypes(true);
+    }
+    return lambda;
   }
 }
 

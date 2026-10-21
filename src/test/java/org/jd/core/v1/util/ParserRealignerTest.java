@@ -415,6 +415,28 @@ public class ParserRealignerTest implements DefaultTest {
         assertEquals(actual, 5, index + 1);
     }
 
+    @Test
+    public void testLambdasWithTheTypesOfTheirParametersAndReferencesWithTypeArgumentsRoundTrip() throws ParseException {
+        String source = String.join("\n",
+                "/*     */ package test;",
+                "/*     */ public class T {",
+                "/*     */   void first() {",
+                "/*   4 */     use((java.util.List a, String b) -> 1, (java.util.List a) -> 2, Builder<K, V>::new, Builder::<K, V>create, this::<K>log, super::<K>log, factory()::<K>log);",
+                "/*     */   }",
+                "/*     */ }",
+                "");
+
+        String actual = new ParserRealigner().realign(source);
+
+        assertTrue(actual, actual.contains("(java.util.List a, String b) -> 1"));
+        assertTrue(actual, actual.contains("(java.util.List a) -> 2"));
+        assertTrue(actual, actual.contains("Builder::<K, V>create"));
+        assertTrue(actual, actual.contains("this::<K>log"));
+        assertTrue(actual, actual.contains("super::<K>log"));
+        assertTrue(actual, actual.contains("factory()::<K>log"));
+        JdJavaSourceParser.parse(actual);
+    }
+
     private void testParseRealign(String inputName, String outputName)
             throws IOException, URISyntaxException, ParseException {
         String input = toString(getClass().getResource(inputName));

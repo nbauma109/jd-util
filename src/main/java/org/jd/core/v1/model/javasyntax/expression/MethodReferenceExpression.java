@@ -7,6 +7,7 @@
 
 package org.jd.core.v1.model.javasyntax.expression;
 
+import org.jd.core.v1.model.javasyntax.type.BaseTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.Type;
 
 public class MethodReferenceExpression extends AbstractLineNumberTypeExpression {
@@ -14,6 +15,7 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
     private final String internalTypeName;
     protected final String name;
     protected final String descriptor;
+    private BaseTypeArgument nonWildcardTypeArguments;
 
     public MethodReferenceExpression(Type type, Expression expression, String internalTypeName, String name, String descriptor) {
         this(UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor);
@@ -51,6 +53,18 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
         return descriptor;
     }
 
+    /**
+     * Explicit type arguments of the referenced generic method, printed after '::' ('Builder::&lt;K, V&gt;create'): without them javac
+     * infers Object when the target type does not tell. Shared with {@link MethodInvocationExpression} ('Collections.&lt;String&gt;emptyList()').
+     */
+    public BaseTypeArgument getNonWildcardTypeArguments() {
+        return nonWildcardTypeArguments;
+    }
+
+    public void setNonWildcardTypeArguments(BaseTypeArgument nonWildcardTypeArguments) {
+        this.nonWildcardTypeArguments = nonWildcardTypeArguments;
+    }
+
     @Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visit(this);
@@ -58,7 +72,10 @@ public class MethodReferenceExpression extends AbstractLineNumberTypeExpression 
 
     @Override
     public Expression copyTo(int lineNumber) {
-        return new MethodReferenceExpression(lineNumber, getType(), expression, internalTypeName, name, descriptor);
+        MethodReferenceExpression copy = new MethodReferenceExpression(lineNumber, getType(), expression, internalTypeName, name, descriptor);
+
+        copy.nonWildcardTypeArguments = nonWildcardTypeArguments;
+        return copy;
     }
 
     @Override

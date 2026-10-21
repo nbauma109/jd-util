@@ -67,6 +67,7 @@ import org.jd.core.v1.model.javasyntax.type.DiamondTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.InnerObjectType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
+import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.token.BooleanConstantToken;
 import org.jd.core.v1.model.token.CharacterConstantToken;
 import org.jd.core.v1.model.token.EndBlockToken;
@@ -245,8 +246,15 @@ public class ExpressionVisitor extends TypeVisitor {
         ObjectType ot = expression.getObjectType();
 
         tokens.addLineNumberToken(expression);
-        tokens.add(newTypeReferenceToken(ot, currentType));
-        visitDimension(expression.getObjectType().getDimension());
+        if (ot.getTypeArguments() != null && ot.getDimension() == 0) {
+            // 'Builder<K, V>::new': without the type arguments javac may infer Object (not for arrays)
+            BaseType type = ot;
+
+            type.accept(this);
+        } else {
+            tokens.add(newTypeReferenceToken(ot, currentType));
+            visitDimension(expression.getObjectType().getDimension());
+        }
         tokens.add(TextToken.COLON_COLON);
         //tokens.add(new ReferenceToken(ReferenceToken.CONSTRUCTOR, ot.getInternalName(), "new", expression.getDescriptor(), currentInternalTypeName));
         tokens.add(NEW);
@@ -368,9 +376,25 @@ public class ExpressionVisitor extends TypeVisitor {
     @Override
     public void visit(LambdaIdentifiersExpression expression) {
         List<String> parameters = expression.getParameterNames();
+        List<Type> parameterTypes = expression.getParameterTypes();
 
         if (parameters == null) {
             tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
+        } else if (expression.isExplicitParameterTypes() && parameterTypes != null && parameterTypes.size() == parameters.size() && !parameters.isEmpty()) {
+            // '(List params) -> ...': brackets are required with a type, even for one parameter
+            tokens.add(TextToken.LEFTROUNDBRACKET);
+
+            for (int i = 0; i < parameters.size(); i++) {
+                if (i > 0) {
+                    tokens.add(TextToken.COMMA_SPACE);
+                }
+                BaseType parameterType = parameterTypes.get(i);
+
+                parameterType.accept(this);
+                tokens.add(TextToken.SPACE);
+                tokens.add(newTextToken(parameters.get(i)));
+            }
+            tokens.add(TextToken.RIGHTROUNDBRACKET);
         } else {
             int size = parameters.size();
 
@@ -523,6 +547,12 @@ public class ExpressionVisitor extends TypeVisitor {
         }
         tokens.addLineNumberToken(expression);
         tokens.add(TextToken.COLON_COLON);
+        // 'Builder::<K, V>create'
+        if (expression.getNonWildcardTypeArguments() != null) {
+            tokens.add(TextToken.LEFTANGLEBRACKET);
+            expression.getNonWildcardTypeArguments().accept(this);
+            tokens.add(TextToken.RIGHTANGLEBRACKET);
+        }
         tokens.add(new ReferenceToken(Printer.METHOD, expression.getInternalTypeName(), expression.getName(), expression.getDescriptor(), currentType));
     }
 
