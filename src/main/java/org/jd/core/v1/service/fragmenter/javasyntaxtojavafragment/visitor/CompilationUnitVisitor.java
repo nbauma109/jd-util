@@ -243,6 +243,12 @@ public class CompilationUnitVisitor extends StatementVisitor {
     }
 
     @Override
+    protected void buildTokensForBoundAnnotations(BaseAnnotationReference annotationReferences) {
+        annotationReferences.accept(this);
+        tokens.add(TextToken.SPACE);
+    }
+
+    @Override
     public void visit(ArrayVariableInitializer declaration) {
         int size = declaration.size();
 
