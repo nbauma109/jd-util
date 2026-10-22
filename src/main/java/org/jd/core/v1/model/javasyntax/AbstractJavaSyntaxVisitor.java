@@ -743,6 +743,7 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
 
     @Override
     public void visit(TypeParameterWithTypeBounds parameter) {
+        safeAccept(parameter.getBoundAnnotations());
         parameter.getTypeBounds().accept(this);
     }
 

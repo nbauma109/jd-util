@@ -11,6 +11,7 @@ import org.jd.core.v1.api.printer.Printer;
 import org.jd.core.v1.model.javafragment.ImportsFragment;
 import org.jd.core.v1.model.javasyntax.AbstractJavaSyntaxVisitor;
 import org.jd.core.v1.model.javasyntax.expression.Expression;
+import org.jd.core.v1.model.javasyntax.reference.BaseAnnotationReference;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.DiamondTypeArgument;
@@ -264,6 +265,9 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         tokens.add(EXTENDS);
         tokens.add(TextToken.SPACE);
 
+        if (!Utils.isEmpty(parameter.getBoundAnnotations())) {
+            buildTokensForBoundAnnotations(parameter.getBoundAnnotations());
+        }
         BaseType types = parameter.getTypeBounds();
 
         if (types.isList()) {
@@ -273,6 +277,11 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
 
             type.accept(this);
         }
+    }
+
+    /** Prints the annotations of the bounds of a type parameter, with the space after them: only a visitor which prints annotations does */
+    protected void buildTokensForBoundAnnotations(BaseAnnotationReference annotationReferences) {
+        // no annotations by default
     }
 
     @Override

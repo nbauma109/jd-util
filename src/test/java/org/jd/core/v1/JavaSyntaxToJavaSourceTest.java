@@ -49,9 +49,11 @@ import org.jd.core.v1.model.javasyntax.statement.ReturnExpressionStatement;
 import org.jd.core.v1.model.javasyntax.statement.ReturnStatement;
 import org.jd.core.v1.model.javasyntax.statement.Statements;
 import org.jd.core.v1.model.javasyntax.statement.SwitchStatement;
+import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 import org.jd.core.v1.model.javasyntax.type.Type;
+import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
 import org.jd.core.v1.model.javasyntax.type.Types;
 import org.jd.core.v1.model.message.DecompileContext;
 import org.jd.core.v1.model.token.Token;
@@ -279,6 +281,46 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         // The closing brace of the lambda is followed by the closing parenthesis of the instance creation, not by a separator
         Assert.assertTrue(source, source.contains("}), 1)"));
         Assert.assertFalse(source, source.contains(", )"));
+    }
+
+    @Test
+    public void testAnnotationOnTheBoundOfATypeParameter() throws Exception {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+
+        CompilationUnit compilationUnit = new CompilationUnit(
+            new ClassDeclaration(
+                null,
+                Const.ACC_PUBLIC,
+                "org/jd/core/v1/service/test/Holder",
+                "Holder",
+                new TypeParameterWithTypeBounds("K", ObjectType.TYPE_OBJECT, new AnnotationReference(nullableType)),
+                null,
+                null,
+                new BodyDeclaration("org/jd/core/v1/service/test/Holder", new MethodDeclaration(Const.ACC_PUBLIC, "run", PrimitiveType.TYPE_VOID, "()V", ReturnStatement.RETURN))
+            )
+        );
+
+        org.jd.core.v1.printer.PlainTextPrinter printer = new org.jd.core.v1.printer.PlainTextPrinter();
+        DecompileContext decompileContext = new DecompileContext();
+        decompileContext.setCompilationUnit(compilationUnit);
+        decompileContext.setMainInternalTypeName("org/jd/core/v1/service/test/Holder");
+        decompileContext.setLoader(new NopLoader());
+        decompileContext.setPrinter(printer);
+        decompileContext.setConfiguration(Collections.emptyMap());
+        decompileContext.setMaxLineNumber(7);
+        decompileContext.setMajorVersion(0);
+        decompileContext.setMinorVersion(0);
+
+        fragmenter.process(compilationUnit, decompileContext);
+        layouter.process(decompileContext);
+        decompileContext.setTokens(tokenizer.process(decompileContext.getBody()));
+        writer.process(decompileContext);
+
+        String source = printer.toString();
+
+        // the annotation is imported and written in front of the bound
+        Assert.assertTrue(source, source.contains("import org.jspecify.annotations.Nullable;"));
+        Assert.assertTrue(source, source.contains("class Holder<K extends @Nullable Object>"));
     }
 
     private String printCallWithParameters(int majorVersion, org.jd.core.v1.model.javasyntax.expression.Expression... parameters) throws Exception {
