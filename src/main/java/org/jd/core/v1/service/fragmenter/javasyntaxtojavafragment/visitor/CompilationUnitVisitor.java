@@ -50,6 +50,7 @@ import org.jd.core.v1.model.javasyntax.reference.AnnotationElementValue;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReferences;
 import org.jd.core.v1.model.javasyntax.reference.BaseAnnotationReference;
+import org.jd.core.v1.model.javasyntax.reference.TypeUseAnnotationReference;
 import org.jd.core.v1.model.javasyntax.reference.BaseElementValue;
 import org.jd.core.v1.model.javasyntax.reference.BaseElementValuePair;
 import org.jd.core.v1.model.javasyntax.reference.ElementValueArrayInitializerElementValue;
@@ -62,11 +63,11 @@ import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.Type;
-import org.jd.core.v1.model.javasyntax.type.TypeVisitor;
 import org.jd.core.v1.model.token.DeclarationToken;
 import org.jd.core.v1.model.token.EndBlockToken;
 import org.jd.core.v1.model.token.EndMarkerToken;
 import org.jd.core.v1.model.token.KeywordToken;
+import org.jd.core.v1.model.token.LineNumberToken;
 import org.jd.core.v1.model.token.NewLineToken;
 import org.jd.core.v1.model.token.ReferenceToken;
 import org.jd.core.v1.model.token.StartBlockToken;
@@ -78,7 +79,11 @@ import org.jd.core.v1.service.converter.classfiletojavasyntax.util.Utils;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
 
 import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import static org.apache.bcel.Const.ACC_ABSTRACT;
 import static org.apache.bcel.Const.ACC_BRIDGE;
@@ -243,7 +248,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
     }
 
     @Override
-    protected void buildTokensForBoundAnnotations(BaseAnnotationReference annotationReferences) {
+    protected void buildTokensForTypeAnnotations(BaseAnnotationReference annotationReferences) {
         annotationReferences.accept(this);
         tokens.add(TextToken.SPACE);
     }
@@ -469,8 +474,149 @@ public class CompilationUnitVisitor extends StatementVisitor {
         fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
     }
 
+    /**
+     * @return the annotations which are on the declaration, not on its type; null if there is none. An annotation which is also on the type (its
+     *         twin in the annotations of the type, with the same elements) is written once, on the type, unless the type needs it on its own.
+     */
+    private BaseAnnotationReference declarationAnnotations(BaseAnnotationReference annotationReferences, BaseType type) {
+        return selectAnnotations(annotationReferences, false, needsAnnotationsOfItsOwn(type) || hasUnmatchedTwins(annotationReferences));
+    }
+
+    /** @return the annotations which are on the type of the declaration ('@Nullable String value'); null if there is none */
+    private BaseAnnotationReference typeUseAnnotations(BaseAnnotationReference annotationReferences) {
+        return selectAnnotations(annotationReferences, true, true);
+    }
+
+    private BaseAnnotationReference selectAnnotations(BaseAnnotationReference annotationReferences, boolean typeUse, boolean keepTwins) {
+        if (annotationReferences == null) {
+            return null;
+        }
+        List<AnnotationReference> all = listOf(annotationReferences);
+        AnnotationReferences<AnnotationReference> selected = new AnnotationReferences<>();
+
+        for (AnnotationReference reference : all) {
+            if (isSelected(reference, typeUse, keepTwins, all)) {
+                selected.add(reference);
+            }
+        }
+        return oneOf(selected);
+    }
+
+    private boolean isSelected(AnnotationReference reference, boolean typeUse, boolean keepTwins, List<AnnotationReference> all) {
+        if (reference instanceof TypeUseAnnotationReference) {
+            return typeUse;
+        }
+        return !typeUse && (keepTwins || !hasTypeUseTwin(reference, all));
+    }
+
+    /**
+     * @return true if an annotation is on the declaration and on the type, but not the same ones: the occurrences of an annotation of the declaration
+     *         are not those of the type (repeatable annotation). Written in front of the name of the type, the ones of the type would also apply to the
+     *         declaration: the type is then written with its package, and they follow it.
+     */
+    private boolean hasUnmatchedTwins(BaseAnnotationReference annotationReferences) {
+        if (annotationReferences == null) {
+            return false;
+        }
+        List<AnnotationReference> all = listOf(annotationReferences);
+        Map<String, List<String>> declared = new HashMap<>();
+        Map<String, List<String>> onType = new HashMap<>();
+
+        for (AnnotationReference reference : all) {
+            (reference instanceof TypeUseAnnotationReference ? onType : declared)
+                    .computeIfAbsent(reference.getType().getInternalName(), name -> new ArrayList<>()).add(writtenAs(reference));
+        }
+        return declared.entrySet().stream().anyMatch(entry -> onType.containsKey(entry.getKey()) && !sameOccurrences(entry.getValue(), onType.get(entry.getKey())))
+                // (an annotation of types which declarations take too would be on the declaration if it were in front of the name of the type)
+                || onType.keySet().stream().anyMatch(name -> !declared.containsKey(name) && isAlsoForDeclarations(name));
+    }
+
+    private static boolean sameOccurrences(List<String> declared, List<String> onType) {
+        List<String> sortedDeclared = new ArrayList<>(declared);
+        List<String> sortedOnType = new ArrayList<>(onType);
+
+        sortedDeclared.sort(null);
+        sortedOnType.sort(null);
+        return sortedDeclared.equals(sortedOnType);
+    }
+
+    /** @return true if the annotation is also one of the annotations of the type, the same one: its type and its elements are those of the annotation */
+    private boolean hasTypeUseTwin(AnnotationReference reference, List<AnnotationReference> all) {
+        return all.stream().anyMatch(other -> other instanceof TypeUseAnnotationReference && isSameAnnotation(reference, other));
+    }
+
+    /**
+     * @return the annotations of a constructor, which has no type to hold the ones the class file also has as annotations of the type of its result:
+     *         all are written in front of it, but the twin of an annotation once
+     */
+    private BaseAnnotationReference constructorAnnotations(BaseAnnotationReference annotationReferences) {
+        if (annotationReferences == null) {
+            return null;
+        }
+        List<AnnotationReference> all = listOf(annotationReferences);
+        AnnotationReferences<AnnotationReference> kept = new AnnotationReferences<>();
+
+        for (AnnotationReference reference : all) {
+            if (!(reference instanceof TypeUseAnnotationReference) || !hasPlainTwin(reference, all)) {
+                kept.add(reference);
+            }
+        }
+        return kept.size() == all.size() ? annotationReferences : oneOf(kept);
+    }
+
+    private boolean hasPlainTwin(AnnotationReference reference, List<AnnotationReference> all) {
+        return all.stream().anyMatch(other -> !(other instanceof TypeUseAnnotationReference) && isSameAnnotation(reference, other));
+    }
+
+    private static BaseAnnotationReference oneOf(AnnotationReferences<AnnotationReference> references) {
+        if (references.isEmpty()) {
+            return null;
+        }
+        if (references.size() == 1) {
+            return references.getFirst();
+        }
+        return references;
+    }
+
+    /**
+     * The annotations are the same if they are written the same: the type, the names of the elements and their values. The elements of two
+     * annotations are not the same objects, and their classes have no equality of values: what is written is compared.
+     */
+    private boolean isSameAnnotation(AnnotationReference first, AnnotationReference second) {
+        // (the same simple name is not the same annotation: javax.annotation.Nullable, org.jspecify.annotations.Nullable)
+        return first.getType().getInternalName().equals(second.getType().getInternalName()) && writtenAs(first).equals(writtenAs(second));
+    }
+
+    /** A token as it is compared: a reference to a type, a field or a method with the internal name of its class, not only the name it is written with */
+    private static String identityOf(Token token) {
+        return token instanceof DeclarationToken declaration ? "[" + declaration.getInternalTypeName() + "." + declaration.getName() + "]" : token.toString();
+    }
+
+    private String writtenAs(AnnotationReference reference) {
+        Tokens saved = tokens;
+
+        tokens = new Tokens();
+        try {
+            reference.accept(this);
+            return tokens.stream().filter(token -> !(token instanceof LineNumberToken)).map(CompilationUnitVisitor::identityOf).collect(Collectors.joining());
+        } finally {
+            tokens = saved;
+        }
+    }
+
+    private static List<AnnotationReference> listOf(BaseAnnotationReference annotationReferences) {
+        List<AnnotationReference> all = new ArrayList<>();
+
+        if (annotationReferences instanceof AnnotationReferences<?> list) {
+            all.addAll(list);
+        } else {
+            all.add((AnnotationReference) annotationReferences);
+        }
+        return all;
+    }
+
     private void buildTokensForRecordComponent(RecordDeclaration.RecordComponent component) {
-        BaseAnnotationReference annotationReferences = component.getAnnotationReferences();
+        BaseAnnotationReference annotationReferences = declarationAnnotations(component.getAnnotationReferences(), component.getType());
 
         if (!Utils.isEmpty(annotationReferences)) {
             annotationReferences.accept(this);
@@ -479,7 +625,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
         Type type = component.getType();
 
-        type.accept((TypeVisitor) this);
+        visitTypeWithAnnotations(type, typeUseAnnotations(component.getAnnotationReferences()), hasUnmatchedTwins(component.getAnnotationReferences()));
         tokens.add(TextToken.SPACE);
         tokens.add(newTextToken(component.getName()));
     }
@@ -566,7 +712,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
                 tokens = new Tokens();
 
                 // Build fragments for annotations
-                BaseAnnotationReference annotationReferences = declaration.getAnnotationReferences();
+                BaseAnnotationReference annotationReferences = constructorAnnotations(declaration.getAnnotationReferences());
 
                 if (annotationReferences != null) {
                     annotationReferences.accept(annotationVisitor);
@@ -860,7 +1006,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             }
 
             // Build fragments for annotations
-            BaseAnnotationReference annotationReferences = declaration.getAnnotationReferences();
+            BaseAnnotationReference annotationReferences = declarationAnnotations(declaration.getAnnotationReferences(), declaration.getType());
 
             if (annotationReferences != null) {
                 annotationReferences.accept(annotationVisitor);
@@ -874,7 +1020,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             BaseType type = declaration.getType();
 
-            type.accept(this);
+            visitTypeWithAnnotations(type, typeUseAnnotations(declaration.getAnnotationReferences()), hasUnmatchedTwins(declaration.getAnnotationReferences()));
 
             tokens.add(StartBlockToken.START_DECLARATION_OR_STATEMENT_BLOCK);
             fragments.addTokensFragment(tokens);
@@ -921,7 +1067,9 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
     @Override
     public void visit(FormalParameter declaration) {
-        BaseAnnotationReference annotationReferences = declaration.getAnnotationReferences();
+        BaseAnnotationReference typeAnnotations = typeUseAnnotations(declaration.getAnnotationReferences());
+        boolean qualified = hasUnmatchedTwins(declaration.getAnnotationReferences());
+        BaseAnnotationReference annotationReferences = declarationAnnotations(declaration.getAnnotationReferences(), declaration.getType());
 
         if (!Utils.isEmpty(annotationReferences)) {
             annotationReferences.accept(this);
@@ -936,13 +1084,18 @@ public class CompilationUnitVisitor extends StatementVisitor {
         if (declaration.isVarargs()) {
             Type arrayType = declaration.getType();
             BaseType type = arrayType.createType(Math.max(0, arrayType.getDimension() - 1));
-            type.accept(this);
 
+            visitTypeWithAnnotations(type, null, false);
+            if (!Utils.isEmpty(typeAnnotations)) {
+                // (the annotations of the array of the arguments: 'String @Nullable ... values')
+                tokens.add(TextToken.SPACE);
+                buildTokensForTypeAnnotations(typeAnnotations);
+            }
             tokens.add(TextToken.VARARGS);
         } else {
             BaseType type = declaration.getType();
 
-            type.accept(this);
+            visitTypeWithAnnotations(type, typeAnnotations, qualified);
             tokens.add(TextToken.SPACE);
         }
 
@@ -1298,7 +1451,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             tokens = new Tokens();
 
             // Build fragments for annotations
-            BaseAnnotationReference annotationReferences = declaration.getAnnotationReferences();
+            BaseAnnotationReference annotationReferences = declarationAnnotations(declaration.getAnnotationReferences(), declaration.getReturnedType());
 
             if (annotationReferences != null) {
                 annotationReferences.accept(annotationVisitor);
@@ -1322,7 +1475,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             BaseType returnedType = declaration.getReturnedType();
 
-            returnedType.accept(this);
+            visitTypeWithAnnotations(returnedType, typeUseAnnotations(declaration.getAnnotationReferences()), hasUnmatchedTwins(declaration.getAnnotationReferences()));
             tokens.add(TextToken.SPACE);
 
             // Build token for type declaration

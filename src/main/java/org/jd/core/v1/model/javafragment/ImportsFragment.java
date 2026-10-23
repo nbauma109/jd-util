@@ -13,12 +13,16 @@ import org.jd.core.v1.util.DefaultList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ImportsFragment extends FlexibleFragment implements JavaFragment {
 
     private final Map<String, JavaImport> importMap = new HashMap<>();
+    /** The imports which are kept whatever the number of lines left to the imports: a name that is written without its package depends on them */
+    private final Set<String> pinned = new HashSet<>();
 
     public ImportsFragment(int weight) {
         super(0, -1, -1, weight, "Imports");
@@ -62,6 +66,20 @@ public class ImportsFragment extends FlexibleFragment implements JavaFragment {
         maximalLineCount = initialLineCount = lineCount = importMap.size();
     }
 
+    /** Keeps the import when the imports are cut to the lines they have: an annotation is written in front of a name that must stay as it is */
+    public void keep(String internalName) {
+        pinned.add(internalName);
+    }
+
+    /** The layout may cut the lines of the imports, but not below the kept ones: the lines it counts are the ones that are written */
+    @Override
+    public boolean decLineCount(boolean force) {
+        if (lineCount <= importMap.keySet().stream().filter(pinned::contains).count()) {
+            return false;
+        }
+        return super.decLineCount(force);
+    }
+
     public boolean contains(String internalName) {
         return importMap.containsKey(internalName);
     }
@@ -82,7 +100,7 @@ public class ImportsFragment extends FlexibleFragment implements JavaFragment {
             return importMap.values();
         }
         DefaultList<JavaImport> imports = new DefaultList<>(importMap.values());
-        imports.sort(Comparator.comparing(JavaImport::getCounter).reversed());
+        imports.sort(Comparator.comparing((JavaImport imp0rt) -> !pinned.contains(imp0rt.getInternalName())).thenComparing(Comparator.comparing(JavaImport::getCounter).reversed()));
         // Remove less used imports
         List<JavaImport> subList = imports.subList(lineCount, size);
         for (JavaImport imp0rt : subList) {

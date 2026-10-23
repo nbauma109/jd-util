@@ -50,7 +50,13 @@ import org.jd.core.v1.model.javasyntax.statement.ReturnStatement;
 import org.jd.core.v1.model.javasyntax.statement.Statements;
 import org.jd.core.v1.model.javasyntax.statement.SwitchStatement;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
+import org.jd.core.v1.model.javasyntax.reference.ExpressionElementValue;
+import org.jd.core.v1.model.javasyntax.reference.ElementValuePair;
+import org.jd.core.v1.model.javasyntax.reference.AnnotationReferences;
+import org.jd.core.v1.model.javasyntax.reference.TypeUseAnnotationReference;
+import org.jd.core.v1.model.javasyntax.type.InnerObjectType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
+import org.jd.core.v1.model.javasyntax.type.GenericType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
@@ -321,6 +327,376 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         // the annotation is imported and written in front of the bound
         Assert.assertTrue(source, source.contains("import org.jspecify.annotations.Nullable;"));
         Assert.assertTrue(source, source.contains("class Holder<K extends @Nullable Object>"));
+    }
+
+    private String printClassWithTypeUseAnnotations(org.jd.core.v1.api.loader.Loader loader) {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        ObjectType stringType = ObjectType.TYPE_STRING;
+        TypeUseAnnotationReference nullable = new TypeUseAnnotationReference(nullableType);
+
+        CompilationUnit compilationUnit = new CompilationUnit(
+            new ClassDeclaration(
+                Const.ACC_PUBLIC,
+                "org/jd/core/v1/service/test/Annotated",
+                "Annotated",
+                new BodyDeclaration(
+                    "org/jd/core/v1/service/test/Annotated",
+                    new MemberDeclarations(
+                        new FieldDeclaration(nullable, Const.ACC_PRIVATE, stringType, new FieldDeclarator("value")),
+                        new FieldDeclaration(nullable, Const.ACC_PRIVATE, new InnerObjectType("java/util/Map$Entry", "java.util.Map$Entry", "Entry", new ObjectType("java/util/Map", "java.util.Map", "Map")), new FieldDeclarator("entry")),
+                        new MethodDeclaration(
+                            nullable, Const.ACC_PUBLIC, "find", null, stringType,
+                            new FormalParameter(nullable, stringType, false, "key"), null, "(Ljava/lang/String;)Ljava/lang/String;", ReturnStatement.RETURN, null)
+                    )
+                )
+            )
+        );
+
+        org.jd.core.v1.printer.PlainTextPrinter printer = new org.jd.core.v1.printer.PlainTextPrinter();
+        DecompileContext decompileContext = new DecompileContext();
+        decompileContext.setCompilationUnit(compilationUnit);
+        decompileContext.setMainInternalTypeName("org/jd/core/v1/service/test/Annotated");
+        decompileContext.setLoader(loader);
+        decompileContext.setPrinter(printer);
+        decompileContext.setConfiguration(Collections.emptyMap());
+        decompileContext.setMaxLineNumber(7);
+        decompileContext.setMajorVersion(0);
+        decompileContext.setMinorVersion(0);
+
+        fragmenter.process(compilationUnit, decompileContext);
+        layouter.process(decompileContext);
+        decompileContext.setTokens(tokenizer.process(decompileContext.getBody()));
+        writer.process(decompileContext);
+
+        return printer.toString().replaceAll("/\\*[^*]*\\*/", "").replaceAll("\\s+", " ");
+    }
+
+    @Test
+    public void testTypeUseAnnotationsAreInFrontOfTheNameOfTheType() {
+        String source = printClassWithTypeUseAnnotations(new NopLoader());
+
+        Assert.assertTrue(source, source.contains("private @Nullable String value;"));
+        // (a nested class is annotated after its outer class)
+        Assert.assertTrue(source, source.contains("private Map.@Nullable Entry entry;"));
+        Assert.assertTrue(source, source.contains("public @Nullable String find(@Nullable String key)"));
+        Assert.assertTrue(source, source.contains("import org.jspecify.annotations.Nullable;"));
+    }
+
+    @Test
+    public void testAnnotationOfDeclarationsAndTypesIsWrittenOnceOnTheType() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+        ExpressionElementValue why = new ExpressionElementValue(new StringConstantExpression("why"));
+
+        both.add(new AnnotationReference(nullableType, why));
+        both.add(new TypeUseAnnotationReference(nullableType, why));
+        String source = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        // the same annotation (with the same elements) once, in front of the type
+        Assert.assertTrue(source, source.contains("private @Nullable(\"why\") String value;"));
+        Assert.assertEquals(source, 1, source.split("@Nullable", -1).length - 1);
+    }
+
+    @Test
+    public void testAnnotationWithAnEmptyListOfElementsIsTheSameAsOneWithoutElements() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        // (the converter of the class files gives an empty list to an annotation without elements)
+        both.add(new AnnotationReference(nullableType, new org.jd.core.v1.model.javasyntax.reference.ElementValuePairs(0)));
+        both.add(new TypeUseAnnotationReference(nullableType));
+        String source = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        Assert.assertTrue(source, source.contains("private @Nullable String value;"));
+        Assert.assertEquals(source, 1, source.split("@Nullable", -1).length - 1);
+    }
+
+    @Test
+    public void testAnnotationOfAConstructorAndOfItsResultIsWrittenOnce() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        both.add(new AnnotationReference(nullableType));
+        both.add(new TypeUseAnnotationReference(nullableType));
+        String twins = print(new ConstructorDeclaration(both, Const.ACC_PUBLIC, null, null, null, "()V", ReturnStatement.RETURN));
+        // (a type annotation of the result which is not also on the constructor stays)
+        String alone = print(new ConstructorDeclaration(new TypeUseAnnotationReference(nullableType), Const.ACC_PUBLIC, null, null, null, "()V", ReturnStatement.RETURN));
+
+        Assert.assertTrue(twins, twins.contains("@Nullable public Annotated()"));
+        Assert.assertEquals(twins, 1, twins.split("@Nullable", -1).length - 1);
+        Assert.assertTrue(alone, alone.contains("@Nullable public Annotated()"));
+    }
+
+    @Test
+    public void testAnnotationsWhoseElementsAreEqualButNotTheSameObjectsAreTheSame() {
+        ObjectType sizeType = new ObjectType("p/Size", "p.Size", "Size");
+        ObjectType unitType = new ObjectType("p/Unit", "p.Unit", "Unit");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        // (the elements of the attribute of the declaration and of the one of the type are decoded separately)
+        both.add(new AnnotationReference(sizeType, elementsOf(unitType, "x")));
+        both.add(new TypeUseAnnotationReference(sizeType, elementsOf(unitType, "x")));
+        String same = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("a")));
+
+        AnnotationReferences<AnnotationReference> different = new AnnotationReferences<>();
+
+        different.add(new AnnotationReference(sizeType, elementsOf(unitType, "x")));
+        different.add(new TypeUseAnnotationReference(sizeType, elementsOf(unitType, "y")));
+        String other = print(new FieldDeclaration(different, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("b")));
+
+        Assert.assertEquals(same, 1, same.split("@Size", -1).length - 1);
+        Assert.assertEquals(other, 2, other.split("@Size", -1).length - 1);
+    }
+
+    private static org.jd.core.v1.model.javasyntax.reference.ElementValuePairs elementsOf(ObjectType unitType, String text) {
+        org.jd.core.v1.model.javasyntax.reference.ElementValues values = new org.jd.core.v1.model.javasyntax.reference.ElementValues();
+
+        values.add(new ExpressionElementValue(new StringConstantExpression(text)));
+        values.add(new org.jd.core.v1.model.javasyntax.reference.AnnotationElementValue(new AnnotationReference(unitType)));
+
+        org.jd.core.v1.model.javasyntax.reference.ElementValuePairs pairs = new org.jd.core.v1.model.javasyntax.reference.ElementValuePairs();
+
+        pairs.add(new ElementValuePair("values", new org.jd.core.v1.model.javasyntax.reference.ElementValueArrayInitializerElementValue(values)));
+        return pairs;
+    }
+
+    @Test
+    public void testAnnotationsOfTheSameSimpleNameButOfAnotherPackageAreNotTwins() {
+        TypeUseAnnotationReference jspecify = new TypeUseAnnotationReference(new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable"));
+        AnnotationReference javax = new AnnotationReference(new ObjectType("javax/annotation/Nullable", "javax.annotation.Nullable", "Nullable"));
+        AnnotationReferences<AnnotationReference> two = new AnnotationReferences<>();
+
+        two.add(javax);
+        two.add(jspecify);
+        String source = print(new FieldDeclaration(two, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        // (neither is dropped for the other)
+        Assert.assertTrue(source, source.contains("javax.annotation.Nullable") && source.contains("org.jspecify.annotations.Nullable"));
+    }
+
+    @Test
+    public void testPartiallyOverlappingAnnotationsAreWrittenWithAQualifiedType() {
+        ObjectType annotationType = new ObjectType("p/Tag", "p.Tag", "Tag");
+        AnnotationReferences<AnnotationReference> three = new AnnotationReferences<>();
+        ExpressionElementValue one = new ExpressionElementValue(new StringConstantExpression("1"));
+        ExpressionElementValue two = new ExpressionElementValue(new StringConstantExpression("2"));
+
+        // @Tag("1") on the declaration; @Tag("1") and @Tag("2") on the type
+        three.add(new AnnotationReference(annotationType, one));
+        three.add(new TypeUseAnnotationReference(annotationType, new ExpressionElementValue(new StringConstantExpression("1"))));
+        three.add(new TypeUseAnnotationReference(annotationType, two));
+        String source = print(new FieldDeclaration(three, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        Assert.assertTrue(source, source.contains("@Tag(\"1\") private java.lang.@Tag(\"1\") @Tag(\"2\") String value;"));
+    }
+
+    /** The classes of the class path, for the annotations whose targets are read */
+    private static final org.jd.core.v1.api.loader.Loader CLASS_PATH_LOADER = new org.jd.core.v1.api.loader.Loader() {
+        @Override
+        public boolean canLoad(String internalName) {
+            return getClass().getClassLoader().getResource(internalName + ".class") != null;
+        }
+
+        @Override
+        public byte[] load(String internalName) throws java.io.IOException {
+            try (java.io.InputStream in = getClass().getClassLoader().getResourceAsStream(internalName + ".class")) {
+                return in.readAllBytes();
+            }
+        }
+    };
+
+    @Test
+    public void testTypeAnnotationOfDeclarationsToo() {
+        ObjectType dual = new ObjectType("org/jd/core/v1/annotation/DualTarget", "org.jd.core.v1.annotation.DualTarget", "DualTarget");
+        ObjectType typesOnly = new ObjectType("org/jd/core/v1/annotation/TypesOnly", "org.jd.core.v1.annotation.TypesOnly", "TypesOnly");
+
+        // only on the type, but it can be on a declaration: in front of the name it would be on the declaration too
+        String qualified = print(CLASS_PATH_LOADER, new FieldDeclaration(new TypeUseAnnotationReference(dual), Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("a")));
+        String simple = print(CLASS_PATH_LOADER, new FieldDeclaration(new TypeUseAnnotationReference(typesOnly), Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("b")));
+        // (its class cannot be read: it is taken for an annotation of types)
+        String unknown = print(new FieldDeclaration(new TypeUseAnnotationReference(dual), Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("c")));
+
+        Assert.assertTrue(qualified, qualified.contains("private java.lang.@DualTarget String a;"));
+        Assert.assertTrue(simple, simple.contains("private @TypesOnly String b;"));
+        Assert.assertTrue(unknown, unknown.contains("private @DualTarget String c;"));
+    }
+
+    @Test
+    public void testTypeAnnotationOfAnInnerClassOfTheCurrentClassFollowsTheOuterClassWhenItMustBeQualified() {
+        ObjectType dual = new ObjectType("org/jd/core/v1/annotation/DualTarget", "org.jd.core.v1.annotation.DualTarget", "DualTarget");
+        ObjectType typesOnly = new ObjectType("org/jd/core/v1/annotation/TypesOnly", "org.jd.core.v1.annotation.TypesOnly", "TypesOnly");
+        ObjectType annotated = new ObjectType("org/jd/core/v1/service/test/Annotated", "org.jd.core.v1.service.test.Annotated", "Annotated");
+        InnerObjectType inner = new InnerObjectType("org/jd/core/v1/service/test/Annotated$Inner", "org.jd.core.v1.service.test.Annotated$Inner", "Inner", annotated);
+
+        // (the class is declared in the current class, which is not written in front of its name unless the annotation needs it)
+        String qualified = print(CLASS_PATH_LOADER, new FieldDeclaration(new TypeUseAnnotationReference(dual), Const.ACC_PRIVATE, inner, new FieldDeclarator("a")));
+        String simple = print(CLASS_PATH_LOADER, new FieldDeclaration(new TypeUseAnnotationReference(typesOnly), Const.ACC_PRIVATE, inner, new FieldDeclarator("b")));
+
+        Assert.assertTrue(qualified, qualified.contains("private Annotated.@DualTarget Inner a;"));
+        Assert.assertTrue(simple, simple.contains("private @TypesOnly Inner b;"));
+    }
+
+    @Test
+    public void testClassLiteralsOfTheSameSimpleNameAreNotTheSame() {
+        ObjectType annotationType = new ObjectType("p/Uses", "p.Uses", "Uses");
+        ObjectType first = new ObjectType("one/Foo", "one.Foo", "Foo");
+        ObjectType second = new ObjectType("two/Foo", "two.Foo", "Foo");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        both.add(new AnnotationReference(annotationType, new ExpressionElementValue(new org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression(first))));
+        both.add(new TypeUseAnnotationReference(annotationType, new ExpressionElementValue(new org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression(second))));
+        String source = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        // (they are not the same annotation: each one is written)
+        Assert.assertEquals(source, 2, source.split("@Uses", -1).length - 1);
+    }
+
+    @Test
+    public void testAnnotationsWhichAreNotTheSameAreAllWritten() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> different = new AnnotationReferences<>();
+
+        different.add(new AnnotationReference(nullableType, new ExpressionElementValue(new StringConstantExpression("one"))));
+        different.add(new TypeUseAnnotationReference(nullableType, new ExpressionElementValue(new StringConstantExpression("two"))));
+        String source = print(new FieldDeclaration(different, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        // (they would both apply to the declaration if the type were not written with its package)
+        Assert.assertTrue(source, source.contains("@Nullable(\"one\") private java.lang.@Nullable(\"two\") String value;"));
+    }
+
+    @Test
+    public void testAnnotationOfDeclarationsAndTypesIsWrittenTwiceWhenTheNameHasAQualifier() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        both.add(new AnnotationReference(nullableType));
+        both.add(new TypeUseAnnotationReference(nullableType));
+        // a class of the package is named String: java.lang.String is written with its package, where an annotation of the type is after it and the
+        // one of the declaration before
+        String source = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")), new NopLoader() {
+            @Override
+            public boolean canLoad(String internalName) {
+                return "org/jd/core/v1/service/test/String".equals(internalName);
+            }
+        });
+
+        Assert.assertTrue(source, source.contains("@Nullable private java.lang.@Nullable String value;"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationsOfAnArrayAreBesideItsBrackets() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        TypeUseAnnotationReference nullable = new TypeUseAnnotationReference(nullableType);
+
+        String objects = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, ObjectType.TYPE_STRING.createType(1), new FieldDeclarator("names")));
+        String matrix = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, PrimitiveType.TYPE_INT.createType(2), new FieldDeclarator("matrix")));
+        String variables = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, new GenericType("T", 1), new FieldDeclarator("values")));
+
+        Assert.assertTrue(objects, objects.contains("private String @Nullable [] names;"));
+        Assert.assertTrue(matrix, matrix.contains("private int @Nullable [][] matrix;"));
+        Assert.assertTrue(variables, variables.contains("private T @Nullable [] values;"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationsOfVarargsAreBeforeTheEllipsis() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        String source = print(new FieldDeclaration(null, Const.ACC_PRIVATE, PrimitiveType.TYPE_INT, new FieldDeclarator("unused")),
+            new MethodDeclaration(0, "run", PrimitiveType.TYPE_VOID,
+                new FormalParameter(new TypeUseAnnotationReference(nullableType), ObjectType.TYPE_STRING.createType(1), true, "names"), "([Ljava/lang/String;)V", ReturnStatement.RETURN));
+
+        Assert.assertTrue(source, source.contains("void run(String @Nullable ... names)"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationOnAnImportedType() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        ObjectType listType = new ObjectType("java/util/List", "java.util.List", "List");
+        String source = print(new FieldDeclaration(new TypeUseAnnotationReference(nullableType), Const.ACC_PRIVATE, listType, new FieldDeclarator("values")));
+
+        // the name of the type is simple because of its import
+        Assert.assertTrue(source, source.contains("import java.util.List;"));
+        Assert.assertTrue(source, source.contains("private @Nullable List values;"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationOnATypeVariableAndOnAPrimitiveType() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        TypeUseAnnotationReference nullable = new TypeUseAnnotationReference(nullableType);
+
+        String variable = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, new GenericType("T"), new FieldDeclarator("value")));
+        String primitive = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, PrimitiveType.TYPE_INT, new FieldDeclarator("count")));
+
+        // (neither has a qualifier)
+        Assert.assertTrue(variable, variable.contains("private @Nullable T value;"));
+        Assert.assertTrue(primitive, primitive.contains("private @Nullable int count;"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationWithElementValuePairs() {
+        ObjectType sizeType = new ObjectType("p/Size", "p.Size", "Size");
+        ElementValuePair max = new ElementValuePair("max", new ExpressionElementValue(new StringConstantExpression("ten")));
+
+        String pairs = print(new FieldDeclaration(new TypeUseAnnotationReference(sizeType, max), Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("a")));
+        String both = print(new FieldDeclaration(new TypeUseAnnotationReference(sizeType, new ExpressionElementValue(new StringConstantExpression("one")), max),
+                Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("b")));
+
+        Assert.assertTrue(pairs, pairs.contains("@Size(max") && pairs.contains("String a;"));
+        Assert.assertTrue(both, both.contains("@Size(\"one\") String b;"));
+    }
+
+    private String print(FieldDeclaration field) {
+        return print(field, new NopLoader());
+    }
+
+    private String print(ConstructorDeclaration constructor) {
+        return print(new NopLoader(), constructor);
+    }
+
+    private String print(FieldDeclaration field, org.jd.core.v1.api.loader.Loader loader) {
+        return print(loader, field);
+    }
+
+    private String print(FieldDeclaration field, MethodDeclaration method) {
+        return print(new NopLoader(), field, method);
+    }
+
+    private String print(org.jd.core.v1.api.loader.Loader loader, org.jd.core.v1.model.javasyntax.declaration.MemberDeclaration... members) {
+        CompilationUnit compilationUnit = new CompilationUnit(
+            new ClassDeclaration(Const.ACC_PUBLIC, "org/jd/core/v1/service/test/Annotated", "Annotated",
+                new BodyDeclaration("org/jd/core/v1/service/test/Annotated", members.length == 1 ? members[0]
+                    : new MemberDeclarations(members[0], java.util.Arrays.copyOfRange(members, 1, members.length)))));
+        org.jd.core.v1.printer.PlainTextPrinter printer = new org.jd.core.v1.printer.PlainTextPrinter();
+        DecompileContext decompileContext = new DecompileContext();
+
+        decompileContext.setCompilationUnit(compilationUnit);
+        decompileContext.setMainInternalTypeName("org/jd/core/v1/service/test/Annotated");
+        decompileContext.setLoader(loader);
+        decompileContext.setPrinter(printer);
+        decompileContext.setConfiguration(Collections.emptyMap());
+        decompileContext.setMaxLineNumber(7);
+        decompileContext.setMajorVersion(0);
+        decompileContext.setMinorVersion(0);
+
+        fragmenter.process(compilationUnit, decompileContext);
+        layouter.process(decompileContext);
+        decompileContext.setTokens(tokenizer.process(decompileContext.getBody()));
+        writer.process(decompileContext);
+
+        return printer.toString().replaceAll("/\\*[^*]*\\*/", "").replaceAll("\\s+", " ");
+    }
+
+    @Test
+    public void testTypeUseAnnotationsFollowTheQualifierOfTheName() {
+        // a class of the package is named String: java.lang.String is written with its package, which an annotation cannot precede
+        String source = printClassWithTypeUseAnnotations(new NopLoader() {
+            @Override
+            public boolean canLoad(String internalName) {
+                return "org/jd/core/v1/service/test/String".equals(internalName);
+            }
+        });
+
+        Assert.assertTrue(source, source.contains("private java.lang.@Nullable String value;"));
+        Assert.assertTrue(source, source.contains("public java.lang.@Nullable String find(java.lang.@Nullable String key)"));
     }
 
     private String printCallWithParameters(int majorVersion, org.jd.core.v1.model.javasyntax.expression.Expression... parameters) throws Exception {
