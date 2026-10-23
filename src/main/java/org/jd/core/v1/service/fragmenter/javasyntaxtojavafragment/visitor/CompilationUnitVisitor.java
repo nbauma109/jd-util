@@ -80,7 +80,7 @@ import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragm
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 
 import static org.apache.bcel.Const.ACC_ABSTRACT;
@@ -486,29 +486,16 @@ public class CompilationUnitVisitor extends StatementVisitor {
         if (annotationReferences == null) {
             return null;
         }
-        List<AnnotationReference> all = new ArrayList<>();
-
-        if (annotationReferences instanceof AnnotationReferences<?> list) {
-            for (BaseAnnotationReference reference : list) {
-                all.add((AnnotationReference) reference);
-            }
-        } else {
-            all.add((AnnotationReference) annotationReferences);
-        }
+        List<AnnotationReference> all = listOf(annotationReferences);
 
         // An annotation for declarations and for types is in the class file for both: it is written once, on the type
-        Set<String> typeUseNames = new HashSet<>();
-
-        for (AnnotationReference reference : all) {
-            if (reference instanceof TypeUseAnnotationReference) {
-                typeUseNames.add(reference.getType().getInternalName());
-            }
-        }
+        Set<String> typeUseNames = all.stream().filter(TypeUseAnnotationReference.class::isInstance)
+                .map(reference -> reference.getType().getInternalName()).collect(Collectors.toSet());
 
         AnnotationReferences<AnnotationReference> selected = new AnnotationReferences<>();
 
         for (AnnotationReference reference : all) {
-            if (reference instanceof TypeUseAnnotationReference ? typeUse : !typeUse && !typeUseNames.contains(reference.getType().getInternalName())) {
+            if (isSelected(reference, typeUse, typeUseNames)) {
                 selected.add(reference);
             }
         }
@@ -516,6 +503,24 @@ public class CompilationUnitVisitor extends StatementVisitor {
             return null;
         }
         return selected.size() == 1 ? selected.getFirst() : selected;
+    }
+
+    private static boolean isSelected(AnnotationReference reference, boolean typeUse, Set<String> typeUseNames) {
+        if (reference instanceof TypeUseAnnotationReference) {
+            return typeUse;
+        }
+        return !typeUse && !typeUseNames.contains(reference.getType().getInternalName());
+    }
+
+    private static List<AnnotationReference> listOf(BaseAnnotationReference annotationReferences) {
+        List<AnnotationReference> all = new ArrayList<>();
+
+        if (annotationReferences instanceof AnnotationReferences<?> list) {
+            list.forEach(reference -> all.add((AnnotationReference) reference));
+        } else {
+            all.add((AnnotationReference) annotationReferences);
+        }
+        return all;
     }
 
     private void buildTokensForRecordComponent(RecordDeclaration.RecordComponent component) {
