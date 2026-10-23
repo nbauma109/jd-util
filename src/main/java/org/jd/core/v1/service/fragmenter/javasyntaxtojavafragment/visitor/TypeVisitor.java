@@ -201,6 +201,10 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         int dot = name == null ? -1 : name.lastIndexOf('.');
 
         if (dot == -1) {
+            if (token instanceof TypeReferenceToken) {
+                // the name is simple because of an import: if the layout cut it, the annotation would be in front of a qualified name
+                importsFragment.keep(type.getInternalName());
+            }
             buildTokensForTypeAnnotations(annotations);
             tokens.add(token);
         } else {

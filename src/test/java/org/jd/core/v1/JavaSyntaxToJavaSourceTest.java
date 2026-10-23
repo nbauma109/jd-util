@@ -50,6 +50,8 @@ import org.jd.core.v1.model.javasyntax.statement.ReturnStatement;
 import org.jd.core.v1.model.javasyntax.statement.Statements;
 import org.jd.core.v1.model.javasyntax.statement.SwitchStatement;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
+import org.jd.core.v1.model.javasyntax.reference.ExpressionElementValue;
+import org.jd.core.v1.model.javasyntax.reference.AnnotationReferences;
 import org.jd.core.v1.model.javasyntax.reference.TypeUseAnnotationReference;
 import org.jd.core.v1.model.javasyntax.type.InnerObjectType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
@@ -376,6 +378,44 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         Assert.assertTrue(source, source.contains("private Map.@Nullable Entry entry;"));
         Assert.assertTrue(source, source.contains("public @Nullable String find(@Nullable String key)"));
         Assert.assertTrue(source, source.contains("import org.jspecify.annotations.Nullable;"));
+    }
+
+    @Test
+    public void testAnnotationOfDeclarationsAndTypesIsWrittenOnceOnTheType() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        both.add(new AnnotationReference(nullableType));
+        both.add(new TypeUseAnnotationReference(nullableType, new ExpressionElementValue(new StringConstantExpression("why"))));
+        String source = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        // once, with its element value, in front of the type
+        Assert.assertTrue(source, source.contains("private @Nullable(\"why\") String value;"));
+        Assert.assertEquals(source, 1, source.split("@Nullable", -1).length - 1);
+    }
+
+    private String print(FieldDeclaration field) {
+        CompilationUnit compilationUnit = new CompilationUnit(
+            new ClassDeclaration(Const.ACC_PUBLIC, "org/jd/core/v1/service/test/Annotated", "Annotated",
+                new BodyDeclaration("org/jd/core/v1/service/test/Annotated", field)));
+        org.jd.core.v1.printer.PlainTextPrinter printer = new org.jd.core.v1.printer.PlainTextPrinter();
+        DecompileContext decompileContext = new DecompileContext();
+
+        decompileContext.setCompilationUnit(compilationUnit);
+        decompileContext.setMainInternalTypeName("org/jd/core/v1/service/test/Annotated");
+        decompileContext.setLoader(new NopLoader());
+        decompileContext.setPrinter(printer);
+        decompileContext.setConfiguration(Collections.emptyMap());
+        decompileContext.setMaxLineNumber(7);
+        decompileContext.setMajorVersion(0);
+        decompileContext.setMinorVersion(0);
+
+        fragmenter.process(compilationUnit, decompileContext);
+        layouter.process(decompileContext);
+        decompileContext.setTokens(tokenizer.process(decompileContext.getBody()));
+        writer.process(decompileContext);
+
+        return printer.toString().replaceAll("/\\*[^*]*\\*/", "").replaceAll("\\s+", " ");
     }
 
     @Test

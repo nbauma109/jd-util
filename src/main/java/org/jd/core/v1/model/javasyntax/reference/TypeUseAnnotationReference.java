@@ -17,4 +17,16 @@ public class TypeUseAnnotationReference extends AnnotationReference {
     public TypeUseAnnotationReference(ObjectType type) {
         super(type);
     }
+
+    public TypeUseAnnotationReference(ObjectType type, BaseElementValue elementValue) {
+        super(type, elementValue);
+    }
+
+    public TypeUseAnnotationReference(ObjectType type, BaseElementValuePair elementValuePairs) {
+        super(type, elementValuePairs);
+    }
+
+    public TypeUseAnnotationReference(ObjectType type, BaseElementValue elementValue, BaseElementValuePair elementValuePairs) {
+        super(type, elementValue, elementValuePairs);
+    }
 }
