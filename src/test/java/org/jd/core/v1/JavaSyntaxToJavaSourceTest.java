@@ -434,21 +434,21 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
 
         // (the elements of the attribute of the declaration and of the one of the type are decoded separately)
-        both.add(new AnnotationReference(sizeType, elementsOf(sizeType, unitType, "x")));
-        both.add(new TypeUseAnnotationReference(sizeType, elementsOf(sizeType, unitType, "x")));
+        both.add(new AnnotationReference(sizeType, elementsOf(unitType, "x")));
+        both.add(new TypeUseAnnotationReference(sizeType, elementsOf(unitType, "x")));
         String same = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("a")));
 
         AnnotationReferences<AnnotationReference> different = new AnnotationReferences<>();
 
-        different.add(new AnnotationReference(sizeType, elementsOf(sizeType, unitType, "x")));
-        different.add(new TypeUseAnnotationReference(sizeType, elementsOf(sizeType, unitType, "y")));
+        different.add(new AnnotationReference(sizeType, elementsOf(unitType, "x")));
+        different.add(new TypeUseAnnotationReference(sizeType, elementsOf(unitType, "y")));
         String other = print(new FieldDeclaration(different, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("b")));
 
         Assert.assertEquals(same, 1, same.split("@Size", -1).length - 1);
         Assert.assertEquals(other, 2, other.split("@Size", -1).length - 1);
     }
 
-    private static org.jd.core.v1.model.javasyntax.reference.ElementValuePairs elementsOf(ObjectType sizeType, ObjectType unitType, String text) {
+    private static org.jd.core.v1.model.javasyntax.reference.ElementValuePairs elementsOf(ObjectType unitType, String text) {
         org.jd.core.v1.model.javasyntax.reference.ElementValues values = new org.jd.core.v1.model.javasyntax.reference.ElementValues();
 
         values.add(new ExpressionElementValue(new StringConstantExpression(text)));
@@ -461,6 +461,36 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
+    public void testAnnotationsOfTheSameSimpleNameButOfAnotherPackageAreNotTwins() {
+        TypeUseAnnotationReference jspecify = new TypeUseAnnotationReference(new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable"));
+        AnnotationReference javax = new AnnotationReference(new ObjectType("javax/annotation/Nullable", "javax.annotation.Nullable", "Nullable"));
+        AnnotationReferences<AnnotationReference> two = new AnnotationReferences<>();
+
+        two.add(javax);
+        two.add(jspecify);
+        String source = print(new FieldDeclaration(two, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        // (neither is dropped for the other)
+        Assert.assertTrue(source, source.contains("javax.annotation.Nullable") && source.contains("org.jspecify.annotations.Nullable"));
+    }
+
+    @Test
+    public void testPartiallyOverlappingAnnotationsAreWrittenWithAQualifiedType() {
+        ObjectType annotationType = new ObjectType("p/Tag", "p.Tag", "Tag");
+        AnnotationReferences<AnnotationReference> three = new AnnotationReferences<>();
+        ExpressionElementValue one = new ExpressionElementValue(new StringConstantExpression("1"));
+        ExpressionElementValue two = new ExpressionElementValue(new StringConstantExpression("2"));
+
+        // @Tag("1") on the declaration; @Tag("1") and @Tag("2") on the type
+        three.add(new AnnotationReference(annotationType, one));
+        three.add(new TypeUseAnnotationReference(annotationType, new ExpressionElementValue(new StringConstantExpression("1"))));
+        three.add(new TypeUseAnnotationReference(annotationType, two));
+        String source = print(new FieldDeclaration(three, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        Assert.assertTrue(source, source.contains("@Tag(\"1\") private java.lang.@Tag(\"1\") @Tag(\"2\") String value;"));
+    }
+
+    @Test
     public void testAnnotationsWhichAreNotTheSameAreAllWritten() {
         ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
         AnnotationReferences<AnnotationReference> different = new AnnotationReferences<>();
@@ -469,7 +499,8 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         different.add(new TypeUseAnnotationReference(nullableType, new ExpressionElementValue(new StringConstantExpression("two"))));
         String source = print(new FieldDeclaration(different, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
 
-        Assert.assertTrue(source, source.contains("@Nullable(\"one\") private @Nullable(\"two\") String value;"));
+        // (they would both apply to the declaration if the type were not written with its package)
+        Assert.assertTrue(source, source.contains("@Nullable(\"one\") private java.lang.@Nullable(\"two\") String value;"));
     }
 
     @Test

@@ -107,6 +107,8 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     protected boolean currentTypeIsRecord;
     /** The annotations of the type which is being visited: they are written in front of its name, after its qualifier if it has one */
     private BaseAnnotationReference typeAnnotations;
+    /** Whether the name of the type of the annotations is written with its package */
+    private boolean qualifiedTypeAnnotations;
     /** The annotations of an array type, which are written between its element type and its brackets: 'String @Nullable []' */
     private BaseAnnotationReference arrayAnnotations;
     private final Map<String, TextToken> textTokenCache = new HashMap<>();
@@ -179,6 +181,11 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
 
     /** Visits a type with the annotations which are on the type: 'java.lang.@Nullable String', '@Nullable T', 'String @Nullable []' */
     protected void visitTypeWithAnnotations(BaseType type, BaseAnnotationReference annotations) {
+        visitTypeWithAnnotations(type, annotations, false);
+    }
+
+    /** @param qualified true to write the name of the type with its package, so that the annotations follow it and cannot be taken for the ones of a declaration */
+    protected void visitTypeWithAnnotations(BaseType type, BaseAnnotationReference annotations, boolean qualified) {
         if (Utils.isEmpty(annotations)) {
             type.accept(this);
         } else if (type instanceof Type arrayType && arrayType.getDimension() > 0) {
@@ -188,8 +195,10 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
             arrayAnnotations = null;
         } else if (type instanceof ObjectType) {
             typeAnnotations = annotations;
+            qualifiedTypeAnnotations = qualified;
             type.accept(this);
             typeAnnotations = null;
+            qualifiedTypeAnnotations = false;
         } else {
             // (a type variable or a primitive type has no qualifier)
             buildTokensForTypeAnnotations(annotations);
@@ -232,6 +241,11 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         }
         String name = token.getName();
         int dot = name.lastIndexOf('.');
+
+        if (dot == -1 && qualifiedTypeAnnotations && type.getQualifiedName() != null && type.getQualifiedName().indexOf('.') != -1) {
+            name = type.getQualifiedName();
+            dot = name.lastIndexOf('.');
+        }
 
         if (dot == -1) {
             if (token instanceof TypeReferenceToken) {
