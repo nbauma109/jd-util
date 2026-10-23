@@ -71,6 +71,15 @@ public class ImportsFragment extends FlexibleFragment implements JavaFragment {
         pinned.add(internalName);
     }
 
+    /** The layout may cut the lines of the imports, but not below the kept ones: the lines it counts are the ones that are written */
+    @Override
+    public boolean decLineCount(boolean force) {
+        if (lineCount <= importMap.keySet().stream().filter(pinned::contains).count()) {
+            return false;
+        }
+        return super.decLineCount(force);
+    }
+
     public boolean contains(String internalName) {
         return importMap.containsKey(internalName);
     }
@@ -84,7 +93,7 @@ public class ImportsFragment extends FlexibleFragment implements JavaFragment {
     }
 
     public Collection<JavaImport> getImports() {
-        int lineCount = Math.max(getLineCount(), (int) importMap.keySet().stream().filter(pinned::contains).count());
+        int lineCount = getLineCount();
         int size = importMap.size();
 
         if (lineCount >= size) {

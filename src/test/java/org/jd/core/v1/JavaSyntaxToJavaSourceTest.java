@@ -386,14 +386,70 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     public void testAnnotationOfDeclarationsAndTypesIsWrittenOnceOnTheType() {
         ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
         AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+        ExpressionElementValue why = new ExpressionElementValue(new StringConstantExpression("why"));
 
-        both.add(new AnnotationReference(nullableType));
-        both.add(new TypeUseAnnotationReference(nullableType, new ExpressionElementValue(new StringConstantExpression("why"))));
+        both.add(new AnnotationReference(nullableType, why));
+        both.add(new TypeUseAnnotationReference(nullableType, why));
         String source = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
 
-        // once, with its element value, in front of the type
+        // the same annotation (with the same elements) once, in front of the type
         Assert.assertTrue(source, source.contains("private @Nullable(\"why\") String value;"));
         Assert.assertEquals(source, 1, source.split("@Nullable", -1).length - 1);
+    }
+
+    @Test
+    public void testAnnotationsWhichAreNotTheSameAreAllWritten() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> different = new AnnotationReferences<>();
+
+        different.add(new AnnotationReference(nullableType, new ExpressionElementValue(new StringConstantExpression("one"))));
+        different.add(new TypeUseAnnotationReference(nullableType, new ExpressionElementValue(new StringConstantExpression("two"))));
+        String source = print(new FieldDeclaration(different, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        Assert.assertTrue(source, source.contains("@Nullable(\"one\") private @Nullable(\"two\") String value;"));
+    }
+
+    @Test
+    public void testAnnotationOfDeclarationsAndTypesIsWrittenTwiceWhenTheNameHasAQualifier() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        both.add(new AnnotationReference(nullableType));
+        both.add(new TypeUseAnnotationReference(nullableType));
+        // a class of the package is named String: java.lang.String is written with its package, where an annotation of the type is after it and the
+        // one of the declaration before
+        String source = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")), new NopLoader() {
+            @Override
+            public boolean canLoad(String internalName) {
+                return "org/jd/core/v1/service/test/String".equals(internalName);
+            }
+        });
+
+        Assert.assertTrue(source, source.contains("@Nullable private java.lang.@Nullable String value;"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationsOfAnArrayAreBesideItsBrackets() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        TypeUseAnnotationReference nullable = new TypeUseAnnotationReference(nullableType);
+
+        String objects = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, ObjectType.TYPE_STRING.createType(1), new FieldDeclarator("names")));
+        String matrix = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, PrimitiveType.TYPE_INT.createType(2), new FieldDeclarator("matrix")));
+        String variables = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, new GenericType("T", 1), new FieldDeclarator("values")));
+
+        Assert.assertTrue(objects, objects.contains("private String @Nullable [] names;"));
+        Assert.assertTrue(matrix, matrix.contains("private int @Nullable [][] matrix;"));
+        Assert.assertTrue(variables, variables.contains("private T @Nullable [] values;"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationsOfVarargsAreBeforeTheEllipsis() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        String source = print(new FieldDeclaration(null, Const.ACC_PRIVATE, PrimitiveType.TYPE_INT, new FieldDeclarator("unused")),
+            new MethodDeclaration(0, "run", PrimitiveType.TYPE_VOID,
+                new FormalParameter(new TypeUseAnnotationReference(nullableType), ObjectType.TYPE_STRING.createType(1), true, "names"), "([Ljava/lang/String;)V", ReturnStatement.RETURN));
+
+        Assert.assertTrue(source, source.contains("void run(String @Nullable ... names)"));
     }
 
     @Test
@@ -434,15 +490,28 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     private String print(FieldDeclaration field) {
+        return print(field, new NopLoader());
+    }
+
+    private String print(FieldDeclaration field, org.jd.core.v1.api.loader.Loader loader) {
+        return print(loader, field);
+    }
+
+    private String print(FieldDeclaration field, MethodDeclaration method) {
+        return print(new NopLoader(), field, method);
+    }
+
+    private String print(org.jd.core.v1.api.loader.Loader loader, org.jd.core.v1.model.javasyntax.declaration.MemberDeclaration... members) {
         CompilationUnit compilationUnit = new CompilationUnit(
             new ClassDeclaration(Const.ACC_PUBLIC, "org/jd/core/v1/service/test/Annotated", "Annotated",
-                new BodyDeclaration("org/jd/core/v1/service/test/Annotated", field)));
+                new BodyDeclaration("org/jd/core/v1/service/test/Annotated", members.length == 1 ? members[0]
+                    : new MemberDeclarations(members[0], java.util.Arrays.copyOfRange(members, 1, members.length)))));
         org.jd.core.v1.printer.PlainTextPrinter printer = new org.jd.core.v1.printer.PlainTextPrinter();
         DecompileContext decompileContext = new DecompileContext();
 
         decompileContext.setCompilationUnit(compilationUnit);
         decompileContext.setMainInternalTypeName("org/jd/core/v1/service/test/Annotated");
-        decompileContext.setLoader(new NopLoader());
+        decompileContext.setLoader(loader);
         decompileContext.setPrinter(printer);
         decompileContext.setConfiguration(Collections.emptyMap());
         decompileContext.setMaxLineNumber(7);

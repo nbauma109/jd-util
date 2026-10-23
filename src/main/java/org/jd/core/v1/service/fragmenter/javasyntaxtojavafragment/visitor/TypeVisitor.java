@@ -107,6 +107,8 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     protected boolean currentTypeIsRecord;
     /** The annotations of the type which is being visited: they are written in front of its name, after its qualifier if it has one */
     private BaseAnnotationReference typeAnnotations;
+    /** The annotations of an array type, which are written between its element type and its brackets: 'String @Nullable []' */
+    private BaseAnnotationReference arrayAnnotations;
     private final Map<String, TextToken> textTokenCache = new HashMap<>();
 
     public TypeVisitor(Loader loader, String mainInternalTypeName, int majorVersion, ImportsFragment importsFragment) {
@@ -139,6 +141,8 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
 
     @Override
     public void visit(PrimitiveType type) {
+        BaseAnnotationReference arrayAnnotationsOfType = takeArrayAnnotations();
+
         switch (type.getJavaPrimitiveFlags()) {
             case FLAG_BOOLEAN:
                 tokens.add(BOOLEAN);
@@ -170,13 +174,18 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         }
 
         // Build token for dimension
-        visitDimension(type.getDimension());
+        visitDimension(type.getDimension(), arrayAnnotationsOfType);
     }
 
-    /** Visits a type with the annotations which are on the type: 'java.lang.@Nullable String', '@Nullable T' */
+    /** Visits a type with the annotations which are on the type: 'java.lang.@Nullable String', '@Nullable T', 'String @Nullable []' */
     protected void visitTypeWithAnnotations(BaseType type, BaseAnnotationReference annotations) {
         if (Utils.isEmpty(annotations)) {
             type.accept(this);
+        } else if (type instanceof Type arrayType && arrayType.getDimension() > 0) {
+            // (the annotations of the array itself: the ones of its elements are in front of the name of their type)
+            arrayAnnotations = annotations;
+            type.accept(this);
+            arrayAnnotations = null;
         } else if (type instanceof ObjectType) {
             typeAnnotations = annotations;
             type.accept(this);
@@ -186,6 +195,30 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
             buildTokensForTypeAnnotations(annotations);
             type.accept(this);
         }
+    }
+
+    /**
+     * @return true if the annotations of a declaration whose annotations are also on its type cannot be written once, on the type: the name of the type
+     *         has a qualifier (the annotation is not in front of it) or the type is an array (the annotation is not on the same type)
+     */
+    protected boolean needsAnnotationsOfItsOwn(BaseType type) {
+        if (type instanceof Type arrayType && arrayType.getDimension() > 0) {
+            return true;
+        }
+        if (type instanceof InnerObjectType innerType) {
+            BaseType outerType = innerType.getOuterType();
+
+            return currentType == null || !currentType.getInternalName().equals(innerType.getInternalName()) && outerType != null
+                    && !currentType.getInternalName().equals(outerType.getInternalName());
+        }
+        return type instanceof ObjectType objectType && newTypeReferenceToken(objectType, currentType).getName().indexOf('.') != -1;
+    }
+
+    private BaseAnnotationReference takeArrayAnnotations() {
+        BaseAnnotationReference annotations = arrayAnnotations;
+
+        arrayAnnotations = null;
+        return annotations;
     }
 
     /** Adds the token of the name of a type, with the annotations of the type if it has some: they come after the qualifier of the name */
@@ -216,6 +249,8 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
 
     @Override
     public void visit(ObjectType type) {
+        BaseAnnotationReference arrayAnnotationsOfType = takeArrayAnnotations();
+
         // Build token for type reference
         addTypeReferenceToken(newTypeReferenceToken(type, currentType), type);
 
@@ -229,7 +264,7 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         }
 
         // Build token for dimension
-        visitDimension(type.getDimension());
+        visitDimension(type.getDimension(), arrayAnnotationsOfType);
     }
 
     @Override
@@ -238,6 +273,8 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
 
         // (the type arguments and the outer type have none)
         typeAnnotations = null;
+
+        BaseAnnotationReference arrayAnnotationsOfType = takeArrayAnnotations();
 
         BaseType outerType = type.getOuterType();
         if (currentType == null || !currentType.getInternalName().equals(type.getInternalName()) && outerType != null && !currentType.getInternalName().equals(outerType.getInternalName())) {
@@ -264,7 +301,7 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         }
 
         // Build token for dimension
-        visitDimension(type.getDimension());
+        visitDimension(type.getDimension(), arrayAnnotationsOfType);
     }
 
     protected void visitTypeArgumentList(BaseTypeArgument arguments) {
@@ -276,6 +313,14 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     }
 
     protected void visitDimension(int dimension) {
+        visitDimension(dimension, null);
+    }
+
+    protected void visitDimension(int dimension, BaseAnnotationReference annotations) {
+        if (dimension > 0 && annotations != null) {
+            tokens.add(TextToken.SPACE);
+            buildTokensForTypeAnnotations(annotations);
+        }
         switch (dimension) {
             case 0:
                 break;
@@ -356,8 +401,10 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
 
     @Override
     public void visit(GenericType type) {
+        BaseAnnotationReference arrayAnnotationsOfType = takeArrayAnnotations();
+
         tokens.add(newTextToken(type.getName()));
-        visitDimension(type.getDimension());
+        visitDimension(type.getDimension(), arrayAnnotationsOfType);
     }
 
     @Override

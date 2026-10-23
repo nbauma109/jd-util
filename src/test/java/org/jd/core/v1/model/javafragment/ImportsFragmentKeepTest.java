@@ -36,8 +36,11 @@ public class ImportsFragmentKeepTest {
         ImportsFragment fragment = fragmentOfThree();
 
         fragment.keep("c/Third");
-        fragment.decLineCount(true);
-        fragment.decLineCount(true);
+        Assert.assertTrue(fragment.decLineCount(true));
+        Assert.assertTrue(fragment.decLineCount(true));
+        // (the layout cannot cut the line of the kept import)
+        Assert.assertFalse(fragment.decLineCount(true));
+        Assert.assertEquals(1, fragment.getLineCount());
 
         // (one line is left: it is for the kept import, though another one is more used)
         Assert.assertEquals("c.Third", fragment.getImports().stream().map(JavaImport::getQualifiedName).collect(Collectors.joining(",")));
