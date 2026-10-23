@@ -81,7 +81,6 @@ import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragm
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
@@ -527,15 +526,17 @@ public class CompilationUnitVisitor extends StatementVisitor {
             (reference instanceof TypeUseAnnotationReference ? onType : declared)
                     .computeIfAbsent(reference.getType().getInternalName(), name -> new ArrayList<>()).add(writtenAs(reference));
         }
-        return declared.entrySet().stream().anyMatch(entry -> onType.containsKey(entry.getKey()) && !sameOccurrences(entry.getValue(), onType.get(entry.getKey())));
+        return declared.entrySet().stream().anyMatch(entry -> onType.containsKey(entry.getKey()) && !sameOccurrences(entry.getValue(), onType.get(entry.getKey())))
+                // (an annotation of types which declarations take too would be on the declaration if it were in front of the name of the type)
+                || onType.keySet().stream().anyMatch(name -> !declared.containsKey(name) && isAlsoForDeclarations(name));
     }
 
     private static boolean sameOccurrences(List<String> declared, List<String> onType) {
         List<String> sortedDeclared = new ArrayList<>(declared);
         List<String> sortedOnType = new ArrayList<>(onType);
 
-        Collections.sort(sortedDeclared);
-        Collections.sort(sortedOnType);
+        sortedDeclared.sort(null);
+        sortedOnType.sort(null);
         return sortedDeclared.equals(sortedOnType);
     }
 
@@ -586,13 +587,18 @@ public class CompilationUnitVisitor extends StatementVisitor {
         return first.getType().getInternalName().equals(second.getType().getInternalName()) && writtenAs(first).equals(writtenAs(second));
     }
 
+    /** A token as it is compared: a reference to a type, a field or a method with the internal name of its class, not only the name it is written with */
+    private static String identityOf(Token token) {
+        return token instanceof DeclarationToken declaration ? "[" + declaration.getInternalTypeName() + "." + declaration.getName() + "]" : token.toString();
+    }
+
     private String writtenAs(AnnotationReference reference) {
         Tokens saved = tokens;
 
         tokens = new Tokens();
         try {
             reference.accept(this);
-            return tokens.stream().filter(token -> !(token instanceof LineNumberToken)).map(Object::toString).collect(Collectors.joining());
+            return tokens.stream().filter(token -> !(token instanceof LineNumberToken)).map(CompilationUnitVisitor::identityOf).collect(Collectors.joining());
         } finally {
             tokens = saved;
         }

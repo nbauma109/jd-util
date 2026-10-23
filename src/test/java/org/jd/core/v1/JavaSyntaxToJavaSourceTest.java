@@ -490,6 +490,52 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         Assert.assertTrue(source, source.contains("@Tag(\"1\") private java.lang.@Tag(\"1\") @Tag(\"2\") String value;"));
     }
 
+    /** The classes of the class path, for the annotations whose targets are read */
+    private static final org.jd.core.v1.api.loader.Loader CLASS_PATH_LOADER = new org.jd.core.v1.api.loader.Loader() {
+        @Override
+        public boolean canLoad(String internalName) {
+            return getClass().getClassLoader().getResource(internalName + ".class") != null;
+        }
+
+        @Override
+        public byte[] load(String internalName) throws java.io.IOException {
+            try (java.io.InputStream in = getClass().getClassLoader().getResourceAsStream(internalName + ".class")) {
+                return in.readAllBytes();
+            }
+        }
+    };
+
+    @Test
+    public void testTypeAnnotationOfDeclarationsToo() {
+        ObjectType dual = new ObjectType("org/jd/core/v1/annotation/DualTarget", "org.jd.core.v1.annotation.DualTarget", "DualTarget");
+        ObjectType typesOnly = new ObjectType("org/jd/core/v1/annotation/TypesOnly", "org.jd.core.v1.annotation.TypesOnly", "TypesOnly");
+
+        // only on the type, but it can be on a declaration: in front of the name it would be on the declaration too
+        String qualified = print(CLASS_PATH_LOADER, new FieldDeclaration(new TypeUseAnnotationReference(dual), Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("a")));
+        String simple = print(CLASS_PATH_LOADER, new FieldDeclaration(new TypeUseAnnotationReference(typesOnly), Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("b")));
+        // (its class cannot be read: it is taken for an annotation of types)
+        String unknown = print(new FieldDeclaration(new TypeUseAnnotationReference(dual), Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("c")));
+
+        Assert.assertTrue(qualified, qualified.contains("private java.lang.@DualTarget String a;"));
+        Assert.assertTrue(simple, simple.contains("private @TypesOnly String b;"));
+        Assert.assertTrue(unknown, unknown.contains("private @DualTarget String c;"));
+    }
+
+    @Test
+    public void testClassLiteralsOfTheSameSimpleNameAreNotTheSame() {
+        ObjectType annotationType = new ObjectType("p/Uses", "p.Uses", "Uses");
+        ObjectType first = new ObjectType("one/Foo", "one.Foo", "Foo");
+        ObjectType second = new ObjectType("two/Foo", "two.Foo", "Foo");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        both.add(new AnnotationReference(annotationType, new ExpressionElementValue(new org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression(first))));
+        both.add(new TypeUseAnnotationReference(annotationType, new ExpressionElementValue(new org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression(second))));
+        String source = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        // (they are not the same annotation: each one is written)
+        Assert.assertEquals(source, 2, source.split("@Uses", -1).length - 1);
+    }
+
     @Test
     public void testAnnotationsWhichAreNotTheSameAreAllWritten() {
         ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");

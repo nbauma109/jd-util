@@ -41,6 +41,7 @@ import org.jd.core.v1.util.DefaultList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -83,6 +84,7 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     public static final int UNKNOWN_LINE_NUMBER = Printer.UNKNOWN_LINE_NUMBER;
 
     private final Loader loader;
+    private final Map<String, Boolean> annotationsForDeclarations = new HashMap<>();
     protected final TypeMaker typeMaker;
     private final String internalPackageName;
     private final boolean genericTypesSupported;
@@ -221,6 +223,46 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
                     && !currentType.getInternalName().equals(outerType.getInternalName());
         }
         return type instanceof ObjectType objectType && newTypeReferenceToken(objectType, currentType).getName().indexOf('.') != -1;
+    }
+
+    /**
+     * @return true if the annotation can also be on a declaration: its {@code @Target} has another element type than TYPE_USE and TYPE_PARAMETER. It is
+     *         only known when the class of the annotation can be read: otherwise it is taken for an annotation of types.
+     */
+    protected boolean isAlsoForDeclarations(String annotationInternalName) {
+        return annotationsForDeclarations.computeIfAbsent(annotationInternalName, this::readTargets);
+    }
+
+    private boolean readTargets(String internalName) {
+        try {
+            if (!loader.canLoad(internalName)) {
+                return false;
+            }
+            org.apache.bcel.classfile.JavaClass javaClass = new org.apache.bcel.classfile.ClassParser(new java.io.ByteArrayInputStream(loader.load(internalName)), internalName).parse();
+
+            for (org.apache.bcel.classfile.AnnotationEntry entry : javaClass.getAnnotationEntries()) {
+                if ("Ljava/lang/annotation/Target;".equals(entry.getAnnotationType()) && hasTargetOtherThanTypes(entry)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException | RuntimeException e) {
+            return false;
+        }
+    }
+
+    private static boolean hasTargetOtherThanTypes(org.apache.bcel.classfile.AnnotationEntry target) {
+        for (org.apache.bcel.classfile.ElementValuePair pair : target.getElementValuePairs()) {
+            if (pair.getValue() instanceof org.apache.bcel.classfile.ArrayElementValue array) {
+                for (org.apache.bcel.classfile.ElementValue value : array.getElementValuesArray()) {
+                    if (value instanceof org.apache.bcel.classfile.EnumElementValue element
+                            && !"TYPE_USE".equals(element.getEnumValueString()) && !"TYPE_PARAMETER".equals(element.getEnumValueString())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private BaseAnnotationReference takeArrayAnnotations() {
