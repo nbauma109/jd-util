@@ -516,7 +516,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
         List<AnnotationReference> all = new ArrayList<>();
 
         if (annotationReferences instanceof AnnotationReferences<?> list) {
-            list.forEach(reference -> all.add((AnnotationReference) reference));
+            all.addAll(list);
         } else {
             all.add((AnnotationReference) annotationReferences);
         }

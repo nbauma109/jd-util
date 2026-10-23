@@ -51,10 +51,12 @@ import org.jd.core.v1.model.javasyntax.statement.Statements;
 import org.jd.core.v1.model.javasyntax.statement.SwitchStatement;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
 import org.jd.core.v1.model.javasyntax.reference.ExpressionElementValue;
+import org.jd.core.v1.model.javasyntax.reference.ElementValuePair;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReferences;
 import org.jd.core.v1.model.javasyntax.reference.TypeUseAnnotationReference;
 import org.jd.core.v1.model.javasyntax.type.InnerObjectType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
+import org.jd.core.v1.model.javasyntax.type.GenericType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.javasyntax.type.TypeParameterWithTypeBounds;
@@ -392,6 +394,43 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         // once, with its element value, in front of the type
         Assert.assertTrue(source, source.contains("private @Nullable(\"why\") String value;"));
         Assert.assertEquals(source, 1, source.split("@Nullable", -1).length - 1);
+    }
+
+    @Test
+    public void testTypeUseAnnotationOnAnImportedType() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        ObjectType listType = new ObjectType("java/util/List", "java.util.List", "List");
+        String source = print(new FieldDeclaration(new TypeUseAnnotationReference(nullableType), Const.ACC_PRIVATE, listType, new FieldDeclarator("values")));
+
+        // the name of the type is simple because of its import
+        Assert.assertTrue(source, source.contains("import java.util.List;"));
+        Assert.assertTrue(source, source.contains("private @Nullable List values;"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationOnATypeVariableAndOnAPrimitiveType() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        TypeUseAnnotationReference nullable = new TypeUseAnnotationReference(nullableType);
+
+        String variable = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, new GenericType("T"), new FieldDeclarator("value")));
+        String primitive = print(new FieldDeclaration(nullable, Const.ACC_PRIVATE, PrimitiveType.TYPE_INT, new FieldDeclarator("count")));
+
+        // (neither has a qualifier)
+        Assert.assertTrue(variable, variable.contains("private @Nullable T value;"));
+        Assert.assertTrue(primitive, primitive.contains("private @Nullable int count;"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationWithElementValuePairs() {
+        ObjectType sizeType = new ObjectType("p/Size", "p.Size", "Size");
+        ElementValuePair max = new ElementValuePair("max", new ExpressionElementValue(new StringConstantExpression("ten")));
+
+        String pairs = print(new FieldDeclaration(new TypeUseAnnotationReference(sizeType, max), Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("a")));
+        String both = print(new FieldDeclaration(new TypeUseAnnotationReference(sizeType, new ExpressionElementValue(new StringConstantExpression("one")), max),
+                Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("b")));
+
+        Assert.assertTrue(pairs, pairs.contains("@Size(max") && pairs.contains("String a;"));
+        Assert.assertTrue(both, both.contains("@Size(\"one\") String b;"));
     }
 
     private String print(FieldDeclaration field) {

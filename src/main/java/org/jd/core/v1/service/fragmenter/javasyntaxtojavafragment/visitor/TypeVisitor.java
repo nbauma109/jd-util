@@ -198,7 +198,7 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
             return;
         }
         String name = token.getName();
-        int dot = name == null ? -1 : name.lastIndexOf('.');
+        int dot = name.lastIndexOf('.');
 
         if (dot == -1) {
             if (token instanceof TypeReferenceToken) {
