@@ -398,6 +398,20 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
+    public void testAnnotationWithAnEmptyListOfElementsIsTheSameAsOneWithoutElements() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        // (the converter of the class files gives an empty list to an annotation without elements)
+        both.add(new AnnotationReference(nullableType, new org.jd.core.v1.model.javasyntax.reference.ElementValuePairs(0)));
+        both.add(new TypeUseAnnotationReference(nullableType));
+        String source = print(new FieldDeclaration(both, Const.ACC_PRIVATE, ObjectType.TYPE_STRING, new FieldDeclarator("value")));
+
+        Assert.assertTrue(source, source.contains("private @Nullable String value;"));
+        Assert.assertEquals(source, 1, source.split("@Nullable", -1).length - 1);
+    }
+
+    @Test
     public void testAnnotationsWhichAreNotTheSameAreAllWritten() {
         ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
         AnnotationReferences<AnnotationReference> different = new AnnotationReferences<>();

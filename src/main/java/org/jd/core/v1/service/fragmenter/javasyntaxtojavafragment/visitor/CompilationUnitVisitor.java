@@ -81,6 +81,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.apache.bcel.Const.ACC_ABSTRACT;
 import static org.apache.bcel.Const.ACC_BRIDGE;
@@ -512,7 +513,13 @@ public class CompilationUnitVisitor extends StatementVisitor {
     private static boolean isSameAnnotation(AnnotationReference first, AnnotationReference second) {
         return first.getType().getInternalName().equals(second.getType().getInternalName())
                 && Objects.equals(first.getElementValue(), second.getElementValue())
-                && Objects.equals(first.getElementValuePairs(), second.getElementValuePairs());
+                && (isEmpty(first.getElementValuePairs()) && isEmpty(second.getElementValuePairs())
+                    || Objects.equals(first.getElementValuePairs(), second.getElementValuePairs()));
+    }
+
+    /** No pair of elements: none at all, or an empty list of them */
+    private static boolean isEmpty(BaseElementValuePair pairs) {
+        return pairs == null || pairs instanceof Collection<?> list && list.isEmpty();
     }
 
     private static List<AnnotationReference> listOf(BaseAnnotationReference annotationReferences) {
