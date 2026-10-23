@@ -19,7 +19,11 @@ public class TypeParameterWithTypeBounds extends TypeParameter {
     }
 
     public TypeParameterWithTypeBounds(String identifier, BaseType typeBounds, BaseAnnotationReference boundAnnotations) {
-        super(identifier);
+        this(identifier, null, typeBounds, boundAnnotations);
+    }
+
+    public TypeParameterWithTypeBounds(String identifier, BaseAnnotationReference annotationReferences, BaseType typeBounds, BaseAnnotationReference boundAnnotations) {
+        super(identifier, annotationReferences);
         this.typeBounds = typeBounds;
         this.boundAnnotations = boundAnnotations;
     }

@@ -458,6 +458,14 @@ public class JdJavaSourceParser
       return -1;
     }
 
+    // a class of a parameterized class: Outer<A, B>.Inner<C>
+    while (getToken(i).kind == DOT && isIdentifierKind(getToken(i + 1).kind)) {
+      i = scanTypeArgumentsIfPresent(i + 2);
+      if (i < 0) {
+        return -1;
+      }
+    }
+
     while (getToken(i).kind == LBRACKET && getToken(i + 1).kind == RBRACKET) {
       i += 2;
     }
@@ -997,6 +1005,51 @@ public class JdJavaSourceParser
       return isUnaryExpressionStartToken(after);
     }
     return isUnaryExpressionNotPlusMinusStartToken(after);
+  }
+
+  /** The annotations of the declaration followed by the ones written in front of the ellipsis, which are on the type (the array of the arguments) */
+  private static BaseAnnotationReference withTypeUseAnnotations(final BaseAnnotationReference declaration, final List<AnnotationReference> onTheArray) {
+    if (onTheArray.isEmpty()) {
+      return declaration;
+    }
+
+    final AnnotationReferences<AnnotationReference> all = new AnnotationReferences<>();
+    if (declaration instanceof AnnotationReferences) {
+      for (final Object reference : (AnnotationReferences<?>) declaration) {
+        all.add((AnnotationReference) reference);
+      }
+    } else if (declaration != null) {
+      all.add((AnnotationReference) declaration);
+    }
+    for (final AnnotationReference reference : onTheArray) {
+      all.add(new TypeUseAnnotationReference(reference.getType(), reference.getElementValue(), reference.getElementValuePairs()));
+    }
+    return all;
+  }
+
+  /** @return true for a cast to a primitive type: '(int) x', '(long[]) x' */
+  private boolean isPrimitiveCastAhead() {
+    int index = 1;
+    final Token lp = getToken(index);
+
+    if (lp == null || lp.kind != LPAREN) {
+      return false;
+    }
+    index = skipTypeUseAnnotationsAhead(index + 1);
+    if (index < 0) {
+      return false;
+    }
+
+    final Token first = getToken(index);
+
+    if (first == null || !isPrimitiveTypeToken(first)) {
+      return false;
+    }
+    index = skipArrayDimsAhead(index + 1);
+
+    final Token rp = getToken(index);
+
+    return rp != null && rp.kind == RPAREN && isUnaryExpressionStartToken(getToken(index + 1));
   }
 
   private boolean isUnaryExpressionStartToken(final Token t) {
@@ -1882,16 +1935,19 @@ ModuleDeclaration.ServiceInfo ProvidesDirective() :
 }
 {
   <PROVIDES> serviceType = QualifiedName()
-  <WITH> implType = QualifiedName()
-  {
-    implTypes.add(implType.replace('.', '/'));
-  }
-  (
-    <COMMA> implType = QualifiedName()
+  <WITH>
+  [
+    implType = QualifiedName()
     {
       implTypes.add(implType.replace('.', '/'));
     }
-  )*
+    (
+      <COMMA> implType = QualifiedName()
+      {
+        implTypes.add(implType.replace('.', '/'));
+      }
+    )*
+  ]
   <SEMI>
   {
     return new ModuleDeclaration.ServiceInfo(serviceType.replace('.', '/'), implTypes);
@@ -1950,13 +2006,27 @@ RecordDeclaration.RecordComponent RecordComponent() :
   BaseAnnotationReference anns;
   Type t;
   Token nameTok;
+  boolean varargs = false;
+  AnnotationReference arrayAnn;
+  List<AnnotationReference> arrayAnns = new ArrayList<>();
 }
 {
   anns = AnnotationsOpt()
   t = TypeRef()
+  (LOOKAHEAD( ( Annotation() )* <DOT> <DOT> <DOT> )
+    ( arrayAnn = Annotation() { arrayAnns.add(arrayAnn); } )* <DOT> <DOT> <DOT>
+  {
+    varargs = true;
+  }
+  )?
   nameTok = IdentifierToken()
   {
-    return new RecordDeclaration.RecordComponent(anns, t, nameTok.image);
+    if (varargs)
+    {
+      t = t.createType(t.getDimension() + 1);
+      anns = withTypeUseAnnotations(anns, arrayAnns);
+    }
+    return new RecordDeclaration.RecordComponent(anns, t, varargs, nameTok.image);
   }
 }
 
@@ -4434,6 +4504,14 @@ Expression UnaryExpression() :
       return new PreOperatorExpression(ln, op.image, e);
     }
   |
+    /* A cast to a primitive type has no lambda for operand: in 'case (int) A -> 1' the arrow is the one of the case */
+    LOOKAHEAD( { isPrimitiveCastAhead() } )
+    op = <LPAREN> t = TypeRef() <RPAREN> e = UnaryExpression()
+    {
+      ln = consumeLineNumber(op);
+      return new CastExpression(ln, t, e, true, false);
+    }
+  |
     LOOKAHEAD( { isCastAhead() } )
     op = <LPAREN> t = TypeRef() ( <AMP> TypeRef() )* <RPAREN>
     (
@@ -5325,8 +5403,10 @@ TypeParameter TypeParameterDecl(Set<String> declaredNames) :
 {
   Token id;
   BaseType bounds;
+  BaseAnnotationReference annotations;
 }
 {
+  annotations = AnnotationsOpt()
   id = IdentifierToken()
   (
     <EXTENDS>
@@ -5340,9 +5420,9 @@ TypeParameter TypeParameterDecl(Set<String> declaredNames) :
     declaredNames.add(id.image);
     if (bounds != null)
     {
-      return new TypeParameterWithTypeBounds(id.image, bounds);
+      return new TypeParameterWithTypeBounds(id.image, annotations, bounds, null);
     }
-    return new TypeParameter(id.image);
+    return new TypeParameter(id.image, annotations);
   }
 }
 

@@ -7,11 +7,24 @@
 
 package org.jd.core.v1.model.javasyntax.type;
 
+import org.jd.core.v1.model.javasyntax.reference.BaseAnnotationReference;
+
 public class TypeParameter implements BaseTypeParameter {
     protected final String identifier;
+    /** The annotations written in front of the identifier: 'class C<@Marker T>' */
+    private final BaseAnnotationReference annotationReferences;
 
     public TypeParameter(String identifier) {
+        this(identifier, null);
+    }
+
+    public TypeParameter(String identifier, BaseAnnotationReference annotationReferences) {
         this.identifier = identifier;
+        this.annotationReferences = annotationReferences;
+    }
+
+    public BaseAnnotationReference getAnnotationReferences() {
+        return annotationReferences;
     }
 
     public String getIdentifier() {

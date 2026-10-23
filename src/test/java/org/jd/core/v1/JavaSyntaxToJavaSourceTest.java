@@ -54,6 +54,7 @@ import org.jd.core.v1.model.javasyntax.reference.ExpressionElementValue;
 import org.jd.core.v1.model.javasyntax.reference.ElementValuePair;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReferences;
 import org.jd.core.v1.model.javasyntax.reference.TypeUseAnnotationReference;
+import org.jd.core.v1.model.javasyntax.declaration.RecordDeclaration;
 import org.jd.core.v1.model.javasyntax.type.InnerObjectType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.GenericType;
@@ -327,6 +328,37 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         // the annotation is imported and written in front of the bound
         Assert.assertTrue(source, source.contains("import org.jspecify.annotations.Nullable;"));
         Assert.assertTrue(source, source.contains("class Holder<K extends @Nullable Object>"));
+    }
+
+    @Test
+    public void testTypeAnnotationOfAVarargsRecordComponentIsWrittenOnTheArray() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        DefaultList<RecordDeclaration.RecordComponent> components = new DefaultList<>();
+        components.add(new RecordDeclaration.RecordComponent(new TypeUseAnnotationReference(nullableType), ObjectType.TYPE_STRING.createType(1), true, "names"));
+
+        CompilationUnit compilationUnit = new CompilationUnit(
+            new RecordDeclaration(null, Const.ACC_PUBLIC, "org/jd/core/v1/service/test/Names", "Names", null, components, null,
+                new BodyDeclaration("org/jd/core/v1/service/test/Names", new MethodDeclaration(Const.ACC_PUBLIC, "run", PrimitiveType.TYPE_VOID, "()V", ReturnStatement.RETURN))));
+
+        org.jd.core.v1.printer.PlainTextPrinter printer = new org.jd.core.v1.printer.PlainTextPrinter();
+        DecompileContext decompileContext = new DecompileContext();
+        decompileContext.setCompilationUnit(compilationUnit);
+        decompileContext.setMainInternalTypeName("org/jd/core/v1/service/test/Names");
+        decompileContext.setLoader(new NopLoader());
+        decompileContext.setPrinter(printer);
+        decompileContext.setConfiguration(Collections.emptyMap());
+        decompileContext.setMaxLineNumber(7);
+        decompileContext.setMajorVersion(0);
+        decompileContext.setMinorVersion(0);
+
+        fragmenter.process(compilationUnit, decompileContext);
+        layouter.process(decompileContext);
+        decompileContext.setTokens(tokenizer.process(decompileContext.getBody()));
+        writer.process(decompileContext);
+
+        String source = printer.toString();
+
+        Assert.assertTrue(source, source.contains("String @org.jspecify.annotations.Nullable ... names"));
     }
 
     private String printClassWithTypeUseAnnotations(org.jd.core.v1.api.loader.Loader loader) {

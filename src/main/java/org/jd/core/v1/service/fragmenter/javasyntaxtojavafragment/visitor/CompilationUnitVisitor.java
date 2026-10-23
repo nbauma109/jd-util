@@ -625,8 +625,20 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
         Type type = component.getType();
 
-        visitTypeWithAnnotations(type, typeUseAnnotations(component.getAnnotationReferences()), hasUnmatchedTwins(component.getAnnotationReferences()));
-        tokens.add(TextToken.SPACE);
+        if (component.isVarargs()) {
+            // 'T... name': the type is the array of the arguments
+            BaseAnnotationReference arrayAnnotations = typeUseAnnotations(component.getAnnotationReferences());
+
+            visitTypeWithAnnotations(type.createType(Math.max(0, type.getDimension() - 1)), null, false);
+            if (!Utils.isEmpty(arrayAnnotations)) {
+                tokens.add(TextToken.SPACE);
+                buildTokensForTypeAnnotations(arrayAnnotations);
+            }
+            tokens.add(TextToken.VARARGS);
+        } else {
+            visitTypeWithAnnotations(type, typeUseAnnotations(component.getAnnotationReferences()), hasUnmatchedTwins(component.getAnnotationReferences()));
+            tokens.add(TextToken.SPACE);
+        }
         tokens.add(newTextToken(component.getName()));
     }
 
@@ -1345,7 +1357,10 @@ public class CompilationUnitVisitor extends StatementVisitor {
         tokens.add(TextToken.SPACE);
         tokens.add(WITH);
 
-        if (serviceInfo.implementationTypeNames().size() == 1) {
+        if (serviceInfo.implementationTypeNames().isEmpty()) {
+            // a module whose service has no provider, as GraalVM writes some of them
+            tokens.add(TextToken.SPACE);
+        } else if (serviceInfo.implementationTypeNames().size() == 1) {
             tokens.add(TextToken.SPACE);
             internalTypeName = serviceInfo.implementationTypeNames().get(0);
             tokens.add(new ReferenceToken(Printer.TYPE, internalTypeName, internalTypeName.replace('/', '.')));

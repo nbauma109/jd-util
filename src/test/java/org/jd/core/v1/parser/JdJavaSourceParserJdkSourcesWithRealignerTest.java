@@ -12,7 +12,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -26,6 +30,9 @@ public class JdJavaSourceParserJdkSourcesWithRealignerTest {
         int parsedFiles = 0;
         int realignedFiles = 0;
         int reparsedFiles = 0;
+        // Every file is tried: the failures are reported together, the first one with its source
+        List<String> failures = new ArrayList<>();
+        AssertionError firstFailure = null;
 
         try (ZipFile zipFile = new ZipFile(sourcesZip.toFile(), StandardCharsets.UTF_8)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -46,6 +53,9 @@ public class JdJavaSourceParserJdkSourcesWithRealignerTest {
                     source = IOUtils.toString(in, StandardCharsets.UTF_8);
                 }
 
+                // the text that is being read: the source, then what the realigner wrote
+                String text = source;
+
                 try {
                     System.out.print("Processing " + name + "...");
                     JavaParseResult parsed = JdJavaSourceParser.parse(source);
@@ -54,13 +64,26 @@ public class JdJavaSourceParserJdkSourcesWithRealignerTest {
                     String realigned = realigner.format(parsed);
                     realignedFiles++;
 
+                    text = realigned;
                     JdJavaSourceParser.parse(realigned);
                     reparsedFiles++;
                     System.out.println("DONE (" + reparsedFiles + ")");
                 } catch (ParseException | RuntimeException ex) {
-                    throw buildAssertionErrorWithAnnotatedSource(sourcesZip, name, source, ex);
+                    System.out.println("FAILED");
+                    failures.add(name + " :: " + firstLine(safeMessage(ex)) + (text == source ? " (in the source)" : " (in what the realigner wrote)")
+                            + System.lineSeparator() + linesAround(text, safeMessage(ex)));
+                    if (firstFailure == null) {
+                        firstFailure = buildAssertionErrorWithAnnotatedSource(sourcesZip, name, source, ex);
+                    }
                 }
             }
+        }
+
+        if (firstFailure != null) {
+            throw new AssertionError(failures.size() + " file(s) of the sources archive " + sourcesZip + " could not be processed:"
+                    + System.lineSeparator() + String.join(System.lineSeparator(), failures)
+                    + System.lineSeparator() + System.lineSeparator() + "The first one:" + System.lineSeparator() + firstFailure.getMessage(),
+                    firstFailure.getCause());
         }
 
         Assert.assertTrue(
@@ -89,6 +112,31 @@ public class JdJavaSourceParserJdkSourcesWithRealignerTest {
         AssertionError ae = new AssertionError(annotated);
         ae.initCause(ex);
         return ae;
+    }
+
+    /** @return the lines of the text around the position of a parse failure ('at line 29, column 154'), with their numbers */
+    private static String linesAround(String text, String message) {
+        Matcher matcher = Pattern.compile("at line (\\d+), column (\\d+)").matcher(message);
+
+        if (!matcher.find()) {
+            return "";
+        }
+        int line = Integer.parseInt(matcher.group(1));
+        String[] lines = normalizeToLf(text).split("\n", -1);
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = Math.max(1, line - 2); i <= Math.min(lines.length, line + 2); i++) {
+            String content = lines[i - 1];
+
+            sb.append("    ").append(i).append(i == line ? " > " : "   ").append(content.length() > 400 ? content.substring(0, 400) + "..." : content).append(System.lineSeparator());
+        }
+        return sb.toString();
+    }
+
+    private static String firstLine(String message) {
+        int end = message.indexOf('\n');
+
+        return end == -1 ? message : message.substring(0, end).trim();
     }
 
     private static String safeMessage(Throwable ex) {
