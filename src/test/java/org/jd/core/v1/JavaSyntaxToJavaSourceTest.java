@@ -522,6 +522,21 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
+    public void testTypeAnnotationOfAnInnerClassOfTheCurrentClassFollowsTheOuterClassWhenItMustBeQualified() {
+        ObjectType dual = new ObjectType("org/jd/core/v1/annotation/DualTarget", "org.jd.core.v1.annotation.DualTarget", "DualTarget");
+        ObjectType typesOnly = new ObjectType("org/jd/core/v1/annotation/TypesOnly", "org.jd.core.v1.annotation.TypesOnly", "TypesOnly");
+        ObjectType annotated = new ObjectType("org/jd/core/v1/service/test/Annotated", "org.jd.core.v1.service.test.Annotated", "Annotated");
+        InnerObjectType inner = new InnerObjectType("org/jd/core/v1/service/test/Annotated$Inner", "org.jd.core.v1.service.test.Annotated$Inner", "Inner", annotated);
+
+        // (the class is declared in the current class, which is not written in front of its name unless the annotation needs it)
+        String qualified = print(CLASS_PATH_LOADER, new FieldDeclaration(new TypeUseAnnotationReference(dual), Const.ACC_PRIVATE, inner, new FieldDeclarator("a")));
+        String simple = print(CLASS_PATH_LOADER, new FieldDeclaration(new TypeUseAnnotationReference(typesOnly), Const.ACC_PRIVATE, inner, new FieldDeclarator("b")));
+
+        Assert.assertTrue(qualified, qualified.contains("private Annotated.@DualTarget Inner a;"));
+        Assert.assertTrue(simple, simple.contains("private @TypesOnly Inner b;"));
+    }
+
+    @Test
     public void testClassLiteralsOfTheSameSimpleNameAreNotTheSame() {
         ObjectType annotationType = new ObjectType("p/Uses", "p.Uses", "Uses");
         ObjectType first = new ObjectType("one/Foo", "one.Foo", "Foo");

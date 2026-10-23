@@ -330,10 +330,16 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         // (the type arguments and the outer type have none)
         typeAnnotations = null;
 
+        // the outer type is written when the annotations must follow a qualifier, though the class is in the one it is declared in
+        boolean forceOuterType = annotations != null && qualifiedTypeAnnotations;
+
+        qualifiedTypeAnnotations = false;
+
         BaseAnnotationReference arrayAnnotationsOfType = takeArrayAnnotations();
 
         BaseType outerType = type.getOuterType();
-        if (currentType == null || !currentType.getInternalName().equals(type.getInternalName()) && outerType != null && !currentType.getInternalName().equals(outerType.getInternalName())) {
+        if (currentType == null || forceOuterType && outerType != null
+                || !currentType.getInternalName().equals(type.getInternalName()) && outerType != null && !currentType.getInternalName().equals(outerType.getInternalName())) {
 
             safeAccept(outerType);
             tokens.add(TextToken.DOT);
