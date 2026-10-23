@@ -358,7 +358,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
 
         String source = printer.toString();
 
-        Assert.assertTrue(source, source.contains("String @Nullable ... names"));
+        Assert.assertTrue(source, source.contains("String @org.jspecify.annotations.Nullable ... names"));
     }
 
     private String printClassWithTypeUseAnnotations(org.jd.core.v1.api.loader.Loader loader) {
