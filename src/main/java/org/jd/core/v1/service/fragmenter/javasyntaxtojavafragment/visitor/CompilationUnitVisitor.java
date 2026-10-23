@@ -67,6 +67,7 @@ import org.jd.core.v1.model.token.DeclarationToken;
 import org.jd.core.v1.model.token.EndBlockToken;
 import org.jd.core.v1.model.token.EndMarkerToken;
 import org.jd.core.v1.model.token.KeywordToken;
+import org.jd.core.v1.model.token.LineNumberToken;
 import org.jd.core.v1.model.token.NewLineToken;
 import org.jd.core.v1.model.token.ReferenceToken;
 import org.jd.core.v1.model.token.StartBlockToken;
@@ -79,9 +80,8 @@ import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragm
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import static org.apache.bcel.Const.ACC_ABSTRACT;
 import static org.apache.bcel.Const.ACC_BRIDGE;
@@ -481,11 +481,11 @@ public class CompilationUnitVisitor extends StatementVisitor {
     }
 
     /** @return the annotations which are on the type of the declaration ('@Nullable String value'); null if there is none */
-    private static BaseAnnotationReference typeUseAnnotations(BaseAnnotationReference annotationReferences) {
+    private BaseAnnotationReference typeUseAnnotations(BaseAnnotationReference annotationReferences) {
         return selectAnnotations(annotationReferences, true, true);
     }
 
-    private static BaseAnnotationReference selectAnnotations(BaseAnnotationReference annotationReferences, boolean typeUse, boolean keepTwins) {
+    private BaseAnnotationReference selectAnnotations(BaseAnnotationReference annotationReferences, boolean typeUse, boolean keepTwins) {
         if (annotationReferences == null) {
             return null;
         }
@@ -497,24 +497,26 @@ public class CompilationUnitVisitor extends StatementVisitor {
                 selected.add(reference);
             }
         }
-        if (selected.isEmpty()) {
-            return null;
-        }
-        return selected.size() == 1 ? selected.getFirst() : selected;
+        return oneOf(selected);
     }
 
-    private static boolean isSelected(AnnotationReference reference, boolean typeUse, boolean keepTwins, List<AnnotationReference> all) {
+    private boolean isSelected(AnnotationReference reference, boolean typeUse, boolean keepTwins, List<AnnotationReference> all) {
         if (reference instanceof TypeUseAnnotationReference) {
             return typeUse;
         }
-        return !typeUse && (keepTwins || all.stream().noneMatch(other -> other instanceof TypeUseAnnotationReference && isSameAnnotation(reference, other)));
+        return !typeUse && (keepTwins || !hasTypeUseTwin(reference, all));
+    }
+
+    /** @return true if the annotation is also one of the annotations of the type, the same one: its type and its elements are those of the annotation */
+    private boolean hasTypeUseTwin(AnnotationReference reference, List<AnnotationReference> all) {
+        return all.stream().anyMatch(other -> other instanceof TypeUseAnnotationReference && isSameAnnotation(reference, other));
     }
 
     /**
      * @return the annotations of a constructor, which has no type to hold the ones the class file also has as annotations of the type of its result:
      *         all are written in front of it, but the twin of an annotation once
      */
-    private static BaseAnnotationReference constructorAnnotations(BaseAnnotationReference annotationReferences) {
+    private BaseAnnotationReference constructorAnnotations(BaseAnnotationReference annotationReferences) {
         if (annotationReferences == null) {
             return null;
         }
@@ -522,23 +524,45 @@ public class CompilationUnitVisitor extends StatementVisitor {
         AnnotationReferences<AnnotationReference> kept = new AnnotationReferences<>();
 
         for (AnnotationReference reference : all) {
-            if (!(reference instanceof TypeUseAnnotationReference) || all.stream().noneMatch(other -> !(other instanceof TypeUseAnnotationReference) && isSameAnnotation(reference, other))) {
+            if (!(reference instanceof TypeUseAnnotationReference) || !hasPlainTwin(reference, all)) {
                 kept.add(reference);
             }
         }
-        return kept.size() == all.size() ? annotationReferences : kept.size() == 1 ? kept.getFirst() : kept;
+        return kept.size() == all.size() ? annotationReferences : oneOf(kept);
     }
 
-    private static boolean isSameAnnotation(AnnotationReference first, AnnotationReference second) {
-        return first.getType().getInternalName().equals(second.getType().getInternalName())
-                && Objects.equals(first.getElementValue(), second.getElementValue())
-                && (isEmpty(first.getElementValuePairs()) && isEmpty(second.getElementValuePairs())
-                    || Objects.equals(first.getElementValuePairs(), second.getElementValuePairs()));
+    private boolean hasPlainTwin(AnnotationReference reference, List<AnnotationReference> all) {
+        return all.stream().anyMatch(other -> !(other instanceof TypeUseAnnotationReference) && isSameAnnotation(reference, other));
     }
 
-    /** No pair of elements: none at all, or an empty list of them */
-    private static boolean isEmpty(BaseElementValuePair pairs) {
-        return pairs == null || pairs instanceof Collection<?> list && list.isEmpty();
+    private static BaseAnnotationReference oneOf(AnnotationReferences<AnnotationReference> references) {
+        if (references.isEmpty()) {
+            return null;
+        }
+        if (references.size() == 1) {
+            return references.getFirst();
+        }
+        return references;
+    }
+
+    /**
+     * The annotations are the same if they are written the same: the type, the names of the elements and their values. The elements of two
+     * annotations are not the same objects, and their classes have no equality of values: what is written is compared.
+     */
+    private boolean isSameAnnotation(AnnotationReference first, AnnotationReference second) {
+        return writtenAs(first).equals(writtenAs(second));
+    }
+
+    private String writtenAs(AnnotationReference reference) {
+        Tokens saved = tokens;
+
+        tokens = new Tokens();
+        try {
+            reference.accept(this);
+            return tokens.stream().filter(token -> !(token instanceof LineNumberToken)).map(Object::toString).collect(Collectors.joining());
+        } finally {
+            tokens = saved;
+        }
     }
 
     private static List<AnnotationReference> listOf(BaseAnnotationReference annotationReferences) {
