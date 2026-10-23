@@ -152,4 +152,25 @@ public class JdJavaSourceParserSyntaxTest {
 
         assertNotNull(realign(source));
     }
+
+    @Test
+    public void testSwitchRulesWhichThrowOrYield() throws ParseException {
+        realign("""
+                package a;
+                public class Rules {
+                    static int pick(int kind) {
+                        return switch (kind) {
+                            case 1 -> throw new IllegalStateException();
+                            case 2 -> {
+                                if (kind > 1) {
+                                    yield 3;
+                                }
+                                yield 4;
+                            }
+                            default -> 0;
+                        };
+                    }
+                }
+                """);
+    }
 }
