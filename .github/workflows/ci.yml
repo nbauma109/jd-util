@@ -1,0 +1,30 @@
+name: Java CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build (${{ matrix.java }}, ${{ matrix.distribution }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The versions with long term support
+        java: [ 17, 21, 25 ]
+        distribution: [ temurin, zulu, liberica, microsoft, corretto, oracle, sapmachine, semeru, dragonwell, graalvm, jetbrains ]
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    - name: Set up JDK ${{ matrix.java }} (${{ matrix.distribution }})
+      uses: actions/setup-java@v6
+      with:
+        distribution: ${{ matrix.distribution }}
+        java-version: ${{ matrix.java }}
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B --no-transfer-progress -Dgpg.skip=true verify
