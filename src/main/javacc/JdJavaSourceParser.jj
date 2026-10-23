@@ -459,7 +459,7 @@ public class JdJavaSourceParser
     }
 
     // a class of a parameterized class: Outer<A, B>.Inner<C>
-    while (getToken(i - 1).kind == GT && getToken(i).kind == DOT && isIdentifierKind(getToken(i + 1).kind)) {
+    while (getToken(i).kind == DOT && isIdentifierKind(getToken(i + 1).kind)) {
       i = scanTypeArgumentsIfPresent(i + 2);
       if (i < 0) {
         return -1;
@@ -1005,6 +1005,26 @@ public class JdJavaSourceParser
       return isUnaryExpressionStartToken(after);
     }
     return isUnaryExpressionNotPlusMinusStartToken(after);
+  }
+
+  /** The annotations of the declaration followed by the ones written in front of the ellipsis, which are on the type (the array of the arguments) */
+  private static BaseAnnotationReference withTypeUseAnnotations(final BaseAnnotationReference declaration, final List<AnnotationReference> onTheArray) {
+    if (onTheArray.isEmpty()) {
+      return declaration;
+    }
+
+    final AnnotationReferences<AnnotationReference> all = new AnnotationReferences<>();
+    if (declaration instanceof AnnotationReferences) {
+      for (final Object reference : (AnnotationReferences<?>) declaration) {
+        all.add((AnnotationReference) reference);
+      }
+    } else if (declaration != null) {
+      all.add((AnnotationReference) declaration);
+    }
+    for (final AnnotationReference reference : onTheArray) {
+      all.add(new TypeUseAnnotationReference(reference.getType(), reference.getElementValue(), reference.getElementValuePairs()));
+    }
+    return all;
   }
 
   /** @return true for a cast to a primitive type: '(int) x', '(long[]) x' */
@@ -1987,11 +2007,14 @@ RecordDeclaration.RecordComponent RecordComponent() :
   Type t;
   Token nameTok;
   boolean varargs = false;
+  AnnotationReference arrayAnn;
+  List<AnnotationReference> arrayAnns = new ArrayList<>();
 }
 {
   anns = AnnotationsOpt()
   t = TypeRef()
-  (<DOT> <DOT> <DOT>
+  (LOOKAHEAD( ( Annotation() )* <DOT> <DOT> <DOT> )
+    ( arrayAnn = Annotation() { arrayAnns.add(arrayAnn); } )* <DOT> <DOT> <DOT>
   {
     varargs = true;
   }
@@ -2001,6 +2024,7 @@ RecordDeclaration.RecordComponent RecordComponent() :
     if (varargs)
     {
       t = t.createType(t.getDimension() + 1);
+      anns = withTypeUseAnnotations(anns, arrayAnns);
     }
     return new RecordDeclaration.RecordComponent(anns, t, varargs, nameTok.image);
   }
@@ -5379,11 +5403,10 @@ TypeParameter TypeParameterDecl(Set<String> declaredNames) :
 {
   Token id;
   BaseType bounds;
-  AnnotationReference ignoredTypeParameterAnnotation;
+  BaseAnnotationReference annotations;
 }
 {
-  /* Annotations of the type parameter (ignored in AST) */
-  ( LOOKAHEAD(<AT>) ignoredTypeParameterAnnotation = Annotation() )*
+  annotations = AnnotationsOpt()
   id = IdentifierToken()
   (
     <EXTENDS>
@@ -5397,9 +5420,9 @@ TypeParameter TypeParameterDecl(Set<String> declaredNames) :
     declaredNames.add(id.image);
     if (bounds != null)
     {
-      return new TypeParameterWithTypeBounds(id.image, bounds);
+      return new TypeParameterWithTypeBounds(id.image, annotations, bounds, null);
     }
-    return new TypeParameter(id.image);
+    return new TypeParameter(id.image, annotations);
   }
 }
 

@@ -14,11 +14,7 @@ jobs:
       matrix:
         # The versions with long term support
         java: [ 17, 21, 25 ]
-        distribution: [ temurin, zulu, liberica, microsoft, corretto, oracle, sapmachine, semeru, dragonwell, graalvm, jetbrains ]
-        exclude:
-          # setup-java has no GraalVM for Java 17
-          - java: 17
-            distribution: graalvm
+        distribution: [ temurin, zulu, liberica, microsoft, corretto, oracle, sapmachine, semeru, dragonwell, graalvm, graalvm-community, jetbrains, kona, liberica-nik, oracle-openjdk, redhat ]
 
     steps:
     - uses: actions/checkout@v7
@@ -30,5 +26,8 @@ jobs:
         distribution: ${{ matrix.distribution }}
         java-version: ${{ matrix.java }}
         cache: maven
+      env:
+        # the distributions which list their releases on GitHub (JetBrains) would else be limited to the unauthenticated rate
+        GITHUB_TOKEN: ${{ github.token }}
     - name: Build with Maven
       run: mvn -B --no-transfer-progress -Dgpg.skip=true verify

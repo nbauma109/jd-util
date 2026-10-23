@@ -173,4 +173,39 @@ public class JdJavaSourceParserSyntaxTest {
                 }
                 """);
     }
+
+    @Test
+    public void testAnnotationsOfTypeParametersAreKept() throws ParseException {
+        String realigned = realign("""
+                package a;
+                public class Holder<@Deprecated T, @Deprecated U extends Number> {
+                }
+                """);
+
+        assertTrue(realigned, realigned.contains("<@Deprecated T, @Deprecated U extends Number>"));
+    }
+
+    @Test
+    public void testAnnotatedEllipsisOfARecordComponent() throws ParseException {
+        String realigned = realign("""
+                package a;
+                public record R(String @Deprecated ... values) {
+                }
+                """);
+
+        assertTrue(realigned, realigned.contains("String @Deprecated ... values"));
+    }
+
+    @Test
+    public void testParameterizedMemberTypesInLocalDeclarations() throws ParseException {
+        realign("""
+                package a;
+                public class Members {
+                    void m() {
+                        Outer<java.util.List<String>>.Inner value = null;
+                        Outer<String>.Middle.Inner other = null;
+                    }
+                }
+                """);
+    }
 }

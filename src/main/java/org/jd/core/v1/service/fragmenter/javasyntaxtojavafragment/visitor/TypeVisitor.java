@@ -416,11 +416,17 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
 
     @Override
     public void visit(TypeParameter parameter) {
+        if (parameter.getAnnotationReferences() != null) {
+            buildTokensForTypeAnnotations(parameter.getAnnotationReferences());
+        }
         tokens.add(newTextToken(parameter.getIdentifier()));
     }
 
     @Override
     public void visit(TypeParameterWithTypeBounds parameter) {
+        if (parameter.getAnnotationReferences() != null) {
+            buildTokensForTypeAnnotations(parameter.getAnnotationReferences());
+        }
         tokens.add(newTextToken(parameter.getIdentifier()));
         tokens.add(TextToken.SPACE);
         tokens.add(EXTENDS);
