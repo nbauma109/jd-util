@@ -510,6 +510,25 @@ public class CompilationUnitVisitor extends StatementVisitor {
         return !typeUse && (keepTwins || all.stream().noneMatch(other -> other instanceof TypeUseAnnotationReference && isSameAnnotation(reference, other)));
     }
 
+    /**
+     * @return the annotations of a constructor, which has no type to hold the ones the class file also has as annotations of the type of its result:
+     *         all are written in front of it, but the twin of an annotation once
+     */
+    private static BaseAnnotationReference constructorAnnotations(BaseAnnotationReference annotationReferences) {
+        if (annotationReferences == null) {
+            return null;
+        }
+        List<AnnotationReference> all = listOf(annotationReferences);
+        AnnotationReferences<AnnotationReference> kept = new AnnotationReferences<>();
+
+        for (AnnotationReference reference : all) {
+            if (!(reference instanceof TypeUseAnnotationReference) || all.stream().noneMatch(other -> !(other instanceof TypeUseAnnotationReference) && isSameAnnotation(reference, other))) {
+                kept.add(reference);
+            }
+        }
+        return kept.size() == all.size() ? annotationReferences : kept.size() == 1 ? kept.getFirst() : kept;
+    }
+
     private static boolean isSameAnnotation(AnnotationReference first, AnnotationReference second) {
         return first.getType().getInternalName().equals(second.getType().getInternalName())
                 && Objects.equals(first.getElementValue(), second.getElementValue())
@@ -630,7 +649,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
                 tokens = new Tokens();
 
                 // Build fragments for annotations
-                BaseAnnotationReference annotationReferences = declaration.getAnnotationReferences();
+                BaseAnnotationReference annotationReferences = constructorAnnotations(declaration.getAnnotationReferences());
 
                 if (annotationReferences != null) {
                     annotationReferences.accept(annotationVisitor);

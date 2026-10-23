@@ -412,6 +412,22 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
+    public void testAnnotationOfAConstructorAndOfItsResultIsWrittenOnce() {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        AnnotationReferences<AnnotationReference> both = new AnnotationReferences<>();
+
+        both.add(new AnnotationReference(nullableType));
+        both.add(new TypeUseAnnotationReference(nullableType));
+        String twins = print(new ConstructorDeclaration(both, Const.ACC_PUBLIC, null, null, null, "()V", ReturnStatement.RETURN));
+        // (a type annotation of the result which is not also on the constructor stays)
+        String alone = print(new ConstructorDeclaration(new TypeUseAnnotationReference(nullableType), Const.ACC_PUBLIC, null, null, null, "()V", ReturnStatement.RETURN));
+
+        Assert.assertTrue(twins, twins.contains("@Nullable public Annotated()"));
+        Assert.assertEquals(twins, 1, twins.split("@Nullable", -1).length - 1);
+        Assert.assertTrue(alone, alone.contains("@Nullable public Annotated()"));
+    }
+
+    @Test
     public void testAnnotationsWhichAreNotTheSameAreAllWritten() {
         ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
         AnnotationReferences<AnnotationReference> different = new AnnotationReferences<>();
@@ -505,6 +521,10 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
 
     private String print(FieldDeclaration field) {
         return print(field, new NopLoader());
+    }
+
+    private String print(ConstructorDeclaration constructor) {
+        return print(new NopLoader(), constructor);
     }
 
     private String print(FieldDeclaration field, org.jd.core.v1.api.loader.Loader loader) {
