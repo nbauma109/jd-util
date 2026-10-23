@@ -325,7 +325,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         Assert.assertTrue(source, source.contains("class Holder<K extends @Nullable Object>"));
     }
 
-    private String printClassWithTypeUseAnnotations(org.jd.core.v1.api.loader.Loader loader) throws Exception {
+    private String printClassWithTypeUseAnnotations(org.jd.core.v1.api.loader.Loader loader) {
         ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
         ObjectType stringType = ObjectType.TYPE_STRING;
         TypeUseAnnotationReference nullable = new TypeUseAnnotationReference(nullableType);
@@ -368,7 +368,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testTypeUseAnnotationsAreInFrontOfTheNameOfTheType() throws Exception {
+    public void testTypeUseAnnotationsAreInFrontOfTheNameOfTheType() {
         String source = printClassWithTypeUseAnnotations(new NopLoader());
 
         Assert.assertTrue(source, source.contains("private @Nullable String value;"));
@@ -379,7 +379,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testTypeUseAnnotationsFollowTheQualifierOfTheName() throws Exception {
+    public void testTypeUseAnnotationsFollowTheQualifierOfTheName() {
         // a class of the package is named String: java.lang.String is written with its package, which an annotation cannot precede
         String source = printClassWithTypeUseAnnotations(new NopLoader() {
             @Override

@@ -63,7 +63,6 @@ import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeParameter;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.Type;
-import org.jd.core.v1.model.javasyntax.type.TypeVisitor;
 import org.jd.core.v1.model.token.DeclarationToken;
 import org.jd.core.v1.model.token.EndBlockToken;
 import org.jd.core.v1.model.token.EndMarkerToken;
@@ -492,7 +491,10 @@ public class CompilationUnitVisitor extends StatementVisitor {
                     selected.add((AnnotationReference) reference);
                 }
             }
-            return selected.isEmpty() ? null : selected.size() == 1 ? selected.getFirst() : selected;
+            if (selected.isEmpty()) {
+                return null;
+            }
+            return selected.size() == 1 ? selected.getFirst() : selected;
         }
         return (annotationReferences instanceof TypeUseAnnotationReference) == typeUse ? annotationReferences : null;
     }

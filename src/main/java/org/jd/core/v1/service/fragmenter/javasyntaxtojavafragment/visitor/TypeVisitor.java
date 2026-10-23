@@ -531,8 +531,8 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     }
 
     private static final class TypeReferenceToken extends ReferenceToken {
-        private ImportsFragment importsFragment;
-        private String qualifiedName;
+        private final ImportsFragment importsFragment;
+        private final String qualifiedName;
 
         public TypeReferenceToken(ImportsFragment importsFragment, int printerType, String internalTypeName, String qualifiedName, String name, ObjectType ownerType) {
             super(printerType, internalTypeName, name, null, ownerType);
@@ -550,7 +550,7 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     }
 
     private static final class QualifiedReferenceToken extends ReferenceToken {
-        private String qualifiedName;
+        private final String qualifiedName;
 
         public QualifiedReferenceToken(int printerType, String internalTypeName, String qualifiedName, String name, ObjectType ownerType) {
             super(printerType, internalTypeName, name, null, ownerType);
