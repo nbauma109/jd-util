@@ -1915,16 +1915,19 @@ ModuleDeclaration.ServiceInfo ProvidesDirective() :
 }
 {
   <PROVIDES> serviceType = QualifiedName()
-  <WITH> implType = QualifiedName()
-  {
-    implTypes.add(implType.replace('.', '/'));
-  }
-  (
-    <COMMA> implType = QualifiedName()
+  <WITH>
+  [
+    implType = QualifiedName()
     {
       implTypes.add(implType.replace('.', '/'));
     }
-  )*
+    (
+      <COMMA> implType = QualifiedName()
+      {
+        implTypes.add(implType.replace('.', '/'));
+      }
+    )*
+  ]
   <SEMI>
   {
     return new ModuleDeclaration.ServiceInfo(serviceType.replace('.', '/'), implTypes);

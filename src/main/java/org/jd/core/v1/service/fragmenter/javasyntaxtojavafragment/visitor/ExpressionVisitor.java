@@ -830,10 +830,17 @@ public class ExpressionVisitor extends TypeVisitor {
         tokens.add(TextToken.SPACE_QUESTION_SPACE);
         printTernaryOperatorExpression(expression.getTrueExpression());
         tokens.add(TextToken.SPACE_COLON_SPACE);
-        printTernaryOperatorExpression(expression.getFalseExpression());
+        printTernaryOperatorExpression(expression.getFalseExpression(), inExpressionFlag);
     }
 
     protected void printTernaryOperatorExpression(Expression expression) {
+        printTernaryOperatorExpression(expression, false);
+    }
+
+    /**
+     * The last operand ends the ternary, so an array initializer or a block it ends with is the end of the parameter.
+     */
+    private void printTernaryOperatorExpression(Expression expression, boolean endsParameter) {
         boolean previousInExpressionFlag = inExpressionFlag;
         boolean previousInVarArgParam = inVarArgParam;
 
@@ -844,7 +851,7 @@ public class ExpressionVisitor extends TypeVisitor {
             expression.accept(this);
             tokens.add(TextToken.RIGHTROUNDBRACKET);
         } else {
-            inExpressionFlag = false;
+            inExpressionFlag = endsParameter;
             inVarArgParam = false;
             expression.accept(this);
         }

@@ -1357,7 +1357,10 @@ public class CompilationUnitVisitor extends StatementVisitor {
         tokens.add(TextToken.SPACE);
         tokens.add(WITH);
 
-        if (serviceInfo.implementationTypeNames().size() == 1) {
+        if (serviceInfo.implementationTypeNames().isEmpty()) {
+            // a module whose service has no provider, as GraalVM writes some of them
+            tokens.add(TextToken.SPACE);
+        } else if (serviceInfo.implementationTypeNames().size() == 1) {
             tokens.add(TextToken.SPACE);
             internalTypeName = serviceInfo.implementationTypeNames().get(0);
             tokens.add(new ReferenceToken(Printer.TYPE, internalTypeName, internalTypeName.replace('/', '.')));

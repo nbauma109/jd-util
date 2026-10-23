@@ -120,4 +120,36 @@ public class JdJavaSourceParserSyntaxTest {
                 }
                 """);
     }
+
+    @Test
+    public void testArgumentsAfterAnArrayInitializer() throws ParseException {
+        String realigned = realign("""
+                package a;
+                public class Arguments {
+                    Arguments(Object[] locations, String name, Class<?> type) {
+                    }
+
+                    Arguments(Object location, String name, Class<?> type) {
+                        this(location == null ? new Object[0] : new Object[] { location }, name, type);
+                    }
+
+                    void use(Object[] array, String name, boolean flag) {
+                        use(new Object[] { name }, name, flag);
+                        use(flag ? array : new Object[] { name, name }, name, flag);
+                        use(flag ? new Object[] { name } : array, name, flag);
+                    }
+                }
+                """);
+
+        // (a comma follows each initializer)
+        assertTrue(realigned, realigned.replaceAll("\\s+", " ").contains("{ location }, name, type)"));
+        assertTrue(realigned, realigned.replaceAll("\\s+", " ").contains("{ name, name }, name, flag)"));
+    }
+
+    @Test
+    public void testServiceWithoutProvider() throws Exception {
+        String source = "module m {\n    provides a.B with ;\n    provides a.C with d.E;\n}\n";
+
+        assertNotNull(realign(source));
+    }
 }
