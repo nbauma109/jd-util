@@ -458,6 +458,14 @@ public class JdJavaSourceParser
       return -1;
     }
 
+    // a class of a parameterized class: Outer<A, B>.Inner<C>
+    while (getToken(i - 1).kind == GT && getToken(i).kind == DOT && isIdentifierKind(getToken(i + 1).kind)) {
+      i = scanTypeArgumentsIfPresent(i + 2);
+      if (i < 0) {
+        return -1;
+      }
+    }
+
     while (getToken(i).kind == LBRACKET && getToken(i + 1).kind == RBRACKET) {
       i += 2;
     }

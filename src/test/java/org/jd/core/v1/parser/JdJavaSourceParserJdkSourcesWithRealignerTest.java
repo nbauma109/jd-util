@@ -12,7 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -26,6 +28,9 @@ public class JdJavaSourceParserJdkSourcesWithRealignerTest {
         int parsedFiles = 0;
         int realignedFiles = 0;
         int reparsedFiles = 0;
+        // Every file is tried: the failures are reported together, the first one with its source
+        List<String> failures = new ArrayList<>();
+        AssertionError firstFailure = null;
 
         try (ZipFile zipFile = new ZipFile(sourcesZip.toFile(), StandardCharsets.UTF_8)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -58,9 +63,20 @@ public class JdJavaSourceParserJdkSourcesWithRealignerTest {
                     reparsedFiles++;
                     System.out.println("DONE (" + reparsedFiles + ")");
                 } catch (ParseException | RuntimeException ex) {
-                    throw buildAssertionErrorWithAnnotatedSource(sourcesZip, name, source, ex);
+                    System.out.println("FAILED");
+                    failures.add(name + " :: " + firstLine(safeMessage(ex)));
+                    if (firstFailure == null) {
+                        firstFailure = buildAssertionErrorWithAnnotatedSource(sourcesZip, name, source, ex);
+                    }
                 }
             }
+        }
+
+        if (firstFailure != null) {
+            throw new AssertionError(failures.size() + " file(s) of the sources archive " + sourcesZip + " could not be processed:"
+                    + System.lineSeparator() + String.join(System.lineSeparator(), failures)
+                    + System.lineSeparator() + System.lineSeparator() + "The first one:" + System.lineSeparator() + firstFailure.getMessage(),
+                    firstFailure.getCause());
         }
 
         Assert.assertTrue(
@@ -89,6 +105,12 @@ public class JdJavaSourceParserJdkSourcesWithRealignerTest {
         AssertionError ae = new AssertionError(annotated);
         ae.initCause(ex);
         return ae;
+    }
+
+    private static String firstLine(String message) {
+        int end = message.indexOf('\n');
+
+        return end == -1 ? message : message.substring(0, end).trim();
     }
 
     private static String safeMessage(Throwable ex) {

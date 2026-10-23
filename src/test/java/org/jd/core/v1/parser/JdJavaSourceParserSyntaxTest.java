@@ -97,4 +97,27 @@ public class JdJavaSourceParserSyntaxTest {
 
         assertTrue(realigned, realigned.replaceAll("\\s+", " ").contains("case String s -> { try {"));
     }
+
+    @Test
+    public void testTypeWithArgumentsOfItsOuterClass() throws ParseException {
+        // 'Outer<A, B>.Inner': the type arguments belong to the outer class
+        realign("""
+                package a;
+                public class Nested {
+                    Outer<String, Integer>.Inner field;
+
+                    void use(Outer<String, Integer>.Inner parameter) {
+                        Outer<String, Integer>.Inner local = parameter;
+                        Outer<String, Integer>.Inner[] array = new Outer[0];
+                        for (Outer<String, Integer>.Inner each : array) {
+                            local = each;
+                        }
+                    }
+
+                    Outer<String, Integer>.Inner result() {
+                        return field;
+                    }
+                }
+                """);
+    }
 }
