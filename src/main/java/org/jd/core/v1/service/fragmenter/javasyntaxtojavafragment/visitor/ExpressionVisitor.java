@@ -61,6 +61,7 @@ import org.jd.core.v1.model.javasyntax.expression.TernaryOperatorExpression;
 import org.jd.core.v1.model.javasyntax.expression.ThisExpression;
 import org.jd.core.v1.model.javasyntax.expression.TypeReferenceDotClassExpression;
 import org.jd.core.v1.model.javasyntax.statement.BaseStatement;
+import org.jd.core.v1.model.javasyntax.statement.Statement;
 import org.jd.core.v1.model.javasyntax.type.BaseType;
 import org.jd.core.v1.model.javasyntax.type.BaseTypeArgument;
 import org.jd.core.v1.model.javasyntax.type.DiamondTypeArgument;
@@ -921,7 +922,7 @@ public class ExpressionVisitor extends TypeVisitor {
         writeSwitchExpressionLabels(statement.getLabels(), statement.getWhenCondition());
         fragments.addTokensFragment(tokens);
         tokens = new Tokens();
-        if (statement.getStatements().isList()) {
+        if (statement.getStatements().isList() || !isWrittenWithoutBlockInARule(statement.getStatements().getFirst())) {
             Group start = JavaFragmentFactory.addStartStatementsBlock(fragments);
 
             statement.getStatements().accept(this);
@@ -933,6 +934,11 @@ public class ExpressionVisitor extends TypeVisitor {
         } else {
             statement.getStatements().accept(this);
         }
+    }
+
+    /** Only an expression statement and a 'throw' can follow the arrow of a rule: any other statement (a 'try', an 'if') needs the braces of a block */
+    private static boolean isWrittenWithoutBlockInARule(Statement statement) {
+        return statement.isExpressionStatement() || statement.isThrowStatement();
     }
 
     @Override

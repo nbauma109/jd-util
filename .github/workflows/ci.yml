@@ -15,6 +15,10 @@ jobs:
         # The versions with long term support
         java: [ 17, 21, 25 ]
         distribution: [ temurin, zulu, liberica, microsoft, corretto, oracle, sapmachine, semeru, dragonwell, graalvm, jetbrains ]
+        exclude:
+          # setup-java has no GraalVM for Java 17
+          - java: 17
+            distribution: graalvm
 
     steps:
     - uses: actions/checkout@v7

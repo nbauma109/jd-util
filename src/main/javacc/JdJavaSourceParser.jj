@@ -999,6 +999,31 @@ public class JdJavaSourceParser
     return isUnaryExpressionNotPlusMinusStartToken(after);
   }
 
+  /** @return true for a cast to a primitive type: '(int) x', '(long[]) x' */
+  private boolean isPrimitiveCastAhead() {
+    int index = 1;
+    final Token lp = getToken(index);
+
+    if (lp == null || lp.kind != LPAREN) {
+      return false;
+    }
+    index = skipTypeUseAnnotationsAhead(index + 1);
+    if (index < 0) {
+      return false;
+    }
+
+    final Token first = getToken(index);
+
+    if (first == null || !isPrimitiveTypeToken(first)) {
+      return false;
+    }
+    index = skipArrayDimsAhead(index + 1);
+
+    final Token rp = getToken(index);
+
+    return rp != null && rp.kind == RPAREN && isUnaryExpressionStartToken(getToken(index + 1));
+  }
+
   private boolean isUnaryExpressionStartToken(final Token t) {
     if (t == null) {
       return false;
@@ -1950,13 +1975,23 @@ RecordDeclaration.RecordComponent RecordComponent() :
   BaseAnnotationReference anns;
   Type t;
   Token nameTok;
+  boolean varargs = false;
 }
 {
   anns = AnnotationsOpt()
   t = TypeRef()
+  (<DOT> <DOT> <DOT>
+  {
+    varargs = true;
+  }
+  )?
   nameTok = IdentifierToken()
   {
-    return new RecordDeclaration.RecordComponent(anns, t, nameTok.image);
+    if (varargs)
+    {
+      t = t.createType(t.getDimension() + 1);
+    }
+    return new RecordDeclaration.RecordComponent(anns, t, varargs, nameTok.image);
   }
 }
 
@@ -4434,6 +4469,14 @@ Expression UnaryExpression() :
       return new PreOperatorExpression(ln, op.image, e);
     }
   |
+    /* A cast to a primitive type has no lambda for operand: in 'case (int) A -> 1' the arrow is the one of the case */
+    LOOKAHEAD( { isPrimitiveCastAhead() } )
+    op = <LPAREN> t = TypeRef() <RPAREN> e = UnaryExpression()
+    {
+      ln = consumeLineNumber(op);
+      return new CastExpression(ln, t, e, true, false);
+    }
+  |
     LOOKAHEAD( { isCastAhead() } )
     op = <LPAREN> t = TypeRef() ( <AMP> TypeRef() )* <RPAREN>
     (
@@ -5325,8 +5368,11 @@ TypeParameter TypeParameterDecl(Set<String> declaredNames) :
 {
   Token id;
   BaseType bounds;
+  AnnotationReference ignoredTypeParameterAnnotation;
 }
 {
+  /* Annotations of the type parameter (ignored in AST) */
+  ( LOOKAHEAD(<AT>) ignoredTypeParameterAnnotation = Annotation() )*
   id = IdentifierToken()
   (
     <EXTENDS>

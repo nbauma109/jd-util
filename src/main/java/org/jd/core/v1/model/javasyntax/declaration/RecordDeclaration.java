@@ -70,14 +70,28 @@ public class RecordDeclaration extends TypeDeclaration {
     public static class RecordComponent {
         private final BaseAnnotationReference annotationReferences;
         private final org.jd.core.v1.model.javasyntax.type.Type type;
+        private final boolean varargs;
         private final String name;
 
         public RecordComponent(BaseAnnotationReference annotationReferences,
                                org.jd.core.v1.model.javasyntax.type.Type type,
                                String name) {
+            this(annotationReferences, type, false, name);
+        }
+
+        /** @param varargs true for the last component of a record whose type is written 'T... name' (its type is the array) */
+        public RecordComponent(BaseAnnotationReference annotationReferences,
+                               org.jd.core.v1.model.javasyntax.type.Type type,
+                               boolean varargs,
+                               String name) {
             this.annotationReferences = annotationReferences;
             this.type = type;
+            this.varargs = varargs;
             this.name = name;
+        }
+
+        public boolean isVarargs() {
+            return varargs;
         }
 
         public BaseAnnotationReference getAnnotationReferences() {
