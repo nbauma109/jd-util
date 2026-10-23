@@ -19,6 +19,7 @@ import org.jd.core.v1.model.javasyntax.type.GenericType;
 import org.jd.core.v1.model.javasyntax.type.InnerObjectType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
+import org.jd.core.v1.model.javasyntax.type.Type;
 import org.jd.core.v1.model.javasyntax.type.TypeArgumentVisitable;
 import org.jd.core.v1.model.javasyntax.type.TypeArguments;
 import org.jd.core.v1.model.javasyntax.type.TypeParameter;
@@ -104,6 +105,8 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     private boolean realignLineNumbers;
     protected ObjectType currentType;
     protected boolean currentTypeIsRecord;
+    /** The annotations of the type which is being visited: they are written in front of its name, after its qualifier if it has one */
+    private BaseAnnotationReference typeAnnotations;
     private final Map<String, TextToken> textTokenCache = new HashMap<>();
 
     public TypeVisitor(Loader loader, String mainInternalTypeName, int majorVersion, ImportsFragment importsFragment) {
@@ -170,10 +173,47 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         visitDimension(type.getDimension());
     }
 
+    /** Visits a type with the annotations which are on the type: 'java.lang.@Nullable String', '@Nullable T' */
+    protected void visitTypeWithAnnotations(BaseType type, BaseAnnotationReference annotations) {
+        if (Utils.isEmpty(annotations)) {
+            type.accept(this);
+        } else if (type instanceof ObjectType) {
+            typeAnnotations = annotations;
+            type.accept(this);
+            typeAnnotations = null;
+        } else {
+            // (a type variable or a primitive type has no qualifier)
+            buildTokensForTypeAnnotations(annotations);
+            type.accept(this);
+        }
+    }
+
+    /** Adds the token of the name of a type, with the annotations of the type if it has some: they come after the qualifier of the name */
+    private void addTypeReferenceToken(ReferenceToken token, ObjectType type) {
+        BaseAnnotationReference annotations = typeAnnotations;
+
+        typeAnnotations = null;
+        if (annotations == null) {
+            tokens.add(token);
+            return;
+        }
+        String name = token.getName();
+        int dot = name == null ? -1 : name.lastIndexOf('.');
+
+        if (dot == -1) {
+            buildTokensForTypeAnnotations(annotations);
+            tokens.add(token);
+        } else {
+            tokens.add(newTextToken(name.substring(0, dot + 1)));
+            buildTokensForTypeAnnotations(annotations);
+            tokens.add(new ReferenceToken(Printer.TYPE, type.getInternalName(), name.substring(dot + 1), null, currentType));
+        }
+    }
+
     @Override
     public void visit(ObjectType type) {
         // Build token for type reference
-        tokens.add(newTypeReferenceToken(type, currentType));
+        addTypeReferenceToken(newTypeReferenceToken(type, currentType), type);
 
         if (genericTypesSupported) {
             // Build token for type arguments
@@ -190,6 +230,11 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
 
     @Override
     public void visit(InnerObjectType type) {
+        BaseAnnotationReference annotations = typeAnnotations;
+
+        // (the type arguments and the outer type have none)
+        typeAnnotations = null;
+
         BaseType outerType = type.getOuterType();
         if (currentType == null || !currentType.getInternalName().equals(type.getInternalName()) && outerType != null && !currentType.getInternalName().equals(outerType.getInternalName())) {
 
@@ -198,6 +243,11 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         }
 
         // Build token for type reference
+        if (annotations != null) {
+            // (written in front of the name of the class, after the one of its outer type: 'Map.@Nullable Entry', which is valid for a
+            // static class as well as for an inner class)
+            buildTokensForTypeAnnotations(annotations);
+        }
         tokens.add(new ReferenceToken(Printer.TYPE, type.getInternalName(), type.getName(), null, currentType));
 
         if (genericTypesSupported) {
@@ -265,22 +315,24 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
         tokens.add(EXTENDS);
         tokens.add(TextToken.SPACE);
 
-        if (!Utils.isEmpty(parameter.getBoundAnnotations())) {
-            buildTokensForBoundAnnotations(parameter.getBoundAnnotations());
-        }
         BaseType types = parameter.getTypeBounds();
 
         if (types.isList()) {
-            buildTokensForList(types.getList(), TextToken.SPACE_AND_SPACE);
-        } else {
-            BaseType type = types.getFirst();
+            // the annotations are the ones of the first bound
+            List<Type> bounds = types.getList();
 
-            type.accept(this);
+            visitTypeWithAnnotations(bounds.get(0), parameter.getBoundAnnotations());
+            for (int i = 1; i < bounds.size(); i++) {
+                tokens.add(TextToken.SPACE_AND_SPACE);
+                bounds.get(i).accept((org.jd.core.v1.model.javasyntax.type.TypeVisitor) this);
+            }
+        } else {
+            visitTypeWithAnnotations(types.getFirst(), parameter.getBoundAnnotations());
         }
     }
 
-    /** Prints the annotations of the bounds of a type parameter, with the space after them: only a visitor which prints annotations does */
-    protected void buildTokensForBoundAnnotations(BaseAnnotationReference annotationReferences) {
+    /** Prints the annotations of a type, with the space after them: only a visitor which prints annotations does */
+    protected void buildTokensForTypeAnnotations(BaseAnnotationReference annotationReferences) {
         // no annotations by default
     }
 

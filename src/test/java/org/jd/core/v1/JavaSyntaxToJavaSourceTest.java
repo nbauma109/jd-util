@@ -50,6 +50,8 @@ import org.jd.core.v1.model.javasyntax.statement.ReturnStatement;
 import org.jd.core.v1.model.javasyntax.statement.Statements;
 import org.jd.core.v1.model.javasyntax.statement.SwitchStatement;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
+import org.jd.core.v1.model.javasyntax.reference.TypeUseAnnotationReference;
+import org.jd.core.v1.model.javasyntax.type.InnerObjectType;
 import org.jd.core.v1.model.javasyntax.type.ObjectType;
 import org.jd.core.v1.model.javasyntax.type.PrimitiveType;
 import org.jd.core.v1.model.javasyntax.type.Type;
@@ -321,6 +323,73 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         // the annotation is imported and written in front of the bound
         Assert.assertTrue(source, source.contains("import org.jspecify.annotations.Nullable;"));
         Assert.assertTrue(source, source.contains("class Holder<K extends @Nullable Object>"));
+    }
+
+    private String printClassWithTypeUseAnnotations(org.jd.core.v1.api.loader.Loader loader) throws Exception {
+        ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
+        ObjectType stringType = ObjectType.TYPE_STRING;
+        TypeUseAnnotationReference nullable = new TypeUseAnnotationReference(nullableType);
+
+        CompilationUnit compilationUnit = new CompilationUnit(
+            new ClassDeclaration(
+                Const.ACC_PUBLIC,
+                "org/jd/core/v1/service/test/Annotated",
+                "Annotated",
+                new BodyDeclaration(
+                    "org/jd/core/v1/service/test/Annotated",
+                    new MemberDeclarations(
+                        new FieldDeclaration(nullable, Const.ACC_PRIVATE, stringType, new FieldDeclarator("value")),
+                        new FieldDeclaration(nullable, Const.ACC_PRIVATE, new InnerObjectType("java/util/Map$Entry", "java.util.Map$Entry", "Entry", new ObjectType("java/util/Map", "java.util.Map", "Map")), new FieldDeclarator("entry")),
+                        new MethodDeclaration(
+                            nullable, Const.ACC_PUBLIC, "find", null, stringType,
+                            new FormalParameter(nullable, stringType, false, "key"), null, "(Ljava/lang/String;)Ljava/lang/String;", ReturnStatement.RETURN, null)
+                    )
+                )
+            )
+        );
+
+        org.jd.core.v1.printer.PlainTextPrinter printer = new org.jd.core.v1.printer.PlainTextPrinter();
+        DecompileContext decompileContext = new DecompileContext();
+        decompileContext.setCompilationUnit(compilationUnit);
+        decompileContext.setMainInternalTypeName("org/jd/core/v1/service/test/Annotated");
+        decompileContext.setLoader(loader);
+        decompileContext.setPrinter(printer);
+        decompileContext.setConfiguration(Collections.emptyMap());
+        decompileContext.setMaxLineNumber(7);
+        decompileContext.setMajorVersion(0);
+        decompileContext.setMinorVersion(0);
+
+        fragmenter.process(compilationUnit, decompileContext);
+        layouter.process(decompileContext);
+        decompileContext.setTokens(tokenizer.process(decompileContext.getBody()));
+        writer.process(decompileContext);
+
+        return printer.toString().replaceAll("/\\*[^*]*\\*/", "").replaceAll("\\s+", " ");
+    }
+
+    @Test
+    public void testTypeUseAnnotationsAreInFrontOfTheNameOfTheType() throws Exception {
+        String source = printClassWithTypeUseAnnotations(new NopLoader());
+
+        Assert.assertTrue(source, source.contains("private @Nullable String value;"));
+        // (a nested class is annotated after its outer class)
+        Assert.assertTrue(source, source.contains("private Map.@Nullable Entry entry;"));
+        Assert.assertTrue(source, source.contains("public @Nullable String find(@Nullable String key)"));
+        Assert.assertTrue(source, source.contains("import org.jspecify.annotations.Nullable;"));
+    }
+
+    @Test
+    public void testTypeUseAnnotationsFollowTheQualifierOfTheName() throws Exception {
+        // a class of the package is named String: java.lang.String is written with its package, which an annotation cannot precede
+        String source = printClassWithTypeUseAnnotations(new NopLoader() {
+            @Override
+            public boolean canLoad(String internalName) {
+                return "org/jd/core/v1/service/test/String".equals(internalName);
+            }
+        });
+
+        Assert.assertTrue(source, source.contains("private java.lang.@Nullable String value;"));
+        Assert.assertTrue(source, source.contains("public java.lang.@Nullable String find(java.lang.@Nullable String key)"));
     }
 
     private String printCallWithParameters(int majorVersion, org.jd.core.v1.model.javasyntax.expression.Expression... parameters) throws Exception {

@@ -50,6 +50,7 @@ import org.jd.core.v1.model.javasyntax.reference.AnnotationElementValue;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReference;
 import org.jd.core.v1.model.javasyntax.reference.AnnotationReferences;
 import org.jd.core.v1.model.javasyntax.reference.BaseAnnotationReference;
+import org.jd.core.v1.model.javasyntax.reference.TypeUseAnnotationReference;
 import org.jd.core.v1.model.javasyntax.reference.BaseElementValue;
 import org.jd.core.v1.model.javasyntax.reference.BaseElementValuePair;
 import org.jd.core.v1.model.javasyntax.reference.ElementValueArrayInitializerElementValue;
@@ -243,7 +244,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
     }
 
     @Override
-    protected void buildTokensForBoundAnnotations(BaseAnnotationReference annotationReferences) {
+    protected void buildTokensForTypeAnnotations(BaseAnnotationReference annotationReferences) {
         annotationReferences.accept(this);
         tokens.add(TextToken.SPACE);
     }
@@ -469,8 +470,35 @@ public class CompilationUnitVisitor extends StatementVisitor {
         fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
     }
 
+    /** @return the annotations which are on the declaration, not on its type; null if there is none */
+    private static BaseAnnotationReference declarationAnnotations(BaseAnnotationReference annotationReferences) {
+        return selectAnnotations(annotationReferences, false);
+    }
+
+    /** @return the annotations which are on the type of the declaration ('@Nullable String value'); null if there is none */
+    private static BaseAnnotationReference typeUseAnnotations(BaseAnnotationReference annotationReferences) {
+        return selectAnnotations(annotationReferences, true);
+    }
+
+    private static BaseAnnotationReference selectAnnotations(BaseAnnotationReference annotationReferences, boolean typeUse) {
+        if (annotationReferences == null) {
+            return null;
+        }
+        if (annotationReferences instanceof AnnotationReferences<?> list) {
+            AnnotationReferences<AnnotationReference> selected = new AnnotationReferences<>();
+
+            for (BaseAnnotationReference reference : list) {
+                if ((reference instanceof TypeUseAnnotationReference) == typeUse) {
+                    selected.add((AnnotationReference) reference);
+                }
+            }
+            return selected.isEmpty() ? null : selected.size() == 1 ? selected.getFirst() : selected;
+        }
+        return (annotationReferences instanceof TypeUseAnnotationReference) == typeUse ? annotationReferences : null;
+    }
+
     private void buildTokensForRecordComponent(RecordDeclaration.RecordComponent component) {
-        BaseAnnotationReference annotationReferences = component.getAnnotationReferences();
+        BaseAnnotationReference annotationReferences = declarationAnnotations(component.getAnnotationReferences());
 
         if (!Utils.isEmpty(annotationReferences)) {
             annotationReferences.accept(this);
@@ -479,7 +507,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
         Type type = component.getType();
 
-        type.accept((TypeVisitor) this);
+        visitTypeWithAnnotations(type, typeUseAnnotations(component.getAnnotationReferences()));
         tokens.add(TextToken.SPACE);
         tokens.add(newTextToken(component.getName()));
     }
@@ -860,7 +888,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             }
 
             // Build fragments for annotations
-            BaseAnnotationReference annotationReferences = declaration.getAnnotationReferences();
+            BaseAnnotationReference annotationReferences = declarationAnnotations(declaration.getAnnotationReferences());
 
             if (annotationReferences != null) {
                 annotationReferences.accept(annotationVisitor);
@@ -874,7 +902,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             BaseType type = declaration.getType();
 
-            type.accept(this);
+            visitTypeWithAnnotations(type, typeUseAnnotations(declaration.getAnnotationReferences()));
 
             tokens.add(StartBlockToken.START_DECLARATION_OR_STATEMENT_BLOCK);
             fragments.addTokensFragment(tokens);
@@ -921,7 +949,8 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
     @Override
     public void visit(FormalParameter declaration) {
-        BaseAnnotationReference annotationReferences = declaration.getAnnotationReferences();
+        BaseAnnotationReference typeAnnotations = typeUseAnnotations(declaration.getAnnotationReferences());
+        BaseAnnotationReference annotationReferences = declarationAnnotations(declaration.getAnnotationReferences());
 
         if (!Utils.isEmpty(annotationReferences)) {
             annotationReferences.accept(this);
@@ -936,13 +965,13 @@ public class CompilationUnitVisitor extends StatementVisitor {
         if (declaration.isVarargs()) {
             Type arrayType = declaration.getType();
             BaseType type = arrayType.createType(Math.max(0, arrayType.getDimension() - 1));
-            type.accept(this);
+            visitTypeWithAnnotations(type, typeAnnotations);
 
             tokens.add(TextToken.VARARGS);
         } else {
             BaseType type = declaration.getType();
 
-            type.accept(this);
+            visitTypeWithAnnotations(type, typeAnnotations);
             tokens.add(TextToken.SPACE);
         }
 
@@ -1298,7 +1327,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             tokens = new Tokens();
 
             // Build fragments for annotations
-            BaseAnnotationReference annotationReferences = declaration.getAnnotationReferences();
+            BaseAnnotationReference annotationReferences = declarationAnnotations(declaration.getAnnotationReferences());
 
             if (annotationReferences != null) {
                 annotationReferences.accept(annotationVisitor);
@@ -1322,7 +1351,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             BaseType returnedType = declaration.getReturnedType();
 
-            returnedType.accept(this);
+            visitTypeWithAnnotations(returnedType, typeUseAnnotations(declaration.getAnnotationReferences()));
             tokens.add(TextToken.SPACE);
 
             // Build token for type declaration
