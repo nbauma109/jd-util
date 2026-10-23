@@ -15,6 +15,12 @@ jobs:
         # The versions with long term support
         java: [ 17, 21, 25 ]
         distribution: [ temurin, zulu, liberica, microsoft, corretto, oracle, sapmachine, semeru, dragonwell, graalvm, graalvm-community, jetbrains, kona, liberica-nik, oracle-openjdk, redhat ]
+        exclude:
+          # setup-java finds no release of these for the version
+          - java: 17
+            distribution: graalvm
+          - java: 25
+            distribution: redhat
 
     steps:
     - uses: actions/checkout@v7
