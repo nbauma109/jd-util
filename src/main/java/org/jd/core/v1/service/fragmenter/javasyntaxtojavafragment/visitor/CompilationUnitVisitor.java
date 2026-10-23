@@ -1002,7 +1002,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
             Type arrayType = declaration.getType();
             BaseType type = arrayType.createType(Math.max(0, arrayType.getDimension() - 1));
 
-            type.accept((TypeVisitor) this);
+            visitTypeWithAnnotations(type, null);
             if (!Utils.isEmpty(typeAnnotations)) {
                 // (the annotations of the array of the arguments: 'String @Nullable ... values')
                 tokens.add(TextToken.SPACE);
