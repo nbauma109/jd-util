@@ -37,14 +37,15 @@ public final class CharacterUtil {
                 if (c < 127) {
                     return String.valueOf((char)c);
                 }
-                if (c < 161) {
+                if (c < 161 || Character.isSurrogate((char)c)) {
+                    // a surrogate on its own cannot be written in a source file
                     return unicode(c);
                 }
                 return String.valueOf((char)c);
         }
     }
 
-    private static String unicode(int c) {
+    static String unicode(int c) {
         char[] buffer = new char[6];
 
         buffer[0] = '\\';
