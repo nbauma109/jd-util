@@ -84,6 +84,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.apache.bcel.Const.ACC_ABSTRACT;
 import static org.apache.bcel.Const.ACC_BRIDGE;
@@ -535,8 +536,8 @@ public class CompilationUnitVisitor extends StatementVisitor {
         List<String> sortedDeclared = new ArrayList<>(declared);
         List<String> sortedOnType = new ArrayList<>(onType);
 
-        sortedDeclared.sort(null);
-        sortedOnType.sort(null);
+        Collections.sort(sortedDeclared);
+        Collections.sort(sortedOnType);
         return sortedDeclared.equals(sortedOnType);
     }
 
