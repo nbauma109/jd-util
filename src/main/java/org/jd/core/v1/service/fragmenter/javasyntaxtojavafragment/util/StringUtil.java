@@ -23,8 +23,16 @@ public final class StringUtil {
 
                 sb.append(s.substring(0, i));
 
+                boolean lowOfPair = false;
+
                 for (; i < length; i++) {
                     c = s.charAt(i);
+
+                    if (lowOfPair) {
+                        sb.append(c);
+                        lowOfPair = false;
+                        continue;
+                    }
 
                     switch (c) {
                         case '\\':
@@ -55,7 +63,8 @@ public final class StringUtil {
                                 sb.append((char)('0' + (c & 7)));
                             } else if (Character.isHighSurrogate(c) && i + 1 < length && Character.isLowSurrogate(s.charAt(i + 1))) {
                                 // a pair is one character of the source
-                                sb.append(c).append(s.charAt(++i));
+                                sb.append(c);
+                                lowOfPair = true;
                             } else if (Character.isSurrogate(c)) {
                                 sb.append(CharacterUtil.unicode(c));
                             } else {
