@@ -18,7 +18,7 @@ public final class StringUtil {
         for (int i = 0; i < length; i++) {
             char c = s.charAt(i);
 
-            if (c == '\\' || c == '"' || c < ' ') {
+            if (c == '\\' || c == '"' || c < ' ' || Character.isSurrogate(c)) {
                 StringBuilder sb = new StringBuilder(length * 2);
 
                 sb.append(s.substring(0, i));
@@ -53,6 +53,11 @@ public final class StringUtil {
                                 sb.append("\\0");
                                 sb.append((char)('0' + (c >> 3)));
                                 sb.append((char)('0' + (c & 7)));
+                            } else if (Character.isHighSurrogate(c) && i + 1 < length && Character.isLowSurrogate(s.charAt(i + 1))) {
+                                // a pair is one character of the source
+                                sb.append(c).append(s.charAt(++i));
+                            } else if (Character.isSurrogate(c)) {
+                                sb.append(CharacterUtil.unicode(c));
                             } else {
                                 sb.append(c);
                             }
