@@ -251,19 +251,17 @@ public class StatementVisitor extends ExpressionVisitor {
             statements.accept(this);
 
             switch (fragments.size()) {
-                case 0:
-                    tokens.add(TextToken.SEMICOLON);
-                    break;
-                case 1:
+                case 0 -> tokens.add(TextToken.SEMICOLON);
+                case 1 -> {
                     StartSingleStatementBlockFragment start = JavaFragmentFactory.addStartSingleStatementBlock(tmp);
                     tmp.addAll(fragments);
                     JavaFragmentFactory.addEndSingleStatementBlock(tmp, start);
-                    break;
-                default:
+                }
+                default -> {
                     StartStatementsBlockFragment.Group group = JavaFragmentFactory.addStartStatementsBlock(tmp);
                     tmp.addAll(fragments);
                     JavaFragmentFactory.addEndStatementsBlock(tmp, group);
-                    break;
+                }
             }
 
             fragments = tmp;
@@ -293,19 +291,17 @@ public class StatementVisitor extends ExpressionVisitor {
             stmt.accept(this);
 
             switch (stmt.size()) {
-                case 0:
-                    tmp.add(TokensFragment.SEMICOLON);
-                    break;
-                case 1:
+                case 0 -> tmp.add(TokensFragment.SEMICOLON);
+                case 1 -> {
                     StartSingleStatementBlockFragment start = JavaFragmentFactory.addStartSingleStatementBlock(tmp);
                     tmp.addAll(fragments);
                     JavaFragmentFactory.addEndSingleStatementBlock(tmp, start);
-                    break;
-                default:
+                }
+                default -> {
                     StartStatementsBlockFragment.Group group = JavaFragmentFactory.addStartStatementsBlock(tmp);
                     tmp.addAll(fragments);
                     JavaFragmentFactory.addEndStatementsBlock(tmp, group);
-                    break;
+                }
             }
 
             fragments = tmp;
