@@ -353,15 +353,9 @@ public class ExpressionVisitor extends TypeVisitor {
         PrimitiveType pt = (PrimitiveType)expression.getType();
 
         switch (pt.getJavaPrimitiveFlags()) {
-            case FLAG_CHAR:
-                tokens.add(new CharacterConstantToken(CharacterUtil.escapeChar((char)expression.getIntegerValue()), getCurrentTypeInternalName()));
-                break;
-            case FLAG_BOOLEAN:
-                tokens.add(new BooleanConstantToken(expression.getIntegerValue() != 0));
-                break;
-            default:
-                tokens.add(new NumericConstantToken(String.valueOf(expression.getIntegerValue())));
-                break;
+            case FLAG_CHAR -> tokens.add(new CharacterConstantToken(CharacterUtil.escapeChar((char)expression.getIntegerValue()), getCurrentTypeInternalName()));
+            case FLAG_BOOLEAN -> tokens.add(new BooleanConstantToken(expression.getIntegerValue() != 0));
+            default -> tokens.add(new NumericConstantToken(String.valueOf(expression.getIntegerValue())));
         }
     }
 

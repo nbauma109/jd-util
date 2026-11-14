@@ -1754,35 +1754,18 @@ public class TypeMaker {
         for (int i=1; i<count; i++) {
             tag = reader.readByte();
             switch (tag) {
-                case CONSTANT_Utf8:
-                    constants[i] = reader.readUTF();
-                    break;
-                case CONSTANT_Class:
-                    constants[i] = Integer.valueOf(reader.readUnsignedShort());
-                    break;
-                case CONSTANT_String, CONSTANT_MethodType, CONSTANT_Module, CONSTANT_Package:
-                    reader.skipBytes(2);
-                    break;
-                case CONSTANT_MethodHandle:
-                    reader.skipBytes(3);
-                    break;
-                case CONSTANT_Integer,
-                     CONSTANT_Float,
-                     CONSTANT_Fieldref,
-                     CONSTANT_Methodref,
-                     CONSTANT_InterfaceMethodref,
-                     CONSTANT_NameAndType,
-                     CONSTANT_Dynamic,
-                     CONSTANT_InvokeDynamic:
-                    reader.skipBytes(4);
-                    break;
-                case CONSTANT_Long, CONSTANT_Double:
+                case CONSTANT_Utf8 -> constants[i] = reader.readUTF();
+                case CONSTANT_Class -> constants[i] = Integer.valueOf(reader.readUnsignedShort());
+                case CONSTANT_String, CONSTANT_MethodType, CONSTANT_Module, CONSTANT_Package -> reader.skipBytes(2);
+                case CONSTANT_MethodHandle -> reader.skipBytes(3);
+                case CONSTANT_Integer, CONSTANT_Float, CONSTANT_Fieldref, CONSTANT_Methodref, CONSTANT_InterfaceMethodref, CONSTANT_NameAndType, CONSTANT_Dynamic, CONSTANT_InvokeDynamic -> reader.skipBytes(4);
+                case CONSTANT_Long, CONSTANT_Double -> {
                     reader.skipBytes(8);
                     i++;
-                    break;
-                default:
-                    throw new ClassFormatException("Invalid constant pool entry");
+                }
+                default -> throw new ClassFormatException("Invalid constant pool entry");
             }
+            ;
         }
 
         return constants;
