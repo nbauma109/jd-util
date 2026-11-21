@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -180,5 +181,20 @@ public class MethodBodyRangeTest {
 
         assertEquals("{ a(); }", bodies.get("R#<init>(int,List,String[])"));
         assertEquals("{ this(0, null); }", bodies.get("R#<init>()"));
+    }
+
+    @Test
+    public void lineStartsFollowLfCrLfAndLoneCarriageReturnsEvenAtTheEnd() {
+        assertArrayEquals(new int[] {0}, MethodBodyRange.lineStartOffsets(""));
+        assertArrayEquals(new int[] {0, 2, 5, 7}, MethodBodyRange.lineStartOffsets("a\nb\r\nc\rd"));
+        assertArrayEquals(new int[] {0, 2}, MethodBodyRange.lineStartOffsets("a\r"));
+        assertArrayEquals(new int[] {0, 3}, MethodBodyRange.lineStartOffsets("a\r\n"));
+        assertArrayEquals(new int[] {0, 2, 3}, MethodBodyRange.lineStartOffsets("a\r\r"));
+    }
+
+    @Test
+    public void aSourceEndingWithoutALineBreakStillGivesItsRanges() throws ParseException {
+        assertEquals("{ }", bodies("class A { void m() { } }").get("A#m()"));
+        assertEquals("{ }", bodies("class A { void m() { } }\r").get("A#m()"));
     }
 }
