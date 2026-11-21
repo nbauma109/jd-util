@@ -52,13 +52,15 @@ public class JdJavaSourceParser
 
   private List<MethodBodyRange> methodBodyRanges = new ArrayList<>();
   private int[] lineStartOffsets = new int[] { 0 };
+  private String rawSource = "";
 
   public static List<MethodBodyRange> parseMethodBodyRanges(String source) throws ParseException
   {
     JdJavaSourceParser p = new JdJavaSourceParser(new StringReader(source));
+    p.rawSource = source;
     p.lineStartOffsets = MethodBodyRange.lineStartOffsets(source);
     p.CompilationUnitResult();
-    return Collections.unmodifiableList(p.methodBodyRanges);
+    return MethodBodyRange.withOccurrences(p.methodBodyRanges);
   }
 
   private final Map<String, List<String>> recordComponentTypes = new HashMap<>();
@@ -79,7 +81,8 @@ public class JdJavaSourceParser
     {
       return;
     }
-    int start = offsetOf(open.beginLine, open.beginColumn - 1);
+    // the position of a token that starts with a unicode escape is the one of the last character of the escape
+    int start = MethodBodyRange.startOfEscape(rawSource, offsetOf(open.beginLine, open.beginColumn - 1));
     int end = offsetOf(close.endLine, close.endColumn);
     methodBodyRanges.add(new MethodBodyRange(currentTypeInternalNameOrFallback(), name, parameterTypes, start, end));
   }

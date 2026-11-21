@@ -197,4 +197,30 @@ public class MethodBodyRangeTest {
         assertEquals("{ }", bodies("class A { void m() { } }").get("A#m()"));
         assertEquals("{ }", bodies("class A { void m() { } }\r").get("A#m()"));
     }
+
+    @Test
+    public void bodiesWrittenWithUnicodeEscapedBracesAreFullyCovered() throws ParseException {
+        Map<String, String> bodies = bodies("class A { void m() \\u007b a(); \\u007d void n() \\uu007b b(); } void o() { } }");
+
+        assertEquals("\\u007b a(); \\u007d", bodies.get("A#m()"));
+        assertEquals("\\uu007b b(); }", bodies.get("A#n()"));
+        assertEquals("{ }", bodies.get("A#o()"));
+    }
+
+    @Test
+    public void anEscapedBackslashIsNotTakenForTheStartOfAnEscape() {
+        assertEquals(8, MethodBodyRange.startOfEscape("x \\\\u007b", 8));
+        assertEquals(1, MethodBodyRange.startOfEscape("a\\u007b", 6));
+        assertEquals(1, MethodBodyRange.startOfEscape("a\\uuu007b", 8));
+        assertEquals(0, MethodBodyRange.startOfEscape("{", 0));
+        assertEquals(3, MethodBodyRange.startOfEscape("abcd", 3));
+    }
+
+    @Test
+    public void localClassesWithTheSameNameInDifferentMethodsKeepDistinctKeys() throws ParseException {
+        Map<String, String> bodies = bodies("class A { void a() { class L { void m() { one(); } } } void b() { class L { void m() { two(); } } } }");
+
+        assertEquals("{ one(); }", bodies.get("A$L#m()"));
+        assertEquals("{ two(); }", bodies.get("A$L#m()@1"));
+    }
 }
