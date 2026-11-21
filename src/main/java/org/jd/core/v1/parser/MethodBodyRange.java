@@ -55,7 +55,7 @@ public record MethodBodyRange(String typeInternalName,
 
   static String erasedSimpleName(Type type) {
     String name = type.getName();
-    int cut = Math.max(name.lastIndexOf('.'), Math.max(name.lastIndexOf('/'), name.lastIndexOf('$')));
+    int cut = Math.max(name.lastIndexOf('.'), name.lastIndexOf('/'));
     StringBuilder sb = new StringBuilder(cut >= 0 ? name.substring(cut + 1) : name);
     for (int i = 0; i < type.getDimension(); i++) {
       sb.append("[]");

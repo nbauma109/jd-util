@@ -61,16 +61,23 @@ public class JdJavaSourceParser
     return Collections.unmodifiableList(p.methodBodyRanges);
   }
 
+  private final Map<String, List<String>> recordComponentTypes = new HashMap<>();
+
   private void recordBody(String name, FormalParameters params, Token open, Token close)
   {
-    if (open == null || close == null || open.kind != LBRACE || close.kind != RBRACE)
-    {
-      return;
-    }
     List<String> parameterTypes = new ArrayList<>();
     for (FormalParameter fp : params)
     {
       parameterTypes.add(MethodBodyRange.erasedSimpleName(fp.getType()));
+    }
+    recordBody(name, parameterTypes, open, close);
+  }
+
+  private void recordBody(String name, List<String> parameterTypes, Token open, Token close)
+  {
+    if (open == null || close == null || open.kind != LBRACE || close.kind != RBRACE)
+    {
+      return;
     }
     int start = offsetOf(open.beginLine, open.beginColumn - 1);
     int end = offsetOf(close.endLine, close.endColumn);
@@ -1799,6 +1806,14 @@ TypeDeclaration TypeDeclarationAfterPreamble(BaseAnnotationReference anns, List<
       }
     }
     recordComponents = RecordHeader()
+    {
+      List<String> componentTypes = new ArrayList<>();
+      for (RecordDeclaration.RecordComponent component : recordComponents)
+      {
+        componentTypes.add(MethodBodyRange.erasedSimpleName(component.getType()));
+      }
+      recordComponentTypes.put(internalName, componentTypes);
+    }
     (
       <IMPLEMENTS> interfaces = TypeList()
     |
@@ -2069,9 +2084,19 @@ BodyDeclaration ClassBody(String internalTypeName) :
   MemberDeclarations members = new MemberDeclarations(DEFAULT_CAPACITY);
   MemberDeclaration m;
   MemberDeclarations decls;
+  boolean pushedBodyContext = false;
 }
 {
   <LBRACE>
+  {
+    // anonymous classes and enum constant bodies are not pushed by their callers
+    TypeContext enclosing = typeContextStack.peek();
+    if (enclosing == null || !internalTypeName.equals(enclosing.internalName()))
+    {
+      typeContextStack.push(new TypeContext(internalTypeName, internalTypeName.replace('/', '.').replace('$', '.')));
+      pushedBodyContext = true;
+    }
+  }
   (
     m = ClassBodyDeclaration()
     {
@@ -2080,6 +2105,10 @@ BodyDeclaration ClassBody(String internalTypeName) :
   )*
   <RBRACE>
   {
+    if (pushedBodyContext)
+    {
+      typeContextStack.pop();
+    }
     sortMembersByFirstLineNumber(members);
     decls = new MemberDeclarations(members.size());
     decls.addAll(members);
@@ -2345,7 +2374,7 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
     {
       flags = flagsOf(mods);
       descriptor = "";
-      recordBody("<init>", params, bodyOpen, bodyClose);
+      recordBody("<init>", recordComponentTypes.getOrDefault(currentTypeInternalNameOrFallback(), List.of()), bodyOpen, bodyClose);
       return new RecordConstructorDeclaration(anns, flags, null, params, throwsTypes, descriptor, stmts);
     }
   |
@@ -3021,6 +3050,10 @@ FormalParameter FormalParameterOne() :
     if (varargs)
     {
       t = t.createType(t.getDimension() + 1);
+    }
+    if (dims > 0)
+    {
+      t = t.createType(t.getDimension() + dims);
     }
     fp = new FormalParameter(anns, t, varargs, nameTok.image);
     if (mods != null && mods.contains("final"))
