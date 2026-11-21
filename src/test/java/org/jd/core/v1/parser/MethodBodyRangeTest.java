@@ -223,4 +223,21 @@ public class MethodBodyRangeTest {
         assertEquals("{ one(); }", bodies.get("A$L#m()"));
         assertEquals("{ two(); }", bodies.get("A$L#m()@1"));
     }
+
+    @Test
+    public void textThatLooksLikeAnEscapeButIsNotOneIsLeftAlone() {
+        assertEquals(5, MethodBodyRange.startOfEscape("zz1234", 5)); // four hex digits, but no 'u' before them
+        assertEquals(5, MethodBodyRange.startOfEscape("xu1234", 5)); // a 'u', but no backslash
+        assertEquals(5, MethodBodyRange.startOfEscape("uu1234", 5)); // only u's before the digits
+        assertEquals(0, MethodBodyRange.startOfEscape("\\u1234", 5)); // an escape at the very start of the source
+        assertEquals(5, MethodBodyRange.startOfEscape("12\\u12", 5)); // not enough hex digits
+    }
+
+    @Test
+    public void typeNamesAreErasedToTheirSimpleNameWithTheirArrayDimensions() {
+        assertEquals("String", MethodBodyRange.erasedSimpleName(new org.jd.core.v1.model.javasyntax.type.ObjectType("java/lang/String", "java.lang.String", "String")));
+        assertEquals("Entry[][]", MethodBodyRange.erasedSimpleName(new org.jd.core.v1.model.javasyntax.type.ObjectType("java/util/Map$Entry", "java.util.Map.Entry", "Entry").createType(2)));
+        assertEquals("int", MethodBodyRange.erasedSimpleName(org.jd.core.v1.model.javasyntax.type.PrimitiveType.TYPE_INT));
+        assertEquals("T", MethodBodyRange.erasedSimpleName(new org.jd.core.v1.model.javasyntax.type.GenericType("T")));
+    }
 }
