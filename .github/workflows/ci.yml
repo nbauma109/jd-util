@@ -21,6 +21,9 @@ jobs:
             distribution: graalvm
           - java: 25
             distribution: redhat
+          # the catalogue setup-java reads lists the jmods-only archive for Dragonwell 25.0.5: JAVA_HOME has no bin/java
+          - java: 25
+            distribution: dragonwell
 
     steps:
     - uses: actions/checkout@v7
