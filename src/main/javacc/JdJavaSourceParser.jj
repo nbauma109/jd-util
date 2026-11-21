@@ -49,6 +49,40 @@ public class JdJavaSourceParser
     return p.CompilationUnitResult();
   }
 
+
+  private List<MethodBodyRange> methodBodyRanges = new ArrayList<>();
+  private int[] lineStartOffsets = new int[] { 0 };
+
+  public static List<MethodBodyRange> parseMethodBodyRanges(String source) throws ParseException
+  {
+    JdJavaSourceParser p = new JdJavaSourceParser(new StringReader(source));
+    p.lineStartOffsets = MethodBodyRange.lineStartOffsets(source);
+    p.CompilationUnitResult();
+    return Collections.unmodifiableList(p.methodBodyRanges);
+  }
+
+  private void recordBody(String name, FormalParameters params, Token open, Token close)
+  {
+    if (open == null || close == null || open.kind != LBRACE || close.kind != RBRACE)
+    {
+      return;
+    }
+    List<String> parameterTypes = new ArrayList<>();
+    for (FormalParameter fp : params)
+    {
+      parameterTypes.add(MethodBodyRange.erasedSimpleName(fp.getType()));
+    }
+    int start = offsetOf(open.beginLine, open.beginColumn - 1);
+    int end = offsetOf(close.endLine, close.endColumn);
+    methodBodyRanges.add(new MethodBodyRange(currentTypeInternalNameOrFallback(), name, parameterTypes, start, end));
+  }
+
+  private int offsetOf(int line, int columnZeroBased)
+  {
+    int index = Math.min(Math.max(line - 1, 0), lineStartOffsets.length - 1);
+    return lineStartOffsets[index] + columnZeroBased;
+  }
+
   private Map<Integer, Integer> physicalToMappedLineNumbers = Collections.emptyMap();
   private List<JavaImport> parsedImports = new ArrayList<>();
 
@@ -2195,6 +2229,8 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
   Set<String> typeParameterNames;
   BaseTypeParameter typeParameters;
   boolean pushedTypeParameters;
+  Token bodyOpen = null;
+  Token bodyClose = null;
 }
 {
   (
@@ -2222,7 +2258,9 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
       |
         { throwsTypes = null; }
       )
+      { bodyOpen = getToken(1); }
       stmts = BlockAsStatements()
+      { bodyClose = getToken(0); }
       {
         flags = flagsOf(mods);
         descriptor = "";
@@ -2230,6 +2268,7 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
         {
           popTypeParameterScope();
         }
+        recordBody("<init>", params, bodyOpen, bodyClose);
         return new ConstructorDeclaration(anns, flags, typeParameters, params, throwsTypes, descriptor, stmts);
       }
     |
@@ -2243,7 +2282,9 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
         { throwsTypes = null; }
       )
       (
+        { bodyOpen = getToken(1); }
         stmts = BlockAsStatements()
+        { bodyClose = getToken(0); }
         {
           defaultAnnotationValue = null;
         }
@@ -2263,6 +2304,7 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
         {
           popTypeParameterScope();
         }
+        recordBody(nameTok.image, params, bodyOpen, bodyClose);
         return new MethodDeclaration(anns, flags, nameTok.image, typeParameters, t, params, throwsTypes, descriptor, stmts, defaultAnnotationValue);
       }
     )
@@ -2276,10 +2318,13 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
     |
       { throwsTypes = null; }
     )
+    { bodyOpen = getToken(1); }
     stmts = BlockAsStatements()
+    { bodyClose = getToken(0); }
     {
       flags = flagsOf(mods);
       descriptor = "";
+      recordBody("<init>", params, bodyOpen, bodyClose);
       return new ConstructorDeclaration(anns, flags, null, params, throwsTypes, descriptor, stmts);
     }
   |
@@ -2294,10 +2339,13 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
     |
       { throwsTypes = null; }
     )
+    { bodyOpen = getToken(1); }
     stmts = BlockAsStatements()
+    { bodyClose = getToken(0); }
     {
       flags = flagsOf(mods);
       descriptor = "";
+      recordBody("<init>", params, bodyOpen, bodyClose);
       return new RecordConstructorDeclaration(anns, flags, null, params, throwsTypes, descriptor, stmts);
     }
   |
@@ -2325,7 +2373,9 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
         { throwsTypes = null; }
       )
       (
+        { bodyOpen = getToken(1); }
         stmts = BlockAsStatements()
+        { bodyClose = getToken(0); }
         {
           defaultAnnotationValue = null;
         }
@@ -2341,6 +2391,7 @@ MemberDeclaration MemberAfterPreamble(BaseAnnotationReference anns, List<String>
       {
         flags = flagsOf(mods);
         descriptor = "";
+        recordBody(nameTok.image, params, bodyOpen, bodyClose);
         return new MethodDeclaration(anns, flags, nameTok.image, null, t, params, throwsTypes, descriptor, stmts, defaultAnnotationValue);
       }
     |
