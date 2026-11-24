@@ -38,5 +38,14 @@ jobs:
       env:
         # the distributions which list their releases on GitHub (JetBrains) would else be limited to the unauthenticated rate
         GITHUB_TOKEN: ${{ github.token }}
+    - name: Check out static analysis parity candidate
+      uses: actions/checkout@v7
+      with:
+        repository: nbauma109/static-analysis-maven-plugin
+        ref: fe565f032e67d5bdefd823e511159526a7002eb4
+        path: static-analysis-candidate
+        persist-credentials: false
+    - name: Install static analysis parity candidate
+      run: mvn -B -ntp -f static-analysis-candidate/pom.xml -DskipTests install
     - name: Build with Maven
-      run: mvn -B --no-transfer-progress -Dgpg.skip=true verify
+      run: mvn -B --no-transfer-progress -Dgpg.skip=true verify -Dstatic-analysis.version=0.1.4-SNAPSHOT
