@@ -42,7 +42,7 @@ jobs:
       uses: actions/checkout@v7
       with:
         repository: nbauma109/static-analysis-maven-plugin
-        ref: 721a0f7f54845246d43cc755b5545188530f5ac8
+        ref: 828e09f111327bc5dc910c89e11bf502671645ea
         path: static-analysis-candidate
         persist-credentials: false
     - name: Install static analysis parity candidate
