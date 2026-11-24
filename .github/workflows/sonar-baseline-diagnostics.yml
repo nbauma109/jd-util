@@ -17,7 +17,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api repos/nbauma109/jd-util/actions/jobs/138760916419/logs > local.log
+          gh api --allow-escape-sequences repos/nbauma109/jd-util/actions/jobs/138760916419/logs > local.log
           python3 - <<'PY'
           import collections
           import json

@@ -1,6 +1,10 @@
 name: Java CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - diagnostics/**
+  pull_request:
 
 permissions:
   contents: read
