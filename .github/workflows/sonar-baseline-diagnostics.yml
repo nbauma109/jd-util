@@ -13,56 +13,44 @@ jobs:
   compare:
     runs-on: ubuntu-latest
     steps:
-      - name: Compare master issues to initial local warnings
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Inspect issue ranges and resolution states on master
         run: |
-          gh api --allow-escape-sequences repos/nbauma109/jd-util/actions/jobs/138760916419/logs > local.log
           python3 - <<'PY'
           import collections
           import json
-          import re
           import urllib.parse
           import urllib.request
 
+          project = "nbauma109_jd-util"
           def get(endpoint, **params):
               url = "https://sonarcloud.io/api/" + endpoint + "?" + urllib.parse.urlencode(params)
               with urllib.request.urlopen(url, timeout=60) as response:
                   return json.load(response)
 
-          project = "nbauma109_jd-util"
-          try:
-              analyses = get("project_analyses/search", project=project, branch="master", ps=1)
-              print("Latest master analysis:", json.dumps(analyses, ensure_ascii=False))
-          except Exception as error:
-              print("Analysis metadata unavailable:", error)
-          cloud = []
-          page = 1
-          while True:
-              response = get("issues/search", componentKeys=project, branch="master", resolved="false", ps=500, p=page)
-              cloud.extend(response["issues"])
-              if len(cloud) >= response["total"]:
-                  break
-              page += 1
-          local = []
-          for line in open("local.log", encoding="utf-8"):
-              match = re.search(r"\[WARNING\] (.*?):(\d+) \[(java:S\d+)\] (.*)", line)
-              if match:
-                  path, number, rule, message = match.groups()
-                  local.append((path, int(number), rule, message.strip()))
-          remote = [(i["component"].split(":", 1)[-1], i.get("line", 0), i["rule"], i["message"]) for i in cloud if i["rule"].startswith("java:")]
-          def key(issue):
-              return issue[:3]
-          hand = [i for i in local if not i[0].startswith("target/")]
-          left = collections.Counter(map(key, hand))
-          right = collections.Counter(map(key, remote))
-          print("COUNTS", json.dumps({"local_total": len(local), "local_generated": len(local)-len(hand), "local_handwritten": len(hand), "cloud_all": len(cloud), "cloud_java": len(remote), "exact_matches": sum((left & right).values()), "local_only": sum((left-right).values()), "cloud_only": sum((right-left).values())}))
-          for title, entries, counts in [("LOCAL_ONLY", hand, left-right), ("CLOUD_ONLY", remote, right-left)]:
-              print(title)
-              for entry in entries:
-                  if counts[key(entry)]:
-                      print(json.dumps(entry, ensure_ascii=False))
-                      counts[key(entry)] -= 1
-          print("CLOUD RULE COUNTS", json.dumps(collections.Counter(i[2] for i in remote)))
-          print("LOCAL RULE COUNTS", json.dumps(collections.Counter(i[2] for i in hand)))
+          print("ANALYSIS", json.dumps(get("project_analyses/search", project=project, branch="master", ps=1)))
+          for resolved in ("false", "true"):
+              page = 1
+              issues = []
+              while True:
+                  result = get("issues/search", componentKeys=project, branch="master",
+                               resolved=resolved, rules="java:S125,java:S1130,java:S2259",
+                               p=page, ps=500)
+                  issues.extend(result["issues"])
+                  if len(issues) >= result["total"]:
+                      break
+                  page += 1
+              print("STATE_COUNTS", resolved, json.dumps(collections.Counter((issue["rule"] + ":" + issue["status"] + ":" + issue.get("resolution", "")) for issue in issues)))
+              for issue in issues:
+                  path = issue["component"].split(":", 1)[-1]
+                  if (path.endswith(("SignatureParserTest.java", "JavaFragmentToTokenTest.java",
+                                     "DefaultStack.java", "MethodBodyRangeTest.java", "CompilationUnitVisitor.java"))):
+                      print("ISSUE", json.dumps({key: issue.get(key) for key in
+                          ("key", "component", "rule", "line", "textRange", "status", "resolution", "message")}))
+          for key in ("java:S6539", "java:S2259", "java:S1874"):
+              try:
+                  response = get("rules/show", key=key)
+                  rule = response["rule"]
+                  print("RULE", json.dumps({name: rule.get(name) for name in ("key", "name", "status", "scope", "params")}))
+              except Exception as error:
+                  print("RULE_ERROR", key, error)
           PY
