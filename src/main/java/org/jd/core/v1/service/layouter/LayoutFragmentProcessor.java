@@ -68,73 +68,7 @@ public class LayoutFragmentProcessor {
             }
 
             List<Section> sections = buildSectionsVisitor.getSections();
-            VisitorsHolder holder = new VisitorsHolder();
-            UpdateSpacerBetweenMovableBlocksVisitor visitor = new UpdateSpacerBetweenMovableBlocksVisitor();
-
-            // Try to release constraints twice for each section
-            int sumOfRates = Integer.MAX_VALUE;
-            int max = sections.size() * 2;
-
-            if (max > 20) {
-                max = 20;
-            }
-
-            for (int loop=0; loop<max; loop++) {
-                // Update spacers
-                visitor.reset();
-
-                for (Section section : sections) {
-                    for (FlexibleFragment fragment : section.getFlexibleFragments()) {
-                        fragment.accept(visitor);
-                    }
-                    if (section.getFixedFragment() != null) {
-                        section.getFixedFragment().accept(visitor);
-                    }
-                }
-
-                // Layout sections
-                for (int redo=0; redo<10; redo++) {
-                    boolean changed = false;
-
-                    for (Section section : sections) {
-                        changed |= section.layout(false);
-                    }
-                    if (!changed) {
-                        // Nothing changed -> Quit loop
-                        break;
-                    }
-                }
-
-                // Update the ratings
-                int newSumOfRates = 0;
-                Section mostConstrainedSection = sections.get(0);
-
-                for (Section section : sections) {
-                    section.updateRate();
-
-                    if (mostConstrainedSection.getRate() < section.getRate()) {
-                        mostConstrainedSection = section;
-                    }
-
-                    newSumOfRates += section.getRate();
-                }
-
-                //  Move fragments from the most constrained section
-                if (mostConstrainedSection.getRate() == 0) {
-                    // No more constrained section -> Quit loop
-                    break;
-                }
-
-                if (sumOfRates <= newSumOfRates) {
-                    // The sum of the constraints does not decrease -> Quit loop
-                    break;
-                }
-                sumOfRates = newSumOfRates;
-
-                if (! mostConstrainedSection.releaseConstraints(holder)) {
-                    break;
-                }
-            }
+            releaseSectionConstraints(sections);
 
             // Force layout
             for (Section section : sections) {
@@ -159,6 +93,60 @@ public class LayoutFragmentProcessor {
                 if (fixedFragment != null) {
                     fragments.add(fixedFragment);
                 }
+            }
+        }
+    }
+
+    private static void releaseSectionConstraints(List<Section> sections) {
+        VisitorsHolder holder = new VisitorsHolder();
+        UpdateSpacerBetweenMovableBlocksVisitor visitor = new UpdateSpacerBetweenMovableBlocksVisitor();
+        int sumOfRates = Integer.MAX_VALUE;
+        int max = Math.min(sections.size() * 2, 20);
+
+        for (int loop = 0; loop < max; loop++) {
+            updateSpacers(sections, visitor);
+            layoutSections(sections);
+
+            int newSumOfRates = 0;
+            Section mostConstrainedSection = sections.get(0);
+
+            for (Section section : sections) {
+                section.updateRate();
+                if (mostConstrainedSection.getRate() < section.getRate()) {
+                    mostConstrainedSection = section;
+                }
+                newSumOfRates += section.getRate();
+            }
+
+            if (mostConstrainedSection.getRate() == 0 || sumOfRates <= newSumOfRates
+                    || !mostConstrainedSection.releaseConstraints(holder)) {
+                break;
+            }
+            sumOfRates = newSumOfRates;
+        }
+    }
+
+    private static void updateSpacers(List<Section> sections,
+            UpdateSpacerBetweenMovableBlocksVisitor visitor) {
+        visitor.reset();
+        for (Section section : sections) {
+            for (FlexibleFragment fragment : section.getFlexibleFragments()) {
+                fragment.accept(visitor);
+            }
+            if (section.getFixedFragment() != null) {
+                section.getFixedFragment().accept(visitor);
+            }
+        }
+    }
+
+    private static void layoutSections(List<Section> sections) {
+        for (int redo = 0; redo < 10; redo++) {
+            boolean changed = false;
+            for (Section section : sections) {
+                changed |= section.layout(false);
+            }
+            if (!changed) {
+                break;
             }
         }
     }

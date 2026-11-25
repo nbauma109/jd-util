@@ -44,6 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -974,11 +975,13 @@ public class TypeMaker {
                 return isAssignable(typeBindings, typeBounds, lt, rt);
             }
         }
+        return matchesWildcardBound(typeBindings, left, leftUnbound);
+    }
+
+    private static boolean matchesWildcardBound(Map<String, TypeArgument> typeBindings, ObjectType left, Type leftUnbound) {
         if (leftUnbound instanceof GenericType gt) {
             TypeArgument typeArgument = typeBindings.get(gt.getName());
-            if (typeArgument instanceof WildcardSuperTypeArgument wsta && wsta.type().equals(left)) {
-                return true;
-            }
+            return typeArgument instanceof WildcardSuperTypeArgument wsta && wsta.type().equals(left);
         }
         return false;
     }
@@ -1751,7 +1754,8 @@ public class TypeMaker {
         Object[] constants = new Object[count];
 
         int tag;
-        for (int i=1; i<count; i++) {
+        int i = 1;
+        while (i < count) {
             tag = reader.readByte();
             switch (tag) {
                 case CONSTANT_Utf8:
@@ -1783,6 +1787,7 @@ public class TypeMaker {
                 default:
                     throw new ClassFormatException("Invalid constant pool entry");
             }
+            i++;
         }
 
         return constants;
@@ -1976,24 +1981,25 @@ public class TypeMaker {
             return flags != 0;
         }
 
-        if (rightType instanceof ObjectType otRight) {
-            if (leftType  instanceof ObjectType otLeft) {
-                return isAssignable(typeBindings, typeBounds, otLeft, otRight);
-            }
-
-            if (leftType instanceof GenericType gt) {
-                if (otRight != ObjectType.TYPE_UNDEFINED_OBJECT && gt.getDimension() > otRight.getDimension()) {
-                    // 'E[]' accepts no argument which is not an array
-                    return false;
-                }
-                BaseType boundType = typeBounds.get(gt.getName());
-                if (boundType instanceof ObjectType ot && isAssignable(ot, otRight)) {
-                    return true;
-                }
-            }
+        if (!(rightType instanceof ObjectType otRight)) {
+            return false;
         }
-
+        if (leftType instanceof ObjectType otLeft) {
+            return isAssignable(typeBindings, typeBounds, otLeft, otRight);
+        }
+        if (leftType instanceof GenericType gt) {
+            return matchesGenericBound(typeBounds, gt, otRight);
+        }
         return false;
+    }
+
+    private boolean matchesGenericBound(Map<String, BaseType> typeBounds, GenericType gt, ObjectType otRight) {
+        if (otRight != ObjectType.TYPE_UNDEFINED_OBJECT && gt.getDimension() > otRight.getDimension()) {
+            // 'E[]' accepts no argument which is not an array
+            return false;
+        }
+        BaseType boundType = typeBounds.get(gt.getName());
+        return boundType instanceof ObjectType ot && isAssignable(ot, otRight);
     }
 
     public static class TypeTypes {
@@ -2101,21 +2107,26 @@ public class TypeMaker {
         }
 
         public void handlePolymorphicSignature(String typeName, String name) {
-            if ("java/lang/invoke/MethodHandle".equals(typeName) || "java/lang/invoke/VarHandle".equals(typeName)) {
-                try {
-                    String fullyQualifiedName = typeName.replace('/', '.');
-                    Class<?> clazz = Class.forName(fullyQualifiedName);
-                    for (java.lang.reflect.Method method : clazz.getMethods()) {
-                        if (method.getName().equals(name)) {
-                            for (java.lang.annotation.Annotation annotation : method.getAnnotations()) {
-                                if (annotation.annotationType().getSimpleName().contains("PolymorphicSignature")) {
-                                    setReturnedType(new GenericType("XXX"));
-                                }
-                            }
-                        }
+            if (!"java/lang/invoke/MethodHandle".equals(typeName) && !"java/lang/invoke/VarHandle".equals(typeName)) {
+                return;
+            }
+            try {
+                String fullyQualifiedName = typeName.replace('/', '.');
+                Class<?> clazz = Class.forName(fullyQualifiedName);
+                for (java.lang.reflect.Method method : clazz.getMethods()) {
+                    if (method.getName().equals(name)) {
+                        applyPolymorphicAnnotations(method);
                     }
-                } catch (SecurityException | ClassNotFoundException e) {
-                    assert ExceptionUtil.printStackTrace(e);
+                }
+            } catch (SecurityException | ClassNotFoundException e) {
+                assert ExceptionUtil.printStackTrace(e);
+            }
+        }
+
+        private void applyPolymorphicAnnotations(java.lang.reflect.Method method) {
+            for (Annotation annotation : method.getAnnotations()) {
+                if (annotation.annotationType().getSimpleName().contains("PolymorphicSignature")) {
+                    setReturnedType(new GenericType("XXX"));
                 }
             }
         }
