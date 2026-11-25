@@ -934,7 +934,7 @@ public class JavaFragmentToTokenTest extends TestCase {
                 RETURN,
                 TextToken.SEMICOLON
         ));
-        // Source fragment: End of if (args == null)
+        // Close the null-argument check.
         JavaFragmentFactory.addEndSingleStatementBlock(fragments, start);
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
@@ -1007,7 +1007,7 @@ public class JavaFragmentToTokenTest extends TestCase {
         } else {
             fragments.add(new LineNumberTokensFragment(tokens));
         }
-        // Source fragment: End of if (args == null)
+        // Close the null-argument check.
         JavaFragmentFactory.addEndSingleStatementBlock(fragments, start);
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
@@ -1343,7 +1343,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         StartBodyFragment startMainMethodBody = JavaFragmentFactory.addStartMethodBody(fragments);
 
-        // Source fragment: if (args == null)\n
+        // Render the null-argument check.
         List<Token> tokens = Arrays.asList(
                 IF,
                 TextToken.SPACE,
@@ -1368,7 +1368,7 @@ public class JavaFragmentToTokenTest extends TestCase {
                 TextToken.SEMICOLON
         ));
 
-        // Source fragment: End of if (args == null)
+        // Close the null-argument check.
         JavaFragmentFactory.addEndSingleStatementBlock(fragments, startIfBlock);
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
@@ -1736,7 +1736,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         JavaFragmentFactory.addEndStatementsBlock(fragments, group);
 
-        // Source fragment: catch (RuntimeException e)
+        // Render the runtime-exception handler.
         fragments.add(new TokensFragment(
                 CATCH,
                 new TextToken(" ("),

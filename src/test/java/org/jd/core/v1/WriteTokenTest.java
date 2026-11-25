@@ -92,7 +92,7 @@ public class WriteTokenTest {
         tokens.add(StartBlockToken.START_BLOCK);
         tokens.add(NewLineToken.NEWLINE_1);
 
-        // Source fragment: if (args == null)\n
+        // Render the null-argument check.
         tokens.add(new LineNumberToken(8));
         tokens.add(IF);
         tokens.add(new TextToken(" (args == "));
