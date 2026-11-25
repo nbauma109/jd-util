@@ -243,37 +243,37 @@ public class ObjectType implements Type {
 
     @Override
     public boolean isTypeArgumentAssignableFrom(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings, Map<String, BaseType> typeBounds, BaseTypeArgument typeArgument) {
-        if (typeArgument instanceof ObjectType || typeArgument instanceof InnerObjectType) {
-            ObjectType ot = (ObjectType)typeArgument;
-
-            if (dimension != ot.getDimension() || !internalName.equals(ot.getInternalName())) {
-                return false;
-            }
-
-            if (ot.getTypeArguments() == null) {
-                return typeArguments == null;
-            }
-            if (typeArguments == null) {
-                return ot.getTypeArguments() == null;
-            }
-            return typeArguments.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, ot.getTypeArguments());
+        if (typeArgument instanceof ObjectType objectType) {
+            return matchesObjectType(typeMaker, typeBindings, typeBounds, objectType);
         }
+        if (typeArgument instanceof GenericType genericType) {
+            return matchesBound(typeBounds.get(genericType.getName()));
+        }
+        return false;
+    }
 
-        if (typeArgument instanceof GenericType gt) {
-            BaseType bt = typeBounds.get(gt.getName());
-            if (bt != null) {
-                for (Type type : bt) {
-                    if (dimension == type.getDimension() && (type instanceof ObjectType || type instanceof InnerObjectType)) {
-                        ObjectType ot = (ObjectType) type;
+    private boolean matchesObjectType(TypeMaker typeMaker, Map<String, TypeArgument> typeBindings,
+            Map<String, BaseType> typeBounds, ObjectType objectType) {
+        if (dimension != objectType.getDimension() || !internalName.equals(objectType.getInternalName())) {
+            return false;
+        }
+        BaseTypeArgument arguments = objectType.getTypeArguments();
+        if (arguments == null || typeArguments == null) {
+            return arguments == typeArguments;
+        }
+        return typeArguments.isTypeArgumentAssignableFrom(typeMaker, typeBindings, typeBounds, arguments);
+    }
 
-                        if (internalName.equals(ot.getInternalName())) {
-                            return true;
-                        }
-                    }
-                }
+    private boolean matchesBound(BaseType bound) {
+        if (bound == null) {
+            return false;
+        }
+        for (Type type : bound) {
+            if (type instanceof ObjectType objectType && dimension == objectType.getDimension()
+                    && internalName.equals(objectType.getInternalName())) {
+                return true;
             }
         }
-
         return false;
     }
 
