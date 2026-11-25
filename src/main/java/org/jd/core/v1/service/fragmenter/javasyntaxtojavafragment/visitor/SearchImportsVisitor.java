@@ -374,31 +374,31 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
 
     protected void add(ObjectType type) {
         String descriptor = type.getDescriptor();
-
-        if (descriptor.charAt(descriptor.length()-1) == ';') {
-            String internalTypeName = type.getInternalName();
-
-            if (!importsFragment.incCounter(internalTypeName)) {
-                String typeName = getTypeName(internalTypeName);
-
-                if (!importTypeNames.contains(typeName) && !isShadowedByInheritedMemberType(internalTypeName, typeName)) {
-                    if (internalTypeName.startsWith("java/lang/")) {
-                        if (internalTypeName.indexOf('/', 10) != -1 && !loader.canLoad(internalPackagePrefix + typeName)) { // 10 = "java/lang/".length()
-                            importsFragment.addImport(internalTypeName, type.getQualifiedName());
-                            importTypeNames.add(typeName);
-                        }
-                    } else if (internalTypeName.startsWith(internalPackagePrefix)) {
-                        if (internalTypeName.indexOf('/', internalPackagePrefix.length()) != -1 && !localTypeNames.contains(typeName)) {
-                            importsFragment.addImport(internalTypeName, type.getQualifiedName());
-                            importTypeNames.add(typeName);
-                        }
-                    } else if (!localTypeNames.contains(typeName) && !loader.canLoad(internalPackagePrefix + typeName)) {
-                        importsFragment.addImport(internalTypeName, type.getQualifiedName());
-                        importTypeNames.add(typeName);
-                    }
-                }
-            }
+        if (descriptor.charAt(descriptor.length() - 1) != ';') {
+            return;
         }
+        String internalTypeName = type.getInternalName();
+        if (importsFragment.incCounter(internalTypeName)) {
+            return;
+        }
+        String typeName = getTypeName(internalTypeName);
+        if (!importTypeNames.contains(typeName) && !isShadowedByInheritedMemberType(internalTypeName, typeName)
+                && shouldImport(internalTypeName, typeName)) {
+            importsFragment.addImport(internalTypeName, type.getQualifiedName());
+            importTypeNames.add(typeName);
+        }
+    }
+
+    private boolean shouldImport(String internalTypeName, String typeName) {
+        if (internalTypeName.startsWith("java/lang/")) {
+            return internalTypeName.indexOf('/', "java/lang/".length()) != -1
+                    && !loader.canLoad(internalPackagePrefix + typeName);
+        }
+        if (internalTypeName.startsWith(internalPackagePrefix)) {
+            return internalTypeName.indexOf('/', internalPackagePrefix.length()) != -1
+                    && !localTypeNames.contains(typeName);
+        }
+        return !localTypeNames.contains(typeName) && !loader.canLoad(internalPackagePrefix + typeName);
     }
 
     /**

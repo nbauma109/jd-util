@@ -248,26 +248,8 @@ public class Section {
         Section foundNextSection = searchNextSection(forwardSearchVisitor);
 
         if (size > 1 && foundNextSection != null) {
-            int index1 = flexibleCount - 1 - backwardSearchStartIndexesVisitor.getIndex(size/2);
-            int index2 = flexibleCount - 1 - backwardSearchStartIndexesVisitor.getIndex(0);
-            int nextIndex = forwardSearchVisitor.getIndex();
-
-            size = forwardSearchEndIndexesVisitor.getSize();
-
-            if (size > 1) {
-                int index3 = forwardSearchEndIndexesVisitor.getIndex(0) + 1;
-                int index4 = forwardSearchEndIndexesVisitor.getIndex(size/2) + 1;
-                Section foundPreviousSection = searchPreviousSection(backwardSearchVisitor);
-
-                if (foundNextSection.getRate() > foundPreviousSection.getRate()) {
-                    int index = foundPreviousSection.getFlexibleFragments().size() - backwardSearchVisitor.getIndex();
-                    foundPreviousSection.addFragmentsAtEnd(holder, index, extract(index3, index4));
-                } else {
-                    foundNextSection.addFragmentsAtBeginning(holder, nextIndex, extract(index1, index2));
-                }
-            } else {
-                foundNextSection.addFragmentsAtBeginning(holder, nextIndex, extract(index1, index2));
-            }
+            moveFragmentsToAdjacentSection(holder, flexibleCount, backwardSearchStartIndexesVisitor,
+                    forwardSearchEndIndexesVisitor, forwardSearchVisitor, backwardSearchVisitor, foundNextSection);
 
             return true;
         }
@@ -286,6 +268,34 @@ public class Section {
         }
 
         return false;
+    }
+
+    private void moveFragmentsToAdjacentSection(VisitorsHolder holder, int flexibleCount,
+            AbstractStoreMovableBlockFragmentIndexVisitorAbstract backwardSearchStartIndexesVisitor,
+            AbstractStoreMovableBlockFragmentIndexVisitorAbstract forwardSearchEndIndexesVisitor,
+            AbstractSearchMovableBlockFragmentVisitor forwardSearchVisitor,
+            AbstractSearchMovableBlockFragmentVisitor backwardSearchVisitor, Section foundNextSection) {
+        int size = backwardSearchStartIndexesVisitor.getSize();
+        int index1 = flexibleCount - 1 - backwardSearchStartIndexesVisitor.getIndex(size/2);
+        int index2 = flexibleCount - 1 - backwardSearchStartIndexesVisitor.getIndex(0);
+        int nextIndex = forwardSearchVisitor.getIndex();
+
+        size = forwardSearchEndIndexesVisitor.getSize();
+
+        if (size > 1) {
+            int index3 = forwardSearchEndIndexesVisitor.getIndex(0) + 1;
+            int index4 = forwardSearchEndIndexesVisitor.getIndex(size/2) + 1;
+            Section foundPreviousSection = searchPreviousSection(backwardSearchVisitor);
+
+            if (foundNextSection.getRate() > foundPreviousSection.getRate()) {
+                int index = foundPreviousSection.getFlexibleFragments().size() - backwardSearchVisitor.getIndex();
+                foundPreviousSection.addFragmentsAtEnd(holder, index, extract(index3, index4));
+            } else {
+                foundNextSection.addFragmentsAtBeginning(holder, nextIndex, extract(index1, index2));
+            }
+        } else {
+            foundNextSection.addFragmentsAtBeginning(holder, nextIndex, extract(index1, index2));
+        }
     }
 
     protected Section searchNextSection(AbstractSearchMovableBlockFragmentVisitor visitor) {

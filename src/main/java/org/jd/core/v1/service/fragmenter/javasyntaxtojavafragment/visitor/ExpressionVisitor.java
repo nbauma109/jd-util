@@ -277,38 +277,32 @@ public class ExpressionVisitor extends TypeVisitor {
 
     @Override
     public void visit(Expressions list) {
-        if (list != null) {
-            int size = list.size();
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        int size = list.size();
+        boolean ief = inExpressionFlag;
+        boolean ivapf = inVarArgParam;
+        Iterator<Expression> iterator = list.iterator();
 
-            if (size > 0) {
-                boolean ief = inExpressionFlag;
-                boolean ivapf = inVarArgParam;
-                Iterator<Expression> iterator = list.iterator();
-
-                while (size-- > 1) {
-                    inExpressionFlag = true;
-                    inVarArgParam = inVarArgMethod && list.size() - size >= parameterTypeCount;
-                    if (size == 1 && list.getLast() instanceof NewArray) {
-                        NewArray newArray = (NewArray) list.getLast();
-                        if (newArray.isEmptyNewArray()) {
-                            inExpressionFlag = false;
-                        }
-                    }
-                    iterator.next().accept(this);
-                    inVarArgParam = ivapf;
-
-                    if (!tokens.isEmpty()) {
-                        tokens.add(TextToken.COMMA_SPACE);
-                    }
-                }
-
-                inExpressionFlag = false;
-                inVarArgParam = inVarArgMethod && list.size() - size >= parameterTypeCount;
-                iterator.next().accept(this);
-                inExpressionFlag = ief;
-                inVarArgParam = ivapf;
+        while (size-- > 1) {
+            inExpressionFlag = !endsWithEmptyArray(list, size);
+            inVarArgParam = inVarArgMethod && list.size() - size >= parameterTypeCount;
+            iterator.next().accept(this);
+            inVarArgParam = ivapf;
+            if (!tokens.isEmpty()) {
+                tokens.add(TextToken.COMMA_SPACE);
             }
         }
+        inExpressionFlag = false;
+        inVarArgParam = inVarArgMethod && list.size() - size >= parameterTypeCount;
+        iterator.next().accept(this);
+        inExpressionFlag = ief;
+        inVarArgParam = ivapf;
+    }
+
+    private static boolean endsWithEmptyArray(Expressions list, int remaining) {
+        return remaining == 1 && list.getLast() instanceof NewArray newArray && newArray.isEmptyNewArray();
     }
 
     @Override
@@ -467,46 +461,9 @@ public class ExpressionVisitor extends TypeVisitor {
 
     @Override
     public void visit(MethodInvocationExpression expression) {
-        Expression exp = expression.getExpression();
         BaseTypeArgument nonWildcardTypeArguments = expression.getNonWildcardTypeArguments();
         BaseExpression parameters = expression.getParameters();
-        boolean dot = false;
-
-        if (!exp.isThisExpression()) {
-            if (exp.isObjectTypeReferenceExpression()) {
-                ObjectType ot = exp.getObjectType();
-
-                if (expression.getNonWildcardTypeArguments() != null || !ot.getInternalName().equals(getCurrentTypeInternalName())) {
-                    visit(expression, exp);
-                    tokens.addLineNumberToken(expression);
-                    tokens.add(TextToken.DOT);
-                    dot = true;
-                }
-            } else if (exp != NoExpression.NO_EXPRESSION) {
-                if (exp.isFieldReferenceExpression() || exp.isLocalVariableReferenceExpression()) {
-                    int receiverLineNumber = exp.getLineNumber();
-
-                    if (receiverLineNumber != UNKNOWN_LINE_NUMBER && receiverLineNumber < expression.getLineNumber()) {
-                        // The receiver is known to sit on an earlier line than the call (e.g. 'this.field' then '.method(...)' on
-                        // the next line): keep both line numbers so that the call is not stacked on the receiver's line.
-                        visit(expression, exp);
-                        tokens.addLineNumberToken(expression);
-                    } else {
-                        tokens.addLineNumberToken(expression);
-                        visit(expression, exp);
-                    }
-                } else {
-                    if (exp instanceof NewExpression newExpression) {
-                        newExpression.setDiamondPossible(false);
-                    }
-                    visit(expression, exp);
-                    tokens.addLineNumberToken(expression);
-                }
-
-                tokens.add(TextToken.DOT);
-                dot = true;
-            }
-        }
+        boolean dot = printMethodReceiver(expression);
 
         tokens.addLineNumberToken(expression);
 
@@ -534,6 +491,49 @@ public class ExpressionVisitor extends TypeVisitor {
         }
 
         tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
+    }
+
+    private boolean printMethodReceiver(MethodInvocationExpression expression) {
+        Expression receiver = expression.getExpression();
+        if (receiver.isThisExpression()) {
+            return false;
+        }
+        if (receiver.isObjectTypeReferenceExpression()) {
+            ObjectType type = receiver.getObjectType();
+            if (expression.getNonWildcardTypeArguments() == null
+                    && type.getInternalName().equals(getCurrentTypeInternalName())) {
+                return false;
+            }
+            visit(expression, receiver);
+            tokens.addLineNumberToken(expression);
+        } else {
+            if (receiver == NoExpression.NO_EXPRESSION) {
+                return false;
+            }
+            printInstanceReceiver(expression, receiver);
+        }
+        tokens.add(TextToken.DOT);
+        return true;
+    }
+
+    private void printInstanceReceiver(MethodInvocationExpression expression, Expression receiver) {
+        if (receiver.isFieldReferenceExpression() || receiver.isLocalVariableReferenceExpression()) {
+            int receiverLineNumber = receiver.getLineNumber();
+            if (receiverLineNumber != UNKNOWN_LINE_NUMBER && receiverLineNumber < expression.getLineNumber()) {
+                // Preserve distinct line numbers for a receiver on an earlier source line.
+                visit(expression, receiver);
+                tokens.addLineNumberToken(expression);
+            } else {
+                tokens.addLineNumberToken(expression);
+                visit(expression, receiver);
+            }
+            return;
+        }
+        if (receiver instanceof NewExpression newExpression) {
+            newExpression.setDiamondPossible(false);
+        }
+        visit(expression, receiver);
+        tokens.addLineNumberToken(expression);
     }
 
     @Override
@@ -796,25 +796,8 @@ public class ExpressionVisitor extends TypeVisitor {
     public void visit(TernaryOperatorExpression expression) {
         tokens.addLineNumberToken(expression.getCondition());
 
-        if (expression.getTrueExpression().isBooleanExpression() && expression.getFalseExpression().isBooleanExpression()) {
-            BooleanExpression be1 = (BooleanExpression)expression.getTrueExpression();
-            BooleanExpression be2 = (BooleanExpression)expression.getFalseExpression();
-
-            if (be1.isTrue() && be2.isFalse()) {
-                printTernaryOperatorExpression(expression.getCondition());
-                return;
-            }
-
-            if (be1.isFalse() && be2.isTrue()) {
-                if (expression.getCondition() instanceof PreOperatorExpression preOp && "!".equals(preOp.getOperator())) {
-                    // bypass double-negation
-                    printTernaryOperatorExpression(preOp.getExpression());
-                } else {
-                    tokens.add(TextToken.EXCLAMATION);
-                    printTernaryOperatorExpression(expression.getCondition());
-                }
-                return;
-            }
+        if (printBooleanConditional(expression)) {
+            return;
         }
 
         if (expression.getTrueExpression() instanceof NewExpression newExpression) {
@@ -830,6 +813,29 @@ public class ExpressionVisitor extends TypeVisitor {
         printTernaryOperatorExpression(expression.getTrueExpression());
         tokens.add(TextToken.SPACE_COLON_SPACE);
         printTernaryOperatorExpression(expression.getFalseExpression(), inExpressionFlag);
+    }
+
+    private boolean printBooleanConditional(TernaryOperatorExpression expression) {
+        if (!expression.getTrueExpression().isBooleanExpression()
+                || !expression.getFalseExpression().isBooleanExpression()) {
+            return false;
+        }
+        BooleanExpression whenTrue = (BooleanExpression) expression.getTrueExpression();
+        BooleanExpression whenFalse = (BooleanExpression) expression.getFalseExpression();
+        if (whenTrue.isTrue() && whenFalse.isFalse()) {
+            printTernaryOperatorExpression(expression.getCondition());
+            return true;
+        }
+        if (whenTrue.isFalse() && whenFalse.isTrue()) {
+            if (expression.getCondition() instanceof PreOperatorExpression preOp && "!".equals(preOp.getOperator())) {
+                printTernaryOperatorExpression(preOp.getExpression());
+            } else {
+                tokens.add(TextToken.EXCLAMATION);
+                printTernaryOperatorExpression(expression.getCondition());
+            }
+            return true;
+        }
+        return false;
     }
 
     protected void printTernaryOperatorExpression(Expression expression) {
