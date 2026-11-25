@@ -27,7 +27,7 @@ public class PatternMaker {
     }
 
     protected static String replace(String s) {
-        return s
+        String escaped = s
                 .replace("[", "\\[")
                 .replace("]", "\\]")
                 .replace("(", "\\(")
@@ -37,9 +37,38 @@ public class PatternMaker {
                 .replace("+", "\\+")
                 .replace("*", "\\*")
                 .replace("|", "\\|")
-                .replace("^", "\\^")
-                .replaceAll("\\s*\\{\\s*", "[^\\\\n\\\\r]*\\\\{[^\\\\n\\\\r]*")
-                .replaceAll("\\s*\\}\\s*", "[^\\\\n\\\\r]*\\\\}[^\\\\n\\\\r]*")
-                .replace(",", "[^\\n\\r]*,");
+                .replace("^", "\\^");
+        escaped = replaceBrace(escaped, '{');
+        return replaceBrace(escaped, '}').replace(",", "[^\\n\\r]*,");
+    }
+
+    private static String replaceBrace(String text, char brace) {
+        StringBuilder result = new StringBuilder(text.length());
+        int pendingWhitespace = 0;
+        boolean afterBrace = false;
+        for (int index = 0; index < text.length(); index++) {
+            char character = text.charAt(index);
+            if (isRegexWhitespace(character)) {
+                if (!afterBrace) {
+                    pendingWhitespace++;
+                }
+            } else if (character == brace) {
+                pendingWhitespace = 0;
+                result.append("[^\\n\\r]*\\").append(brace).append("[^\\n\\r]*");
+                afterBrace = true;
+            } else {
+                result.append(text, index - pendingWhitespace, index);
+                pendingWhitespace = 0;
+                result.append(character);
+                afterBrace = false;
+            }
+        }
+        result.append(text, text.length() - pendingWhitespace, text.length());
+        return result.toString();
+    }
+
+    private static boolean isRegexWhitespace(char character) {
+        return character == ' ' || character == '\t' || character == '\n'
+                || character == '\r' || character == '\f' || character == '\u000b';
     }
 }

@@ -41,7 +41,7 @@ public class ObjectTypeReferenceExpression implements Expression {
 
     @Override
     public Type getType() {
-        return type;
+        return getObjectType();
     }
 
     public boolean isExplicit() {
