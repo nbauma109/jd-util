@@ -57,7 +57,9 @@ public class PlainTextPrinter implements Printer {
     }
 
     @Override
-    public void end() {}
+    public void end() {
+        // No finalization is needed for the accumulated text.
+    }
 
     @Override
     public void printText(String text) {
@@ -134,10 +136,14 @@ public class PlainTextPrinter implements Printer {
     }
 
     @Override
-    public void startMarker(int type) {}
+    public void startMarker(int type) {
+        // Plain text omits marker metadata.
+    }
 
     @Override
-    public void endMarker(int type) {}
+    public void endMarker(int type) {
+        // Plain text omits marker metadata.
+    }
 
     protected void printLineNumber(int lineNumber) {
         sb.append("/*");

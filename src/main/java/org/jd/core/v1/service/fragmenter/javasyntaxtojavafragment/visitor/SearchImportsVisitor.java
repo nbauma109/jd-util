@@ -478,10 +478,16 @@ public class SearchImportsVisitor extends AbstractJavaSyntaxVisitor {
         }
 
         @Override
-        public void visit(FieldDeclaration declaration) {}
+        public void visit(FieldDeclaration declaration) {
+            // This visitor searches type declarations rather than members.
+        }
         @Override
-        public void visit(ConstructorDeclaration declaration) {}
+        public void visit(ConstructorDeclaration declaration) {
+            // This visitor searches type declarations rather than members.
+        }
         @Override
-        public void visit(MethodDeclaration declaration) {}
+        public void visit(MethodDeclaration declaration) {
+            // This visitor searches type declarations rather than members.
+        }
     }
 }

@@ -212,6 +212,7 @@ public class TextUtilities {
             try {
                 return Long.parseLong(digits, radix);
             } catch (NumberFormatException ex) {
+                // Values outside the signed range are parsed as unsigned below.
             }
         }
         return Long.parseUnsignedLong(digits, radix);

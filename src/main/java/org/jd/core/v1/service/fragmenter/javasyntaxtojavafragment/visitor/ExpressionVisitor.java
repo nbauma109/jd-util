@@ -969,7 +969,9 @@ public class ExpressionVisitor extends TypeVisitor {
     }
 
     @Override
-    public void visit(SwitchExpression.PatternLabel expression) {}
+    public void visit(SwitchExpression.PatternLabel expression) {
+        // Pattern labels are rendered by the enclosing switch expression.
+    }
 
     private void writeSwitchExpressionLabels(List<SwitchExpression.Label> labels, Expression whenCondition) {
         tokens = new Tokens();
@@ -1167,7 +1169,9 @@ public class ExpressionVisitor extends TypeVisitor {
         @Override
         public void visit(NewInitializedArray expression) { ExpressionVisitor.this.visit(expression); }
         @Override
-        public void visit(NoExpression expression) {}
+        public void visit(NoExpression expression) {
+            // An absent expression emits no tokens.
+        }
         @Override
         public void visit(NullExpression expression) { ExpressionVisitor.this.visit(expression); }
         @Override

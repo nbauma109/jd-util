@@ -91,6 +91,7 @@ public class StringBuilderPrinter implements Printer, VersionAware {
 
     @Override
     public void end() {
+        // The accumulated text is already complete.
     }
 
     @Override
@@ -159,10 +160,12 @@ public class StringBuilderPrinter implements Printer, VersionAware {
 
     @Override
     public void startMarker(int type) {
+        // This printer does not render marker metadata.
     }
 
     @Override
     public void endMarker(int type) {
+        // This printer does not render marker metadata.
     }
 
     @Override
