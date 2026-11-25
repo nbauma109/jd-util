@@ -1,0 +1,49 @@
+name: Refactoring regression review
+
+on:
+  push:
+    branches:
+      - diagnostics/refactoring-review-229
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [17, 21, 25]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: f1843d19b88d89fda385126896e846a33efb666c
+          persist-credentials: false
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - uses: actions/checkout@v7
+        with:
+          repository: nbauma109/static-analysis-maven-plugin
+          ref: ab74fbb039999dde1a332ffbff667cd19662960a
+          path: static-analysis-candidate
+          persist-credentials: false
+      - name: Install pinned analyzer
+        run: mvn -B -ntp -f static-analysis-candidate/pom.xml -DskipTests install
+      - name: Run all tests independently of analysis enforcement
+        run: mvn -B -ntp -Dstatic-analysis.version=0.1.4-SNAPSHOT -DstaticAnalysis.skip=true test jacoco:report
+      - name: Report test and coverage counts
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+          reports = [ET.parse(p).getroot() for p in pathlib.Path("target/surefire-reports").glob("TEST-*.xml")]
+          print("TEST_TOTALS", {k: sum(int(r.get(k, 0)) for r in reports) for k in ("tests", "failures", "errors", "skipped")})
+          path = pathlib.Path("target/site/jacoco/jacoco.xml")
+          if path.exists():
+              print("COVERAGE", [c.attrib for c in ET.parse(path).getroot().findall("counter")])
+          PY
