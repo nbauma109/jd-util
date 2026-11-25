@@ -90,12 +90,11 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
 
     protected JavaSyntaxToJavaFragmentProcessor fragmenter = new JavaSyntaxToJavaFragmentProcessor();
     protected LayoutFragmentProcessor layouter = new LayoutFragmentProcessor();
-    //protected TestTokenizeJavaFragmentProcessor tokenizer = new TestTokenizeJavaFragmentProcessor();
     protected JavaFragmentToTokenProcessor tokenizer = new JavaFragmentToTokenProcessor();
     protected WriteTokenProcessor writer = new WriteTokenProcessor();
 
     @Test
-    public void testClassDeclaration() throws Exception {
+    public void testClassDeclaration() {
         ObjectType stringArrayType = new ObjectType(StringConstants.JAVA_LANG_STRING, "java.lang.String", "String", 1);
         ObjectType printStreamType = new ObjectType("java/io/PrintStream", "java.io.PrintStream", "PrintStream");
 
@@ -227,7 +226,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testBlockLambdaAsOnlyParameterOfInvocationNestedInAnotherParameter() throws Exception {
+    public void testBlockLambdaAsOnlyParameterOfInvocationNestedInAnotherParameter() {
         ObjectType operatorType = new ObjectType("java/util/function/BinaryOperator", "java.util.function.BinaryOperator", "BinaryOperator");
         ObjectType supplierType = new ObjectType("java/util/function/Supplier", "java.util.function.Supplier", "Supplier");
         ObjectType accumulatorType = new ObjectType("org/jd/core/v1/service/test/Accumulator", "org.jd.core.v1.service.test.Accumulator", "Accumulator");
@@ -291,7 +290,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testAnnotationOnTheBoundOfATypeParameter() throws Exception {
+    public void testAnnotationOnTheBoundOfATypeParameter() {
         ObjectType nullableType = new ObjectType("org/jspecify/annotations/Nullable", "org.jspecify.annotations.Nullable", "Nullable");
 
         CompilationUnit compilationUnit = new CompilationUnit(
@@ -731,7 +730,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
         Assert.assertTrue(source, source.contains("public java.lang.@Nullable String find(java.lang.@Nullable String key)"));
     }
 
-    private String printCallWithParameters(int majorVersion, org.jd.core.v1.model.javasyntax.expression.Expression... parameters) throws Exception {
+    private String printCallWithParameters(int majorVersion, org.jd.core.v1.model.javasyntax.expression.Expression... parameters) {
         ObjectType testType = new ObjectType("org/jd/core/v1/service/test/ReferenceTest", "org.jd.core.v1.service.test.ReferenceTest", "ReferenceTest");
 
         CompilationUnit compilationUnit = new CompilationUnit(
@@ -833,7 +832,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testInterfaceDeclaration() throws Exception {
+    public void testInterfaceDeclaration() {
         ObjectType cloneableType = new ObjectType(StringConstants.JAVA_LANG_CLONEABLE, "java.lang.Cloneable", "Cloneable");
         ObjectType stringType = new ObjectType(StringConstants.JAVA_LANG_STRING, "java.lang.String", "String");
         ObjectType listType = new ObjectType("java/util/List", "java.util.List", "List", stringType);
@@ -879,7 +878,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testEnumDayDeclaration() throws Exception {
+    public void testEnumDayDeclaration() {
         CompilationUnit compilationUnit = new CompilationUnit(
             new EnumDeclaration(
                 null,
@@ -1223,7 +1222,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testSwitch() throws Exception {
+    public void testSwitch() {
         CompilationUnit compilationUnit = new CompilationUnit(
             new ClassDeclaration(
                 Const.ACC_PUBLIC,
@@ -1296,7 +1295,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testBridgeAndSyntheticAttributes() throws Exception {
+    public void testBridgeAndSyntheticAttributes() {
         CompilationUnit compilationUnit = new CompilationUnit(
             new ClassDeclaration(
                 Const.ACC_PUBLIC,

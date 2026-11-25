@@ -44,7 +44,7 @@ public class WriteTokenTest {
     public static final KeywordToken NEW = new KeywordToken("new");
 
     @Test
-    public void writeClassDeclaration() throws Exception {
+    public void writeClassDeclaration() {
         DefaultList<Token> tokens = new DefaultList<>();
 
         // package org.jd.core.v1.service.writer;\n\n
@@ -92,7 +92,7 @@ public class WriteTokenTest {
         tokens.add(StartBlockToken.START_BLOCK);
         tokens.add(NewLineToken.NEWLINE_1);
 
-        // if (args == null)\n
+        // Source fragment: if (args == null)\n
         tokens.add(new LineNumberToken(8));
         tokens.add(IF);
         tokens.add(new TextToken(" (args == "));
@@ -149,7 +149,7 @@ public class WriteTokenTest {
             tokens.add(TextToken.SPACE);
             tokens.add(StartBlockToken.START_BLOCK);
             tokens.add(NewLineToken.NEWLINE_1);
-                // return false;
+                // Source fragment: return false
                 tokens.add(new LineNumberToken(15));
                 tokens.add(RETURN);
                 tokens.add(TextToken.SPACE);
@@ -169,7 +169,7 @@ public class WriteTokenTest {
             tokens.add(TextToken.SPACE);
             tokens.add(StartBlockToken.START_BLOCK);
             tokens.add(NewLineToken.NEWLINE_1);
-                // return null;
+                // Source fragment: return null
                 tokens.add(new LineNumberToken(18));
                 tokens.add(RETURN);
                 tokens.add(TextToken.SPACE);
@@ -188,7 +188,7 @@ public class WriteTokenTest {
         tokens.add(TextToken.SEMICOLON);
         tokens.add(NewLineToken.NEWLINE_1);
 
-        // System.out.println(i);
+        // Source fragment: System.out.println(i)
         tokens.add(new LineNumberToken(22));
         tokens.add(new ReferenceToken(Printer.TYPE, StringConstants.JAVA_LANG_SYSTEM, "System", null, "org/jd/core/v1/service/test/WriteTokenTest"));
         tokens.add(TextToken.DOT);
@@ -205,7 +205,7 @@ public class WriteTokenTest {
         tokens.add(EndBlockToken.END_BLOCK);
         tokens.add(NewLineToken.NEWLINE_1);
 
-        // }
+        // End of the generated block. 
         tokens.add(EndBlockToken.END_BLOCK);
 
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
@@ -258,7 +258,7 @@ public class WriteTokenTest {
     }
 
     @Test
-    public void testComments() throws Exception {
+    public void testComments() {
         DefaultList<Token> tokens = new DefaultList<>();
 
         // package org.jd.core.v1.service.writer;\n\n
@@ -288,7 +288,7 @@ public class WriteTokenTest {
         tokens.add(StartBlockToken.START_BLOCK);
         tokens.add(NewLineToken.NEWLINE_1);
 
-        // }
+        // End of the generated block. 
         tokens.add(EndBlockToken.END_BLOCK);
 
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();

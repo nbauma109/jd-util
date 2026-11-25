@@ -56,7 +56,6 @@ public class DefaultStack<E> {
         elements[head] = null;
         return e;
 
-        //return elements[--head];
     }
 
     public E peek() {

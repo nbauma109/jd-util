@@ -25,7 +25,7 @@ import junit.framework.TestCase;
 
 public class TypeTest extends TestCase {
     @Test
-    public void testSimpleClassOrInterfaceType() throws Exception {
+    public void testSimpleClassOrInterfaceType() {
         BaseType scoit = new ObjectType("org/project/Test", "org.project.Test", "Test");
         PrintTypeVisitor visitor = new PrintTypeVisitor();
 
@@ -39,7 +39,7 @@ public class TypeTest extends TestCase {
     }
 
     @Test
-    public void testSimpleClassOrInterfaceType2() throws Exception {
+    public void testSimpleClassOrInterfaceType2() {
         Type scoit1 = new ObjectType("org/project/Test", "org.project.Test", "Test");
         Type scoit2 = new ObjectType(
             "org/project/OtherTest", "org.project.OtherTest", "OtherTest",
@@ -66,7 +66,7 @@ public class TypeTest extends TestCase {
     }
 
     @Test
-    public void testDiamond() throws Exception {
+    public void testDiamond() {
         BaseType scoit = new ObjectType("org/project/Test", "org.project.Test", "Test", DiamondTypeArgument.DIAMOND);
 
         PrintTypeVisitor visitor = new PrintTypeVisitor();
@@ -81,7 +81,7 @@ public class TypeTest extends TestCase {
     }
 
     @Test
-    public void testInnerClass() throws Exception {
+    public void testInnerClass() {
         BaseType scoit = new InnerObjectType("org/project/Test$InnerTest", "org.project.Test.InnerTest", "InnerTest",
                             new ObjectType("org/project/Test", "org.project.Test", "Test"));
 

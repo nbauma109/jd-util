@@ -491,7 +491,6 @@ public class JavaFragmentToTokenTest extends TestCase {
     @Test
     public void testClassAndFieldDeclaration_10() throws Exception {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(10);
-        //PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
 
@@ -621,7 +620,6 @@ public class JavaFragmentToTokenTest extends TestCase {
     @Test
     public void testClassAndMethodDeclaration_10() throws Exception {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(10);
-        //PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
 
@@ -652,7 +650,6 @@ public class JavaFragmentToTokenTest extends TestCase {
     @Test
     public void testClassAndMethodDeclaration_11() throws Exception {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(11);
-        //PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
 
@@ -683,7 +680,6 @@ public class JavaFragmentToTokenTest extends TestCase {
     @Test
     public void testClassAndMethodDeclaration_12() throws Exception {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(12);
-        //PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
 
@@ -714,7 +710,6 @@ public class JavaFragmentToTokenTest extends TestCase {
     @Test
     public void testClassAndMethodDeclaration_14() throws Exception {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(14);
-        //PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
 
@@ -912,7 +907,7 @@ public class JavaFragmentToTokenTest extends TestCase {
      * @return A message
      * @throws Exception
      */
-    public DecompileContext createMessageToTestIfReturn(int lineNumber1, int lineNumber2) throws Exception {
+    public DecompileContext createMessageToTestIfReturn(int lineNumber1, int lineNumber2) {
         DefaultList<Fragment> fragments = new DefaultList<>();
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
@@ -939,7 +934,7 @@ public class JavaFragmentToTokenTest extends TestCase {
                 RETURN,
                 TextToken.SEMICOLON
         ));
-        // End of if (args == null)
+        // Source fragment: End of if (args == null)
         JavaFragmentFactory.addEndSingleStatementBlock(fragments, start);
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
@@ -979,7 +974,7 @@ public class JavaFragmentToTokenTest extends TestCase {
      * @return A message
      * @throws Exception
      */
-    public DecompileContext createMessageToTestIfAssignation(int lineNumber1, int lineNumber2, int lineNumber3) throws Exception {
+    public DecompileContext createMessageToTestIfAssignation(int lineNumber1, int lineNumber2, int lineNumber3) {
         DefaultList<Fragment> fragments = new DefaultList<>();
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
@@ -1012,7 +1007,7 @@ public class JavaFragmentToTokenTest extends TestCase {
         } else {
             fragments.add(new LineNumberTokensFragment(tokens));
         }
-        // End of if (args == null)
+        // Source fragment: End of if (args == null)
         JavaFragmentFactory.addEndSingleStatementBlock(fragments, start);
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
@@ -1036,7 +1031,7 @@ public class JavaFragmentToTokenTest extends TestCase {
         return decompileContext;
     }
 
-    public DecompileContext createMessageToTestClassDeclaration(int lineNumber) throws Exception {
+    public DecompileContext createMessageToTestClassDeclaration(int lineNumber) {
         DefaultList<Fragment> fragments = new DefaultList<>();
 
         // package org.jd.core.v1.service.writer;\n\n
@@ -1095,7 +1090,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         StartBodyFragment classStart = JavaFragmentFactory.addStartTypeBody(fragments);
 
-        // protected int a = 0;
+        // Source fragment: protected int a = 0
         fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_FIELD_BLOCK);
 
         List<Token> tokens = Arrays.asList(
@@ -1126,7 +1121,7 @@ public class JavaFragmentToTokenTest extends TestCase {
         return decompileContext;
     }
 
-    public DecompileContext createMessageToTestClassDeclarationWithoutImports(int lineNumber) throws Exception {
+    public DecompileContext createMessageToTestClassDeclarationWithoutImports(int lineNumber) {
         DefaultList<Fragment> fragments = new DefaultList<>();
 
         // package org.jd.core.v1.service.writer;\n\n
@@ -1174,7 +1169,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         StartBodyFragment classStart = JavaFragmentFactory.addStartTypeBody(fragments);
 
-        // protected int a = 0;
+        // Source fragment: protected int a = 0
         fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_FIELD_BLOCK);
 
         List<Token> tokens = Arrays.asList(
@@ -1205,19 +1200,7 @@ public class JavaFragmentToTokenTest extends TestCase {
         return decompileContext;
     }
 
-    /*
-     *                  package org.jd.core.v1.service.writer;<-- 0,2,1
-     *
-     * --><-- 0,M,0     import java.util.ArrayList;
-     *                  import org.junit.Assert.*;
-     * --><-- 0,1,1
-     * --><-- 0,++,5 -->public class TokenWriterTest <-- 0,1,4 -->extends Test <-- 0,1,3 -->implements Serializable, Comparable<Test>, Cloneable <-- { 0,2,2
-     * -->                public TokenWriterTest(int i) {<-- { 0,2,5
-     * -->                  super(i);
-     *                    }
-     *                  }
-     */
-    public DecompileContext createMessageToTestClassAndMethodDeclaration(int lineNumber) throws Exception {
+    public DecompileContext createMessageToTestClassAndMethodDeclaration(int lineNumber) {
         DefaultList<Fragment> fragments = new DefaultList<>();
 
         // package org.jd.core.v1.service.writer;\n\n
@@ -1276,7 +1259,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         StartBodyFragment startMainClass = JavaFragmentFactory.addStartTypeBody(fragments);
 
-        // public TokenWriterTest(int i) {
+        // Source fragment: public TokenWriterTest(int i)
         fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_METHOD_BLOCK);
         fragments.add(new TokensFragment(
                 PUBLIC,
@@ -1309,34 +1292,6 @@ public class JavaFragmentToTokenTest extends TestCase {
         return decompileContext;
     }
 
-    /*
-     *                  package org.jd.core.v1.service.writer;<-- 0,2,1
-     *
-     * --><-- 0,M,0     import java.util.ArrayList;
-     *                  import org.junit.Assert.*;
-     * --><-- 0,1,1
-     * --><-- 0,++,5 -->public class TokenWriterTest<-- { 0,2,2
-     * -->                public static void main(String[] args) {<-- { 0,2,5
-     * -->                  if (args == null);<-- { 0,2,8
-     * --><-- 0,++,9 -->      return;<-- 0,++,8 --><--
-     *                      } 0,2,8 --><-- 0,++,8
-     * -->                  int i = call(\n
-     *                        "aaaa",\n
-     *                        b,\n
-     *                        new Enumeration()<-- { 0,2,2
-     * -->                      public boolean hasMoreElements()<-- { 0,2,5
-     * -->                        return false; <--
-     *                          } 0,2,7 --><-- 0,1,4
-     * --><-- 0,++,7
-     * -->                      public Object nextElement()<-- { 0,2,5
-     * -->                        return null; <--
-     *                          } 0,2,7 --><--
-     *                        } 0,2,2 -->,<-- 0,++,8
-     * -->                    c);<-- 0,++,8
-     * -->                  System.out.println(i);<--
-     *                    } 0,2,7 --><--
-     *                  } 0,2,2 -->
-     */
     public DecompileContext createSimpleMessage(int factor) {
         DefaultList<Fragment> fragments = new DefaultList<>();
 
@@ -1388,7 +1343,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         StartBodyFragment startMainMethodBody = JavaFragmentFactory.addStartMethodBody(fragments);
 
-        // if (args == null)\n
+        // Source fragment: if (args == null)\n
         List<Token> tokens = Arrays.asList(
                 IF,
                 TextToken.SPACE,
@@ -1413,7 +1368,7 @@ public class JavaFragmentToTokenTest extends TestCase {
                 TextToken.SEMICOLON
         ));
 
-        // End of if (args == null)
+        // Source fragment: End of if (args == null)
         JavaFragmentFactory.addEndSingleStatementBlock(fragments, startIfBlock);
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
@@ -1518,7 +1473,7 @@ public class JavaFragmentToTokenTest extends TestCase {
         JavaFragmentFactory.addEndSubTypeBodyInParameter(fragments, startEnumerationClass);
 
         //  c); // End of call(...
-        // System.out.println(i);
+        // Source fragment: System.out.println(i)
         tokens = Arrays.asList(
                 new LineNumberToken(21 * factor),
                 new TextToken("c"),
@@ -1583,7 +1538,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         StartBodyFragment startMainClass = JavaFragmentFactory.addStartTypeBody(fragments);
 
-        // public static int TIMESTAMP = System.currentTimeMillis();
+        // Source fragment: public static int TIMESTAMP = System.currentTimeMillis()
         fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_FIELD_BLOCK);
         fragments.add(new LineNumberTokensFragment(
                 PUBLIC,
@@ -1605,7 +1560,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         JavaFragmentFactory.addSpacerBetweenMembers(fragments);
 
-        // protected int a;
+        // Source fragment: protected int a
         fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_FIELD_BLOCK);
         fragments.add(new TokensFragment(
                 PROTECTED,
@@ -1619,7 +1574,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         JavaFragmentFactory.addSpacerBetweenMembers(fragments);
 
-        // protected int b;
+        // Source fragment: protected int b
         fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_FIELD_BLOCK);
         fragments.add(new TokensFragment(
                 PROTECTED,
@@ -1633,7 +1588,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         JavaFragmentFactory.addSpacerBetweenMembers(fragments);
 
-        // protected int c;
+        // Source fragment: protected int c
         fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_FIELD_BLOCK);
         fragments.add(new TokensFragment(
                 PROTECTED,
@@ -1663,9 +1618,8 @@ public class JavaFragmentToTokenTest extends TestCase {
         ));
 
         StartBodyFragment startMainMethodBody = JavaFragmentFactory.addStartMethodBody(fragments);
-        //StartBodyFragment startMainMethodBody = JavaFragmentFactory.addStartMethodBody(fragments);
 
-        // System.out.println(TIMESTAMP);
+        // Source fragment: System.out.println(TIMESTAMP)
         fragments.add(new LineNumberTokensFragment(
                 new LineNumberToken(8),
                 new ReferenceToken(Printer.TYPE, StringConstants.JAVA_LANG_SYSTEM, "System", null, "org/jd/core/v1/service/test/TokenWriterTest"),
@@ -1679,18 +1633,16 @@ public class JavaFragmentToTokenTest extends TestCase {
                 TextToken.SEMICOLON
         ));
 
-        // \n}
+        // Source fragment: \n
         JavaFragmentFactory.addEndMethodBody(fragments, startMainMethodBody);
-        //JavaFragmentFactory.addEndMethodBody(fragments, startMainMethodBody);
         fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
 
-        // }
+        // End of the generated block. 
         JavaFragmentFactory.addEndTypeBody(fragments, startMainClass);
         fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
 
         DecompileContext decompileContext = new DecompileContext(fragments);
         decompileContext.setMaxLineNumber(8);
-        //message.setStart("containsByteCode", Boolean.TRUE);
 
         return decompileContext;
     }
@@ -1764,7 +1716,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         StartBodyFragment startMainMethodBody = JavaFragmentFactory.addStartMethodBody(fragments);
 
-        // int i = 0;
+        // Source fragment: int i = 0
         fragments.add(new LineNumberTokensFragment(
                 new LineNumberToken(lineNumber1),
                 INT,
@@ -1773,10 +1725,10 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
 
-        // try {
+        // Source fragment: try
         StartStatementsBlockFragment.Group group = JavaFragmentFactory.addStartStatementsTryBlock(fragments);
 
-        // i = 1;
+        // Source fragment: i = 1
         fragments.add(new LineNumberTokensFragment(
                 new LineNumberToken(lineNumber2),
                 new TextToken("i = 1;")
@@ -1784,7 +1736,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         JavaFragmentFactory.addEndStatementsBlock(fragments, group);
 
-        // catch (RuntimeException e)
+        // Source fragment: catch (RuntimeException e)
         fragments.add(new TokensFragment(
                 CATCH,
                 new TextToken(" ("),
@@ -1794,7 +1746,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         JavaFragmentFactory.addStartStatementsBlock(fragments, group);
 
-        // i = 2;
+        // Source fragment: i = 2
         fragments.add(new LineNumberTokensFragment(
                 new LineNumberToken(lineNumber3),
                 new TextToken("i = 2;")
@@ -1809,7 +1761,7 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         JavaFragmentFactory.addStartStatementsBlock(fragments, group);
 
-        // i = 3;
+        // Source fragment: i = 3
         fragments.add(new LineNumberTokensFragment(
                 new LineNumberToken(lineNumber4),
                 new TextToken("i = 3;")
@@ -1819,23 +1771,22 @@ public class JavaFragmentToTokenTest extends TestCase {
 
         JavaFragmentFactory.addSpacerBetweenStatements(fragments);
 
-        // i = 4;
+        // Source fragment: i = 4
         fragments.add(new LineNumberTokensFragment(
                 new LineNumberToken(lineNumber5),
                 new TextToken("i = 4;")
         ));
 
-        // \n}
+        // Source fragment: \n
         JavaFragmentFactory.addEndMethodBody(fragments, startMainMethodBody);
         fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
 
-        // }
+        // End of the generated block. 
         JavaFragmentFactory.addEndTypeBody(fragments, startMainClass);
         fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
 
         DecompileContext decompileContext = new DecompileContext(fragments);
         decompileContext.setMaxLineNumber(8);
-        //message.setStart("containsByteCode", Boolean.TRUE);
 
         return decompileContext;
     }

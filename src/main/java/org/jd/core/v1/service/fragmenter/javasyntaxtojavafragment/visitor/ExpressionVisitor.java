@@ -257,7 +257,6 @@ public class ExpressionVisitor extends TypeVisitor {
             visitDimension(expression.getObjectType().getDimension());
         }
         tokens.add(TextToken.COLON_COLON);
-        //tokens.add(new ReferenceToken(ReferenceToken.CONSTRUCTOR, ot.getInternalName(), "new", expression.getDescriptor(), currentInternalTypeName));
         tokens.add(NEW);
     }
 
