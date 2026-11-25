@@ -15,7 +15,7 @@ import java.util.List;
 
 public class TestTokenizeJavaFragmentProcessor {
 
-    public void process(DecompileContext decompileContext) throws Exception {
+    public void process(DecompileContext decompileContext) {
         List<JavaFragment> fragments = decompileContext.getBody();
         TokenizeJavaFragmentTestVisitor visitor = new TokenizeJavaFragmentTestVisitor(fragments.size() * 3);
 
