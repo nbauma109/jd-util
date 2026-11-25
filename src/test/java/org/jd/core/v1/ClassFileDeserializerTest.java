@@ -79,46 +79,53 @@ public class ClassFileDeserializerTest extends TestCase {
             SimpleElementValue ev = (SimpleElementValue) annotationValue.getAnnotationEntry().getElementValuePairs()[1].getValue();
             assertEquals("Donald", ev.toString());
 
-            // Check fields
-            assertNotNull(classFile.getFields());
-            assertEquals(10, classFile.getFields().length);
-
-            // Check 1st field
-            Field field = classFile.getFields()[1];
-            assertEquals("b1", field.getName());
-            assertEquals("B", field.getSignature());
-
-            assertNotNull(field.getAnnotationEntries());
-            assertEquals(1, field.getAnnotationEntries().length);
-            assertNotNull(field.getAnnotationEntries()[0].getElementValuePairs());
-            assertEquals(1, field.getAnnotationEntries()[0].getElementValuePairs().length);
-            assertEquals("b", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString());
-
-            ev = (SimpleElementValue) field.getAnnotationEntries()[0].getElementValuePairs()[0].getValue();
-            assertEquals(-15, ev.getValueByte());
-
-            // Check 8th field
-            field = classFile.getFields()[8];
-            assertEquals("str2", field.getName());
-            assertEquals("Ljava/lang/String;", field.getSignature());
-
-            assertNotNull(field.getAnnotationEntries());
-            assertEquals(1, field.getAnnotationEntries().length);
-            assertNotNull(field.getAnnotationEntries()[0].getElementValuePairs());
-            assertEquals(1, field.getAnnotationEntries()[0].getElementValuePairs().length);
-            assertEquals("str", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString());
-
-            ev = (SimpleElementValue) field.getAnnotationEntries()[0].getElementValuePairs()[0].getValue();
-            assertEquals("str \u0083 \u0909 \u1109", ev.toString());
-
-            // Check getters
-            assertNotNull(classFile.getMethods());
-            assertEquals(3, classFile.getMethods().length);
-
-            // Check constructor
-            assertEquals(StringConstants.INSTANCE_CONSTRUCTOR, classFile.getMethods()[0].getName());
-            assertEquals("()V", classFile.getMethods()[0].getSignature());
-            assertNotNull(classFile.getMethods()[0].getCode());
+            verifyFields(classFile);
+            verifyMethods(classFile);
         }
+    }
+
+    private static void verifyFields(ClassFile classFile) {
+        // Check fields
+        assertNotNull(classFile.getFields());
+        assertEquals(10, classFile.getFields().length);
+
+        // Check 1st field
+        Field field = classFile.getFields()[1];
+        assertEquals("b1", field.getName());
+        assertEquals("B", field.getSignature());
+
+        assertNotNull(field.getAnnotationEntries());
+        assertEquals(1, field.getAnnotationEntries().length);
+        assertNotNull(field.getAnnotationEntries()[0].getElementValuePairs());
+        assertEquals(1, field.getAnnotationEntries()[0].getElementValuePairs().length);
+        assertEquals("b", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString());
+
+        SimpleElementValue ev = (SimpleElementValue) field.getAnnotationEntries()[0].getElementValuePairs()[0].getValue();
+        assertEquals(-15, ev.getValueByte());
+
+        // Check 8th field
+        field = classFile.getFields()[8];
+        assertEquals("str2", field.getName());
+        assertEquals("Ljava/lang/String;", field.getSignature());
+
+        assertNotNull(field.getAnnotationEntries());
+        assertEquals(1, field.getAnnotationEntries().length);
+        assertNotNull(field.getAnnotationEntries()[0].getElementValuePairs());
+        assertEquals(1, field.getAnnotationEntries()[0].getElementValuePairs().length);
+        assertEquals("str", field.getAnnotationEntries()[0].getElementValuePairs()[0].getNameString());
+
+        ev = (SimpleElementValue) field.getAnnotationEntries()[0].getElementValuePairs()[0].getValue();
+        assertEquals("str \u0083 \u0909 \u1109", ev.toString());
+    }
+
+    private static void verifyMethods(ClassFile classFile) {
+        // Check getters
+        assertNotNull(classFile.getMethods());
+        assertEquals(3, classFile.getMethods().length);
+
+        // Check constructor
+        assertEquals(StringConstants.INSTANCE_CONSTRUCTOR, classFile.getMethods()[0].getName());
+        assertEquals("()V", classFile.getMethods()[0].getSignature());
+        assertNotNull(classFile.getMethods()[0].getCode());
     }
 }

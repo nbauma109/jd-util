@@ -14,7 +14,7 @@ public class BaseExpressionTest implements BaseExpression {
     }
 
     @Test
-    public void test() {
+    public void testExpressionKinds() {
         assertFalse(isArrayExpression());
         assertFalse(isBinaryOperatorExpression());
         assertFalse(isBooleanExpression());
@@ -31,6 +31,10 @@ public class BaseExpressionTest implements BaseExpression {
         assertFalse(isNew());
         assertFalse(isNewArray());
         assertFalse(isNewExpression());
+    }
+
+    @Test
+    public void testRemainingExpressionKinds() {
         assertFalse(isNewInitializedArray());
         assertFalse(isNullExpression());
         assertFalse(isObjectTypeReferenceExpression());
@@ -42,6 +46,10 @@ public class BaseExpressionTest implements BaseExpression {
         assertFalse(isTernaryOperatorExpression());
         assertFalse(isThisExpression());
 
+    }
+
+    @Test
+    public void testDefaultExpressionValues() {
         assertEquals(NoExpression.NO_EXPRESSION, getDimensionExpressionList());
         assertEquals(NoExpression.NO_EXPRESSION, getParameters());
         assertEquals(NoExpression.NO_EXPRESSION, getCondition());
