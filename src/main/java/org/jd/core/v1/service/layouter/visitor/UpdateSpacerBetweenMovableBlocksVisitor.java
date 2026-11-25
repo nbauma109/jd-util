@@ -70,8 +70,16 @@ public class UpdateSpacerBetweenMovableBlocksVisitor implements FragmentVisitor 
         lastSpacer = fragment;
     }
 
-    @Override public void visit(FlexibleFragment fragment) {}
-    @Override public void visit(EndFlexibleBlockFragment fragment) {}
-    @Override public void visit(StartFlexibleBlockFragment fragment) {}
-    @Override public void visit(FixedFragment fragment) {}
+    @Override public void visit(FlexibleFragment fragment) {
+        // Ordinary flexible fragments do not change movable-block spacing.
+    }
+    @Override public void visit(EndFlexibleBlockFragment fragment) {
+        // Ordinary flexible blocks do not change movable-block spacing.
+    }
+    @Override public void visit(StartFlexibleBlockFragment fragment) {
+        // Ordinary flexible blocks do not change movable-block spacing.
+    }
+    @Override public void visit(FixedFragment fragment) {
+        // Fixed fragments do not change movable-block spacing.
+    }
 }

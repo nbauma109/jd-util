@@ -9,7 +9,9 @@ import static org.junit.Assert.assertFalse;
 public class BaseExpressionTest implements BaseExpression {
 
     @Override
-    public void accept(ExpressionVisitor visitor) {}
+    public void accept(ExpressionVisitor visitor) {
+        // This fixture tests the interface defaults rather than visitor dispatch.
+    }
 
     @Test
     public void test() {

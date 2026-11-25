@@ -20,6 +20,7 @@ public class BaseTypeTest implements BaseType {
 
     @Override
     public void accept(TypeVisitor visitor) {
+        // This fixture tests the interface defaults rather than visitor dispatch.
     }
 
 }

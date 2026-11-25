@@ -71,7 +71,9 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
     }
 
     @Override
-    public void visit(DiamondTypeArgument argument) {}
+    public void visit(DiamondTypeArgument argument) {
+        // The enclosing type renders the diamond delimiters.
+    }
 
     @Override
     public void visit(WildcardExtendsTypeArgument argument) {
@@ -94,6 +96,9 @@ public class PrintTypeVisitor implements TypeVisitor, TypeArgumentVisitor, TypeP
             case FLAG_INT: sb.append("int");     break;
             case FLAG_LONG: sb.append("long");    break;
             case FLAG_VOID: sb.append("void");    break;
+            default:
+                // Nonconcrete primitive flags do not identify a keyword.
+                break;
         }
 
         printDimension(type.getDimension());
