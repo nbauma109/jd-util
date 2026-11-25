@@ -52,7 +52,7 @@ public class ClassFileTest {
     }
 
     private static void verifyClassMetadata(JavaClass outerJavaClass, ClassFile outerClassFile,
-            ClassFile innerClassFile) {
+            ClassFile innerClassFile) throws ClassNotFoundException {
         // Test major and minor version
         assertEquals(outerJavaClass.getMajor(), outerClassFile.getMajorVersion());
         assertEquals(outerJavaClass.getMinor(), outerClassFile.getMinorVersion());
