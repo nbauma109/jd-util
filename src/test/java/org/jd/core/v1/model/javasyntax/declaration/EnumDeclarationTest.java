@@ -57,7 +57,7 @@ public class EnumDeclarationTest {
     }
 
     @Test
-    public void testAccept() throws Exception {
+    public void testAccept() {
         TestDeclarationVisitor testDeclarationVisitor = new TestDeclarationVisitor();
         enumDeclaration.accept(testDeclarationVisitor);
         assertEquals(1, testDeclarationVisitor.getEnumDeclarationCount());

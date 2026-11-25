@@ -8,7 +8,7 @@ import static org.junit.Assert.assertFalse;
 public class BaseTypeTest implements BaseType {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         assertFalse(isGenericType());
         assertFalse(isInnerObjectType());
         assertFalse(isObjectType());

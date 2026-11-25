@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 public class ExpressionElementValueTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         StringConstantExpression expression = new StringConstantExpression("Hello World!");
         ExpressionElementValue expressionElementValue = new ExpressionElementValue(expression);
         assertEquals(expression, expressionElementValue.getExpression());

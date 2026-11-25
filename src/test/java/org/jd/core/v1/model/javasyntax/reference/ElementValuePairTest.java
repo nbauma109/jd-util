@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 public class ElementValuePairTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         ElementValuePair elementValuePair = new ElementValuePair(null, null);
         assertEquals("ElementValuePair{name=null, elementValue=null}", elementValuePair.toString());
         TestReferenceVisitor referenceVisitor = new TestReferenceVisitor();
