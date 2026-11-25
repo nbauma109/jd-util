@@ -783,7 +783,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testTypeArgumentsOfConstructorAndMethodReferences() throws Exception {
+    public void testTypeArgumentsOfConstructorAndMethodReferences() {
         ObjectType builderType = new ObjectType("org/jd/core/v1/service/test/Builder", "org.jd.core.v1.service.test.Builder", "Builder");
         ObjectType parameterizedBuilderType = builderType.createType(new org.jd.core.v1.model.javasyntax.type.TypeArguments(Arrays.<org.jd.core.v1.model.javasyntax.type.TypeArgument>asList(
             new org.jd.core.v1.model.javasyntax.type.GenericType("K"), new org.jd.core.v1.model.javasyntax.type.GenericType("V"))));
@@ -810,7 +810,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
     }
 
     @Test
-    public void testExplicitParameterTypesOfLambdas() throws Exception {
+    public void testExplicitParameterTypesOfLambdas() {
         ObjectType functionType = new ObjectType("java/util/function/BiFunction", "java.util.function.BiFunction", "BiFunction");
         ObjectType listType = new ObjectType("java/util/List", "java.util.List", "List");
         ObjectType stringType = new ObjectType("java/lang/String", "java.lang.String", "String");

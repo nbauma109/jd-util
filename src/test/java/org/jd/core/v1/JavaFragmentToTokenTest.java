@@ -73,7 +73,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     protected WriteTokenProcessor writer = new WriteTokenProcessor();
 
     @Test
-    public void testIfReturn_0() throws Exception {
+    public void testIfReturn_0() {
         DecompileContext decompileContext = createMessageToTestIfReturn(0, 0);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
 
@@ -94,7 +94,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testIfReturn_1_3() throws Exception {
+    public void testIfReturn_1_3() {
         DecompileContext decompileContext = createMessageToTestIfReturn(1, 3);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -119,7 +119,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testIfReturn_1_4() throws Exception {
+    public void testIfReturn_1_4() {
         DecompileContext decompileContext = createMessageToTestIfReturn(1, 4);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -144,7 +144,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testIfAssignation_0() throws Exception {
+    public void testIfAssignation_0() {
         DecompileContext decompileContext = createMessageToTestIfAssignation(0, 0, 0);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
 
@@ -165,7 +165,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testIfAssignation_1_2_3() throws Exception {
+    public void testIfAssignation_1_2_3() {
         DecompileContext decompileContext = createMessageToTestIfAssignation(1, 2, 3);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -191,7 +191,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testIfAssignation_1_3_5() throws Exception {
+    public void testIfAssignation_1_3_5() {
         DecompileContext decompileContext = createMessageToTestIfAssignation(1, 3, 5);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -217,7 +217,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclarationWithoutImports_0() throws Exception {
+    public void testClassAndFieldDeclarationWithoutImports_0() {
         DecompileContext decompileContext = createMessageToTestClassDeclarationWithoutImports(0);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
 
@@ -238,7 +238,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_0() throws Exception {
+    public void testClassAndFieldDeclaration_0() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(0);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
 
@@ -259,7 +259,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_1() throws Exception {
+    public void testClassAndFieldDeclaration_1() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(1);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -283,7 +283,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_2() throws Exception {
+    public void testClassAndFieldDeclaration_2() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(2);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -307,7 +307,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_3() throws Exception {
+    public void testClassAndFieldDeclaration_3() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(3);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -333,7 +333,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_4() throws Exception {
+    public void testClassAndFieldDeclaration_4() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(4);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -359,7 +359,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_5() throws Exception {
+    public void testClassAndFieldDeclaration_5() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(5);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -384,7 +384,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_6() throws Exception {
+    public void testClassAndFieldDeclaration_6() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(6);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -410,7 +410,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_7() throws Exception {
+    public void testClassAndFieldDeclaration_7() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(7);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
 
@@ -435,7 +435,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_8() throws Exception {
+    public void testClassAndFieldDeclaration_8() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(8);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -462,7 +462,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_9() throws Exception {
+    public void testClassAndFieldDeclaration_9() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(9);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -489,7 +489,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndFieldDeclaration_10() throws Exception {
+    public void testClassAndFieldDeclaration_10() {
         DecompileContext decompileContext = createMessageToTestClassDeclaration(10);
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -516,7 +516,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndMethodDeclaration_3() throws Exception {
+    public void testClassAndMethodDeclaration_3() {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(3);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -541,7 +541,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndMethodDeclaration_4() throws Exception {
+    public void testClassAndMethodDeclaration_4() {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(4);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -566,7 +566,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndMethodDeclaration_8() throws Exception {
+    public void testClassAndMethodDeclaration_8() {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(8);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
 
@@ -591,7 +591,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndMethodDeclaration_9() throws Exception {
+    public void testClassAndMethodDeclaration_9() {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(9);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -618,7 +618,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndMethodDeclaration_10() throws Exception {
+    public void testClassAndMethodDeclaration_10() {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(10);
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -648,7 +648,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndMethodDeclaration_11() throws Exception {
+    public void testClassAndMethodDeclaration_11() {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(11);
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -678,7 +678,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndMethodDeclaration_12() throws Exception {
+    public void testClassAndMethodDeclaration_12() {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(12);
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -708,7 +708,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testClassAndMethodDeclaration_14() throws Exception {
+    public void testClassAndMethodDeclaration_14() {
         DecompileContext decompileContext = createMessageToTestClassAndMethodDeclaration(14);
         PlainTextPrinter printer = new PlainTextPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -738,7 +738,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testLayout() throws Exception {
+    public void testLayout() {
         DecompileContext decompileContext = createSimpleMessage(1);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
 
@@ -759,7 +759,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testLayoutWithoutLineNumber() throws Exception {
+    public void testLayoutWithoutLineNumber() {
         DecompileContext decompileContext = createSimpleMessage(0);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
 
@@ -780,7 +780,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testLayoutWithStretchedfFragments_2() throws Exception {
+    public void testLayoutWithStretchedfFragments_2() {
         DecompileContext decompileContext = createSimpleMessage(2);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -803,7 +803,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testLayoutWithStretchedfFragments_3() throws Exception {
+    public void testLayoutWithStretchedfFragments_3() {
         DecompileContext decompileContext = createSimpleMessage(3);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -826,7 +826,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testMoveDown() throws Exception {
+    public void testMoveDown() {
         DecompileContext decompileContext = createMessageToTestMoveDown();
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -849,7 +849,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testLinkedBlocks_16() throws Exception {
+    public void testLinkedBlocks_16() {
         DecompileContext decompileContext = createMessageToTestLinkedBlocks(6, 9, 11, 13, 16);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
@@ -872,7 +872,7 @@ public class JavaFragmentToTokenTest extends TestCase {
     }
 
     @Test
-    public void testLinkedBlocks_22() throws Exception {
+    public void testLinkedBlocks_22() {
         DecompileContext decompileContext = createMessageToTestLinkedBlocks(7, 11, 15, 19, 22);
         PlainTextMetaPrinter printer = new PlainTextMetaPrinter();
         Map<String, Object> configuration = Collections.singletonMap("realignLineNumbers", Boolean.TRUE);
