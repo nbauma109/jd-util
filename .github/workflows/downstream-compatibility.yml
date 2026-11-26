@@ -1,0 +1,182 @@
+name: Downstream compatibility
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Build jd-util
+        run: mvn -B --no-transfer-progress -DskipTests package
+      - name: Upload candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: jd-util-candidate
+          path: |
+            pom.xml
+            target/jd-util-*.jar
+          if-no-files-found: error
+
+  compatibility:
+    name: ${{ matrix.repository }} (Java ${{ matrix.java }}, ${{ matrix.suite }})
+    needs: candidate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - { repository: jd-core, java: '17', suite: other-tests }
+          - { repository: jd-core, java: '17', suite: testBCEL }
+          - { repository: jd-core, java: '17', suite: testCommonsIO }
+          - { repository: jd-core, java: '17.0.20', suite: testCommonsCodec }
+          - { repository: jd-core, java: '17', suite: testCommonsCollections4 }
+          - { repository: jd-core, java: '17', suite: testCommonsCompress }
+          - { repository: jd-core, java: '17', suite: testCommonsCsv }
+          - { repository: jd-core, java: '17', suite: testCommonsImaging }
+          - { repository: jd-core, java: '17.0.20', suite: testCommonsLang3 }
+          - { repository: jd-core, java: '17', suite: testCommonsMath3 }
+          - { repository: jd-core, java: '17', suite: testCommonsNet }
+          - { repository: jd-core, java: '17', suite: testCommonsText }
+          - { repository: jd-core, java: '17', suite: testDiskLruCache }
+          - { repository: jd-core, java: '17', suite: testGson }
+          - { repository: jd-core, java: '17', suite: testJacksonCore }
+          - { repository: jd-core, java: '17', suite: testJacksonDatabind }
+          - { repository: jd-core, java: '17', suite: testGuavaAbstractFutureAndTesting }
+          - { repository: jd-core, java: '17', suite: testGuavaConcurrentMathCacheAndGraph }
+          - { repository: jd-core, java: '17', suite: testGuavaOthers }
+          - { repository: jd-core, java: '17', suite: testJavaPoet }
+          - { repository: jd-core, java: '17', suite: testJavaWriter }
+          - { repository: jd-core, java: '17', suite: testJSoup }
+          - { repository: jd-core, java: '17', suite: testJUnit4 }
+          - { repository: jd-core, java: '17', suite: testMimecraft }
+          - { repository: jd-core, java: '17', suite: testScribe }
+          - { repository: jd-core, java: '17', suite: testSparkCore }
+          - { repository: jd-core, java: '17', suite: testLog4jApi }
+          - { repository: jd-core, java: '17', suite: testLog4jCore }
+          - { repository: jd-core, java: '17', suite: testJodaTime }
+          - { repository: jd-core-v0, java: '17', suite: javac }
+          - { repository: jd-core-v0, java: '17', suite: ecj }
+          - { repository: jd-core-v0, java: '21', suite: javac }
+          - { repository: jd-core-v0, java: '21', suite: ecj }
+          - { repository: jd-core-v0, java: '25', suite: javac }
+          - { repository: jd-core-v0, java: '25', suite: ecj }
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          repository: nbauma109/${{ matrix.repository }}
+          ref: master
+          path: downstream
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: jd-util-candidate
+          path: candidate
+      - name: Set up JDK 8 for Commons Math
+        if: matrix.suite == 'testCommonsMath3'
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '8'
+      - name: Remember JDK 8 home
+        if: matrix.suite == 'testCommonsMath3'
+        run: echo "JAVA8_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+          cache-dependency-path: |
+            candidate/pom.xml
+            downstream/pom.xml
+      - name: Cache library build dependencies
+        if: matrix.repository == 'jd-core' && matrix.suite != 'other-tests'
+        uses: actions/cache@v6.1.0
+        with:
+          path: downstream/target/m2-local
+          key: ${{ runner.os }}-downstream-m2-local-${{ matrix.suite }}-${{ hashFiles('downstream/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-downstream-m2-local-${{ matrix.suite }}-
+      - name: Install candidate and update downstream dependency
+        shell: bash
+        run: |
+          version=$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          namespace = "http://maven.apache.org/POM/4.0.0"
+          ns = {"m": namespace}
+          ET.register_namespace("", namespace)
+          ET.register_namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance")
+
+          candidate = ET.parse("candidate/pom.xml")
+          version = candidate.findtext("m:version", namespaces=ns)
+          if not version:
+              raise SystemExit("Cannot determine the jd-util candidate version")
+
+          downstream = ET.parse("downstream/pom.xml")
+          dependencies = [
+              dependency
+              for dependency in downstream.findall("m:dependencies/m:dependency", ns)
+              if dependency.findtext("m:groupId", namespaces=ns) == "io.github.nbauma109"
+              and dependency.findtext("m:artifactId", namespaces=ns) == "jd-util"
+          ]
+          if len(dependencies) != 1:
+              raise SystemExit("Expected exactly one direct jd-util dependency")
+
+          dependency_version = dependencies[0].find("m:version", ns)
+          if dependency_version is None:
+              raise SystemExit("Missing jd-util dependency version")
+
+          dependency_version.text = version
+          downstream.write("downstream/pom.xml", encoding="utf-8", xml_declaration=True)
+          print(version)
+          PY
+          )
+
+          mvn -B --no-transfer-progress install:install-file \
+            -Dfile="candidate/target/jd-util-$version.jar" \
+            -DpomFile=candidate/pom.xml
+      - name: Run downstream tests
+        working-directory: downstream
+        shell: bash
+        env:
+          REPOSITORY: ${{ matrix.repository }}
+          SUITE: ${{ matrix.suite }}
+        run: |
+          arguments=()
+
+          if [[ "$REPOSITORY" == "jd-core" ]]; then
+            if [[ "$SUITE" == "other-tests" ]]; then
+              arguments+=("-Dtest=Test*,*Test,*Tests,*TestCase,!JarFileToJavaSourceTest")
+            else
+              arguments+=("-Dtest=JarFileToJavaSourceTest#$SUITE")
+            fi
+          elif [[ "$SUITE" == "ecj" ]]; then
+            arguments+=("-Pecj")
+          fi
+
+          mvn -V -B --no-transfer-progress "${arguments[@]}" test jacoco:report
+      - name: Remove candidate from Maven cache
+        if: always()
+        run: rm -rf "$HOME/.m2/repository/io/github/nbauma109/jd-util"
