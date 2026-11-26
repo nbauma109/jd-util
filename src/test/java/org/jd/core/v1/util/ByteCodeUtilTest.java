@@ -7,6 +7,7 @@ import org.jd.core.v1.service.deserializer.classfile.ClassFileDeserializer;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.Arrays;
 
 import static org.apache.bcel.Const.*;
 import static org.junit.Assert.assertArrayEquals;
@@ -24,6 +25,29 @@ public class ByteCodeUtilTest {
         byte[] code = { (byte) ILOAD_0, (byte) ILOAD_1, (byte) ARETURN, (byte) ASTORE, DUP };
         assertTrue(ByteCodeUtil.opCodeIn(code, 0, ILOAD_0, ILOAD_1, ARETURN));
         assertFalse(ByteCodeUtil.opCodeIn(code, 0, DUP, ASTORE, GETFIELD));
+    }
+
+    @Test
+    public void testOpCodeInPastTheEnd() {
+        assertFalse(ByteCodeUtil.opCodeIn(new byte[] { (byte) ARETURN }, 1, ARETURN));
+    }
+
+    /** Code ending in the middle of the cleaned-up pattern, as any method may, is left as it is. */
+    @Test
+    public void testCleanUpTruncatedByteCode() {
+        byte[][] patterns = {
+            {ALOAD_0, (byte) GETFIELD, 0, 0, ASTORE_1, ACONST_NULL, ASTORE_2, ALOAD_1, (byte) INVOKEVIRTUAL, 11, 0,
+                ASTORE_3, ALOAD_1, ALOAD_3, (byte) INVOKESTATIC, 11, 0, ASTORE_2, ALOAD_2},
+            {ALOAD, 1, ASTORE, 2, ACONST_NULL, ASTORE_3, ALOAD, 2, (byte) INVOKEVIRTUAL, 6, 0, ASTORE, 4, ALOAD, 2,
+                ALOAD, 4, (byte) INVOKESTATIC, 6, 0, ASTORE_3, ALOAD, 3}
+        };
+        for (byte[] pattern : patterns) {
+            // Stop before the last call, whose prefixes cannot hold the whole pattern
+            for (int length = 0; length < pattern.length - 4; length++) {
+                byte[] truncated = Arrays.copyOf(pattern, length);
+                assertArrayEquals(Arrays.copyOf(pattern, length), ByteCodeUtil.cleanUpByteCode(truncated));
+            }
+        }
     }
 
     @Test

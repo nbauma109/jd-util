@@ -180,7 +180,7 @@ public final class ByteCodeUtil
                 // skip ASTORE
                 offset++;
                 // store ASTORE parameter
-                astore1stIdxParam = code[offset];
+                astore1stIdxParam = operandAt(code, offset);
             } else {
                 // store ASTORE_0..3 parameter
                 astore1stIdxParam = code[offset] - ASTORE_0;
@@ -202,7 +202,7 @@ public final class ByteCodeUtil
                 // skip ALOAD
                 offset++;
                 // check ALOAD local variable index parameter matches that of ASTORE
-                if (astore1stIdxParam != code[offset]) {
+                if (astore1stIdxParam != operandAt(code, offset)) {
                     continue;
                 }
             } else // check ALOAD local variable index parameter matches that of ASTORE
@@ -228,7 +228,7 @@ public final class ByteCodeUtil
                 // skip ALOAD
                 offset++;
                 // check ALOAD local variable index parameter matches that of ASTORE
-                if (astore1stIdxParam != code[offset]) {
+                if (astore1stIdxParam != operandAt(code, offset)) {
                     continue;
                 }
             } else // check ALOAD local variable index parameter matches that of ASTORE
@@ -247,7 +247,7 @@ public final class ByteCodeUtil
                 // skip ALOAD
                 offset++;
                 // check ALOAD local variable index parameter matches that of ASTORE
-                if (astore1stIdxParam + 2 != code[offset]) {
+                if (astore1stIdxParam + 2 != operandAt(code, offset)) {
                     continue;
                 }
             } else // check ALOAD local variable index parameter matches that of ASTORE
@@ -279,7 +279,7 @@ public final class ByteCodeUtil
                 // skip ALOAD
                 offset++;
                 // check ALOAD local variable index parameter matches that of ASTORE
-                if (astore1stIdxParam + 1 != code[offset]) {
+                if (astore1stIdxParam + 1 != operandAt(code, offset)) {
                     continue;
                 }
             } else // check ALOAD local variable index parameter matches that of ASTORE
@@ -333,8 +333,14 @@ public final class ByteCodeUtil
         return code;
     }
 
+    /** @return false if the index is past the end of the code, where a truncated pattern leads */
     public static boolean opCodeIn(byte[] code, int index, int... values) {
-        return Arrays.binarySearch(values, getOpCode(code, index)) >= 0;
+        return index < code.length && Arrays.binarySearch(values, getOpCode(code, index)) >= 0;
+    }
+
+    /** @return the operand at the index, or a value no variable index matches if the code ends before it */
+    private static int operandAt(byte[] code, int index) {
+        return index < code.length ? code[index] : Integer.MIN_VALUE;
     }
 
     public static int getOpCode(byte[] code, int index) {
