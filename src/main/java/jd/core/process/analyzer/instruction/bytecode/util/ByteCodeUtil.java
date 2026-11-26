@@ -180,7 +180,7 @@ public final class ByteCodeUtil
                 // skip ASTORE
                 offset++;
                 // store ASTORE parameter
-                astore1stIdxParam = code[offset];
+                astore1stIdxParam = operandAt(code, offset);
             } else {
                 // store ASTORE_0..3 parameter
                 astore1stIdxParam = code[offset] - ASTORE_0;
@@ -198,19 +198,10 @@ public final class ByteCodeUtil
             if (offset >= code.length || !opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
-            if (getOpCode(code, offset) == ALOAD) {
-                // skip ALOAD
-                offset++;
-                // check ALOAD local variable index parameter matches that of ASTORE
-                if (astore1stIdxParam != code[offset]) {
-                    continue;
-                }
-            } else // check ALOAD local variable index parameter matches that of ASTORE
-            if (astore1stIdxParam != code[offset] - ALOAD_0) {
+            offset = skipLoadOf(code, offset, astore1stIdxParam);
+            if (offset < 0) {
                 continue;
             }
-            // skip ALOAD parameter or skip ALOAD_0..3
-            offset++;
             if (offset >= code.length || getOpCode(code, offset) != INVOKEVIRTUAL) {
                 continue;
             }
@@ -224,38 +215,20 @@ public final class ByteCodeUtil
             if (offset >= code.length || !opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
-            if (getOpCode(code, offset) == ALOAD) {
-                // skip ALOAD
-                offset++;
-                // check ALOAD local variable index parameter matches that of ASTORE
-                if (astore1stIdxParam != code[offset]) {
-                    continue;
-                }
-            } else // check ALOAD local variable index parameter matches that of ASTORE
-            if (astore1stIdxParam != code[offset] - ALOAD_0) {
+            offset = skipLoadOf(code, offset, astore1stIdxParam);
+            if (offset < 0) {
                 continue;
             }
-            // skip ALOAD parameter or skip ALOAD_0..3
-            offset++;
             if (offset >= code.length) {
                 continue;
             }
             if (!opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
-            if (getOpCode(code, offset) == ALOAD) {
-                // skip ALOAD
-                offset++;
-                // check ALOAD local variable index parameter matches that of ASTORE
-                if (astore1stIdxParam + 2 != code[offset]) {
-                    continue;
-                }
-            } else // check ALOAD local variable index parameter matches that of ASTORE
-            if (astore1stIdxParam + 2 != code[offset] - ALOAD_0) {
+            offset = skipLoadOf(code, offset, astore1stIdxParam + 2);
+            if (offset < 0) {
                 continue;
             }
-            // skip ALOAD parameter or skip ALOAD_0..3
-            offset++;
             if (offset >= code.length) {
                 continue;
             }
@@ -275,19 +248,10 @@ public final class ByteCodeUtil
             if (!opCodeIn(code, offset, ALOAD, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3)) {
                 continue;
             }
-            if (getOpCode(code, offset) == ALOAD) {
-                // skip ALOAD
-                offset++;
-                // check ALOAD local variable index parameter matches that of ASTORE
-                if (astore1stIdxParam + 1 != code[offset]) {
-                    continue;
-                }
-            } else // check ALOAD local variable index parameter matches that of ASTORE
-            if (astore1stIdxParam + 1 != code[offset] - ALOAD_0) {
+            offset = skipLoadOf(code, offset, astore1stIdxParam + 1);
+            if (offset < 0) {
                 continue;
             }
-            // skip ALOAD parameter or skip ALOAD_0..3
-            offset++;
             // at this point, pattern is fully matched
             int paramLength = paramEndIdx - i;
             int newParamEndIdx = paramEndIdx + paramLength;
@@ -333,8 +297,25 @@ public final class ByteCodeUtil
         return code;
     }
 
+    /** @return false if the index is past the end of the code, where a truncated pattern leads */
     public static boolean opCodeIn(byte[] code, int index, int... values) {
-        return Arrays.binarySearch(values, getOpCode(code, index)) >= 0;
+        return index < code.length && Arrays.binarySearch(values, getOpCode(code, index)) >= 0;
+    }
+
+    /**
+     * @return the offset following the ALOAD at the offset, whose opcode the caller checked, or -1 if it loads another
+     *         variable than the given one
+     */
+    private static int skipLoadOf(byte[] code, int offset, int variable) {
+        if (getOpCode(code, offset) == ALOAD) {
+            return operandAt(code, offset + 1) == variable ? offset + 2 : -1;
+        }
+        return code[offset] - ALOAD_0 == variable ? offset + 1 : -1;
+    }
+
+    /** @return the operand at the index, or a value no variable index matches if the code ends before it */
+    private static int operandAt(byte[] code, int index) {
+        return index < code.length ? code[index] : Integer.MIN_VALUE;
     }
 
     public static int getOpCode(byte[] code, int index) {
