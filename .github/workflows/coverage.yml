@@ -51,4 +51,7 @@ jobs:
       with:
         fail_ci_if_error: true
         files: ./target/site/jacoco/jacoco.xml
+        disable_search: true
+        flags: unit-tests
+        name: unit-tests
         verbose: true

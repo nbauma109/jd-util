@@ -27,6 +27,8 @@ jobs:
           cache: maven
       - name: Build jd-util
         run: mvn -B --no-transfer-progress -DskipTests package
+      - name: Download JaCoCo command-line tool
+        run: mvn -B --no-transfer-progress dependency:copy -Dartifact=org.jacoco:org.jacoco.cli:0.8.16:jar:nodeps -DoutputDirectory=target
       - name: Upload candidate
         uses: actions/upload-artifact@v4
         with:
@@ -34,6 +36,7 @@ jobs:
           path: |
             pom.xml
             target/jd-util-*.jar
+            target/org.jacoco.cli-0.8.16-nodeps.jar
           if-no-files-found: error
 
   compatibility:
@@ -82,6 +85,9 @@ jobs:
           - { repository: jd-core-v0, java: '25', suite: ecj }
 
     steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/checkout@v7
         with:
           repository: nbauma109/${{ matrix.repository }}
@@ -154,9 +160,11 @@ jobs:
           PY
           )
 
+          candidate_jar="$GITHUB_WORKSPACE/candidate/target/jd-util-$version.jar"
           mvn -B --no-transfer-progress install:install-file \
-            -Dfile="candidate/target/jd-util-$version.jar" \
+            -Dfile="$candidate_jar" \
             -DpomFile=candidate/pom.xml
+          echo "JD_UTIL_CANDIDATE_JAR=$candidate_jar" >> "$GITHUB_ENV"
       - name: Run downstream tests
         working-directory: downstream
         shell: bash
@@ -177,6 +185,32 @@ jobs:
           fi
 
           mvn -V -B --no-transfer-progress "${arguments[@]}" test jacoco:report
+      - name: Generate jd-util coverage from downstream execution
+        shell: bash
+        run: |
+          test -s downstream/target/jacoco.exec
+          java -jar candidate/target/org.jacoco.cli-0.8.16-nodeps.jar report \
+            downstream/target/jacoco.exec \
+            --classfiles "$JD_UTIL_CANDIDATE_JAR" \
+            --sourcefiles src/main/java \
+            --name jd-util \
+            --xml candidate/target/jd-util-coverage.xml
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          report = ET.parse("candidate/target/jd-util-coverage.xml")
+          counter = report.find("./counter[@type='INSTRUCTION']")
+          if counter is None or int(counter.get("covered", "0")) == 0:
+              raise SystemExit("No coverage recorded for the jd-util candidate")
+          PY
+      - name: Upload jd-util downstream coverage to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          files: candidate/target/jd-util-coverage.xml
+          disable_search: true
+          flags: ${{ matrix.repository }}
+          name: ${{ matrix.repository }}-java-${{ matrix.java }}-${{ matrix.suite }}
+          fail_ci_if_error: true
       - name: Remove candidate from Maven cache
         if: always()
         run: rm -rf "$HOME/.m2/repository/io/github/nbauma109/jd-util"
