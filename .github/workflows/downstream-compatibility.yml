@@ -30,7 +30,7 @@ jobs:
       - name: Download JaCoCo command-line tool
         run: mvn -B --no-transfer-progress dependency:copy -Dartifact=org.jacoco:org.jacoco.cli:0.8.16:jar:nodeps -DoutputDirectory=target
       - name: Upload candidate
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: jd-util-candidate
           path: |
