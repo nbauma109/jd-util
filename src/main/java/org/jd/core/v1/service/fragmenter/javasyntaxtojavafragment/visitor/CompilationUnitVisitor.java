@@ -532,12 +532,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
     }
 
     private static boolean sameOccurrences(List<String> declared, List<String> onType) {
-        List<String> sortedDeclared = new ArrayList<>(declared);
-        List<String> sortedOnType = new ArrayList<>(onType);
-
-        sortedDeclared.sort(null);
-        sortedOnType.sort(null);
-        return sortedDeclared.equals(sortedOnType);
+        return declared.stream().sorted().toList().equals(onType.stream().sorted().toList());
     }
 
     /** @return true if the annotation is also one of the annotations of the type, the same one: its type and its elements are those of the annotation */
