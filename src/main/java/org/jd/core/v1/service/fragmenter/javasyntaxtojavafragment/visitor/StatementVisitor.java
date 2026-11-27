@@ -250,20 +250,10 @@ public class StatementVisitor extends ExpressionVisitor {
 
             statements.accept(this);
 
-            switch (fragments.size()) {
-                case 0:
-                    tokens.add(TextToken.SEMICOLON);
-                    break;
-                case 1:
-                    StartSingleStatementBlockFragment start = JavaFragmentFactory.addStartSingleStatementBlock(tmp);
-                    tmp.addAll(fragments);
-                    JavaFragmentFactory.addEndSingleStatementBlock(tmp, start);
-                    break;
-                default:
-                    StartStatementsBlockFragment.Group group = JavaFragmentFactory.addStartStatementsBlock(tmp);
-                    tmp.addAll(fragments);
-                    JavaFragmentFactory.addEndStatementsBlock(tmp, group);
-                    break;
+            if (fragments.isEmpty()) {
+                tokens.add(TextToken.SEMICOLON);
+            } else {
+                addStatementBlock(tmp, fragments.size());
             }
 
             fragments = tmp;
@@ -292,23 +282,21 @@ public class StatementVisitor extends ExpressionVisitor {
 
             stmt.accept(this);
 
-            switch (stmt.size()) {
-                case 0:
-                    tmp.add(TokensFragment.SEMICOLON);
-                    break;
-                case 1:
-                    StartSingleStatementBlockFragment start = JavaFragmentFactory.addStartSingleStatementBlock(tmp);
-                    tmp.addAll(fragments);
-                    JavaFragmentFactory.addEndSingleStatementBlock(tmp, start);
-                    break;
-                default:
-                    StartStatementsBlockFragment.Group group = JavaFragmentFactory.addStartStatementsBlock(tmp);
-                    tmp.addAll(fragments);
-                    JavaFragmentFactory.addEndStatementsBlock(tmp, group);
-                    break;
-            }
+            addStatementBlock(tmp, stmt.size());
 
             fragments = tmp;
+        }
+    }
+
+    private void addStatementBlock(Fragments target, int size) {
+        if (size == 1) {
+            StartSingleStatementBlockFragment start = JavaFragmentFactory.addStartSingleStatementBlock(target);
+            target.addAll(fragments);
+            JavaFragmentFactory.addEndSingleStatementBlock(target, start);
+        } else {
+            StartStatementsBlockFragment.Group group = JavaFragmentFactory.addStartStatementsBlock(target);
+            target.addAll(fragments);
+            JavaFragmentFactory.addEndStatementsBlock(target, group);
         }
     }
 

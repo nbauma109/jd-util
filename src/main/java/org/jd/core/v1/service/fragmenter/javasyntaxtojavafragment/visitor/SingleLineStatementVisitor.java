@@ -245,22 +245,15 @@ public class SingleLineStatementVisitor extends AbstractJavaSyntaxVisitor {
         int size = list.size();
 
         switch (size) {
-            case 0:
-                minLineNumber = maxLineNumber = 0;
-                break;
-            case 1:
+            case 0 -> minLineNumber = maxLineNumber = 0;
+            case 1 -> list.get(0).accept(this);
+            default -> {
                 list.get(0).accept(this);
-                break;
-            default:
-                list.get(0).accept(this);
-
                 int min = minLineNumber;
-
                 list.get(size - 1).accept(this);
-
                 minLineNumber = min;
                 statementCount = size;
-                break;
+            }
         }
     }
 
