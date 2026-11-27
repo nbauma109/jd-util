@@ -98,14 +98,14 @@ jobs:
         with:
           name: jd-util-candidate
           path: candidate
-      - name: Set up JDK 8 for Commons Math and Spark
-        if: matrix.suite == 'testCommonsMath3' || matrix.suite == 'testSparkCore'
+      - name: Set up JDK 8 for the library tests
+        if: matrix.repository == 'jd-core' && matrix.suite != 'other-tests'
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '8'
       - name: Remember JDK 8 home
-        if: matrix.suite == 'testCommonsMath3' || matrix.suite == 'testSparkCore'
+        if: matrix.repository == 'jd-core' && matrix.suite != 'other-tests'
         run: echo "JAVA8_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v6
