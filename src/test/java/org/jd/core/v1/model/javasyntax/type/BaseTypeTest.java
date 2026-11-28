@@ -8,7 +8,7 @@ import static org.junit.Assert.assertFalse;
 public class BaseTypeTest implements BaseType {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         assertFalse(isGenericType());
         assertFalse(isInnerObjectType());
         assertFalse(isObjectType());
@@ -20,6 +20,7 @@ public class BaseTypeTest implements BaseType {
 
     @Override
     public void accept(TypeVisitor visitor) {
+        // This fixture tests the interface defaults rather than visitor dispatch.
     }
 
 }

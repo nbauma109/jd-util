@@ -50,18 +50,26 @@ public class DefaultList<E> extends ArrayList<E> {
         }
     }
 
+    // These methods also override Java 21 list methods, but Java 17 has no such overrides.
+    @SuppressWarnings("java:S1161")
     public E getFirst() {
         return get(0);
     }
 
+    // These methods also override Java 21 list methods, but Java 17 has no such overrides.
+    @SuppressWarnings("java:S1161")
     public E getLast() {
         return get(size()-1);
     }
 
+    // These methods also override Java 21 list methods, but Java 17 has no such overrides.
+    @SuppressWarnings("java:S1161")
     public E removeFirst() {
         return remove(0);
     }
 
+    // These methods also override Java 21 list methods, but Java 17 has no such overrides.
+    @SuppressWarnings("java:S1161")
     public E removeLast() {
         return remove(size()-1);
     }

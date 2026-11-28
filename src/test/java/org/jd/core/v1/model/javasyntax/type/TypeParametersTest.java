@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 public class TypeParametersTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         TypeParameters typeParameters = new TypeParameters();
         typeParameters.add(new TypeParameter("K"));
         typeParameters.add(new TypeParameter("V"));

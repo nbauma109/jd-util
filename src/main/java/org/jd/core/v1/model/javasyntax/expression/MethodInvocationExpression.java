@@ -29,6 +29,8 @@ public class MethodInvocationExpression extends MethodReferenceExpression {
         this(UNKNOWN_LINE_NUMBER, type, expression, internalTypeName, name, descriptor, parameters, methodTypes);
     }
 
+    // Preserve the public expression constructor signature.
+    @SuppressWarnings("java:S107")
     public MethodInvocationExpression(int lineNumber, Type type, Expression expression, String internalTypeName, String name, String descriptor, BaseExpression parameters, MethodTypes methodTypes) {
         super(lineNumber, type, expression, internalTypeName, name, descriptor);
         this.parameters = parameters;

@@ -40,65 +40,7 @@ public final class ClassFileDeserializer {
             // Load main type
             ClassParser classParser = new ClassParser(reader, internalTypeName);
             ClassFile classFile = new ClassFile(classParser.parse());
-            InnerClasses innerClasses = classFile.getAttribute(Const.ATTR_INNER_CLASSES);
-
-            // Load inner types
-            if (innerClasses != null) {
-                DefaultList<ClassFile> innerClassFiles = new DefaultList<>();
-                // A multi-release-jar lookup key carries a "META-INF/versions/N/" directory prefix that
-                // real bytecode names (from the constant pool, i.e. innerTypeName/outerTypeName below)
-                // never have. Strip it before comparing, but keep it to re-derive the inner class's own
-                // lookup key so it is still resolved from the same versioned directory.
-                int versionedEnd = internalTypeName.startsWith("META-INF/versions/")
-                        ? internalTypeName.indexOf('/', "META-INF/versions/".length()) + 1 : 0;
-                String versionPrefix = internalTypeName.substring(0, versionedEnd);
-                String baseInternalTypeName = internalTypeName.substring(versionedEnd);
-                String innerTypePrefix = baseInternalTypeName + '$';
-
-                for (InnerClass ic : innerClasses.getInnerClasses()) {
-                    ConstantPool cp = classFile.getConstantPool();
-                    String innerTypeName = cp.getConstantString(ic.getInnerClassIndex(), Const.CONSTANT_Class);
-                    String outerTypeName = ic.getOuterClassIndex() == 0 ? null : cp.getConstantString(ic.getOuterClassIndex(), Const.CONSTANT_Class);
-
-                    if (!baseInternalTypeName.equals(innerTypeName) && (baseInternalTypeName.equals(outerTypeName) || innerTypeName.startsWith(innerTypePrefix))) {
-                        // Prefer the same versioned directory as the outer class, but a multi-release jar
-                        // may only version the outer class while leaving an unchanged inner class at its
-                        // base (unversioned) path; fall back to that base path when the versioned one
-                        // does not actually exist.
-                        String innerLookupKey = versionPrefix.isEmpty() || !loader.canLoad(versionPrefix + innerTypeName)
-                                ? innerTypeName : versionPrefix + innerTypeName;
-
-                        if (!loader.canLoad(innerLookupKey)) {
-                            // Inner class not found under either lookup key: skip it rather than adding
-                            // a null-backed placeholder ClassFile, which has no null-safe accessors and
-                            // would fail as soon as a caller walks the inner class list.
-                            continue;
-                        }
-
-                        ClassFile innerClassFile = loadClassFile(loader, innerLookupKey);
-                        int flags = ic.getInnerAccessFlags();
-                        int length;
-
-                        if (innerTypeName.startsWith(innerTypePrefix)) {
-                            length = baseInternalTypeName.length() + 1;
-                        } else {
-                            length = innerTypeName.indexOf('$') + 1;
-                        }
-
-                        if (Character.isDigit(innerTypeName.charAt(length))) {
-                            flags |= ACC_SYNTHETIC;
-                        }
-
-                        innerClassFile.setAccessFlags(flags);
-                        innerClassFile.setOuterClassFile(classFile);
-                        innerClassFiles.add(innerClassFile);
-                    }
-                }
-
-                if (!innerClassFiles.isEmpty()) {
-                    classFile.setInnerClassFiles(innerClassFiles);
-                }
-            }
+            loadInnerClasses(loader, internalTypeName, classFile);
             for (Method method : classFile.getMethods()) {
                 Code methodCode = method.getCode();
                 if (methodCode == null) {
@@ -108,5 +50,65 @@ public final class ClassFileDeserializer {
             }
             return classFile;
         }
+    }
+
+    private void loadInnerClasses(Loader loader, String internalTypeName, ClassFile classFile) throws IOException {
+        InnerClasses innerClasses = classFile.getAttribute(Const.ATTR_INNER_CLASSES);
+        if (innerClasses == null) {
+            return;
+        }
+
+        // Resolve inner classes in the same multi-release directory, with fallback to the base entry.
+        int versionedEnd = 0;
+        if (internalTypeName.startsWith("META-INF/versions/")) {
+            versionedEnd = internalTypeName.indexOf('/', "META-INF/versions/".length()) + 1;
+        }
+        String versionPrefix = internalTypeName.substring(0, versionedEnd);
+        String baseInternalTypeName = internalTypeName.substring(versionedEnd);
+        DefaultList<ClassFile> innerClassFiles = new DefaultList<>();
+        for (InnerClass innerClass : innerClasses.getInnerClasses()) {
+            ClassFile loaded = loadInnerClass(loader, classFile, innerClass, baseInternalTypeName, versionPrefix);
+            if (loaded != null) {
+                innerClassFiles.add(loaded);
+            }
+        }
+        if (!innerClassFiles.isEmpty()) {
+            classFile.setInnerClassFiles(innerClassFiles);
+        }
+    }
+
+    private ClassFile loadInnerClass(Loader loader, ClassFile classFile, InnerClass innerClass,
+            String baseInternalTypeName, String versionPrefix) throws IOException {
+        ConstantPool constantPool = classFile.getConstantPool();
+        String innerTypeName = constantPool.getConstantString(innerClass.getInnerClassIndex(), Const.CONSTANT_Class);
+        String outerTypeName = null;
+        if (innerClass.getOuterClassIndex() != 0) {
+            outerTypeName = constantPool.getConstantString(innerClass.getOuterClassIndex(), Const.CONSTANT_Class);
+        }
+        String innerTypePrefix = baseInternalTypeName + '$';
+        if (baseInternalTypeName.equals(innerTypeName)
+                || (!baseInternalTypeName.equals(outerTypeName) && !innerTypeName.startsWith(innerTypePrefix))) {
+            return null;
+        }
+        String innerLookupKey = innerTypeName;
+        if (!versionPrefix.isEmpty() && loader.canLoad(versionPrefix + innerTypeName)) {
+            innerLookupKey = versionPrefix + innerTypeName;
+        }
+        if (!loader.canLoad(innerLookupKey)) {
+            // Missing inner classes cannot be represented by null-backed class files.
+            return null;
+        }
+        ClassFile innerClassFile = loadClassFile(loader, innerLookupKey);
+        int flags = innerClass.getInnerAccessFlags();
+        int length = innerTypeName.indexOf('$') + 1;
+        if (innerTypeName.startsWith(innerTypePrefix)) {
+            length = baseInternalTypeName.length() + 1;
+        }
+        if (Character.isDigit(innerTypeName.charAt(length))) {
+            flags |= ACC_SYNTHETIC;
+        }
+        innerClassFile.setAccessFlags(flags);
+        innerClassFile.setOuterClassFile(classFile);
+        return innerClassFile;
     }
 }

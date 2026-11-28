@@ -90,108 +90,93 @@ public class Section {
      * @return true if a fragment has changed
      */
     public boolean layout(boolean force) {
-        // Skip layout of last section
-        if (fixedFragment != null) {
-            // Compute line count
-            int currentLineCount = 0;
+        if (fixedFragment == null) {
+            return false;
+        }
+        int currentLineCount = getLineCount();
+        if (!force && lastLineCount == currentLineCount) {
+            return false;
+        }
+        lastLineCount = currentLineCount;
+        if (targetLineCount > currentLineCount) {
+            return expandFragments(currentLineCount, force);
+        }
+        if (targetLineCount < currentLineCount) {
+            return compactFragments(currentLineCount, force);
+        }
+        return false;
+    }
 
-            for (FlexibleFragment flexibleFragment : flexibleFragments) {
-                currentLineCount += flexibleFragment.getLineCount();
-            }
-
-            // Do not re-layout if nothing has changed
-            if (force || lastLineCount != currentLineCount) {
-                lastLineCount = currentLineCount;
-
-                if (targetLineCount != currentLineCount) {
-                    AutoGrowthList filteredFlexibleFragments = new AutoGrowthList();
-                    DefaultList<FlexibleFragment> constrainedFlexibleFragments = new DefaultList<>(flexibleFragments.size());
-
-                    if (targetLineCount > currentLineCount) {
-                        // Expands fragments
-                        int oldDelta = delta = targetLineCount - currentLineCount;
-
-                        for (FlexibleFragment flexibleFragment : flexibleFragments) {
-                            if (flexibleFragment.getLineCount() < flexibleFragment.getMaximalLineCount()) {
-                                // Keep only expandable fragments
-                                filteredFlexibleFragments.get(flexibleFragment.getWeight()).add(flexibleFragment);
-                            }
-                        }
-
-                        // First, expand compacted fragments
-                        for (DefaultList<FlexibleFragment> nextFlexibleFragments : filteredFlexibleFragments) {
-                            constrainedFlexibleFragments.clear();
-
-                            for (FlexibleFragment flexibleFragment : nextFlexibleFragments) {
-                                if (flexibleFragment.getLineCount() < flexibleFragment.getInitialLineCount()) {
-                                    // Store compacted flexibleFragments
-                                    constrainedFlexibleFragments.add(flexibleFragment);
-                                }
-                            }
-
-                            expand(constrainedFlexibleFragments, force);
-                            if (delta == 0) {
-                                break;
-                            }
-                        }
-
-                        // Next, expand all
-                        if (delta > 0) {
-                            for (DefaultList<FlexibleFragment> nextFlexibleFragments : filteredFlexibleFragments) {
-                                expand(nextFlexibleFragments, force);
-                                if (delta == 0) {
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Something changed ?
-                        return oldDelta != delta;
-                    }
-                    // Compacts fragments
-                    int oldDelta = delta = currentLineCount - targetLineCount;
-
-                    for (FlexibleFragment flexibleFragment : flexibleFragments) {
-                        if (flexibleFragment.getMinimalLineCount() < flexibleFragment.getLineCount()) {
-                            // Keep only compactable fragments
-                            filteredFlexibleFragments.get(flexibleFragment.getWeight()).add(flexibleFragment);
-                        }
-                    }
-
-                    // First, compact expanded fragments
-                    for (DefaultList<FlexibleFragment> nextFlexibleFragments : filteredFlexibleFragments) {
-                        constrainedFlexibleFragments.clear();
-
-                        for (FlexibleFragment flexibleFragment : nextFlexibleFragments) {
-                            if (flexibleFragment.getLineCount() > flexibleFragment.getInitialLineCount()) {
-                                // Store expanded flexibleFragments
-                                constrainedFlexibleFragments.add(flexibleFragment);
-                            }
-                        }
-
-                        compact(constrainedFlexibleFragments, force);
-                        if (delta == 0) {
-                            break;
-                        }
-                    }
-
-                    // Next, compact all
-                    if (delta > 0) {
-                        for (DefaultList<FlexibleFragment> nextFlexibleFragments : filteredFlexibleFragments) {
-                            compact(nextFlexibleFragments, force);
-                            if (delta == 0) {
-                                break;
-                            }
-                        }
-                    }
-
-                    // Something changed ?
-                    return oldDelta != delta;
-                }
+    private boolean expandFragments(int currentLineCount, boolean force) {
+        int oldDelta = delta = targetLineCount - currentLineCount;
+        AutoGrowthList filteredFlexibleFragments = new AutoGrowthList();
+        for (FlexibleFragment flexibleFragment : flexibleFragments) {
+            if (flexibleFragment.getLineCount() < flexibleFragment.getMaximalLineCount()) {
+                filteredFlexibleFragments.get(flexibleFragment.getWeight()).add(flexibleFragment);
             }
         }
 
-        return false;
+        DefaultList<FlexibleFragment> constrainedFlexibleFragments = new DefaultList<>(flexibleFragments.size());
+        for (DefaultList<FlexibleFragment> nextFlexibleFragments : filteredFlexibleFragments) {
+            constrainedFlexibleFragments.clear();
+            for (FlexibleFragment flexibleFragment : nextFlexibleFragments) {
+                if (flexibleFragment.getLineCount() < flexibleFragment.getInitialLineCount()) {
+                    constrainedFlexibleFragments.add(flexibleFragment);
+                }
+            }
+            expand(constrainedFlexibleFragments, force);
+            if (delta == 0) {
+                return oldDelta != delta;
+            }
+        }
+
+        expandRemainingFragments(filteredFlexibleFragments, force);
+        return oldDelta != delta;
+    }
+
+    private void expandRemainingFragments(AutoGrowthList filteredFlexibleFragments, boolean force) {
+        for (DefaultList<FlexibleFragment> nextFlexibleFragments : filteredFlexibleFragments) {
+            expand(nextFlexibleFragments, force);
+            if (delta == 0) {
+                break;
+            }
+        }
+    }
+
+    private boolean compactFragments(int currentLineCount, boolean force) {
+        int oldDelta = delta = currentLineCount - targetLineCount;
+        AutoGrowthList filteredFlexibleFragments = new AutoGrowthList();
+        for (FlexibleFragment flexibleFragment : flexibleFragments) {
+            if (flexibleFragment.getMinimalLineCount() < flexibleFragment.getLineCount()) {
+                filteredFlexibleFragments.get(flexibleFragment.getWeight()).add(flexibleFragment);
+            }
+        }
+
+        DefaultList<FlexibleFragment> constrainedFlexibleFragments = new DefaultList<>(flexibleFragments.size());
+        for (DefaultList<FlexibleFragment> nextFlexibleFragments : filteredFlexibleFragments) {
+            constrainedFlexibleFragments.clear();
+            for (FlexibleFragment flexibleFragment : nextFlexibleFragments) {
+                if (flexibleFragment.getLineCount() > flexibleFragment.getInitialLineCount()) {
+                    constrainedFlexibleFragments.add(flexibleFragment);
+                }
+            }
+            compact(constrainedFlexibleFragments, force);
+            if (delta == 0) {
+                return oldDelta != delta;
+            }
+        }
+
+        compactRemainingFragments(filteredFlexibleFragments, force);
+        return oldDelta != delta;
+    }
+
+    private void compactRemainingFragments(AutoGrowthList filteredFlexibleFragments, boolean force) {
+        for (DefaultList<FlexibleFragment> nextFlexibleFragments : filteredFlexibleFragments) {
+            compact(nextFlexibleFragments, force);
+            if (delta == 0) {
+                break;
+            }
+        }
     }
 
     protected void expand(DefaultList<FlexibleFragment> flexibleFragments, boolean force) {
@@ -248,26 +233,8 @@ public class Section {
         Section foundNextSection = searchNextSection(forwardSearchVisitor);
 
         if (size > 1 && foundNextSection != null) {
-            int index1 = flexibleCount - 1 - backwardSearchStartIndexesVisitor.getIndex(size/2);
-            int index2 = flexibleCount - 1 - backwardSearchStartIndexesVisitor.getIndex(0);
-            int nextIndex = forwardSearchVisitor.getIndex();
-
-            size = forwardSearchEndIndexesVisitor.getSize();
-
-            if (size > 1) {
-                int index3 = forwardSearchEndIndexesVisitor.getIndex(0) + 1;
-                int index4 = forwardSearchEndIndexesVisitor.getIndex(size/2) + 1;
-                Section foundPreviousSection = searchPreviousSection(backwardSearchVisitor);
-
-                if (foundNextSection.getRate() > foundPreviousSection.getRate()) {
-                    int index = foundPreviousSection.getFlexibleFragments().size() - backwardSearchVisitor.getIndex();
-                    foundPreviousSection.addFragmentsAtEnd(holder, index, extract(index3, index4));
-                } else {
-                    foundNextSection.addFragmentsAtBeginning(holder, nextIndex, extract(index1, index2));
-                }
-            } else {
-                foundNextSection.addFragmentsAtBeginning(holder, nextIndex, extract(index1, index2));
-            }
+            moveFragmentsToAdjacentSection(holder, flexibleCount, backwardSearchStartIndexesVisitor,
+                    forwardSearchEndIndexesVisitor, forwardSearchVisitor, backwardSearchVisitor, foundNextSection);
 
             return true;
         }
@@ -286,6 +253,34 @@ public class Section {
         }
 
         return false;
+    }
+
+    private void moveFragmentsToAdjacentSection(VisitorsHolder holder, int flexibleCount,
+            AbstractStoreMovableBlockFragmentIndexVisitorAbstract backwardSearchStartIndexesVisitor,
+            AbstractStoreMovableBlockFragmentIndexVisitorAbstract forwardSearchEndIndexesVisitor,
+            AbstractSearchMovableBlockFragmentVisitor forwardSearchVisitor,
+            AbstractSearchMovableBlockFragmentVisitor backwardSearchVisitor, Section foundNextSection) {
+        int size = backwardSearchStartIndexesVisitor.getSize();
+        int index1 = flexibleCount - 1 - backwardSearchStartIndexesVisitor.getIndex(size/2);
+        int index2 = flexibleCount - 1 - backwardSearchStartIndexesVisitor.getIndex(0);
+        int nextIndex = forwardSearchVisitor.getIndex();
+
+        size = forwardSearchEndIndexesVisitor.getSize();
+
+        if (size > 1) {
+            int index3 = forwardSearchEndIndexesVisitor.getIndex(0) + 1;
+            int index4 = forwardSearchEndIndexesVisitor.getIndex(size/2) + 1;
+            Section foundPreviousSection = searchPreviousSection(backwardSearchVisitor);
+
+            if (foundPreviousSection != null && foundNextSection.getRate() > foundPreviousSection.getRate()) {
+                int index = foundPreviousSection.getFlexibleFragments().size() - backwardSearchVisitor.getIndex();
+                foundPreviousSection.addFragmentsAtEnd(holder, index, extract(index3, index4));
+            } else {
+                foundNextSection.addFragmentsAtBeginning(holder, nextIndex, extract(index1, index2));
+            }
+        } else {
+            foundNextSection.addFragmentsAtBeginning(holder, nextIndex, extract(index1, index2));
+        }
     }
 
     protected Section searchNextSection(AbstractSearchMovableBlockFragmentVisitor visitor) {

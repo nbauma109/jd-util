@@ -69,17 +69,18 @@ public class VisitorsHolder {
 
                 @Override
                 public void visit(StartMovableBlockFragment fragment) {
-                    if (enabled) {
-                        if (depth == 0) {
-                            enabled = false;
-                        } else {
-                            depth--;
-                            if (depth == 0) {
-                                storeIndex();
-                            }
-                            index++;
-                        }
+                    if (!enabled) {
+                        return;
                     }
+                    if (depth == 0) {
+                        enabled = false;
+                        return;
+                    }
+                    depth--;
+                    if (depth == 0) {
+                        storeIndex();
+                    }
+                    index++;
                 }
             };
         }
@@ -91,17 +92,18 @@ public class VisitorsHolder {
             visitor10 = new AbstractStoreMovableBlockFragmentIndexVisitorAbstract() {
                 @Override
                 public void visit(EndMovableBlockFragment fragment) {
-                    if (enabled) {
-                        if (depth == 0) {
-                            enabled = false;
-                        } else {
-                            depth--;
-                            if (depth == 0) {
-                                storeIndex();
-                            }
-                            index++;
-                        }
+                    if (!enabled) {
+                        return;
                     }
+                    if (depth == 0) {
+                        enabled = false;
+                        return;
+                    }
+                    depth--;
+                    if (depth == 0) {
+                        storeIndex();
+                    }
+                    index++;
                 }
 
                 @Override

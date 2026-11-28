@@ -37,26 +37,26 @@ public class PreferencesTest {
         preferencesMap.put(Preferences.WRITE_LINE_NUMBERS, "false");
         preferencesMap.put(Preferences.WRITE_METADATA, "false");
 
-        Preferences preferences = new Preferences(preferencesMap);
+        Preferences configuredPreferences = new Preferences(preferencesMap);
 
-        Assert.assertTrue(preferences.isUnicodeEscape());
-        Assert.assertTrue(preferences.isShowPrefixThis());
-        Assert.assertTrue(preferences.getShowDefaultConstructor());
-        Assert.assertFalse(preferences.getRealignmentLineNumber());
-        Assert.assertFalse(preferences.isShowLineNumbers());
-        Assert.assertFalse(preferences.isWriteMetaData());
+        Assert.assertTrue(configuredPreferences.isUnicodeEscape());
+        Assert.assertTrue(configuredPreferences.isShowPrefixThis());
+        Assert.assertTrue(configuredPreferences.getShowDefaultConstructor());
+        Assert.assertFalse(configuredPreferences.getRealignmentLineNumber());
+        Assert.assertFalse(configuredPreferences.isShowLineNumbers());
+        Assert.assertFalse(configuredPreferences.isWriteMetaData());
     }
 
     @Test
     public void testConstructorWithEmptyPreferencesMap() {
-        Preferences preferences = new Preferences(Collections.emptyMap());
+        Preferences configuredPreferences = new Preferences(Collections.emptyMap());
 
-        Assert.assertFalse(preferences.isUnicodeEscape());
-        Assert.assertTrue(preferences.isShowPrefixThis());
-        Assert.assertFalse(preferences.getShowDefaultConstructor());
-        Assert.assertFalse(preferences.getRealignmentLineNumber());
-        Assert.assertFalse(preferences.isShowLineNumbers());
-        Assert.assertFalse(preferences.isWriteMetaData());
+        Assert.assertFalse(configuredPreferences.isUnicodeEscape());
+        Assert.assertTrue(configuredPreferences.isShowPrefixThis());
+        Assert.assertFalse(configuredPreferences.getShowDefaultConstructor());
+        Assert.assertFalse(configuredPreferences.getRealignmentLineNumber());
+        Assert.assertFalse(configuredPreferences.isShowLineNumbers());
+        Assert.assertFalse(configuredPreferences.isWriteMetaData());
     }
 
     @Test

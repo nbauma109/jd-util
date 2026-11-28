@@ -127,7 +127,7 @@ public class MethodBodyRangeTest {
     }
 
     @Test
-    public void theSameMethodHasTheSameKeyWhetherTypesAreQualifiedOrImported() throws ParseException {
+    public void theSameMethodHasTheSameKeyWhetherTypesAreQualifiedOrImported() {
         Function<String, String> key = src -> {
             try {
                 return JdJavaSourceParser.parseMethodBodyRanges(src).get(0).key();

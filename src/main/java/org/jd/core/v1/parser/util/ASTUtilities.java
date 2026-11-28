@@ -26,7 +26,8 @@ import java.util.List;
 
 public class ASTUtilities {
 
-    public ASTUtilities() {
+    private ASTUtilities() {
+        throw new UnsupportedOperationException("Utility class");
     }
 
     public static BaseStatement toBaseStatement(List<Statement> list) {

@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 public class HyperlinkReferenceDataTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         ReferenceData referenceData = new ReferenceData(StringConstants.JAVA_LANG_OBJECT, "hashCode", "()I", null);
         HyperlinkReferenceData hyperlinkReferenceData = new HyperlinkReferenceData(1, 2, referenceData);
         assertEquals(1, hyperlinkReferenceData.getStartPosition());

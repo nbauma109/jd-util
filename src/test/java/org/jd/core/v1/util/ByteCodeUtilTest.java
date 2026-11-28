@@ -21,6 +21,17 @@ import jd.core.process.analyzer.instruction.bytecode.util.ByteCodeUtil;
 public class ByteCodeUtilTest {
 
     @Test
+    public void testCleanUpByteCodeLeavesIncompletePatternsUnchanged() {
+        byte[] indexedLoad = {ALOAD};
+        byte[] indexedStore = {ALOAD_0, ASTORE};
+        byte[] incompleteInvocation = {ALOAD_0, ASTORE_0, ACONST_NULL, ASTORE_1, ALOAD_0, (byte) INVOKEVIRTUAL};
+
+        assertArrayEquals(indexedLoad.clone(), ByteCodeUtil.cleanUpByteCode(indexedLoad));
+        assertArrayEquals(indexedStore.clone(), ByteCodeUtil.cleanUpByteCode(indexedStore));
+        assertArrayEquals(incompleteInvocation.clone(), ByteCodeUtil.cleanUpByteCode(incompleteInvocation));
+    }
+
+    @Test
     public void testOpCodeIn() {
         byte[] code = { (byte) ILOAD_0, (byte) ILOAD_1, (byte) ARETURN, (byte) ASTORE, DUP };
         assertTrue(ByteCodeUtil.opCodeIn(code, 0, ILOAD_0, ILOAD_1, ARETURN));

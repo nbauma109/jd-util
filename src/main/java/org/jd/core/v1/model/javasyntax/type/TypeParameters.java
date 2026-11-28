@@ -11,7 +11,9 @@ import org.jd.core.v1.util.DefaultList;
 public class TypeParameters extends DefaultList<TypeParameter> implements BaseTypeParameter {
     private static final long serialVersionUID = 1L;
 
-    public TypeParameters() {}
+    public TypeParameters() {
+        super();
+    }
 
     @Override
     public void accept(TypeParameterVisitor visitor) {

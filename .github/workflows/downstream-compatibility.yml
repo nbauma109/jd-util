@@ -46,7 +46,7 @@ jobs:
           key: ${{ needs.prepare.outputs.cache-key }}
           fail-on-cache-miss: true
       - name: Build jd-util
-        run: mvn -B --no-transfer-progress -DskipTests package
+        run: mvn -B --no-transfer-progress -DskipTests -Dstatic-analysis.version=0.1.4-SNAPSHOT package
       - name: Download JaCoCo command-line tool
         run: mvn -B --no-transfer-progress dependency:copy -Dartifact=org.jacoco:org.jacoco.cli:0.8.16:jar:nodeps -DoutputDirectory=target
       - name: Upload candidate

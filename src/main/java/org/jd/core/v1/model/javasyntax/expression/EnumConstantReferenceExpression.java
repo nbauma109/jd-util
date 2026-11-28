@@ -23,7 +23,7 @@ public class EnumConstantReferenceExpression extends AbstractLineNumberExpressio
 
     @Override
     public Type getType() {
-        return type;
+        return getObjectType();
     }
 
     @Override

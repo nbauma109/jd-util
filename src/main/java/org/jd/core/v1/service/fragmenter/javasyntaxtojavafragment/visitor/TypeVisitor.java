@@ -130,7 +130,9 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
     }
 
     @Override
-    public void visit(DiamondTypeArgument argument) {}
+    public void visit(DiamondTypeArgument argument) {
+        // The enclosing type renders the diamond delimiters.
+    }
 
     @Override
     public void visit(WildcardExtendsTypeArgument argument) {
@@ -174,6 +176,9 @@ public class TypeVisitor extends AbstractJavaSyntaxVisitor {
                 break;
             case FLAG_VOID:
                 tokens.add(VOID);
+                break;
+            default:
+                // Nonconcrete primitive flags do not identify a keyword.
                 break;
         }
 

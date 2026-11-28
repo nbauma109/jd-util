@@ -42,6 +42,8 @@ public class MethodDeclaration implements MemberDeclaration {
         this(null, flags, name, null, returnedType, formalParameters, null, descriptor, statements, null);
     }
 
+    // Preserve the public declaration constructor signature.
+    @SuppressWarnings("java:S107")
     public MethodDeclaration(BaseAnnotationReference annotationReferences, int flags, String name, BaseTypeParameter typeParameters, Type returnedType, BaseFormalParameter formalParameters, BaseType exceptionTypes, String descriptor, BaseStatement statements, BaseElementValue defaultAnnotationValue) {
         this.annotationReferences = annotationReferences;
         this.flags = flags;

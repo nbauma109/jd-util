@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 public class TypeArgumentsTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         TypeArguments typeArguments = new TypeArguments(Arrays.asList(ObjectType.TYPE_OBJECT, ObjectType.TYPE_STRING));
         assertTrue(typeArguments.isList());
         assertEquals(typeArguments.size(), typeArguments.typeArgumentSize());

@@ -21,6 +21,8 @@ public class RecordDeclaration extends TypeDeclaration {
     private final List<RecordComponent> components;
     private final BaseType interfaces;
 
+    // Preserve the public declaration constructor signature.
+    @SuppressWarnings("java:S107")
     public RecordDeclaration(BaseAnnotationReference annotationReferences,
                              int flags,
                              String internalName,

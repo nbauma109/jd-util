@@ -13,70 +13,76 @@ public final class StringUtil {
     }
 
     public static String escapeString(String s) {
-        int length = s.length();
-
-        for (int i = 0; i < length; i++) {
-            char c = s.charAt(i);
-
-            if (c == '\\' || c == '"' || c < ' ' || Character.isSurrogate(c)) {
-                StringBuilder sb = new StringBuilder(length * 2);
-
-                sb.append(s.substring(0, i));
-
-                boolean lowOfPair = false;
-
-                for (; i < length; i++) {
-                    c = s.charAt(i);
-
-                    if (lowOfPair) {
-                        sb.append(c);
-                        lowOfPair = false;
-                        continue;
-                    }
-
-                    switch (c) {
-                        case '\\':
-                            sb.append("\\\\");
-                            break;
-                        case '\b':
-                            sb.append("\\b");
-                            break;
-                        case '\f':
-                            sb.append("\\f");
-                            break;
-                        case '\n':
-                            sb.append("\\n");
-                            break;
-                        case '\r':
-                            sb.append("\\r");
-                            break;
-                        case '\t':
-                            sb.append("\\t");
-                            break;
-                        case '"':
-                            sb.append("\\\"");
-                            break;
-                        default:
-                            if (c < ' ') {
-                                sb.append("\\0");
-                                sb.append((char)('0' + (c >> 3)));
-                                sb.append((char)('0' + (c & 7)));
-                            } else if (Character.isHighSurrogate(c) && i + 1 < length && Character.isLowSurrogate(s.charAt(i + 1))) {
-                                // a pair is one character of the source
-                                sb.append(c);
-                                lowOfPair = true;
-                            } else if (Character.isSurrogate(c)) {
-                                sb.append(CharacterUtil.unicode(c));
-                            } else {
-                                sb.append(c);
-                            }
-                    }
-                }
-
-                return sb.toString();
+        for (int index = 0; index < s.length(); index++) {
+            char character = s.charAt(index);
+            if (character == '\\' || character == '"' || character < ' ' || Character.isSurrogate(character)) {
+                return escapeFrom(s, index);
             }
         }
-
         return s;
+    }
+
+    private static String escapeFrom(String text, int start) {
+        StringBuilder result = new StringBuilder(text.length() * 2);
+        result.append(text, 0, start);
+        boolean lowOfPair = false;
+        for (int index = start; index < text.length(); index++) {
+            char character = text.charAt(index);
+            if (lowOfPair) {
+                result.append(character);
+                lowOfPair = false;
+            } else {
+                lowOfPair = appendEscaped(text, index, result);
+            }
+        }
+        return result.toString();
+    }
+
+    private static boolean appendEscaped(String text, int index, StringBuilder result) {
+        char character = text.charAt(index);
+        switch (character) {
+            case '\\':
+                result.append("\\\\");
+                break;
+            case '\b':
+                result.append("\\b");
+                break;
+            case '\f':
+                result.append("\\f");
+                break;
+            case '\n':
+                result.append("\\n");
+                break;
+            case '\r':
+                result.append("\\r");
+                break;
+            case '\t':
+                result.append("\\t");
+                break;
+            case '"':
+                result.append("\\\"");
+                break;
+            default:
+                return appendOtherCharacter(text, index, result);
+        }
+        return false;
+    }
+
+    private static boolean appendOtherCharacter(String text, int index, StringBuilder result) {
+        char character = text.charAt(index);
+        if (character < ' ') {
+            result.append("\\0");
+            result.append((char) ('0' + (character >> 3)));
+            result.append((char) ('0' + (character & 7)));
+        } else if (Character.isHighSurrogate(character) && index + 1 < text.length()
+                && Character.isLowSurrogate(text.charAt(index + 1))) {
+            result.append(character);
+            return true;
+        } else if (Character.isSurrogate(character)) {
+            result.append(CharacterUtil.unicode(character));
+        } else {
+            result.append(character);
+        }
+        return false;
     }
 }

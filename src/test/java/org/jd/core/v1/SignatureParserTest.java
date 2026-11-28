@@ -170,15 +170,6 @@ public class SignatureParserTest extends TestCase {
 
             // Check type parameterTypes
             // See "org.jd.core.test.resources.java.Generic"
-            //  T1:Ljava/lang/Object;
-            //  T2:Ljava/lang/Object;
-            //  T3:Lorg/jd/core/v1/test/resources/java/AnnotatedClass;
-            //  T4::Ljava/io/Serializable;
-            //  T5::Ljava/io/Serializable;:Ljava/lang/Comparable;
-            //  T6:Lorg/jd/core/v1/test/resources/java/AnnotatedClass;:Ljava/io/Serializable;:Ljava/lang/Comparable<Lorg/jd/core/v1/test/resources/java/GenericClass;>;
-            //  T7::Ljava/util/Map<**>;
-            //  T8::Ljava/util/Map<+Ljava/lang/Number;-Ljava/io/Serializable;>;
-            //  T9:TT8;
             assertNotNull(typeTypes.getTypeParameters());
             typeTypes.getTypeParameters().accept(visitor);
 
@@ -340,7 +331,7 @@ public class SignatureParserTest extends TestCase {
     }
 
     @Test
-    public void testGenericInnerClass() throws Exception {
+    public void testGenericInnerClass() {
         ClassPathLoader loader = new ClassPathLoader();
         TypeMaker typeMaker = new TypeMaker(loader);
 

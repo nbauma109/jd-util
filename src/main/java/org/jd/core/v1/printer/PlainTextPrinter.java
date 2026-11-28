@@ -57,31 +57,27 @@ public class PlainTextPrinter implements Printer {
     }
 
     @Override
-    public void end() {}
+    public void end() {
+        // No finalization is needed for the accumulated text.
+    }
 
     @Override
     public void printText(String text) {
-        if (escapeUnicodeCharacters) {
-            for(int i=0, len=text.length(); i<len; i++) {
-                char c = text.charAt(i);
-
-                if (c < 127) {
-                    sb.append(c);
-                } else {
-                    int h = (c >> 12);
-
-                    sb.append("\\u");
-                    sb.append((char)((h <= 9) ? (h + '0') : (h + ('A' - 10))));
-                    h = (c >> 8) & 15;
-                    sb.append((char)((h <= 9) ? (h + '0') : (h + ('A' - 10))));
-                    h = (c >> 4) & 15;
-                    sb.append((char)((h <= 9) ? (h + '0') : (h + ('A' - 10))));
-                    h = (c) & 15;
-                    sb.append((char)((h <= 9) ? (h + '0') : (h + ('A' - 10))));
+        if (!escapeUnicodeCharacters) {
+            sb.append(text);
+            return;
+        }
+        for (int index = 0; index < text.length(); index++) {
+            char character = text.charAt(index);
+            if (character < 127) {
+                sb.append(character);
+            } else {
+                sb.append("\\u");
+                for (int shift = 12; shift >= 0; shift -= 4) {
+                    int digit = (character >> shift) & 15;
+                    sb.append("0123456789ABCDEF".charAt(digit));
                 }
             }
-        } else {
-            sb.append(text);
         }
     }
 
@@ -134,10 +130,14 @@ public class PlainTextPrinter implements Printer {
     }
 
     @Override
-    public void startMarker(int type) {}
+    public void startMarker(int type) {
+        // Plain text omits marker metadata.
+    }
 
     @Override
-    public void endMarker(int type) {}
+    public void endMarker(int type) {
+        // Plain text omits marker metadata.
+    }
 
     protected void printLineNumber(int lineNumber) {
         sb.append("/*");

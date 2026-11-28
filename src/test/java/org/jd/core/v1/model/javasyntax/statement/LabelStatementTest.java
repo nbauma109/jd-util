@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 public class LabelStatementTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         LabelStatement labelStatement = new LabelStatement("label", null);
         assertTrue(labelStatement.isLabelStatement());
         assertEquals("LabelStatement{label: null}", labelStatement.toString());

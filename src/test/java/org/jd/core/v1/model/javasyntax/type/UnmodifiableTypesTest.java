@@ -41,6 +41,18 @@ public class UnmodifiableTypesTest {
         ListIterator<Type> iteratorAtOne = unmodifiableTypes.listIterator(1);
         assertEquals(ObjectType.TYPE_PRIMITIVE_BOOLEAN, iteratorAtOne.next());
 
+        verifyUnsupportedMutations(unmodifiableTypes, iterator);
+
+        // Test construction of UnmodifiableTypes with default constructor
+        UnmodifiableTypes emptyUnmodifiableTypes = new UnmodifiableTypes();
+        assertEquals(0, emptyUnmodifiableTypes.size());
+
+        // Test construction of UnmodifiableTypes with capacity
+        UnmodifiableTypes unmodifiableTypesWithCapacity = new UnmodifiableTypes(10);
+        assertEquals(0, unmodifiableTypesWithCapacity.size());
+    }
+
+    private static void verifyUnsupportedMutations(UnmodifiableTypes unmodifiableTypes, ListIterator<Type> iterator) {
         // Test methods that should throw UnsupportedOperationException
         assertThrows(UnsupportedOperationException.class, unmodifiableTypes::removeFirst);
         assertThrows(UnsupportedOperationException.class, unmodifiableTypes::removeLast);
@@ -57,14 +69,6 @@ public class UnmodifiableTypesTest {
         assertThrows(UnsupportedOperationException.class, () -> iterator.set(ObjectType.TYPE_PRIMITIVE_CHAR));
         assertThrows(UnsupportedOperationException.class, () -> iterator.add(ObjectType.TYPE_PRIMITIVE_CHAR));
         assertThrows(UnsupportedOperationException.class, iterator::remove);
-
-        // Test construction of UnmodifiableTypes with default constructor
-        UnmodifiableTypes emptyUnmodifiableTypes = new UnmodifiableTypes();
-        assertEquals(0, emptyUnmodifiableTypes.size());
-
-        // Test construction of UnmodifiableTypes with capacity
-        UnmodifiableTypes unmodifiableTypesWithCapacity = new UnmodifiableTypes(10);
-        assertEquals(0, unmodifiableTypesWithCapacity.size());
     }
 
     @Test

@@ -348,61 +348,43 @@ public class StatementVisitor extends ExpressionVisitor {
         tokens = new Tokens();
         tokens.add(ELSE);
 
-        StartSingleStatementBlockFragment singleStatementElseBlock = null;
-        StartSingleStatementBlockFragment singleStatementIfBlock = null;
         if (statementList.isIfElseStatement()) {
-            tokens.add(TextToken.SPACE);
-            tokens.add(IF);
-            tokens.add(TextToken.SPACE);
-            tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
-
-            statementList.getCondition().accept(this);
-
-            tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
-            fragments.addTokensFragment(tokens);
-
+            addElseIfCondition(statementList);
             JavaFragmentFactory.addStartStatementsBlock(fragments, group);
             statementList.getStatements().accept(this);
             JavaFragmentFactory.addEndStatementsBlock(fragments, group);
             visitElseStatements(statementList.getElseStatements(), group);
+            return;
+        }
+
+        if (statementList.isIfStatement()) {
+            addElseIfCondition(statementList);
+            visitElseBlock(statementList.getStatements(), statementList.getStatements().isList(), group);
         } else {
-            if (statementList.isIfStatement()) {
-                tokens.add(TextToken.SPACE);
-                tokens.add(IF);
-                tokens.add(TextToken.SPACE);
-                tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
+            fragments.addTokensFragment(tokens);
+            visitElseBlock(elseStatements, statementList.isList(), group);
+        }
+    }
 
-                statementList.getCondition().accept(this);
+    private void addElseIfCondition(BaseStatement statementList) {
+        tokens.add(TextToken.SPACE);
+        tokens.add(IF);
+        tokens.add(TextToken.SPACE);
+        tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
+        statementList.getCondition().accept(this);
+        tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
+        fragments.addTokensFragment(tokens);
+    }
 
-                tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
-                fragments.addTokensFragment(tokens);
-
-                if (statementList.getStatements().isList()) {
-                    JavaFragmentFactory.addStartStatementsBlock(fragments, group);
-                } else {
-                    singleStatementIfBlock = JavaFragmentFactory.addStartSingleStatementBlock(fragments);
-                }
-                statementList.getStatements().accept(this);
-            } else {
-                fragments.addTokensFragment(tokens);
-
-                if (statementList.isList()) {
-                    JavaFragmentFactory.addStartStatementsBlock(fragments, group);
-                } else {
-                    singleStatementElseBlock = JavaFragmentFactory.addStartSingleStatementBlock(fragments);
-                }
-
-                elseStatements.accept(this);
-            }
-            if (singleStatementElseBlock == null) {
-                if (singleStatementIfBlock == null) {
-                    JavaFragmentFactory.addEndStatementsBlock(fragments, group);
-                } else {
-                    JavaFragmentFactory.addEndSingleStatementBlock(fragments, singleStatementIfBlock);
-                }
-            } else {
-                JavaFragmentFactory.addEndSingleStatementBlock(fragments, singleStatementElseBlock);
-            }
+    private void visitElseBlock(BaseStatement statements, boolean list, StartStatementsBlockFragment.Group group) {
+        if (list) {
+            JavaFragmentFactory.addStartStatementsBlock(fragments, group);
+            statements.accept(this);
+            JavaFragmentFactory.addEndStatementsBlock(fragments, group);
+        } else {
+            StartSingleStatementBlockFragment block = JavaFragmentFactory.addStartSingleStatementBlock(fragments);
+            statements.accept(this);
+            JavaFragmentFactory.addEndSingleStatementBlock(fragments, block);
         }
     }
 
@@ -755,41 +737,9 @@ public class StatementVisitor extends ExpressionVisitor {
         statement.getTryStatements().accept(this);
 
         if (statement.getCatchClauses() != null) {
-            BaseType type;
-            int lineNumber;
             for (TryStatement.CatchClause cc : statement.getCatchClauses()) {
                 JavaFragmentFactory.addEndStatementsBlock(fragments, group);
-
-                type = cc.getType();
-
-                tokens = new Tokens();
-                tokens.add(CATCH);
-                tokens.add(TextToken.SPACE_LEFTROUNDBRACKET);
-
-                if (cc.isFinal()) {
-                    tokens.add(StatementVisitor.FINAL);
-                    tokens.add(TextToken.SPACE);
-                }
-
-                type.accept(this);
-
-                if (cc.getOtherTypes() != null) {
-                    for (BaseType otherType : cc.getOtherTypes()) {
-                        tokens.add(TextToken.VERTICALLINE);
-                        otherType.accept(this);
-                    }
-                }
-
-                tokens.add(TextToken.SPACE);
-                tokens.add(newTextToken(cc.getName()));
-                tokens.add(TextToken.RIGHTROUNDBRACKET);
-
-                lineNumber = cc.getLineNumber();
-
-                if (lineNumber != Expression.UNKNOWN_LINE_NUMBER) {
-                    tokens.addLineNumberToken(lineNumber);
-                }
-                fragments.addTokensFragment(tokens);
+                addCatchClauseTokens(cc);
 
                 fragmentCount1 = fragments.size();
                 JavaFragmentFactory.addStartStatementsBlock(fragments, group);
@@ -829,6 +779,36 @@ public class StatementVisitor extends ExpressionVisitor {
         } else {
             JavaFragmentFactory.addEndStatementsBlock(fragments, group);
         }
+    }
+
+    private void addCatchClauseTokens(TryStatement.CatchClause cc) {
+        BaseType type = cc.getType();
+        tokens = new Tokens();
+        tokens.add(CATCH);
+        tokens.add(TextToken.SPACE_LEFTROUNDBRACKET);
+
+        if (cc.isFinal()) {
+            tokens.add(StatementVisitor.FINAL);
+            tokens.add(TextToken.SPACE);
+        }
+
+        type.accept(this);
+        if (cc.getOtherTypes() != null) {
+            for (BaseType otherType : cc.getOtherTypes()) {
+                tokens.add(TextToken.VERTICALLINE);
+                otherType.accept(this);
+            }
+        }
+
+        tokens.add(TextToken.SPACE);
+        tokens.add(newTextToken(cc.getName()));
+        tokens.add(TextToken.RIGHTROUNDBRACKET);
+
+        int lineNumber = cc.getLineNumber();
+        if (lineNumber != Expression.UNKNOWN_LINE_NUMBER) {
+            tokens.addLineNumberToken(lineNumber);
+        }
+        fragments.addTokensFragment(tokens);
     }
 
     @Override
