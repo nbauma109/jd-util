@@ -158,7 +158,7 @@ jobs:
           ref: ${{ matrix.repository == 'jd-core' && needs.candidate.outputs.jd-core-ref || needs.candidate.outputs.jd-core-v0-ref }}
           path: downstream
           persist-credentials: false
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: jd-util-candidate
           path: candidate
