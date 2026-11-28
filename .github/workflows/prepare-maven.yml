@@ -10,9 +10,6 @@ on:
 permissions:
   contents: read
 
-env:
-  STATIC_ANALYSIS_REVISION: eff5c2c8a857b22f680a0641badc2d464f58f7da
-
 jobs:
   prepare:
     runs-on: ubuntu-latest
@@ -35,25 +32,14 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-jd-util-${{ env.STATIC_ANALYSIS_REVISION }}-${{ hashFiles('pom.xml', '.github/maven-settings.xml', '.github/workflows/prepare-maven.yml') }}
+          key: ${{ runner.os }}-maven-jd-util-${{ hashFiles('pom.xml', '.github/maven-settings.xml', '.github/workflows/prepare-maven.yml') }}
           restore-keys: |
-            ${{ runner.os }}-maven-jd-util-${{ env.STATIC_ANALYSIS_REVISION }}-
-      - name: Check out static analysis release candidate
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v7
-        with:
-          repository: nbauma109/static-analysis-maven-plugin
-          ref: ${{ env.STATIC_ANALYSIS_REVISION }}
-          path: static-analysis-candidate
-          persist-credentials: false
-      - name: Install static analysis release candidate
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: mvn -B -ntp -f static-analysis-candidate/pom.xml -DskipTests install
+            ${{ runner.os }}-maven-jd-util-
       - name: Resolve project and build plugin dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          mvn -B -ntp -Dstatic-analysis.version=0.1.4-SNAPSHOT dependency:go-offline
-          mvn -B -ntp -Dstatic-analysis.version=0.1.4-SNAPSHOT -Dgpg.skip=true -Dtest=ByteCodeUtilTest verify
+          mvn -B -ntp dependency:go-offline
+          mvn -B -ntp -Dgpg.skip=true -Dtest=ByteCodeUtilTest verify
           find "$HOME/.m2/repository" -name '*.lastUpdated' -delete
       - name: Save prepared Maven repository
         if: steps.cache.outputs.cache-hit != 'true'

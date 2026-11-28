@@ -59,4 +59,4 @@ jobs:
         key: ${{ needs.prepare.outputs.cache-key }}
         fail-on-cache-miss: true
     - name: Build with Maven
-      run: mvn -B --no-transfer-progress -Dgpg.skip=true verify -Dstatic-analysis.version=0.1.4-SNAPSHOT
+      run: mvn -B --no-transfer-progress -Dgpg.skip=true verify

@@ -28,7 +28,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <static-analysis.version>0.1.3</static-analysis.version>
+    <static-analysis.version>0.1.4</static-analysis.version>
     <project.scm.id>github.com</project.scm.id>
     <log4j.version>2.26.1</log4j.version>
   </properties>

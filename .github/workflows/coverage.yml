@@ -58,7 +58,7 @@ jobs:
         key: ${{ needs.prepare.outputs.cache-key }}
         fail-on-cache-miss: true
     - name: Build with Maven
-      run: mvn -B test jacoco:report --no-transfer-progress -Dstatic-analysis.version=0.1.4-SNAPSHOT
+      run: mvn -B test jacoco:report --no-transfer-progress
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v7
@@ -183,11 +183,11 @@ jobs:
         git -C sonar-parity-baseline rev-parse HEAD | tee "$RUNNER_TEMP/sonar-parity/local-revision.txt"
         mvn -B -ntp -f sonar-parity-baseline/pom.xml \
           -Dgpg.skip=true -DstaticAnalysis.profile=sonar-way -DstaticAnalysis.failOnViolation=false \
-          test-compile io.github.nbauma109:static-analysis-maven-plugin:0.1.4-SNAPSHOT:check \
+          test-compile io.github.nbauma109:static-analysis-maven-plugin:0.1.4:check \
           | tee "$RUNNER_TEMP/sonar-parity/local.log"
         mvn -B -ntp -f sonar-parity-baseline/pom.xml \
           -Dgpg.skip=true -DstaticAnalysis.profile=sonar-way -DstaticAnalysis.failOnViolation=false \
-          io.github.nbauma109:static-analysis-maven-plugin:0.1.4-SNAPSHOT:check-tests \
+          io.github.nbauma109:static-analysis-maven-plugin:0.1.4:check-tests \
           | tee "$RUNNER_TEMP/sonar-parity/local-tests.log"
 
     - name: Upload parity inventories
