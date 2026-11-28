@@ -19,10 +19,14 @@ public class ClassDeclaration extends InterfaceDeclaration {
         this(null, flags, internalName, name, null, null, null, bodyDeclaration);
     }
 
+    // Preserve the public declaration constructor signature.
+    @SuppressWarnings("java:S107")
     public ClassDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, ObjectType superType, BaseType interfaces, BodyDeclaration bodyDeclaration) {
         this(annotationReferences, flags, internalName, name, typeParameters, superType, interfaces, null, bodyDeclaration);
     }
 
+    // Preserve the public declaration constructor signature.
+    @SuppressWarnings("java:S107")
     public ClassDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, ObjectType superType, BaseType interfaces, BaseType permittedSubclasses, BodyDeclaration bodyDeclaration) {
         super(annotationReferences, flags, internalName, name, typeParameters, interfaces, permittedSubclasses, bodyDeclaration);
         this.superType = superType;

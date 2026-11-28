@@ -27,6 +27,8 @@ public class InterfaceDeclaration extends TypeDeclaration {
         this(annotationReferences, flags, internalName, name, typeParameters, interfaces, null, bodyDeclaration);
     }
 
+    // Preserve the public declaration constructor signature.
+    @SuppressWarnings("java:S107")
     public InterfaceDeclaration(BaseAnnotationReference annotationReferences, int flags, String internalName, String name, BaseTypeParameter typeParameters, BaseType interfaces, BaseType permittedSubclasses, BodyDeclaration bodyDeclaration) {
         super(annotationReferences, flags, internalName, name, bodyDeclaration);
         this.typeParameters = typeParameters;

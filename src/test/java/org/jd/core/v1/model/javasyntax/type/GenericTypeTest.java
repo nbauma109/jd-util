@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 public class GenericTypeTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         GenericType genericType = new GenericType("T");
         assertTrue(genericType.isGenericTypeArgument());
         assertThrows(IllegalArgumentException.class, () -> genericType.createType(-1));

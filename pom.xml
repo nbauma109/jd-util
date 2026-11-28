@@ -28,6 +28,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
+    <static-analysis.version>0.1.4</static-analysis.version>
     <project.scm.id>github.com</project.scm.id>
     <log4j.version>2.26.1</log4j.version>
   </properties>
@@ -41,6 +42,30 @@
 
   <build>
     <plugins>
+
+      <plugin>
+        <groupId>io.github.nbauma109</groupId>
+        <artifactId>static-analysis-maven-plugin</artifactId>
+        <version>${static-analysis.version}</version>
+        <configuration>
+          <profile>sonar-way</profile>
+          <failOnViolation>true</failOnViolation>
+        </configuration>
+        <executions>
+          <execution>
+            <id>check-main-sources</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>check-test-sources</id>
+            <goals>
+              <goal>check-tests</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

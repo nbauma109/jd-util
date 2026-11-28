@@ -12,21 +12,21 @@ import static org.junit.Assert.assertEquals;
 public class BindTypeArgumentsToTypeArgumentsVisitorTest {
 
     @Test
-    public void testDiamond() throws Exception {
+    public void testDiamond() {
         BindTypeArgumentsToTypeArgumentsVisitor visitor = new BindTypeArgumentsToTypeArgumentsVisitor();
         visitor.visit(DiamondTypeArgument.DIAMOND);
         assertEquals(DiamondTypeArgument.DIAMOND, visitor.getTypeArgument());
     }
 
     @Test
-    public void testPrimitiveType() throws Exception {
+    public void testPrimitiveType() {
         BindTypeArgumentsToTypeArgumentsVisitor visitor = new BindTypeArgumentsToTypeArgumentsVisitor();
         visitor.visit(PrimitiveType.TYPE_INT);
         assertEquals(PrimitiveType.TYPE_INT, visitor.getTypeArgument());
     }
 
     @Test
-    public void testWildcardExtendsTypeArgument() throws Exception {
+    public void testWildcardExtendsTypeArgument() {
         BindTypeArgumentsToTypeArgumentsVisitor visitor = new BindTypeArgumentsToTypeArgumentsVisitor();
         WildcardExtendsTypeArgument wildcardExtendsTypeArgument = new WildcardExtendsTypeArgument(ObjectType.TYPE_OBJECT);
         visitor.visit(wildcardExtendsTypeArgument);
@@ -34,7 +34,7 @@ public class BindTypeArgumentsToTypeArgumentsVisitorTest {
     }
 
     @Test
-    public void testWildcardSuperTypeArgument() throws Exception {
+    public void testWildcardSuperTypeArgument() {
         BindTypeArgumentsToTypeArgumentsVisitor visitor = new BindTypeArgumentsToTypeArgumentsVisitor();
         WildcardSuperTypeArgument wildcardSuperTypeArgument = new WildcardSuperTypeArgument(ObjectType.TYPE_OBJECT);
         visitor.visit(wildcardSuperTypeArgument);

@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 public class PrimitiveTypeTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         assertEquals("Z", PrimitiveType.TYPE_BOOLEAN.getDescriptor());
         assertTrue(PrimitiveType.TYPE_BOOLEAN.isPrimitiveTypeArgument());
         assertThrows(IllegalArgumentException.class, () -> PrimitiveType.TYPE_BOOLEAN.createType(-1));

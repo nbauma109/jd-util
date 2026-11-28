@@ -180,7 +180,9 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
     }
 
     @Override
-    public void visit(EndMovableJavaBlockFragment fragment) {}
+    public void visit(EndMovableJavaBlockFragment fragment) {
+        // Layout-only block boundaries emit no tokens.
+    }
 
     @Override
     public void visit(EndSingleStatementBlockFragment fragment) {
@@ -421,6 +423,7 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
 
     @Override
     public void visit(StartMovableJavaBlockFragment fragment) {
+        // Layout-only block boundaries emit no tokens.
     }
 
     @Override
@@ -627,6 +630,7 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
 
         @Override
         public void visit(LineNumberToken token) {
+            // Line numbers are handled separately from the rendered tokens.
         }
 
         @Override

@@ -31,7 +31,7 @@ public class GenericType implements Type {
 
     @Override
     public String getDescriptor() {
-        return name;
+        return getName();
     }
 
     @Override

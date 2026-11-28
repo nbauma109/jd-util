@@ -14,7 +14,7 @@ import static org.junit.Assert.assertNull;
 public class TypeDeclarationTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         ModuleInfo moduleInfo = new ModuleInfo(null, 0, null);
         PackageInfo packageInfo = new PackageInfo(null, 0, null);
         ServiceInfo serviceInfo = new ServiceInfo(null, null);

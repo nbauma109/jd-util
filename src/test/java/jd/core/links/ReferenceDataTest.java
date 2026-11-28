@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 public class ReferenceDataTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         assertTrue(new ReferenceData("java/lang/Object", null, null, null).isAType());
         assertTrue(new ReferenceData("java/lang/Object", "hashCode", "()I", null).isAMethod());
         assertTrue(new ReferenceData("java/lang/Object", "<init>", "()V", null).isAConstructor());

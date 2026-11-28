@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 public class WildcardSuperTypeArgumentTest {
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         TypeMaker typeMaker = new TypeMaker();
         WildcardSuperTypeArgument wildcardSuperTypeArgument = new WildcardSuperTypeArgument(ObjectType.TYPE_NUMBER);
         assertTrue(wildcardSuperTypeArgument.isTypeArgumentAssignableFrom(typeMaker, null, null, new WildcardSuperTypeArgument(ObjectType.TYPE_NUMBER)));

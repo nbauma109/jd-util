@@ -26,6 +26,8 @@ public class ClassPathLoader implements Loader {
     }
 
     @Override
+    // Preserve the missing-resource null result expected by the Loader contract.
+    @SuppressWarnings("java:S1168")
     public byte[] load(String internalName) throws IOException {
         InputStream is = this.getClass().getResourceAsStream(getPathForInternalName(internalName));
 

@@ -22,11 +22,10 @@ public interface VersionAware {
 
     default String getMainAttribute(Class<?> clazz, String attributeName) throws IOException {
         String className = clazz.getSimpleName() + StringConstants.CLASS_FILE_SUFFIX;
-        String classPath = clazz.getResource(className).toString();
-        if (!classPath.startsWith("jar")) {
+        URL url = clazz.getResource(className);
+        if (url == null || !"jar".equals(url.getProtocol())) {
             return findFirstMainAttribute(attributeName);
         }
-        URL url = new URL(classPath);
         JarURLConnection jarConnection = (JarURLConnection) url.openConnection();
         Manifest manifest = jarConnection.getManifest();
         Attributes attributes = manifest.getMainAttributes();

@@ -8,6 +8,7 @@
 package org.jd.core.v1.service.converter.classfiletojavasyntax.util;
 
 import org.apache.bcel.Const;
+import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.commons.collections4.bidimap.AbstractDualBidiMap;
 import org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
@@ -40,10 +41,17 @@ import org.jd.core.v1.util.StringConstants;
 import org.jd.core.v1.util.ZipLoader;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -97,6 +105,50 @@ public class TypeMakerTest extends TestCase {
 
     protected ObjectType makeObjectType(Class<?> clazz) {
         return typeMaker.makeFromInternalTypeName(clazz.getName().replace('.', '/'));
+    }
+
+    @Test
+    public void testRejectsInvalidClassConstantPoolReferences() throws Exception {
+        assertInvalidClassReference(3, 2, 0);
+        assertInvalidClassReference(1, 3, 0);
+        assertInvalidClassReference(1, 2, 3);
+        assertInvalidClassReference(2, 2, 0);
+    }
+
+    private static void assertInvalidClassReference(int superIndex, int nameIndex, int interfaceIndex)
+            throws Exception {
+        byte[] classFile = classHeader(superIndex, nameIndex, interfaceIndex);
+        Method method = TypeMaker.class.getDeclaredMethod("loadClassFile", String.class, DataInput.class);
+        method.setAccessible(true);
+        try (DataInputStream reader = new DataInputStream(new ByteArrayInputStream(classFile))) {
+            InvocationTargetException exception = assertThrows(InvocationTargetException.class,
+                    () -> method.invoke(null, "example/InvalidClass", reader));
+            assertTrue(exception.getCause() instanceof ClassFormatException);
+        }
+    }
+
+    private static byte[] classHeader(int superIndex, int nameIndex, int interfaceIndex) throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (DataOutputStream output = new DataOutputStream(bytes)) {
+            output.writeInt(0xCAFEBABE);
+            output.writeShort(0);
+            output.writeShort(61);
+            output.writeShort(3);
+            output.writeByte(Const.CONSTANT_Class);
+            output.writeShort(nameIndex);
+            output.writeByte(Const.CONSTANT_Utf8);
+            output.writeUTF("example/Parent");
+            output.writeShort(0);
+            output.writeShort(1);
+            output.writeShort(superIndex);
+            if (interfaceIndex == 0) {
+                output.writeShort(0);
+            } else {
+                output.writeShort(1);
+                output.writeShort(interfaceIndex);
+            }
+        }
+        return bytes.toByteArray();
     }
 
     @Test

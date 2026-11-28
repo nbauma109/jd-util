@@ -82,7 +82,6 @@ public final class JavaFragmentFactory {
 
     public static void addEndSingleStatementBlock(List<Fragment> fragments, StartSingleStatementBlockFragment start) {
         fragments.add(new SpacerFragment(0, 0, Integer.MAX_VALUE, 19, "End single statement block spacer"));
-        //fragments.add(new EndSingleStatementBlockFragment(0, 1, 2, 15, "End single statement block", start));
         fragments.add(new EndSingleStatementBlockFragment(0, 0, 1, 6, "End single statement block", start));
     }
 

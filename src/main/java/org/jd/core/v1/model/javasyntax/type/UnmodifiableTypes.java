@@ -11,6 +11,8 @@ import java.util.ListIterator;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
+// Preserve the syntax model hierarchy and inherited list behavior.
+@SuppressWarnings("java:S110")
 public class UnmodifiableTypes extends Types {
     private static final long serialVersionUID = 1L;
 

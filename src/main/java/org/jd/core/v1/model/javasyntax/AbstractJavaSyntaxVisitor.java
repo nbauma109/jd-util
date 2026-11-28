@@ -402,7 +402,6 @@ public abstract class AbstractJavaSyntaxVisitor extends AbstractTypeArgumentVisi
         BaseType type = expression.getType();
         type.accept(this);
         safeAccept(expression.getParameters());
-        // safeAccept(expression.getBodyDeclaration());
     }
 
     @Override

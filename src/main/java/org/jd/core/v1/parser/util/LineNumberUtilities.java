@@ -10,7 +10,6 @@ package org.jd.core.v1.parser.util;
 import org.jd.core.v1.model.javasyntax.declaration.MemberDeclaration;
 import org.jd.core.v1.service.converter.classfiletojavasyntax.visitor.SearchFirstKnownLineNumberVisitor;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class LineNumberUtilities {
             return;
         }
 
-        Collections.sort(members, Comparator.comparing(LineNumberUtilities::firstLineNumber));
+        members.sort(Comparator.comparing(LineNumberUtilities::firstLineNumber));
     }
 
     public static int firstLineNumber(final MemberDeclaration member) {

@@ -79,6 +79,7 @@ import org.jd.core.v1.service.converter.classfiletojavasyntax.util.Utils;
 import org.jd.core.v1.service.fragmenter.javasyntaxtojavafragment.util.JavaFragmentFactory;
 
 import java.util.Iterator;
+import java.util.function.Consumer;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,8 @@ import static org.jd.core.v1.model.javasyntax.declaration.Declaration.FLAG_DEFAU
 import static org.jd.core.v1.model.javasyntax.declaration.Declaration.FLAG_SEALED;
 import static org.jd.core.v1.model.javasyntax.declaration.Declaration.FLAG_NON_SEALED;
 
+// Preserve the visitor hierarchy and inherited traversal behavior.
+@SuppressWarnings("java:S110")
 public class CompilationUnitVisitor extends StatementVisitor {
     private static final String MODULE_INFO = "module-info";
     public static final KeywordToken STRICTFP = new KeywordToken("strictfp");
@@ -270,26 +273,7 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             declaration.get(0).accept(this);
 
-            for (int i = 1; i < size; i++) {
-                if (tokens.isEmpty()) {
-                    JavaFragmentFactory.addSpacerBetweenArrayInitializerBlock(fragments);
-
-                    if (size > 10 && i % 10 == 0) {
-                        JavaFragmentFactory.addNewLineBetweenArrayInitializerBlock(fragments);
-                    }
-                } else if (size > 10 && i % 10 == 0) {
-                    fragments.addTokensFragment(tokens);
-
-                    JavaFragmentFactory.addSpacerBetweenArrayInitializerBlock(fragments);
-                    JavaFragmentFactory.addNewLineBetweenArrayInitializerBlock(fragments);
-
-                    tokens = new Tokens();
-                } else {
-                    tokens.add(TextToken.COMMA_SPACE);
-                }
-
-                declaration.get(i).accept(this);
-            }
+            visitRemainingArrayInitializers(declaration, size);
 
             fragments.addTokensFragment(tokens);
 
@@ -302,6 +286,29 @@ public class CompilationUnitVisitor extends StatementVisitor {
             tokens = new Tokens();
         } else {
             tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
+        }
+    }
+
+    private void visitRemainingArrayInitializers(ArrayVariableInitializer declaration, int size) {
+        for (int i = 1; i < size; i++) {
+            if (tokens.isEmpty()) {
+                JavaFragmentFactory.addSpacerBetweenArrayInitializerBlock(fragments);
+
+                if (size > 10 && i % 10 == 0) {
+                    JavaFragmentFactory.addNewLineBetweenArrayInitializerBlock(fragments);
+                }
+            } else if (size > 10 && i % 10 == 0) {
+                fragments.addTokensFragment(tokens);
+
+                JavaFragmentFactory.addSpacerBetweenArrayInitializerBlock(fragments);
+                JavaFragmentFactory.addNewLineBetweenArrayInitializerBlock(fragments);
+
+                tokens = new Tokens();
+            } else {
+                tokens.add(TextToken.COMMA_SPACE);
+            }
+
+            declaration.get(i).accept(this);
         }
     }
 
@@ -710,121 +717,133 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
     @Override
     public void visit(ConstructorDeclaration declaration) {
-        if ((declaration.getFlags() & (ACC_SYNTHETIC|ACC_BRIDGE)) == 0) {
-            BaseStatement statements = declaration.getStatements();
+        if ((declaration.getFlags() & (ACC_SYNTHETIC | ACC_BRIDGE)) != 0) {
+            return;
+        }
+        BaseStatement statements = declaration.getStatements();
+        if ((declaration.getFlags() & FLAG_ANONYMOUS) == 0) {
+            visitNamedConstructor(declaration, statements);
+        } else if (!Utils.isEmpty(statements)) {
+            visitAnonymousConstructor(statements);
+        }
+    }
 
-            if ((declaration.getFlags() & FLAG_ANONYMOUS) == 0) {
-                fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_METHOD_BLOCK);
+    private void visitNamedConstructor(ConstructorDeclaration declaration, BaseStatement statements) {
+        fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_METHOD_BLOCK);
 
-                tokens = new Tokens();
+        tokens = new Tokens();
 
-                // Build fragments for annotations
-                BaseAnnotationReference annotationReferences = constructorAnnotations(declaration.getAnnotationReferences());
+        // Build fragments for annotations
+        BaseAnnotationReference annotationReferences = constructorAnnotations(declaration.getAnnotationReferences());
 
-                if (annotationReferences != null) {
-                    annotationReferences.accept(annotationVisitor);
-                    fragments.addTokensFragment(tokens);
-                    JavaFragmentFactory.addSpacerAfterMemberAnnotations(fragments);
-                    tokens = new Tokens();
-                }
+        if (annotationReferences != null) {
+            annotationReferences.accept(annotationVisitor);
+            fragments.addTokensFragment(tokens);
+            JavaFragmentFactory.addSpacerAfterMemberAnnotations(fragments);
+            tokens = new Tokens();
+        }
 
-                // Build tokens for access
-                buildTokensForMethodAccessFlags(declaration.getFlags());
+        // Build tokens for access
+        buildTokensForMethodAccessFlags(declaration.getFlags());
 
-                // Build tokens for type parameters
-                BaseTypeParameter typeParameters = declaration.getTypeParameters();
+        // Build tokens for type parameters
+        BaseTypeParameter typeParameters = declaration.getTypeParameters();
 
-                if (typeParameters != null) {
-                    tokens.add(TextToken.LEFTANGLEBRACKET);
-                    typeParameters.accept(this);
-                    tokens.add(TextToken.RIGHTANGLEBRACKET);
-                    tokens.add(TextToken.SPACE);
-                }
+        if (typeParameters != null) {
+            tokens.add(TextToken.LEFTANGLEBRACKET);
+            typeParameters.accept(this);
+            tokens.add(TextToken.RIGHTANGLEBRACKET);
+            tokens.add(TextToken.SPACE);
+        }
 
-                // Build token for type declaration
-                tokens.add(new DeclarationToken(Printer.CONSTRUCTOR, getCurrentTypeInternalName(), currentTypeName, declaration.getDescriptor()));
+        // Build token for type declaration
+        tokens.add(new DeclarationToken(Printer.CONSTRUCTOR, getCurrentTypeInternalName(), currentTypeName, declaration.getDescriptor()));
 
-                storeContext();
-                currentMethodParamNames.clear();
+        storeContext();
+        currentMethodParamNames.clear();
 
-                BaseFormalParameter formalParameters = declaration.getFormalParameters();
+        BaseFormalParameter formalParameters = declaration.getFormalParameters();
 
-                if (!(declaration instanceof RecordConstructorDeclaration)) {
-                    if (Utils.isEmpty(formalParameters)) {
-                        tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
-                    } else {
-                        tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
-                        fragments.addTokensFragment(tokens);
+        if (!(declaration instanceof RecordConstructorDeclaration)) {
+            if (Utils.isEmpty(formalParameters)) {
+                tokens.add(TextToken.LEFTRIGHTROUNDBRACKETS);
+            } else {
+                tokens.add(StartBlockToken.START_PARAMETERS_BLOCK);
+                fragments.addTokensFragment(tokens);
 
-                        formalParameters.accept(this);
-
-                        tokens = new Tokens();
-                        tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
-                    }
-                }
-
-                BaseType exceptionTypes = declaration.getExceptionTypes();
-
-                if (exceptionTypes != null) {
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(THROWS);
-                    tokens.add(TextToken.SPACE);
-                    exceptionTypes.accept(this);
-                }
-
-                if (statements != null) {
-                    fragments.addTokensFragment(tokens);
-                    singleLineStatementVisitor.init();
-                    statements.accept(singleLineStatementVisitor);
-
-                    boolean singleLineStatement = singleLineStatementVisitor.isSingleLineStatement();
-                    int fragmentCount1 = fragments.size();
-                    StartBodyFragment start;
-
-                    if (singleLineStatement) {
-                        start = JavaFragmentFactory.addStartSingleStatementConstructorBody(fragments);
-                    } else {
-                        start = JavaFragmentFactory.addStartMethodBody(fragments);
-                    }
-
-                    int fragmentCount2 = fragments.size();
-
-                    statements.accept(this);
-
-                    if (fragmentCount2 == fragments.size()) {
-                        fragments.subList(fragmentCount1, fragmentCount2).clear();
-                        tokens.add(TextToken.SPACE);
-                        tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
-                    } else if (singleLineStatement) {
-                        JavaFragmentFactory.addEndSingleStatementMethodBody(fragments, start);
-                    } else {
-                        JavaFragmentFactory.addEndMethodBody(fragments, start);
-                    }
-                }
-
-                restoreContext();
-
-                fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
-            } else if (!Utils.isEmpty(statements)) {
-                int fragmentCount0 = fragments.size();
-                fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_METHOD_BLOCK);
-
-                StartBlockFragment start = JavaFragmentFactory.addStartInstanceInitializerBlock(fragments);
-                int fragmentCount2 = fragments.size();
+                formalParameters.accept(this);
 
                 tokens = new Tokens();
-
-                statements.accept(this);
-
-                if (fragmentCount2 == fragments.size()) {
-                    fragments.subList(fragmentCount0, fragmentCount2).clear();
-                } else {
-                    JavaFragmentFactory.addEndInstanceInitializerBlock(fragments, start);
-                }
-
-                fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
+                tokens.add(EndBlockToken.END_PARAMETERS_BLOCK);
             }
         }
+
+        BaseType exceptionTypes = declaration.getExceptionTypes();
+
+        if (exceptionTypes != null) {
+            tokens.add(TextToken.SPACE);
+            tokens.add(THROWS);
+            tokens.add(TextToken.SPACE);
+            exceptionTypes.accept(this);
+        }
+
+        if (statements != null) {
+            visitConstructorBody(statements);
+        }
+
+        restoreContext();
+
+        fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
+    }
+
+    private void visitConstructorBody(BaseStatement statements) {
+        fragments.addTokensFragment(tokens);
+        singleLineStatementVisitor.init();
+        statements.accept(singleLineStatementVisitor);
+
+        boolean singleLineStatement = singleLineStatementVisitor.isSingleLineStatement();
+        int fragmentCount1 = fragments.size();
+        StartBodyFragment start;
+
+        if (singleLineStatement) {
+            start = JavaFragmentFactory.addStartSingleStatementConstructorBody(fragments);
+        } else {
+            start = JavaFragmentFactory.addStartMethodBody(fragments);
+        }
+
+        int fragmentCount2 = fragments.size();
+
+        statements.accept(this);
+
+        if (fragmentCount2 == fragments.size()) {
+            fragments.subList(fragmentCount1, fragmentCount2).clear();
+            tokens.add(TextToken.SPACE);
+            tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
+        } else if (singleLineStatement) {
+            JavaFragmentFactory.addEndSingleStatementMethodBody(fragments, start);
+        } else {
+            JavaFragmentFactory.addEndMethodBody(fragments, start);
+        }
+    }
+
+    private void visitAnonymousConstructor(BaseStatement statements) {
+        int fragmentCount0 = fragments.size();
+        fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_METHOD_BLOCK);
+
+        StartBlockFragment start = JavaFragmentFactory.addStartInstanceInitializerBlock(fragments);
+        int fragmentCount2 = fragments.size();
+
+        tokens = new Tokens();
+
+        statements.accept(this);
+
+        if (fragmentCount2 == fragments.size()) {
+            fragments.subList(fragmentCount0, fragmentCount2).clear();
+        } else {
+            JavaFragmentFactory.addEndInstanceInitializerBlock(fragments, start);
+        }
+
+        fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
     }
 
     @Override
@@ -907,61 +926,67 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             List<EnumDeclaration.Constant> constants = declaration.getConstants();
 
-            if (!Utils.isEmptyCollection(constants)) {
-                emptyConstants = false;
-                int preferredLineNumber = 0;
+            visitEnumConstants(constants);
 
-                for (EnumDeclaration.Constant constant : constants) {
-                    if (constant.getArguments() != null || constant.getBodyDeclaration() != null) {
-                        preferredLineNumber = 1;
-                        break;
-                    }
-                }
-
-                fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_FIELD_BLOCK);
-
-                constants.get(0).accept(this);
-
-                int size = constants.size();
-
-                for (int i = 1; i < size; i++) {
-                    JavaFragmentFactory.addSpacerBetweenEnumValues(fragments, preferredLineNumber);
-                    constants.get(i).accept(this);
-                }
-
-                fragments.add(TokensFragment.SEMICOLON);
-                fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
-            } else {
-                emptyConstants = true;
-            }
-
-            BodyDeclaration bodyDeclaration = declaration.getBodyDeclaration();
-
-            if (bodyDeclaration != null) {
-                if (!Utils.isEmptyCollection(constants)) {
-                    emptyConstants = false;
-                    Fragments f = fragments;
-
-                    fragments = new Fragments();
-                    bodyDeclaration.accept(this);
-
-                    if (!fragments.isEmpty()) {
-                        JavaFragmentFactory.addSpacerBetweenMembers(f);
-                        f.addAll(fragments);
-                    }
-
-                    fragments = f;
-                } else {
-                    emptyConstants = true;
-                    bodyDeclaration.accept(this);
-                }
-            }
+            visitEnumBody(declaration.getBodyDeclaration(), constants);
 
             restoreContext();
 
             JavaFragmentFactory.addEndTypeBody(fragments, start);
 
             fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
+        }
+    }
+
+    private void visitEnumConstants(List<EnumDeclaration.Constant> constants) {
+        if (!Utils.isEmptyCollection(constants)) {
+            emptyConstants = false;
+            int preferredLineNumber = 0;
+
+            for (EnumDeclaration.Constant constant : constants) {
+                if (constant.getArguments() != null || constant.getBodyDeclaration() != null) {
+                    preferredLineNumber = 1;
+                    break;
+                }
+            }
+
+            fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_FIELD_BLOCK);
+
+            constants.get(0).accept(this);
+
+            int size = constants.size();
+
+            for (int i = 1; i < size; i++) {
+                JavaFragmentFactory.addSpacerBetweenEnumValues(fragments, preferredLineNumber);
+                constants.get(i).accept(this);
+            }
+
+            fragments.add(TokensFragment.SEMICOLON);
+            fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
+        } else {
+            emptyConstants = true;
+        }
+    }
+
+    private void visitEnumBody(BodyDeclaration bodyDeclaration, List<EnumDeclaration.Constant> constants) {
+        if (bodyDeclaration != null) {
+            if (!Utils.isEmptyCollection(constants)) {
+                emptyConstants = false;
+                Fragments f = fragments;
+
+                fragments = new Fragments();
+                bodyDeclaration.accept(this);
+
+                if (!fragments.isEmpty()) {
+                    JavaFragmentFactory.addSpacerBetweenMembers(f);
+                    f.addAll(fragments);
+                }
+
+                fragments = f;
+            } else {
+                emptyConstants = true;
+                bodyDeclaration.accept(this);
+            }
         }
     }
 
@@ -1195,8 +1220,6 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
     @Override
     public void visit(ModuleDeclaration declaration) {
-        boolean needNewLine = false;
-
         fragments.clear();
         fragments.add(StartMovableJavaBlockFragment.START_MOVABLE_TYPE_BLOCK);
 
@@ -1216,72 +1239,33 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
         tokens = new Tokens();
 
-        if (!Utils.isEmptyCollection(declaration.getRequires())) {
-            Iterator<ModuleDeclaration.ModuleInfo> iterator = declaration.getRequires().iterator();
-            visitModuleDeclaration(iterator.next());
-            while (iterator.hasNext()) {
-                tokens.add(NewLineToken.NEWLINE_1);
-                visitModuleDeclaration(iterator.next());
-            }
-            needNewLine = true;
-        }
-
-        if (!Utils.isEmptyCollection(declaration.getExports())) {
-            if (needNewLine) {
-                tokens.add(NewLineToken.NEWLINE_2);
-            }
-            Iterator<ModuleDeclaration.PackageInfo> iterator = declaration.getExports().iterator();
-            visitModuleDeclaration(iterator.next(), EXPORTS);
-            while (iterator.hasNext()) {
-                tokens.add(NewLineToken.NEWLINE_1);
-                visitModuleDeclaration(iterator.next(), EXPORTS);
-            }
-            needNewLine = true;
-        }
-
-        if (!Utils.isEmptyCollection(declaration.getOpens())) {
-            if (needNewLine) {
-                tokens.add(NewLineToken.NEWLINE_2);
-            }
-            Iterator<ModuleDeclaration.PackageInfo> iterator = declaration.getOpens().iterator();
-            visitModuleDeclaration(iterator.next(), OPENS);
-            while (iterator.hasNext()) {
-                tokens.add(NewLineToken.NEWLINE_1);
-                visitModuleDeclaration(iterator.next(), OPENS);
-            }
-            needNewLine = true;
-        }
-
-        if (!Utils.isEmptyCollection(declaration.getUses())) {
-            if (needNewLine) {
-                tokens.add(NewLineToken.NEWLINE_2);
-            }
-            Iterator<String> iterator = declaration.getUses().iterator();
-            visitModuleDeclaration(iterator.next());
-            while (iterator.hasNext()) {
-                tokens.add(NewLineToken.NEWLINE_1);
-                visitModuleDeclaration(iterator.next());
-            }
-            needNewLine = true;
-        }
-
-        if (!Utils.isEmptyCollection(declaration.getProvides())) {
-            if (needNewLine) {
-                tokens.add(NewLineToken.NEWLINE_2);
-            }
-            Iterator<ModuleDeclaration.ServiceInfo> iterator = declaration.getProvides().iterator();
-            visitModuleDeclaration(iterator.next());
-            while (iterator.hasNext()) {
-                tokens.add(NewLineToken.NEWLINE_1);
-                visitModuleDeclaration(iterator.next());
-            }
-        }
+        boolean needNewLine = visitModuleEntries(declaration.getRequires(), false, this::visitModuleDeclaration);
+        needNewLine = visitModuleEntries(declaration.getExports(), needNewLine, entry -> visitModuleDeclaration(entry, EXPORTS));
+        needNewLine = visitModuleEntries(declaration.getOpens(), needNewLine, entry -> visitModuleDeclaration(entry, OPENS));
+        needNewLine = visitModuleEntries(declaration.getUses(), needNewLine, this::visitModuleDeclaration);
+        visitModuleEntries(declaration.getProvides(), needNewLine, this::visitModuleDeclaration);
 
         fragments.addTokensFragment(tokens);
 
         JavaFragmentFactory.addEndTypeBody(fragments, start);
 
         fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
+    }
+
+    private <T> boolean visitModuleEntries(List<T> entries, boolean needNewLine, Consumer<T> visitor) {
+        if (Utils.isEmptyCollection(entries)) {
+            return needNewLine;
+        }
+        if (needNewLine) {
+            tokens.add(NewLineToken.NEWLINE_2);
+        }
+        Iterator<T> iterator = entries.iterator();
+        visitor.accept(iterator.next());
+        while (iterator.hasNext()) {
+            tokens.add(NewLineToken.NEWLINE_1);
+            visitor.accept(iterator.next());
+        }
+        return true;
     }
 
     protected void visitModuleDeclaration(ModuleDeclaration.ModuleInfo moduleInfo) {
@@ -1519,54 +1503,58 @@ public class CompilationUnitVisitor extends StatementVisitor {
 
             BaseStatement statements = declaration.getStatements();
 
-            if (statements == null) {
-                BaseElementValue elementValue = declaration.getDefaultAnnotationValue();
-
-                if ((elementValue != null)) {
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(DEFAULT);
-                    tokens.add(TextToken.SPACE);
-                    fragments.addTokensFragment(tokens);
-
-                    elementValue.accept(this);
-
-                    tokens = new Tokens();
-                }
-                tokens.add(TextToken.SEMICOLON);
-                fragments.addTokensFragment(tokens);
-            } else {
-                fragments.addTokensFragment(tokens);
-                singleLineStatementVisitor.init();
-                statements.accept(singleLineStatementVisitor);
-
-                boolean singleLineStatement = singleLineStatementVisitor.isSingleLineStatement();
-                int fragmentCount1 = fragments.size();
-                StartBodyFragment start;
-
-                if (singleLineStatement) {
-                    start = JavaFragmentFactory.addStartSingleStatementMethodBody(fragments);
-                } else {
-                    start = JavaFragmentFactory.addStartMethodBody(fragments);
-                }
-
-                int fragmentCount2 = fragments.size();
-
-                statements.accept(this);
-
-                if (fragmentCount2 == fragments.size()) {
-                    fragments.subList(fragmentCount1, fragmentCount2).clear();
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
-                } else if (singleLineStatement) {
-                    JavaFragmentFactory.addEndSingleStatementMethodBody(fragments, start);
-                } else {
-                    JavaFragmentFactory.addEndMethodBody(fragments, start);
-                }
-            }
+            visitMethodBody(declaration, statements);
 
             restoreContext();
 
             fragments.add(EndMovableJavaBlockFragment.END_MOVABLE_BLOCK);
+        }
+    }
+
+    private void visitMethodBody(MethodDeclaration declaration, BaseStatement statements) {
+        if (statements == null) {
+            BaseElementValue elementValue = declaration.getDefaultAnnotationValue();
+
+            if ((elementValue != null)) {
+                tokens.add(TextToken.SPACE);
+                tokens.add(DEFAULT);
+                tokens.add(TextToken.SPACE);
+                fragments.addTokensFragment(tokens);
+
+                elementValue.accept(this);
+
+                tokens = new Tokens();
+            }
+            tokens.add(TextToken.SEMICOLON);
+            fragments.addTokensFragment(tokens);
+        } else {
+            fragments.addTokensFragment(tokens);
+            singleLineStatementVisitor.init();
+            statements.accept(singleLineStatementVisitor);
+
+            boolean singleLineStatement = singleLineStatementVisitor.isSingleLineStatement();
+            int fragmentCount1 = fragments.size();
+            StartBodyFragment start;
+
+            if (singleLineStatement) {
+                start = JavaFragmentFactory.addStartSingleStatementMethodBody(fragments);
+            } else {
+                start = JavaFragmentFactory.addStartMethodBody(fragments);
+            }
+
+            int fragmentCount2 = fragments.size();
+
+            statements.accept(this);
+
+            if (fragmentCount2 == fragments.size()) {
+                fragments.subList(fragmentCount1, fragmentCount2).clear();
+                tokens.add(TextToken.SPACE);
+                tokens.add(TextToken.LEFTRIGHTCURLYBRACKETS);
+            } else if (singleLineStatement) {
+                JavaFragmentFactory.addEndSingleStatementMethodBody(fragments, start);
+            } else {
+                JavaFragmentFactory.addEndMethodBody(fragments, start);
+            }
         }
     }
 

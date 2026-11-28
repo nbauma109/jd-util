@@ -90,48 +90,42 @@ public class TextUtilities {
 
         final String[] lines = raw.split("\n", -1);
 
-        int minIndent = Integer.MAX_VALUE;
-        for (final String line : lines) {
-            if (line.trim().isEmpty()) {
-                continue;
-            }
-            int indent = 0;
-            while (indent < line.length()) {
-                final char c = line.charAt(indent);
-                if (c != ' ' && c != '\t') {
-                    break;
-                }
-                indent++;
-            }
-            if (indent < minIndent) {
-                minIndent = indent;
-            }
-        }
-
-        if (minIndent == Integer.MAX_VALUE) {
-            minIndent = 0;
-        }
-
+        int minIndent = minimumIndent(lines);
         final StringBuilder sb = new StringBuilder(raw.length());
         for (int i = 0; i < lines.length; i++) {
             final String line = lines[i];
-
-            int cut = 0;
-            while (cut < minIndent && cut < line.length()) {
-                final char c = line.charAt(cut);
-                if (c != ' ' && c != '\t') {
-                    break;
-                }
-                cut++;
-            }
-
-            sb.append(line.substring(cut));
+            sb.append(line.substring(Math.min(minIndent, indentation(line))));
             if (i < lines.length - 1) {
                 sb.append('\n');
             }
         }
 
         return StringEscapeUtils.unescapeJava(sb.toString());
+    }
+
+    private static int minimumIndent(String[] lines) {
+        int minimum = Integer.MAX_VALUE;
+        for (String line : lines) {
+            if (!line.trim().isEmpty()) {
+                minimum = Math.min(minimum, indentation(line));
+            }
+        }
+        if (minimum == Integer.MAX_VALUE) {
+            return 0;
+        }
+        return minimum;
+    }
+
+    private static int indentation(String line) {
+        int indent = 0;
+        while (indent < line.length()) {
+            char character = line.charAt(indent);
+            if (character != ' ' && character != '\t') {
+                break;
+            }
+            indent++;
+        }
+        return indent;
     }
 
     public static String stripNumericSeparators(final String literal) {
@@ -212,6 +206,7 @@ public class TextUtilities {
             try {
                 return Long.parseLong(digits, radix);
             } catch (NumberFormatException ex) {
+                // Values outside the signed range are parsed as unsigned below.
             }
         }
         return Long.parseUnsignedLong(digits, radix);

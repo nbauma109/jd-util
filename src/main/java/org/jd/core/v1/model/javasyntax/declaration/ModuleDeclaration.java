@@ -17,6 +17,8 @@ public class ModuleDeclaration extends TypeDeclaration {
     private final List<String>      uses;
     private final List<ServiceInfo> provides;
 
+    // Preserve the public declaration constructor signature.
+    @SuppressWarnings("java:S107")
     public ModuleDeclaration(int flags, String internalName, String name, String version, List<ModuleInfo> requires, List<PackageInfo> exports, List<PackageInfo> opens, List<String> uses, List<ServiceInfo> provides) {
         super(null, flags, internalName, name, null);
         this.version = version;

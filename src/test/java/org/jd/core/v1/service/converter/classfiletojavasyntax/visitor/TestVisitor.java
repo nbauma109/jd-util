@@ -261,6 +261,7 @@ public class TestVisitor extends AbstractNopExpressionVisitor implements Stateme
 
     @Override
     public void visit(PatternLabel statement) {
+        // This counting visitor does not track pattern labels.
     }
 
     @Override

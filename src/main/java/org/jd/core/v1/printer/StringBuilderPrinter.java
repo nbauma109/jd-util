@@ -46,37 +46,30 @@ public class StringBuilderPrinter implements Printer, VersionAware {
     }
 
     protected void escape(String s) {
-        if (unicodeEscape && s != null) {
-            int length = s.length();
+        if (!unicodeEscape || s == null) {
+            stringBuffer.append(s);
+            return;
+        }
+        for (int index = 0; index < s.length(); index++) {
+            appendEscaped(s.charAt(index));
+        }
+    }
 
-            for (int i = 0; i < length; i++) {
-                char c = s.charAt(i);
-
-                if (c == '\t') {
-                    stringBuffer.append(c);
-                } else if (c < 32) {
-                    // Write octal format
-                    stringBuffer.append("\\0");
-                    stringBuffer.append((char) ('0' + (c >> 3)));
-                    stringBuffer.append((char) ('0' + (c & 0x7)));
-                } else if (c > 127) {
-                    // Write octal format
-                    stringBuffer.append("\\u");
-
-                    int z = c >> 12;
-                    stringBuffer.append((char) (z <= 9 ? '0' + z : 'A' - 10 + z));
-                    z = c >> 8 & 0xF;
-                    stringBuffer.append((char) (z <= 9 ? '0' + z : 'A' - 10 + z));
-                    z = c >> 4 & 0xF;
-                    stringBuffer.append((char) (z <= 9 ? '0' + z : 'A' - 10 + z));
-                    z = c & 0xF;
-                    stringBuffer.append((char) (z <= 9 ? '0' + z : 'A' - 10 + z));
-                } else {
-                    stringBuffer.append(c);
-                }
+    private void appendEscaped(char character) {
+        if (character == '\t') {
+            stringBuffer.append(character);
+        } else if (character < 32) {
+            stringBuffer.append("\\0");
+            stringBuffer.append((char) ('0' + (character >> 3)));
+            stringBuffer.append((char) ('0' + (character & 7)));
+        } else if (character > 127) {
+            stringBuffer.append("\\u");
+            for (int shift = 12; shift >= 0; shift -= 4) {
+                int digit = (character >> shift) & 15;
+                stringBuffer.append("0123456789ABCDEF".charAt(digit));
             }
         } else {
-            stringBuffer.append(s);
+            stringBuffer.append(character);
         }
     }
 
@@ -91,6 +84,7 @@ public class StringBuilderPrinter implements Printer, VersionAware {
 
     @Override
     public void end() {
+        // The accumulated text is already complete.
     }
 
     @Override
@@ -159,10 +153,12 @@ public class StringBuilderPrinter implements Printer, VersionAware {
 
     @Override
     public void startMarker(int type) {
+        // This printer does not render marker metadata.
     }
 
     @Override
     public void endMarker(int type) {
+        // This printer does not render marker metadata.
     }
 
     @Override
