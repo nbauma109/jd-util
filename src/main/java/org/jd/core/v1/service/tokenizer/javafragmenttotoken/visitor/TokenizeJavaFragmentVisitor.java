@@ -76,50 +76,35 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
         return tokens;
     }
 
+    private static Token spacingToken(int lineCount) {
+        return switch (lineCount) {
+            case 0 -> TextToken.SPACE;
+            case 1 -> NewLineToken.NEWLINE_1;
+            case 2 -> NewLineToken.NEWLINE_2;
+            default -> new NewLineToken(lineCount);
+        };
+    }
+
+    private void addBlockTokens(Token before, Token block, Token after) {
+        tokens.add(before);
+        tokens.add(block);
+        tokens.add(after);
+    }
+
+    private void addEndBlock(int lineCount) {
+        tokens.add(spacingToken(lineCount));
+        tokens.add(EndBlockToken.END_BLOCK);
+    }
+
     @Override
     public void visit(EndBlockFragment fragment) {
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.add(TextToken.SPACE);
-                tokens.add(EndBlockToken.END_BLOCK);
-                break;
-            case 1:
-                tokens.add(NewLineToken.NEWLINE_1);
-                tokens.add(EndBlockToken.END_BLOCK);
-                break;
-            case 2:
-                tokens.add(NewLineToken.NEWLINE_2);
-                tokens.add(EndBlockToken.END_BLOCK);
-                break;
-            default:
-                tokens.add(new NewLineToken(fragment.getLineCount()));
-                tokens.add(EndBlockToken.END_BLOCK);
-        }
+        addEndBlock(fragment.getLineCount());
     }
 
     @Override
     public void visit(EndBlockInParameterFragment fragment) {
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.add(TextToken.SPACE);
-                tokens.add(EndBlockToken.END_BLOCK);
-                tokens.add(TextToken.COMMA);
-                break;
-            case 1:
-                tokens.add(NewLineToken.NEWLINE_1);
-                tokens.add(EndBlockToken.END_BLOCK);
-                tokens.add(TextToken.COMMA);
-                break;
-            case 2:
-                tokens.add(NewLineToken.NEWLINE_2);
-                tokens.add(EndBlockToken.END_BLOCK);
-                tokens.add(TextToken.COMMA);
-                break;
-            default:
-                tokens.add(new NewLineToken(fragment.getLineCount()));
-                tokens.add(EndBlockToken.END_BLOCK);
-                tokens.add(TextToken.COMMA);
-        }
+        addEndBlock(fragment.getLineCount());
+        tokens.add(TextToken.COMMA);
     }
 
     @Override
@@ -153,29 +138,18 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
 
     @Override
     public void visit(EndBodyInParameterFragment fragment) {
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.add(TextToken.SPACE);
-                tokens.add(EndBlockToken.END_BLOCK);
-                tokens.add(TextToken.COMMA);
-                break;
-            case 1:
-                tokens.add(NewLineToken.NEWLINE_1);
-                tokens.add(EndBlockToken.END_BLOCK);
-                tokens.add(TextToken.COMMA);
-                tokens.add(TextToken.SPACE);
-                break;
-            case 2:
-                tokens.add(NewLineToken.NEWLINE_1);
-                tokens.add(EndBlockToken.END_BLOCK);
-                tokens.add(TextToken.COMMA);
-                tokens.add(NewLineToken.NEWLINE_1);
-                break;
-            default:
-                tokens.add(new NewLineToken(fragment.getLineCount()-1));
-                tokens.add(EndBlockToken.END_BLOCK);
-                tokens.add(TextToken.COMMA);
-                tokens.add(NewLineToken.NEWLINE_1);
+        int lineCount = fragment.getLineCount();
+        tokens.add(switch (lineCount) {
+            case 0 -> TextToken.SPACE;
+            case 1, 2 -> NewLineToken.NEWLINE_1;
+            default -> new NewLineToken(lineCount - 1);
+        });
+        tokens.add(EndBlockToken.END_BLOCK);
+        tokens.add(TextToken.COMMA);
+        if (lineCount == 1) {
+            tokens.add(TextToken.SPACE);
+        } else if (lineCount != 0) {
+            tokens.add(NewLineToken.NEWLINE_1);
         }
     }
 
@@ -229,60 +203,17 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
 
     @Override
     public void visit(EndStatementsBlockFragment fragment) {
+        int lineCount = fragment.getLineCount();
         int minimalLineCount = fragment.getGroup().getMinimalLineCount();
 
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.add(TextToken.SPACE);
-                tokens.add(EndBlockToken.END_BLOCK);
-                tokens.add(TextToken.SPACE);
-                break;
-            case 1:
-                if (minimalLineCount == 0) {
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(EndBlockToken.END_BLOCK);
-                    tokens.add(NewLineToken.NEWLINE_1);
-                } else {
-                    tokens.add(NewLineToken.NEWLINE_1);
-                    tokens.add(EndBlockToken.END_BLOCK);
-                    tokens.add(TextToken.SPACE);
-                }
-                break;
-            case 2:
-                switch (minimalLineCount) {
-                    case 0:
-                        tokens.add(TextToken.SPACE);
-                        tokens.add(EndBlockToken.END_BLOCK);
-                        tokens.add(NewLineToken.NEWLINE_2);
-                        break;
-                    case 1:
-                        tokens.add(NewLineToken.NEWLINE_1);
-                        tokens.add(EndBlockToken.END_BLOCK);
-                        tokens.add(NewLineToken.NEWLINE_1);
-                        break;
-                    default:
-                        tokens.add(new NewLineToken(fragment.getLineCount()-1));
-                        tokens.add(EndBlockToken.END_BLOCK);
-                        tokens.add(NewLineToken.NEWLINE_1);
-                }
-                break;
-            default:
-                switch (minimalLineCount) {
-                    case 0:
-                        tokens.add(TextToken.SPACE);
-                        tokens.add(EndBlockToken.END_BLOCK);
-                        tokens.add(new NewLineToken(fragment.getLineCount()));
-                        break;
-                    case 1:
-                        tokens.add(new NewLineToken(fragment.getLineCount()));
-                        tokens.add(EndBlockToken.END_BLOCK);
-                        break;
-                    default:
-                        tokens.add(new NewLineToken(fragment.getLineCount()-1));
-                        tokens.add(EndBlockToken.END_BLOCK);
-                        tokens.add(NewLineToken.NEWLINE_1);
-                }
-                break;
+        if (lineCount == 0 || minimalLineCount == 0) {
+            addBlockTokens(TextToken.SPACE, EndBlockToken.END_BLOCK, spacingToken(lineCount));
+        } else if (lineCount == 1) {
+            addBlockTokens(NewLineToken.NEWLINE_1, EndBlockToken.END_BLOCK, TextToken.SPACE);
+        } else if (minimalLineCount == 1 && lineCount != 2) {
+            addEndBlock(lineCount);
+        } else {
+            addBlockTokens(spacingToken(lineCount - 1), EndBlockToken.END_BLOCK, NewLineToken.NEWLINE_1);
         }
     }
 
@@ -323,19 +254,7 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
 
     @Override
     public void visit(SpacerBetweenMembersFragment fragment) {
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.add(TextToken.SPACE);
-                break;
-            case 1:
-                tokens.add(NewLineToken.NEWLINE_1);
-                break;
-            case 2:
-                tokens.add(NewLineToken.NEWLINE_2);
-                break;
-            default:
-                tokens.add(new NewLineToken(fragment.getLineCount()));
-        }
+        tokens.add(spacingToken(fragment.getLineCount()));
     }
 
     @Override
@@ -356,66 +275,21 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
 
     @Override
     public void visit(SpaceSpacerFragment fragment) {
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.add(TextToken.SPACE);
-                break;
-            case 1:
-                tokens.add(NewLineToken.NEWLINE_1);
-                break;
-            case 2:
-                tokens.add(NewLineToken.NEWLINE_2);
-                break;
-            default:
-                tokens.add(new NewLineToken(fragment.getLineCount()));
-        }
+        tokens.add(spacingToken(fragment.getLineCount()));
     }
 
     @Override
     public void visit(StartBlockFragment fragment) {
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(TextToken.SPACE);
-                break;
-            case 1:
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(NewLineToken.NEWLINE_1);
-                break;
-            case 2:
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(NewLineToken.NEWLINE_2);
-                break;
-            default:
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(new NewLineToken(fragment.getLineCount()));
-                break;
-        }
+        tokens.add(StartBlockToken.START_BLOCK);
+        tokens.add(spacingToken(fragment.getLineCount()));
     }
 
     @Override
     public void visit(StartBodyFragment fragment) {
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.add(TextToken.SPACE);
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(TextToken.SPACE);
-                break;
-            case 1:
-                tokens.add(TextToken.SPACE);
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(NewLineToken.NEWLINE_1);
-                break;
-            case 2:
-                tokens.add(NewLineToken.NEWLINE_1);
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(NewLineToken.NEWLINE_1);
-                break;
-            default:
-                tokens.add(NewLineToken.NEWLINE_1);
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(new NewLineToken(fragment.getLineCount()-1));
-                break;
+        int lineCount = fragment.getLineCount();
+        switch (lineCount) {
+            case 0, 1 -> addBlockTokens(TextToken.SPACE, StartBlockToken.START_BLOCK, spacingToken(lineCount));
+            default -> addBlockTokens(NewLineToken.NEWLINE_1, StartBlockToken.START_BLOCK, spacingToken(lineCount - 1));
         }
     }
 
@@ -454,61 +328,15 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
 
     @Override
     public void visit(StartStatementsBlockFragment fragment) {
+        int lineCount = fragment.getLineCount();
         int minimalLineCount = fragment.getGroup().getMinimalLineCount();
 
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.add(TextToken.SPACE);
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(TextToken.SPACE);
-                break;
-            case 1:
-                if (minimalLineCount == 0) {
-                    tokens.add(NewLineToken.NEWLINE_1);
-                    tokens.add(StartBlockToken.START_BLOCK);
-                    tokens.add(TextToken.SPACE);
-                } else {
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(StartBlockToken.START_BLOCK);
-                    tokens.add(NewLineToken.NEWLINE_1);
-                }
-                break;
-            case 2:
-                switch (minimalLineCount) {
-                    case 0:
-                        tokens.add(NewLineToken.NEWLINE_2);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(TextToken.SPACE);
-                        break;
-                    case 1:
-                        tokens.add(TextToken.SPACE);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(NewLineToken.NEWLINE_2);
-                        break;
-                    default:
-                        tokens.add(NewLineToken.NEWLINE_1);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(NewLineToken.NEWLINE_1);
-                }
-                break;
-            default:
-                switch (minimalLineCount) {
-                    case 0:
-                        tokens.add(new NewLineToken(fragment.getLineCount()));
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(TextToken.SPACE);
-                        break;
-                    case 1:
-                        tokens.add(TextToken.SPACE);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(new NewLineToken(fragment.getLineCount()));
-                        break;
-                    default:
-                        tokens.add(NewLineToken.NEWLINE_1);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(new NewLineToken(fragment.getLineCount() - 1));
-                }
-                break;
+        if (lineCount == 0 || minimalLineCount == 0) {
+            addBlockTokens(spacingToken(lineCount), StartBlockToken.START_BLOCK, TextToken.SPACE);
+        } else if (lineCount == 1 || minimalLineCount == 1) {
+            addBlockTokens(TextToken.SPACE, StartBlockToken.START_BLOCK, spacingToken(lineCount));
+        } else {
+            addBlockTokens(NewLineToken.NEWLINE_1, StartBlockToken.START_BLOCK, spacingToken(lineCount - 1));
         }
     }
 
@@ -662,74 +490,25 @@ public class TokenizeJavaFragmentVisitor implements JavaFragmentVisitor {
     }
 
     protected void visit(StartStatementsBlockFragment fragment, Collection<Token> adds) {
+        int lineCount = fragment.getLineCount();
         int minimalLineCount = fragment.getGroup().getMinimalLineCount();
 
-        switch (fragment.getLineCount()) {
-            case 0:
-                tokens.addAll(adds);
-                tokens.add(TextToken.SPACE);
-                tokens.add(StartBlockToken.START_BLOCK);
-                tokens.add(TextToken.SPACE);
-                break;
-            case 1:
-                if (minimalLineCount == 0) {
-                    tokens.add(NewLineToken.NEWLINE_1);
-                    tokens.addAll(adds);
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(StartBlockToken.START_BLOCK);
-                    tokens.add(TextToken.SPACE);
-                } else {
-                    tokens.addAll(adds);
-                    tokens.add(TextToken.SPACE);
-                    tokens.add(StartBlockToken.START_BLOCK);
-                    tokens.add(NewLineToken.NEWLINE_1);
-                }
-                break;
-            case 2:
-                switch (minimalLineCount) {
-                    case 0:
-                        tokens.add(NewLineToken.NEWLINE_2);
-                        tokens.addAll(adds);
-                        tokens.add(TextToken.SPACE);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(TextToken.SPACE);
-                        break;
-                    case 1:
-                        tokens.add(NewLineToken.NEWLINE_1);
-                        tokens.addAll(adds);
-                        tokens.add(TextToken.SPACE);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(NewLineToken.NEWLINE_1);
-                        break;
-                    default:
-                        tokens.addAll(adds);
-                        tokens.add(NewLineToken.NEWLINE_1);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(NewLineToken.NEWLINE_1);
-                }
-                break;
-            default:
-                switch (minimalLineCount) {
-                    case 0:
-                        tokens.add(new NewLineToken(fragment.getLineCount()));
-                        tokens.addAll(adds);
-                        tokens.add(TextToken.SPACE);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(TextToken.SPACE);
-                        break;
-                    case 1:
-                        tokens.addAll(adds);
-                        tokens.add(TextToken.SPACE);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(new NewLineToken(fragment.getLineCount()));
-                        break;
-                    default:
-                        tokens.addAll(adds);
-                        tokens.add(NewLineToken.NEWLINE_1);
-                        tokens.add(StartBlockToken.START_BLOCK);
-                        tokens.add(new NewLineToken(fragment.getLineCount() - 1));
-                }
-                break;
+        if (lineCount == 0 || minimalLineCount == 0) {
+            if (lineCount != 0) {
+                tokens.add(spacingToken(lineCount));
+            }
+            tokens.addAll(adds);
+            addBlockTokens(TextToken.SPACE, StartBlockToken.START_BLOCK, TextToken.SPACE);
+        } else if (lineCount == 2 && minimalLineCount == 1) {
+            tokens.add(NewLineToken.NEWLINE_1);
+            tokens.addAll(adds);
+            addBlockTokens(TextToken.SPACE, StartBlockToken.START_BLOCK, NewLineToken.NEWLINE_1);
+        } else if (lineCount == 1 || minimalLineCount == 1) {
+            tokens.addAll(adds);
+            addBlockTokens(TextToken.SPACE, StartBlockToken.START_BLOCK, spacingToken(lineCount));
+        } else {
+            tokens.addAll(adds);
+            addBlockTokens(NewLineToken.NEWLINE_1, StartBlockToken.START_BLOCK, spacingToken(lineCount - 1));
         }
     }
 }

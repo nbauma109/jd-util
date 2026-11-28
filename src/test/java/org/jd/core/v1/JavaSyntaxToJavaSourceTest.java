@@ -1240,7 +1240,7 @@ public class JavaSyntaxToJavaSourceTest extends TestCase {
                         new SwitchStatement(
                             new LocalVariableReferenceExpression(PrimitiveType.TYPE_INT, "i"),
                             Arrays.asList(
-                                (SwitchStatement.Block)new SwitchStatement.LabelBlock(
+                                new SwitchStatement.LabelBlock(
                                     new SwitchStatement.ExpressionLabel(new IntegerConstantExpression(PrimitiveType.TYPE_INT, 0)),
                                     new Statements(
                                         new LocalVariableDeclarationStatement(
